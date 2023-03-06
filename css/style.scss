@@ -1,0 +1,2309 @@
+// Variables
+$primary: rgb(227, 0, 15);
+$phone: 700px;
+$tablet: 1000px;
+$laptop: 1600px;
+$menu-animation: 0.75s ease-in-out;
+
+* {
+    caret-color: rgba($color: #000, $alpha: 0);
+}
+// Font: Text
+@font-face {
+    font-family: "Font-Text";
+    src: url(../resources/fonts/SPD_TheSans_TT3_.ttf);
+    font-style: normal;
+}
+// Font: Heading
+@font-face {
+    font-family: "Font-Heading";
+    src: url(../resources/fonts/SPD_TheSans_TT5_.ttf);
+    font-style: normal;
+}
+
+// Mixin
+@mixin flex-center() {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@mixin font-text() {
+    font-family: "Font-Text";
+}
+
+@mixin font-heading() {
+    font-family: "Font-Heading";
+}
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+body {
+    background: #fff;
+    @include font-text();
+    padding: 0;
+}
+
+//left-sided title
+.title {
+    position: fixed;
+    top: 0;
+    left: 0;
+    @include flex-center();
+    z-index: 3;
+    width: 50%;
+    height: 100vh;
+    background: white;
+    transition: $menu-animation;
+
+    &.active {
+        left: -100%;
+    }
+
+    @media (max-width: $phone) {
+        border-right: none;
+        border-bottom: 0 solid black;
+        width: 100%;
+        height: 40%;
+        top: 0;
+
+    }
+
+    .slidein {
+        display: flex;
+        width: 100%;
+        justify-content: space-around;
+        position: relative;
+        left: -200px;
+        opacity: 0;
+        animation: slidein 20s 5s infinite;
+
+        @media (max-width: $tablet) {
+
+        }
+
+        @keyframes slidein {
+            0% {
+
+            }
+            5% {
+                opacity: 1;
+                left: 0;
+            }
+            60%{
+                opacity: 1;
+                left: 0;
+            }
+            80% {
+                opacity: 0;
+                left: -200px
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .nilsmaute, .marianneroth {
+            opacity: 1;
+            width: 300px;
+            height: 300px;
+            position: relative;
+            text-align: center;
+            top: -30px;
+            
+            p {
+
+                span {
+                    font-size: 2rem;
+
+                    @media (max-width: $tablet) {
+                        font-size: 0.85rem;
+                        font-weight: bold;
+                    }
+                }
+            }
+
+            @media (max-width: $tablet) {
+                width: 100px;
+                height: 100px;
+                position: relative;
+                font-size: 0.85rem;
+            }
+    
+            img {
+                width: 100%;
+            }
+    }
+    }
+
+    .headingBx {
+        @include flex-center();
+        flex-direction: row;
+        position: absolute;
+        height: 300px;
+        width: 70%;
+        transition: 0.2s;
+        top: 30%;
+        @include font-heading();
+        animation: up 20s 5s  infinite;
+
+        @keyframes up {
+            0% {
+            }
+            10% {
+                top: -100%;
+                opacity: 0;
+            }
+            60% {
+                top: -100%;
+            }
+            80% {
+                opacity: 1;
+                top: 30%
+            }
+            100% {
+                top: 30%;
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: $phone) {
+            top: 20px;
+        }
+
+        .logo {
+            display: flex;
+            width: 300px;
+            height: 300px;
+            position: 0;
+
+            a {
+                position: relative;
+
+                img {
+                    object-fit: cover;
+                    width: 100%;
+                    height: 100%;
+                }
+
+                @media (max-width: $phone) {
+                    top: -20px;
+                }
+            }
+
+            @media (max-width: $phone) {
+                position: relative;
+                flex-direction: column-reverse;
+                background: none;
+                justify-content: center;
+                color: black;
+                padding: 25px;
+                top: -20px;
+
+                .abr {
+                    font-size: 6rem;
+                }
+            }
+
+            @media (max-width: $tablet) {
+                .abr {
+                    font-size: 4rem;
+                }
+            }
+            @media (max-width: $phone) {
+                .sub {
+                    font-size: 2rem;
+                    font-weight: 300;
+                }
+            }
+        }
+
+        .heading {
+            @include flex-center();
+            width: 50%;
+            height: 100%;
+            text-align: left;
+            font-size: 4rem;
+            font-weight: 700;
+            transition: 0.2s;
+            color: $primary;
+            word-break: keep-all;
+
+            @media (max-width: $phone) {
+                display: none;
+            }
+            @media (max-width: $tablet) {
+                display: none;
+            }
+            @media (max-width: 1350px) {
+                display: none
+            }
+            @media (max-width: $laptop) {
+                font-size: 3rem;
+                word-break: keep-all;
+            }
+        }
+    }
+}
+
+//right-sided navigator
+.navigator {
+    width: 50%;
+    height: 100vh;
+    background: $primary;
+    @include flex-center();
+    bottom: 0;
+    right: 0;
+    z-index: 3;
+    position: fixed;
+    transition: $menu-animation;
+
+    @media (max-width: $phone) {
+        border-left: none;
+        bottom: 0;
+        width: 100%;
+        height: 60%;
+    }
+
+    &.active {
+        right: -100%;
+    }
+    nav {
+        background: none;
+
+        ul {
+            list-style-type: none;
+
+            li {
+                padding: 17.5px;
+
+                a {
+                    @include font-heading();
+                    font-size: 2.25rem;
+                    text-decoration: none;
+                    color: #fff;
+                    padding: 10px;
+                    transition: 0.2s ease-in-out;
+                    position: relative;
+
+                    &:hover {
+                        background: #fff;
+                        color: black;
+                    }
+                    @media (max-width: $phone) {
+                        font-size: 1.75rem;
+                    }
+                }
+            }
+        }
+    }
+}
+
+//loading
+.loading {
+    background: $primary;
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    z-index: 4;
+    top: 0;
+    left: 0;
+    transform: translateY(-100%);
+    display: flex;
+    @include flex-center();
+
+    img {
+        filter: invert(100%);
+        width: 7.5%;
+    }
+}
+
+@keyframes loading {
+    0% {
+        transform: translateY(-100%);
+    }
+    30% {
+        transform: translateY(0%);
+    }
+    70% {
+        transform: translateY(0%);
+    }
+    100% {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    45% {
+        transform: rotate(180);
+    }
+
+    55% {
+        transform: rotate(180);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+footer {
+    width: 100%;
+    height: 30vh;
+    position: relative;
+    background: $primary;
+    margin-top: 50px;
+
+    @media (max-width: $phone) {
+        width: 100vw; ;
+    }
+}
+.content {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+
+    .menupunkt {
+        width: 80%;
+        height: auto;
+        visibility: visible;
+        transform: translateY(30px);
+        transition: 0.2s;
+
+        @media (max-width: $phone) {
+            width: 96vw;
+        }
+        .heading {
+            position: relative;
+            margin-top: 30px;
+            padding-left: 10px;
+            top: -40px;
+
+            h1 {
+                @include font-heading();
+                font-weight: 500;
+                font-size: 2.25rem;
+                letter-spacing: 3px;
+                text-transform: uppercase;
+            }
+
+            &::before {
+                content: "";
+                position: absolute;
+                width: 100%;
+                height: 3px;
+                background: $primary;
+                bottom: 0px;
+                left: 0;
+            }
+        }
+    }
+
+    //aktuelles start
+
+    .aktuelles {
+        .inhalte {
+            width: 100%;
+            height: auto;
+            display: flex;
+            position: relative;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+            padding: 0;
+
+            @media (max-width: $phone) {
+                flex-direction: column;
+            }
+            .newspage {
+                display: flex;
+
+                .beitrag {
+                    display: flex;
+                    width: calc(100%-40px);
+                    height: auto;
+                    box-shadow: 0px 0px 3px 2px lightgrey;
+                    background: $primary;
+                    color: white;
+                    margin-top: 20px;
+
+
+                    h2 {
+                        padding: 0px;
+                        color: white;
+                        @include font-heading();
+                        font-weight: bold;
+                        font-size: 2rem;
+                    }
+
+                    @media (max-width: $tablet) {
+                        flex-direction: column;
+                        width: 100%;
+                    }
+
+                    .textArea {
+                        width: 100%;
+                        height: 100%;
+                        position: relative;
+                        padding: 20px;
+
+                        .imgArea {
+                            width: 50%;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            padding-right: 20px;
+                            float: left;
+
+                            @media (max-width: $phone) {
+                                width: 100%;
+                                padding-right: 0px;
+                            }
+
+                            img {
+                                width: 100%;
+                                object-fit: cover;
+                            }
+                        }
+
+                        .text {
+                            .preview {
+                                margin-top: 20px;
+                                padding-right: 20px;
+                            }
+                        }
+
+                        &.active {
+                            .main {
+                                display: block;
+                            }
+                        }
+
+                        @media (max-width: $phone) {
+                            width: 100%;
+                        }
+                    }
+                }
+            }
+
+            .mainpage {
+                .embed {
+                    display: flex;
+                    justify-content: center;
+                    width: 50%;
+                    order: 2;
+                    height: auto;
+    
+                    @media (max-width: $phone) {
+                        height: 600px;
+                    }
+    
+                    .instagram-media {
+                        background: $primary;
+                        width: 50%;
+                        height: auto;
+                    }
+                    @media (max-width: $phone) {
+                        width: 100%;
+                    }
+                }
+    
+                .welcometxt {
+                    width: 50%;
+                    padding: 20px;
+                    @include font-text();
+                    font-size: 1.125rem;
+                    position: relative;
+                    order: 1;
+    
+                    h2 {
+                        padding-bottom: 20px;
+                        font-size: 5rem;
+                        font-weight: 500;
+                        @include font-heading();
+    
+                        @media (max-width: $phone) {
+                            font-size: 4rem;
+                        }
+                    }
+                    // p::first-letter {
+                    //     font-size: 1rem;
+                    //     line-height: 1.25rem;
+                    //     padding: 0px 0px;
+                    //     margin: 0;
+                    // }
+    
+                    .news {
+                        top: 30px;
+                        margin: 30px 0;
+                        border: none;
+                        position: relative;
+    
+                        &::before {
+                            content: "";
+                            width: 90%;
+                            height: 1px;
+                            top: -30px;
+                            left: calc((100% - 90%) / 2);
+                            position: absolute;
+                            background: $primary;
+                        }
+    
+                        h3 {
+                            @include font-text();
+                            font-weight: 600;
+                            font-size: 1.5rem;
+                        }
+    
+                        .preview_news {
+                            width: 100%;
+                            height: 325px;
+                            overflow: hidden;
+    
+                            figure {
+                                position: relative;
+                                width: 500%;
+                                display: inline;
+                                overflow: hidden;
+                                margin: 0;
+                                left: 0;
+                                animation: 20s slider infinite;
+    
+                                img {
+                                    width: 100%;
+                                    height: 100%;
+                                    object-fit: cover;
+                                    float: left;
+                                    position: relative;
+                                    top: 00px;
+                                    z-index: 0;
+                                    
+                                }
+                                .preview_item {
+                                    width: 100%;
+                                    height: 100%;
+                                    background: $primary;
+                                    color: white;
+                                    padding: 20px;
+                                    top: 00;
+                                    float: left;
+                                    background-size: cover;
+                                    position: relative;
+                                    text-overflow: ellipsis;
+                                    overflow: hidden;
+    
+                                    h3, p {
+                                        z-index: 3 !important; 
+                                        position: relative;
+                                        overflow: hidden;
+                                        text-overflow: ellipsis;
+                                        display: -webkit-box;
+                                        -webkit-line-clamp: 7; /* number of lines to show */
+                                                line-clamp: 7; 
+                                        -webkit-box-orient: vertical;
+
+                                    }
+    
+                                    span {
+                                        width: 100%;
+                                        height: 100%;
+                                        top: 0;
+                                        left: 0;
+                                        position: absolute;
+                                        z-index: 1;
+                                        background: rgba($color: #000000, $alpha: 0.5);
+                                    }
+                                }
+                            }
+                        }
+                    }
+    
+                    @keyframes slider {
+                        0% {
+                            top: 0;
+                        }
+                        20% {
+                            top: 0;
+                        }
+                        25% {
+                            top: -100%;
+                        }
+                        45% {
+                            top: -100%;
+                        }
+                        50% {
+                            top: -200%;
+                        }
+                        70% {
+                            top: -200%;
+                        }
+                        75% {
+                            top: -300%;
+                        }
+                        95% {
+                            top: -300%;
+                        }
+                        100% {
+                            top: 0;
+                        }
+                    }
+    
+                    @media (max-width: $phone) {
+                        width: 100%;
+                    }
+                }
+                .termine {
+                    position: relative;
+                    top: 20px;
+                    order: 3;
+                    display: flex;
+                    flex-direction: column;
+                    width: 100%;
+                    text-align: left;
+                    @include font-text();
+
+                    @media (max-width: $tablet) {
+                        width: 100%;
+                        margin-right: 10px
+                    }
+    
+                    // @media(max-width: $phone) {
+                    //     padding: 20px
+                    // }
+    
+                    h3 {
+                        @include font-text();
+                        font-weight: 600;
+                        font-size: 1.5rem;
+                    }
+    
+                    .kalender {
+                        width: 100%;
+                        height: auto;
+                        @include font-text();
+
+                        @media (max-width: $tablet) {
+                            width: 100%;
+                            margin-right: 10px
+                        }
+
+                        .monate {
+                            width: 100%;
+                            height: auto;
+    
+                            .bar {
+                                width: 100%;
+                                height: auto;
+                                padding: 20px;
+                                background: $primary;
+                                margin-bottom: 20px;
+                                display: flex;
+                                align-items: center;
+
+                                @media (max-width: $tablet) {
+                                    width: 98%;
+                                }
+
+                                .header_kalender {
+                                    font-size: 2.5rem;
+                                    color: white;
+    
+                                    span {
+                                        font-weight: bold;
+                                    }
+                                }
+                            }
+    
+                            .eintraege {
+                                display: flex;
+                                flex-wrap: wrap;
+                                justify-content: space-between;
+
+                                .eintrag {
+                                    width: 49.5%;
+                                    height: auto;
+                                    min-height: 40vh;
+                                    padding: 10px;
+                                    margin-bottom: 10px;
+                                    background: #bbb;
+                                    display: flex;
+    
+                                    @media (max-width: $tablet) {
+                                        flex-direction: column;
+                                        width: calc(100% / 1);
+                                        margin-right: 10px;
+                                    }
+    
+                                    .informationen {
+                                        width: 60%;
+    
+                                        @media (max-width: $tablet) {
+                                            width: 100%;
+                                        }
+    
+                                        .headline {
+                                            width: 100%;
+                                            padding-left: 20px;
+                                            border-left: 3px solid black;
+    
+                                            .name {
+                                                width: 100%;
+                                                font-size: 2rem;
+                                                font-weight: 100;
+                                            }
+                                            .event {
+                                                font-size: 1rem;
+                                                font-weight: 900;
+                                            }
+                                        }
+                                        .description {
+                                            padding: 10px;
+    
+                                            .text {
+                                                padding-bottom: 20px;
+                                            }
+                                            .details {
+                                                display: flex;
+    
+                                                .time,
+                                                .place {
+                                                    width: 50%;
+                                                    display: flex;
+    
+                                                    .icon {
+                                                        width: 50px;
+                                                        aspect-ratio: 1/1;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+    
+                                    &:nth-child(odd) {
+                                        background: #ccc;
+                                    }
+    
+                                    .imageArea {
+                                        width: 40%;
+                                        height: auto;
+    
+                                        @media (max-width: $tablet) {
+                                            width: 100%;
+                                            height: 100%;
+                                        }
+    
+                                        img {
+                                            width: 100%;
+                                            object-fit: cover;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+    
+                    @media (max-width: $phone) {
+                        width: 100%;
+                    }
+                }
+            }
+
+
+        }
+    }
+
+    .kontakte {
+        .inhalte {
+            width: 100%;
+            height: auto;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+            padding: 0;
+
+            @media (max-width: $phone) {
+                flex-direction: column;
+            }
+            .kontaktwege {
+                display: flex;
+                justify-content: start;
+
+                a {
+                    margin: 10px;
+                    
+                    img {
+                        width: 50px;
+                    }
+                }
+            }
+            .txt {
+                width: 50%;
+
+                @media (max-width: $phone) {
+                    width: 100%;
+                }
+
+                h2 {
+                    padding-bottom: 20px;
+                    font-size: 4rem;
+                    font-weight: 500;
+                    @include font-heading();
+
+                    @media (max-width: $phone) {
+                        font-size: 2rem;
+                    }
+                }
+                form {
+                    width: 100%;
+                    height: auto;
+                    position: relative;
+                    @include font-text();
+
+                    input {
+                        caret-color: black;
+                    }
+                    textarea {
+                        caret-color: black;
+                        resize: vertical;
+                    }
+
+                    input:required:valid {
+                        border: 1px solid;
+                        border-color: green;
+                    }
+                    input:required:invalid {
+                        border: 1px solid;
+                        border-color: red;
+                    }
+                    input:required {
+                        border: 1px solid;
+                    }
+
+                    .name {
+                        position: relative;
+                        display: flex;
+                        flex-direction: row;
+
+                        @media (max-width: $tablet) {
+                            flex-direction: column;
+                            margin: 10px 0px;
+                        }
+
+                        .col {
+                            display: flex;
+                            width: 100%;
+                            flex-direction: column;
+
+                            @media (max-width: $phone) {
+                                margin: 5px 0px;
+                            }
+
+                            label {
+                                margin: 1px 2.5px;
+                                font-size: 0.85rem;
+                            }
+
+                            input {
+                                margin: 1px 2.5px;
+                                padding: 5px 10px;
+
+                                &::placeholder {
+                                    color: rgb(129, 129, 129);
+                                }
+                            }
+                        }
+                    }
+
+                    .email {
+                        margin: 10px 0px;
+
+                        .col {
+                            display: flex;
+                            width: 100%;
+                            flex-direction: column;
+
+                            label {
+                                margin: 1px 2.5px;
+                                font-size: 0.85rem;
+                            }
+
+                            input {
+                                margin: 1px 2.5px;
+                                padding: 5px 10px;
+                            }
+                        }
+                    }
+
+                    .text {
+                        .col {
+                            display: flex;
+                            width: 100%;
+                            flex-direction: column;
+
+                            label {
+                                margin: 1px 2.5px;
+                                font-size: 0.85rem;
+                            }
+
+                            textarea {
+                                padding: 10px 10px;
+                                height: 100px;
+                                @include font-text();
+                                font-size: 0.85rem;
+                                width: 100%;
+
+                                &::placeholder {
+                                    text-align: start;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            .image {
+                width: 50%;
+                padding: 50px;
+
+                img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+
+                @media (max-width: $phone) {
+                    width: 100%;
+                }
+            }
+        }
+    }
+
+    .historie {
+        .inhalte {
+            width: 100%;
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: start;
+            flex-wrap: wrap;
+            padding: 0;
+            @include font-text();
+
+            ::-webkit-scrollbar {
+                width: 10px;
+                border-radius: 10px;
+            }
+
+            ::-webkit-scrollbar-track {
+                border-radius: 10px;
+                border: 1px solid black;
+            }
+
+            /* Handle */
+            ::-webkit-scrollbar-thumb {
+                background: $primary;
+                border-radius: 10px;
+            }
+
+            /* Handle on hover */
+            ::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 35, 35, 0.75);
+            }
+
+            .textarea {
+                width: 100%;
+                // height: max-content;
+                overflow: hidden;
+                position: relative;
+
+                @media (max-width: $tablet) {
+                    height: max-content;
+                }
+
+                .container {
+                    position: relative;
+
+                    .absatz {
+                        margin-bottom: 7px;
+
+                        .textcontent {
+                            img {
+                                width: 100%
+                            }
+                        }
+
+                        h3 {
+                            font-size: 1.25rem;
+                            text-transform: uppercase;
+                            letter-spacing: 3px;
+                            color: white;
+                            padding: 10px;
+                            margin-bottom: 5px;
+                            cursor: pointer;
+                            background: $primary;
+                            display: flex;
+                            justify-content: space-between;
+                            position: relative;
+                            padding-right: 5px;
+
+                            @media (max-width: $tablet) {
+                                margin: 0;
+                                margin-bottom: 5px;
+                            }
+
+                            .arrow {
+                                position: absolute;
+                                top: 40%;
+                                right: 10px;
+                                transform: translateY(-5px) rotate(-90deg);
+                                display: inline-block;
+                                text-align: center;
+                                user-select: none;
+                            }
+                        }
+
+                        &.active {
+                            h2 {
+                                display: block
+                            }
+                            p {
+                                display: contents;
+                            }
+                            .imgArea {
+                                display: flex;
+                            }
+                            .arrow {
+                                transform: translateY(-5px) rotate(90deg);
+                                justify-self: end;
+                            }
+                        }
+
+                        h2 {
+                            display: block
+                        }
+                        p {
+                            display: none;
+                        }
+
+                        .imgArea {
+                            display: none;
+                            height: 70vh;
+                            grid-area: gallery;
+                            justify-content: center;
+                            align-items: flex-start;
+                            // background: #555;
+                            box-shadow: 0px 0px 3px 2px lightgrey; 
+                            position: relative;
+
+                            .swipe {
+                                position: absolute;
+                                bottom: 20px;
+                                right: 5px;
+                                background: rgba($color: #000000, $alpha: 0.5);
+                                color: white;
+                                border-radius: 10px;
+                                padding: 10px 20px;
+                                z-index: 100;
+                                user-select: none;
+                            }
+
+
+                            .previous, .next {
+                                display: flex;
+                                align-items: center;
+                                font-size: 2.5rem;
+                                padding: 20px;
+                                cursor: pointer;
+                                user-select: none;
+                                align-self: center;
+                                z-index: 20;
+                            }
+
+                            figure {
+                                width: 100%;
+                                height: 100%;
+                                display: flex;
+                                overflow-x: scroll;
+
+                                img {
+                                    position: relative;
+                                    border-right: white 5px solid;
+                                    width: 100%;
+                                    object-fit: contain;
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+                // .container {
+                //     position: relative;
+                //     display: grid;
+                //     grid-template-columns: 1fr 3fr;
+                //     grid-template-rows: 1fr;
+                //     gap: 0px 0px;
+                //     grid-template-areas: ". .";
+
+                //     @media (max-width: $tablet) {
+                //         display: grid;
+                //         grid-template-columns: 1fr;
+                //         grid-template-rows: 0.75fr 3fr;
+                //         gap: 0px 0px;
+                //         grid-template-areas:
+                //             "."
+                //             ".";
+                //     }
+
+                //     .guideline {
+                //         height: 50vh;
+                //         position: sticky;
+                //         display: flex;
+                //         justify-content: center;
+                //         align-items: center;
+
+                //         ul {
+                //             list-style-type: none;
+
+                //             li {
+                //                 margin: 10px;
+                //                 padding: 10px;
+                //                 transform: translateX(10px);
+                //                 transition: 0.25s;
+                //                 cursor: pointer;
+
+                //                 @media (max-width: $tablet) {
+                //                     margin: 2.5px;
+                //                     padding: 2.5px;
+                //                 }
+
+                //                 &.active {
+                //                     color: darkslategrey;
+                //                     list-style-type: disc;
+                //                     transform: translateX(0px);
+                //                 }
+                //             }
+                //         }
+
+                //         @media (max-width: $tablet) {
+                //         }
+                //     }
+                //     .text {
+                //         box-shadow: 0px 0px 3px 2px lightgrey;
+                //         height: max-content;
+                //         padding: 20px;
+                //         display: none;
+
+                //         img {
+                //             float: left;
+                //             width: 30%;
+                //         }
+        
+
+                //         &.active {
+                //             display: block;
+                //         }
+
+                //         .text_heading {
+                //             h3 {
+                //                 display: none;
+
+                //                 &.active {
+                //                     display: contents;
+                //                 }
+                //             }
+                //         }
+
+                //         .textcontent {
+                //             display: none;
+
+                //             &.active {
+                //                 background: orange;
+                //                 display: contents;
+                //             }
+                //         }
+                //     }
+
+                //     h2 {
+                //         font-size: 2rem;
+                //     }
+
+                //     h3 {
+                //         font-size: 2rem;
+                //         text-transform: uppercase;
+                //         letter-spacing: 3px;
+                //         color: #aaa;
+                //     }
+                //     img {
+                //         width: 100%;
+                //     }
+                // }
+
+                @media (max-width: $tablet) {
+                    width: 100%;
+                }
+            }
+
+            .downloads {
+                width: 30%;
+                padding: 10px;
+
+                ul {
+                    margin-left: 30px;
+
+                    li {
+                        margin: 3px;
+
+                        a {
+                            color: $primary;
+                            text-decoration: underline;
+                        }
+                    }
+                }
+
+                @media (max-width: $phone) {
+                    width: 100%;
+                }
+            }
+
+            .timeline {
+                width: 100%;
+                height: 65vh;
+                overflow: auto;
+                margin: 20px 0px;
+                background-color: none;
+                border-radius: 0 0 10px 10px;
+                padding-top: 25px;
+
+                @media (max-width: $tablet) {
+                    height: 67vh;
+                }
+
+                figure {
+                    position: relative;
+                    width: 300%;
+                    height: 100%;
+                    left: 0%;
+                    display: flex;
+                    transition: 0.5s;
+                    background: #fff;
+
+
+                    @media (max-width: $phone) {
+                        width: 700%;
+                    }
+
+                    .headline {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        padding: 20px;
+
+                        h2 {
+                            font-size: 2rem;
+                            text-transform: uppercase;
+                            letter-spacing: 3px;
+                            color: #aaa;
+                        }
+                    }
+
+                    .line {
+                        position: absolute;
+                        width: 97%;
+                        height: 0px;
+                        border: 1px dashed rgba($color: black, $alpha: 1);
+                        left: 1.5%;
+                        top: calc(50% - 15px);
+                        display: flex;
+                        justify-content: space-between;
+                        flex-direction: row-reverse;
+                    }
+
+                    .slide {
+                        width: 100%;
+                        height: 100%;
+                        position: relative;
+                        display: flex;
+                        justify-content: space-evenly;
+                        align-items: center;
+
+                        .timestamp {
+                            min-width: 165px;
+                            height: auto;
+                            position: relative;
+                            z-index: 10;
+
+                            &:nth-child(even) {
+                                top: -25%;
+
+                                @media (max-width: $phone) {
+                                    top: -35%;
+                                }
+                            }
+                            &:nth-child(odd) {
+                                top: 5%;
+
+                                @media (max-width: $phone) {
+                                    top: 5%;
+                                }
+                            }
+
+                            &:hover .imgArea {
+                                transform: translateY(-150px);
+                                height: 150px;
+                            }
+
+                            .textArea {
+                                position: absolute;
+                                width: 100%;
+                                background: $primary;
+                                color: white;
+                                z-index: 1;
+                                padding: 10px;
+                                text-align: center;
+                                @include font-text();
+                                font-size: 0.85rem;
+                                word-break: break-all;
+                                border-radius: 10px;
+                                box-shadow: 0px 0px 3px 2px lightgrey;
+                            }
+
+                            .imgArea {
+                                position: absolute;
+                                top: 10px;
+                                width: 100%;
+                                padding: 7.5px;
+                                height: 100%;
+                                background: $primary;
+                                border-radius: 10px 10px 0 0;
+                                transition: 0.25s ease-out;
+                                box-shadow: 0px 0px 3px 2px lightgrey;
+
+                                img {
+                                    width: 100%;
+                                    height: 100%;
+                                    object-fit: cover;
+                                    border-radius: 10px 10px 0 0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.partei {
+    .inhalte {
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        padding: 0;
+
+        .schwerpunkte {
+            display: none;
+            .content_schwerpunkte {
+                width: 100%;
+                height: 80vh;
+                justify-content: center;
+                align-items: center;
+    
+                &.active {
+                    display: flex;
+                }
+    
+                .message404 {
+                    text-align: center;
+                }
+            }
+
+            &.active {
+                display: flex;
+            }
+        }
+
+        .flexbox {
+            display: none;
+
+            .content_abgeordneter {
+                width: 100%;
+                position: relative;
+                height: auto;
+    
+                .container {
+                    display: grid; 
+                    grid-template-columns:  0.8fr 1.2fr;
+                    grid-template-rows: 0.6fr 1.4fr; 
+                    gap: 20px 0px; 
+                    grid-template-areas: 
+                      "introtext contacts"
+                      "gallery gallery";
+    
+                    @media (max-width: $tablet) {
+                        display: grid; 
+                        grid-auto-columns: 1fr; 
+                        grid-template-columns: 1fr; 
+                        grid-template-rows: 0.2fr 0.65fr 1fr; 
+                        gap: 30px 0px; 
+                        grid-template-areas: 
+                          "introtext"
+                          "gallery"
+                          "contacts"; 
+                    }
+    
+                    .introtext {
+                        grid-area: introtext;
+                        
+                    }
+                    .gallery {
+                        height: 70vh;
+                        grid-area: gallery;
+                        display: flex;
+                        justify-content: center;
+                        align-items: flex-start;
+                        // background: #555;
+                        box-shadow: 0px 0px 3px 2px lightgrey; 
+    
+                        
+                        .previous, .next {
+                            display: flex;
+                            align-items: center;
+                            font-size: 2.5rem;
+                            padding: 20px;
+                            cursor: pointer;
+                            user-select: none;
+                            align-self: center;
+                        }
+    
+                        figure {
+                            width: 100%;
+                            height: 100%;
+                            display: flex;
+                            img {
+                                width: 100%;
+                                object-fit: contain;
+                            }
+                        }
+                    }
+                    .contacts {
+                        grid-area: contacts;
+                        display: grid; 
+                        grid-template-columns: 1.3fr 0.3fr 1.4fr; 
+                        grid-template-rows: 1.4fr; 
+                        gap: 0px 0px; 
+                        grid-template-areas: 
+                          ". . ."; 
+    
+                        .display {
+                            width: 100%;
+                            position: relative;
+                            display: flex;
+                            flex-direction: column;
+    
+                            @media (max-width: $tablet) {
+                                
+                            }
+    
+                            .displayname {
+                                font-size: 2rem;
+                                z-index: 10;
+                                background: $primary;
+                                color: white;
+                                width: 100%;
+                                text-align: center;
+
+                                a {
+                                    text-decoration: none;
+                                    color: white
+                                }
+                            }
+    
+                            .imgArea {
+                                max-height: 250px;
+                                width: 100%;
+                                position: relative;
+                                background: #000;
+                                overflow: hidden;
+    
+                                img {
+                                    width: 100%;
+                                    position:relative;
+                                    top: -100px;
+                                    object-fit: cover;
+
+                                    @media (max-width: $tablet) {
+                                        height: 100%;
+                                        top: 0;
+                                    }
+                                }
+                            }
+                        }
+                        .links {
+                            display: flex;
+                            flex-direction: column;
+                            padding: 0;
+                            margin: 0;
+    
+                            .instagram, .facebook, .twitter {
+                                width: 0%;
+    
+                                .logo {
+                                   width: 42px;
+                                   margin: 10px;
+    
+                                   img {
+                                    position: relative;
+                                    width: 100%;
+                                }
+                                }
+                            }  
+                        }
+                        .information {
+                            span {
+                                color: $primary;
+                                font-weight: bold;
+                            }
+                        }
+                    }
+                }
+            }
+
+            &.active {
+                display: flex;
+            }
+        }
+
+        .grid {
+            width: 100%;
+            display: none;
+            grid-auto-columns: 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 0px 0px;
+            grid-gap: 10px;
+            grid-template-areas:
+                ". . ."
+                ". . ."
+                ". . .";
+
+                &.active {
+                    display: grid;
+                }
+
+            @media (max-width: $tablet) {
+                display: none;
+                grid-auto-columns: 1fr;
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr;
+                gap: 0px 0px;
+                grid-template-areas: ".";
+                grid-gap: 10px;
+
+                &.active {
+                    display: grid;
+                }
+            }
+
+            .cell {
+                position: relative;
+                display: flex;
+                background: $primary;
+                color: white;
+                width: 100%;
+                height: 400px;
+                transition: 0.5s;
+                overflow: hidden;
+                box-shadow: 0px 0px 3px 2px lightgrey;
+
+                @media (max-width: $tablet) {
+                    grid-column-start: span 3;
+                }
+
+                &.active {
+                    z-index: 6;
+
+                    @media (max-width: $tablet) {
+                        width: 100%;
+                    }
+
+                    img {
+                        width: 30%;
+                    }
+                    .text {
+                        left: 30%;
+                        width: 70%;
+                        opacity: 1;
+                        transition: 0.5s;
+                    }
+                    .name_title {
+                        opacity: 0;
+                    }
+                }
+
+                .text {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    padding: 20px;
+                    opacity: 1;
+                    transition: 0.5s;
+
+                    h2 {
+                        text-transform: uppercase;
+                        padding-bottom: 10px;
+                    }
+
+                    h3 {
+                        padding-bottom: 10px;
+                    }
+
+                    h4 {
+                        font-size: 1rem;
+                        padding-bottom: 10px;
+                        font-style: italic;
+                        font-weight: normal;
+                    }
+
+                    .funktion {
+                        padding: 15px 0;
+
+                        h2 {
+                            padding: 5px 0;
+                        }
+                    }
+                }
+
+                img {
+                    object-fit: cover;
+                    width: 100%;
+                    transition: 0.5s;
+                    z-index: 2;
+                }
+
+                .name_title {
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    background: white;
+                    width: 100%;
+                    height: 17.5%;
+                    text-align: center;
+                    color: black;
+                    z-index: 3;
+
+                    .name {
+                        font-size: 2rem;
+                    }
+                    .partei_title {
+                        font-size: 1.25rem;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.fraktion {
+    .inhalte {
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        padding: 0;
+
+        .content_personen {
+            width: 100%;
+            display: none;
+
+            &.active {
+                display: block;
+            }
+
+            .flexbox {
+                display: flex;
+                width: 100%;
+                flex-direction: row;
+                justify-content: center;
+                @include font-text();
+
+                @media (max-width: $tablet) {
+                    flex-direction: column;
+                }
+
+                .subinhalt {
+                    width: 50%;
+                    padding: 20px;
+                    margin-top: 20px;
+                    display: flex;
+                    flex-direction: column;
+
+                    .cell {
+                        position: relative;
+                        display: flex;
+                        background: $primary;
+                        color: white;
+                        width: 100%;
+                        transition: 0.5s;
+                        box-shadow: 0px 0px 3px 2px lightgrey;
+                        margin-bottom: 20px;
+                        min-height: 600px;
+                        cursor: pointer;
+
+                        @media (max-width: $tablet) {
+                            min-height: 400px;
+                        }
+
+                        &.active {
+                            color: black;
+
+                            .imgArea {
+                                    z-index: 0;
+                                    filter: brightness(115%) grayscale(1) invert(0.35);
+                            }
+                        }
+
+                        .imgArea {
+                            width: 100%;
+                            height: 100%;
+                            position: absolute;
+                            background: black;
+                            transition: 0.2s;
+                            z-index: 10;
+
+
+
+                            img {
+                                object-fit: cover;
+                                width: 100%;
+                                height: 100%;
+                            }
+                        }
+
+
+                        .text {
+                            float: left;
+                            z-index: 0;
+                            padding: 20px;
+
+                            ul {
+                                margin-left: 30px;
+
+                                @media (max-width: $tablet) {
+                                    font-size: 1rem;
+                                }
+                            }
+
+                            p {
+                                margin-top: 10px;
+                                // padding: 10px;
+
+                                @media (max-width: $tablet) {
+                                    font-size: 1rem;
+                                }
+                            }
+
+                            @media (max-width: $tablet) {
+                                padding: 10px;
+                            }
+                        }
+
+                        h2 {
+                            text-align: left;
+                            @include font-heading();
+                            font-weight: normal;
+
+                            span {
+                                position: relative;
+                                line-height: 10px;
+                                top: -5px;
+                                font-size: 1rem;
+                                font-weight: bold;
+                                word-break: keep-all;
+                            }
+                        }
+
+                        @media (max-width: $tablet) {
+                            width: 100%;
+                            padding: 0;
+                        }
+                    }
+
+                    @media (max-width: $tablet) {
+                        width: 100%;
+                        padding: 0;
+                    }
+
+                    h2 {
+                        @include font-heading();
+                        text-align: center;
+                        font-size: 2rem;
+                    }
+                }
+            }
+        }
+
+        .content_ausfraktion {
+            width: 100%;
+            display: none;
+            position: relative;
+            top: 20px;
+
+            &.active {
+                display: contents;
+                flex-direction: row;
+
+                @media (max-width: $phone) {
+                    flex-direction: column;
+                }
+            }
+
+            .flexbox {
+                display: grid; 
+                grid-template-columns: 1.3fr 0.7fr; 
+                grid-template-rows: 0.1fr 1.9fr; 
+                gap: 0px 0px; 
+                grid-template-areas: 
+                  "heading-news heading-downloads"
+                  "news downloads"; 
+                
+                    @media (max-width: $phone) {
+                    width: 100%;
+
+                    display: grid; 
+                    grid-auto-columns: 1fr;
+                    grid-template-columns: 1fr; 
+                    grid-template-rows: 0.05fr 1.9fr 0.05fr 1.9fr; 
+                    gap: 10px 0px; 
+                    grid-template-areas: 
+                    "heading-news"
+                    "news"
+                    "heading-downloads"
+                    "downloads"; 
+                    }
+
+                  @media (max-width: $phone) {
+                        width: 100%;
+                    }
+
+                .news {
+                    height: auto;
+                    position: relative;
+    
+                    @media (max-width: $phone) {
+                        width: 100%;
+
+                    }
+
+                    :nth-child() {
+                        height: auto !important;
+                    }
+    
+                    .beitrag {
+                        display: flex;
+                        width: calc(100%-40px);
+                        height: auto;
+                        box-shadow: 0px 0px 3px 2px lightgrey;
+                        background: $primary;
+                        color: white;
+                        margin-top: 20px;
+
+    
+                        h2 {
+                            padding: 0px;
+                            color: white;
+                            @include font-heading();
+                            font-weight: bold;
+                            font-size: 2rem;
+                        }
+    
+                        @media (max-width: $tablet) {
+                            flex-direction: column;
+                            width: 100%;
+                        }
+    
+                        .textArea {
+                            width: 100%;
+                            height: 100%;
+                            position: relative;
+                            padding: 20px;
+    
+                            .imgArea {
+                                width: 50%;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                padding-right: 20px;
+                                float: left;
+    
+                                @media (max-width: $phone) {
+                                    width: 100%;
+                                    padding-right: 0px;
+                                }
+    
+                                img {
+                                    width: 100%;
+                                    object-fit: cover;
+                                }
+                            }
+    
+                            .text {
+                                .preview {
+                                    margin-top: 20px;
+                                    padding-right: 20px;
+                                }
+                            }
+    
+                            &.active {
+                                .main {
+                                    display: block;
+                                }
+                            }
+    
+                            @media (max-width: $phone) {
+                                width: 100%;
+                            }
+                        }
+                    }
+                }
+                .downloads {
+                    height: auto;
+                    margin-left: 10px;
+                    margin-top: 20px;
+    
+                    h2 {
+                        color: black;
+                        margin-bottom: 20px
+                    }
+    
+                    ul {
+                        margin-left: 30px;
+    
+                        li {
+                            margin: 3px;
+    
+                            a {
+                                color: $primary;
+                                text-decoration: underline;
+                            }
+                        }
+                    }
+    
+                    @media (max-width: $phone) {
+                        width: 100%;
+                    }
+                }
+            }
+        }
+
+        .content_abgeordneter {
+            width: 100%;
+            display: none;
+            position: absolute;
+            top: 20px;
+            height: auto;
+            &.active {
+                display: contents;
+            }
+
+            .container {
+                display: grid; 
+                grid-template-columns:  0.8fr 1.2fr;
+                grid-template-rows: 0.6fr 1.4fr; 
+                gap: 20px 0px; 
+                grid-template-areas: 
+                  "introtext contacts"
+                  "gallery gallery";
+
+                @media (max-width: $tablet) {
+                    display: grid; 
+                    grid-auto-columns: 1fr; 
+                    grid-template-columns: 1fr; 
+                    grid-template-rows: 0.2fr 0.65fr 1fr; 
+                    gap: 30px 0px; 
+                    grid-template-areas: 
+                      "introtext"
+                      "gallery"
+                      "contacts"; 
+                }
+
+                .introtext {
+                    grid-area: introtext;
+                    
+                }
+                .gallery {
+                    height: 70vh;
+                    grid-area: gallery;
+                    display: flex;
+                    justify-content: center;
+                    align-items: flex-start;
+                    // background: #555;
+                    box-shadow: 0px 0px 3px 2px lightgrey; 
+
+                    
+                    .previous, .next {
+                        display: flex;
+                        align-items: center;
+                        font-size: 2.5rem;
+                        padding: 20px;
+                        cursor: pointer;
+                        user-select: none;
+                        align-self: center;
+                    }
+
+                    figure {
+                        width: 100%;
+                        height: 100%;
+                        display: flex;
+
+                        img {
+                            width: 100%;
+                            object-fit: contain;
+                        }
+                    }
+                }
+                .contacts {
+                    grid-area: contacts;
+                    display: grid; 
+                    grid-template-columns: 1.3fr 0.3fr 1.4fr; 
+                    grid-template-rows: 1.4fr; 
+                    gap: 0px 0px; 
+                    grid-template-areas: 
+                      ". . ."; 
+
+                    .display {
+                        width: 100%;
+                        position: relative;
+                        display: flex;
+                        flex-direction: column;
+
+                        @media (max-width: $tablet) {
+                            
+                        }
+
+                        .displayname {
+                            font-size: 2rem;
+                            z-index: 10;
+                            background: $primary;
+                            color: white;
+                            width: 100%;
+                            text-align: center;
+                        }
+
+                        .imgArea {
+                            max-height: 250px;
+                            width: 100%;
+                            position: relative;
+                            background: #000;
+                            overflow: hidden;
+
+                            img {
+                                width: 100%;
+                                position:relative;
+                                top: -100px;
+                                object-fit: cover;
+                            }
+                        }
+                    }
+                    .links {
+                        display: flex;
+                        flex-direction: column;
+                        padding: 0;
+                        margin: 0;
+
+                        .instagram, .facebook, .twitter {
+                            width: 0%;
+
+                            .logo {
+                               width: 42px;
+                               margin: 10px;
+
+                               img {
+                                position: relative;
+                                width: 100%;
+                            }
+                            }
+                        }  
+                    }
+                    .information {
+                        span {
+                            color: $primary;
+                            font-weight: bold;
+                        }
+                    }
+                }
+            }
+        }
+
+        
+        
+
+        .trigger {
+            width: 100%;
+            text-align: center;
+
+            span {
+                background: $primary;
+                margin: 10px;
+                cursor: pointer;
+                color: white;
+                padding: 20px 40px;
+            }
+        }
+
+        .selector {
+            display: flex;
+            width: 100%;
+            height: 0px;
+            z-index: 10;
+            justify-content: center;
+            font-size: 1.25rem;
+            @include font-heading();
+            text-align: center;
+            line-height: 3rem;
+            color: white;
+            overflow: hidden;
+            transition: 0.5s;
+            margin-top: 20px; 
+
+            &.active {
+                overflow: visible;
+                height: auto;
+                background: $primary;
+            }
+
+            ul {
+                color: white;
+                list-style-type: none;
+
+
+                .trigger {
+                    font-size: 1.5rem;
+                    text-decoration: underline;
+                    color: black !important;
+                }
+
+                li {
+                    cursor: pointer;
+                    text-align: left;
+                    
+                    &.active {
+                        color: white;
+                        position: relative;
+                        left: -20px;
+                        font-weight: bold;
+                    }
+                }
+            }
+
+            @media (max-width: $tablet) {
+                font-size: 1rem;
+                width: 100%;
+            }
+        }
+    }
+}
+
+.menu-icon {
+    position: fixed;
+    top: 35px;
+    left: 30px;
+    height: 40px;
+    width: 30px;
+    cursor: pointer;
+    z-index: 100;
+
+    @media (max-width: $phone) {
+        left: 90%;
+        top: 30px;
+    }
+
+    .icon {
+        height: 4px;
+        margin-top: 5px;
+        width: 30px;
+        background: #121212;
+        transition: 0.2s ease-in-out;
+    }
+    // .top {
+    //     position: relative;
+    // }
+    // .middle {
+    //     width: 15px;
+    // }
+    .bottom.active {
+        transform: rotate(45deg);
+    }
+    .top.active {
+        transform: rotate(-45deg) translate(-6.5px, 6.5px);
+    }
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px 0;
+    background: none;
+    background: $primary;
+    color: white;
+    border: 1px solid white;
+    cursor: pointer;
+}
+.btn {
+    transition: 0.4s;
+}
+.btn:hover {
+    background: none;
+    color: $primary;
+    border: 1px solid $primary;
+}
+.menu {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    position: relative;
+
+    ul {
+        display: flex;
+        list-style-type: none; 
+        justify-content: center;
+    }
+    li {
+        cursor: pointer;
+        font-size: 1.25rem;
+        padding-left: 10px;
+        padding-right: 10px;
+        margin-bottom: 20px;
+        border-left: $primary 1px solid;
+
+        &.active {
+            border-left: $primary 2px solid;
+            font-weight: bold;
+        }
+    }
+}
+.areainfo {
+    position: relative;
+    margin-bottom: 20px;
+    width: 80%;
+    margin-top: -20px;
+
+    @media (max-width: $laptop) {
+        width: 70%;
+    }
+
+    @media (max-width: $tablet) {
+        width: 90%;
+    }
+}
