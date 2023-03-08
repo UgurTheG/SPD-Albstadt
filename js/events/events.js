@@ -17,25 +17,19 @@ let nextMonth = currentMonth % 12 + 1
 document.querySelector("#kalendermonat").innerHTML = new Intl.DateTimeFormat('de', { month: 'long' }).format(new Date())
 
 fetch("../resources/data/events/events.json")
-.then((response) => {
-    return response.json();
-})
+.then((response) => {return response.json();})
 .then((data) => {
-    [new eventEntity(event_parent_current, data[`${currentMonth}_${currentYear}`]), new eventEntity(event_parent_next, data[`${nextMonth}_${currentYear}`])].forEach(eventEntry => {
-        insertEvents(eventEntry.instance, eventEntry.objects)
+    [new eventEntity(event_parent_current, data[currentYear][currentMonth]), new eventEntity(event_parent_next, data[currentYear][nextMonth])].forEach(eventEntry => {
+        eventEntry.objects.forEach(eventOccurence => {
+            const event_clone = events.cloneNode(true);
+            eventEntry.instance.appendChild(event_clone);
+        
+            insertData(event_clone, eventOccurence);
+        })
     });
     
     event_parent_current.removeChild(events);
 })
-
-function insertEvents(eventParentObject, eventOccurenceList) {
-    eventOccurenceList.forEach(eventOccurence => {
-        const event_clone = events.cloneNode(true);
-        eventParentObject.appendChild(event_clone);
-    
-        insertData(event_clone, eventOccurence);
-    })
-}
 
 function insertData(event_clone, eventOccurence) {
     event_clone.querySelector(".name").innerHTML = eventOccurence.event;
