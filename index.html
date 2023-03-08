@@ -1,47 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="css/style.css" />
-    <link rel="icon" type="image/x-icon" href="resources/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="resources/images/favicon.ico" />
     <title>SPD Albstadt</title>
-    <meta name="description" content="">
-</head>
+    <meta name="description" content="" />
+  </head>
 
-<body>
-<main>
-    <div class="content">
-
+  <body>
+    <main>
+      <div class="content">
         <div class="aktuelles menupunkt">
-            <div class="heading">
-                <h1>Aktuelles</h1>
-            </div>
-            <div class="inhalte">
-                <div class="mainpage">
-                    <div class="welcometxt">
-
-                        <p>Hier finden Sie alle neuen und relevanten Nachrichten von der SPD Albstadt und unserem Bundestagsabgeordneten Robin Mesarosch. Dazu alle zukünftigen Termine zu den Sie eingeladen sind. </p>
-                        <div class="news">
-                            <h3>Zu unserem Newsfeed</h3>
-                            <div class="preview_news">
-                                <figure id="figure">
-                                    <div class="preview_item">
-                                            <span>
-
-                                            </span>
-                                        <h3></h3>
-                                        <p></p>
-
-                                    </div>
-                                </figure>
-                            </div>
-                            <button type="submit" class="btn" id="toNews">Mehr lesen</button>
-                        </div>
-                    </div>
-                <!--    <div class="embed">
+          <div class="heading">
+            <h1>Aktuelles</h1>
+          </div>
+          <div class="inhalte">
+            <div class="mainpage">
+              <div class="welcometxt">
+                <p>
+                  Hier finden Sie alle neuen und relevanten Nachrichten von der
+                  SPD Albstadt und unserem Bundestagsabgeordneten Robin
+                  Mesarosch. Dazu alle zukünftigen Termine zu den Sie eingeladen
+                  sind. 
+                </p>
+                <div class="news">
+                  <h3>Zu unserem Newsfeed</h3>
+                  <div class="preview_news">
+                    <figure id="figure">
+                      <div class="preview_item">
+                        <span> </span>
+                        <h3></h3>
+                        <p></p>
+                      </div>
+                    </figure>
+                  </div>
+                  <button type="submit" class="btn" id="toNews">
+                    Mehr lesen
+                  </button>
+                </div>
+              </div>
+              <!--    <div class="embed">
                         &lt;!&ndash; Instagrambeitrag Start &ndash;&gt;
 
                        &lt;!&ndash; <div class="taggbox-container" style="width:100%;height:100%;overflow: auto;"><div class="taggbox-socialwall" data-wall-id="92879" data-tags="false" view-url="https://widget.taggbox.com/92879"></div><script src="https://widget.taggbox.com/embed.min.js" type="text/javascript"></script></div>&ndash;&gt;
@@ -49,809 +50,1406 @@
 
                     </div>-->
 
-                    <div class="termine">
-                        <h1>Anstehende SPD-Termine</h1>
-                        <div class="kalender">
-                            <div class="monate">
-                                <div class="bar">
-                                    <div class="header_kalender">Termine im <span id="kalendermonat">September</span></div>
-                                </div>
-                                <div class="eintraege" id="current">
-
-                                    <div class="eintrag">
-                                        <div class="informationen">
-                                            <div class="headline">
-                                                <div class="event"></div>
-                                                <div class="name"></div>
-                                            </div>
-                                            <div class="description">
-                                                <div class="text"></div>
-                                                <div class="details">
-                                                    <div class="time">
-                                                        <div class="icon">
-                                                            <img src="resources/images/calender.svg" alt="">
-                                                        </div>
-                                                        <p>
-
-                                                        </p>
-                                                    </div>
-                                                    <div class="place">
-                                                        <div class="icon">
-                                                            <img src="resources/images/location.png" alt="">
-                                                        </div>
-                                                        <p>
-
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="imageArea">
-                                            <img src="https://images.pexels.com/photos/5908320/pexels-photo-5908320.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load"
-                                                 alt="">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="monate">
-                                <div class="bar">
-                                    <div class="header_kalender">Anstehende SPD-Termine</div>
-                                </div>
-                                <div class="eintraege" id="next">
-
-                                </div>
-                            </div>
-                        </div>
+              <div class="termine">
+                <h1>Anstehende SPD-Termine</h1>
+                <div class="kalender">
+                  <div class="monate">
+                    <div class="bar">
+                      <div class="header_kalender">
+                        Termine im <span id="kalendermonat">September</span>
+                      </div>
                     </div>
-                </div>
-                <div class="newspage">
-                    <div class="beitrag">
-                        <div class="textArea" id="news_textarea">
-                            <div class="imgArea">
-                                <img src="resources/images/talgangbahn.jpg" alt="">
-                            </div>
-                            <h2>Zur Talgangbahn</h2>
-                            <div class="datum">21.05.2022</div>
-                            <div class="text">
-                                <br>
-                                <div class="main">
-                                    Für Albstadt und die Region ist die Talgangbahn der Einstieg in die Verkehrswende mit positiven Folgen für den Klimaschutz. Die Stadt Albstadt und wir als Gemeinderät*innen setzten am 21.07.22 ein Zeichen für die kommenden Generationen. Die SPD-Fraktion stimmte daher geschlossen dem vorzeitigen Bau der Talgangbahn zu.
+                    <div class="eintraege" id="current">
+                      <div class="eintrag">
+                        <div class="informationen">
+                          <div class="headline">
+                            <div class="event"></div>
+                            <div class="name"></div>
+                          </div>
+                          <div class="description">
+                            <div class="text"></div>
+                            <div class="details">
+                              <div class="time">
+                                <div class="icon">
+                                  <img
+                                    src="resources/images/calender.svg"
+                                    alt=""
+                                  />
                                 </div>
+                                <p></p>
+                              </div>
+                              <div class="place">
+                                <div class="icon">
+                                  <img
+                                    src="resources/images/location.png"
+                                    alt=""
+                                  />
+                                </div>
+                                <p></p>
+                              </div>
                             </div>
+                          </div>
                         </div>
+                        <div class="imageArea">
+                          <img
+                            src="https://images.pexels.com/photos/5908320/pexels-photo-5908320.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load"
+                            alt=""
+                          />
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                  <div class="monate">
+                    <div class="bar">
+                      <div class="header_kalender">Anstehende SPD-Termine</div>
+                    </div>
+                    <div class="eintraege" id="next"></div>
+                  </div>
                 </div>
+              </div>
             </div>
+            <div class="newspage">
+              <div class="beitrag">
+                <div class="textArea" id="news_textarea">
+                  <div class="imgArea">
+                    <img src="resources/images/talgangbahn.jpg" alt="" />
+                  </div>
+                  <h2>Zur Talgangbahn</h2>
+                  <div class="datum">21.05.2022</div>
+                  <div class="text">
+                    <br />
+                    <div class="main">
+                      Für Albstadt und die Region ist die Talgangbahn der
+                      Einstieg in die Verkehrswende mit positiven Folgen für den
+                      Klimaschutz. Die Stadt Albstadt und wir als
+                      Gemeinderät*innen setzten am 21.07.22 ein Zeichen für die
+                      kommenden Generationen. Die SPD-Fraktion stimmte daher
+                      geschlossen dem vorzeitigen Bau der Talgangbahn zu.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-
 
         <div class="partei menupunkt">
-            <div class="heading">
-                <h1>Partei</h1>
+          <div class="heading">
+            <h1>Partei</h1>
+          </div>
+          <div
+            class="areainfo"
+            id="parteiinfo"
+            style="text-align: justify; width: 100%"
+          >
+            Das sind die Mitglieder des SPD-Albstadt Vorstandes, die bei der
+            Jahreshauptversammlung im Juli 2022 gewählt wurden.  
+          </div>
+          <div class="inhalte">
+            <div class="menu" id="menu_partei">
+              <ul>
+                <li id="toPartei">Vorstand</li>
+                <li id="toSchwerpunkte">Schwerpunkte</li>
+                <li id="toAbgeordneter">Abgeordneter</li>
+              </ul>
             </div>
-            <div class="areainfo" id="parteiinfo" style="text-align: justify; width: 100%">
-                Das sind die Mitglieder des SPD-Albstadt Vorstandes, die bei der Jahreshauptversammlung im Juli 2022 gewählt wurden.  
+            <div class="grid" id="partei">
+              <div class="cell">
+                <img
+                  src="resources/images/timeline/MarianneRoth2015.jpg"
+                  alt=""
+                />
+                <div class="name_title">
+                  <div class="name">Marianne Roth</div>
+                  <div class="partei_title">Vorsitzende</div>
+                </div>
+                <div class="text">
+                  <h2>Mariane Roth</h2>
+                  <h3>Vorsitzende</h3>
+                  <div class="adresse">
+                    <div class="street"></div>
+                    <div class="place"></div>
+                  </div>
+                  <div class="kontaktieren">
+                    <div class="phone"></div>
+                    <div class="fax"></div>
+                    <div class="mail"></div>
+                  </div>
+                  <div class="funktion">
+                    <h3>Weitere Funktionen</h3>
+                    <div class="more"></div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="inhalte">
-                <div class="menu" id="menu_partei">
-                    <ul>
-                        <li id="toPartei">
-                            Vorstand
-                        </li>
-                        <li id="toSchwerpunkte">
-                            Schwerpunkte
-                        </li>
-                        <li id="toAbgeordneter">
-                            Abgeordneter
-                        </li>
 
-                    </ul>
+            <div class="schwerpunkte" id="schwerpunkte">
+              <div class="content_schwerpunkte">
+                <div class="message404">
+                  Dieser Teil befindet sich aktuell noch im Aufbau. <br />
+                  <h2>Schauen Sie bald vorbei!</h2>
                 </div>
-                <div class="grid" id="partei">
-                    <div class="cell">
-                        <img src="resources/images/timeline/MarianneRoth2015.jpg" alt="">
-                        <div class="name_title">
-                            <div class="name">Marianne Roth</div>
-                            <div class="partei_title">Vorsitzende</div>
-                        </div>
-                        <div class="text">
-                            <h2>Mariane Roth</h2>
-                            <h3>Vorsitzende</h3>
-                            <div class="adresse">
-                                <div class="street"></div>
-                                <div class="place"></div>
-                            </div>
-                            <div class="kontaktieren">
-                                <div class="phone"></div>
-                                <div class="fax"></div>
-                                <div class="mail"></div>
-                            </div>
-                            <div class="funktion">
-                                <h3>Weitere Funktionen</h3>
-                                <div class="more"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="schwerpunkte" id="schwerpunkte">
-                    <div class="content_schwerpunkte">
-                        <div class="message404">Dieser Teil befindet sich aktuell noch im Aufbau. <br> <h2>Schauen Sie bald vorbei!</h2></div>
-                    </div>
-                </div>
-
-                <div class="flexbox" id="abgeordneter">
-                    <div class="content_abgeordneter">
-                        <div class="container">
-                            <div class="gallery">
-                                <div class="previous"><p><</p></div>
-                                <figure>
-                                    <img src="resources/images/gallery/1.jpeg" alt="">
-                                </figure>
-                                <div class="next"><p>></p></div>
-                                <div class="displayname">
-                                    <a href="https://robin-mesarosch.de/">Robin Mesarosch</a>
-                                </div>
-                                <div class="links">
-                                  </div>
-                                <div class="information">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
+
+            <div class="flexbox" id="abgeordneter">
+              <div class="content_abgeordneter">
+                <div class="container">
+                  <div class="gallery">
+                    <div class="previous"><p><</p></div>
+                    <figure>
+                      <img src="resources/images/gallery/1.jpeg" alt="" />
+                    </figure>
+                    <div class="next"><p>></p></div>
+                    <div class="displayname">
+                      <a href="https://robin-mesarosch.de/">Robin Mesarosch</a>
+                    </div>
+                    <div class="links"></div>
+                    <div class="information"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-
-    <div class="fraktion menupunkt">
-        <div class="heading">
+        <div class="fraktion menupunkt">
+          <div class="heading">
             <h1>Fraktion</h1>
-        </div>
-        <div class="areainfo" id="fraktioninfo">
-            Das sind unsere Mitglieder, die erfolgreich bei den letzten Kommunalwahlen waren. Nun gestalten sie Politik vor Ort mit, entweder im Gemeinderat Albstadt oder im Kreistag Zollernalb. Wollt Ihr mehr zu unserer Arbeit wissen, dann schaut bei der Rubrik „Neues aus der Fraktion“ vorbei. 
-        </div>
-        <div class="inhalte">
+          </div>
+          <div class="areainfo" id="fraktioninfo">
+            Das sind unsere Mitglieder, die erfolgreich bei den letzten
+            Kommunalwahlen waren. Nun gestalten sie Politik vor Ort mit,
+            entweder im Gemeinderat Albstadt oder im Kreistag Zollernalb. Wollt
+            Ihr mehr zu unserer Arbeit wissen, dann schaut bei der Rubrik „Neues
+            aus der Fraktion“ vorbei. 
+          </div>
+          <div class="inhalte">
             <div class="menu" id="menu_fraktion">
-                <ul>
-                    <li id="toMand">
-                        Mandatsträger
-                    </li>
-                    <li id="toNewsFraktion">
-                        Neues der Fraktion
-                    </li>
-                </ul>
+              <ul>
+                <li id="toMand">Mandatsträger</li>
+                <li id="toNewsFraktion">Neues der Fraktion</li>
+              </ul>
             </div>
             <div class="content_personen">
-                <div class="flexbox">
-                    <div class="gemeinderate subinhalt">
-                        <h2>Gemeinderäte</h2><br>
-                        <div class="contents">
-                            <div class="cell">
-                                <div class="imgArea"><img src="resources/images/roth_marianne_TM2_2661_rgb.jpg" alt=""></div>
-                                <div class="text">
-                                    <h2>Marianne Roth<br><span>Arzthelferin, verheiratet, 2 Kinder und „Grandma“ von 5 Enkeln</span></h2>
-                                    <div class="adresse">
-                                        Flandernstr. 35<br>
-                                        72458 Albstadt-Ebingen<br>
-                                    </div>
-                                    <div class="kontaktieren">
-                                        E-Mail: jumroth@t-online.de
-                                    </div>
-                                    <div class="funktion">
-                                        <!-- <h3>Weitere Funktionen</h3> -->
-                                        <p>Ein solidarisches und gerechtes Zusammenleben aller Albstädter Bürger liegt mir besonders am Herzen. Als Stadträtin seit 2003, habe ich mich mit Leidenschaft für die Belange der Bürger eingebracht. Dazu will auch weiterhin das mir entgegen gebrachte Wahlvertrauen konstruktiv und engagiert zum Wohle aller Bürger einsetzen. Nach wie vor halte ich mich an den Leitsatz: <span>Wer den Bürger verstehen will, muss ihm auf Augenhöhe begegnen</span>.
-                                            <br><br>
-                                        <ul>
-                                            <li>Ehrenamtliche Vertreterin des Herrn Oberbürgermeisters in Albstadt </li>
-                                            <li>Mitglied im Ältestenrat des Gemeinderates Albstadt </li>
-                                            <li>Mitglied im Ausschuss für Soziales, Kultur, Schule und Sport</li>
-                                            <li>Aufsichtsrätin der asWohnbau, Beiratsvorsitzende der VHS</li>
-                                        </ul>
-                                        <br>
-                                        <ul>
-                                            <li>SPD Gemeinderätin von Albstadt </li>
-                                            <li>Vorsitzende der SPD Albstadt </li>
-                                            <li>Vorsitzende der Quilting Ladies e.V.</li>
-                                            <li>Mitglied im ökomenischen Roßberg-Verein </li>
-                                            <li>Ehrenamtliche Tätigkeit im IntegrationsForum der Stadt Albstadt</li>
-                                            <li>Mitglied im Migration Beirat des Zollernalbkreises</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="cell">
-                                <div class="imgArea"><img src="resources/images/frohme_martin_TM2_2426_rgb.jpg" alt=""></div>
-                                <div class="text">
-                                    <h2>Martin Frohme<br><span>Sonderschullehrer i.R. </span></h2>
-                                    <div class="adresse">
-                                        Tieringer Str. 35<br>
-                                        72459 Albstadt-Laufen<br>
-                                    </div>
-                                    <div class="kontaktieren">
-                                        E-Mail: MartinFrohme@t-online.de
-                                    </div>
-                                    <div class="funktion">
-                                        <!-- <h3>Weitere Funktionen</h3> -->
-                                        <p>Seit 42 Jahren bin ich Mitglied des Gemeinderats Albstadt. Im Technik und Umweltausschuss setze ich mich seit Jahren für die Belange des Umweltschutzes - Energieeinsparung der städtischen Immobilien, möglichst geringer Flächenverbrauch - Innen- vor Außenbebauung und Fotovoltaik auf möglichst vielen Immobilien und Freiflächen. Der Mensch steht im Hinblick auf Landschaftsschutz und Umweltschutz immer an vorderster Stelle. Zum Beispiel für die Lärmbelästigung und Abgasbelastung in der Ortsdurchfahrt Lautlingen, hat eine Ortsumfahrung, für die ich seit mehreren Jahrzehnten gekämpft habe, erste Priorität.
-
-                                            Im Aufsichtsrat der Albstadtwerke und der Ferngasgesellschaft Albstadt-Gammertingen engagiere ich mich für eine sichere Wasser- und Energieversorgung, was in den letzten Monaten immer wichtiger geworden ist.
-
-                                            Als dienstältester Gemeinderat bin ich stets ein offener Ansprechpartner gewesen, der zuhören kann und die Anliegen der Mitbürgerinnen und Mitbürger tatkräftig vertritt.
-                                            <br><br>
-                                        <ul>
-                                            <li>Mitglied im Technik & Umwelt Ausschuss</li>
-                                            <li>Aufsichtsratsmitglied bei den Albstadtwerken </li>
-                                            <li>Ferngasgesellschaft Albstadt-Gammertingen </li>
-                                            <li>Dienstältester Gemeinderat</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="cell">
-                                <div class="imgArea"><img src="resources/images/herter_lara_TM2_2614_rgb.jpg" alt=""></div>
-                                <div class="text">
-                                    <h2>Lara Herter<br><span>Duale Studentin</span></h2>
-                                    <div class="adresse">
-                                        Albert-Sauter-Straße 14<br>
-                                        72461 Albstadt-Onstmettingen<br>
-                                    </div>
-                                    <div class="kontaktieren">
-                                        E-Mail: lara-herter@gmx.de
-                                    </div>
-                                    <div class="funktion">
-                                        <!-- <h3>Weitere Funktionen</h3> -->
-                                        <p>Politik wird halt in Stuttgart und Berlin gemacht? Von wegen! Was zu verändern geht am besten direkt vor der Haustür, hier in Albstadt. Deshalb bin ich leidenschaftlich gerne Gemeinderätin, setze mich für attraktive Innenstädte und Ortskerne, für ein buntes Kulturleben, für gute Bus- und Bahnverbindungen ein. Als eine der jüngsten Kommunalpolitikerinnen liegt es mir am Herzen, dass sich in Albstadt alle Generationen wohlfühlen.
-                                            <br> <br>
-                                        <ul>
-                                            <li>Mitglied im Ausschuss für Technik und Umwelt</li>
-                                            <li>Mitglied im Beirat der Musik- und Kunstschule</li>
-                                            <li>Mitglied im Arbeitskreis Städtepartnerschaft mit Chambéry</li>
-                                            <li>Jüngstes GR-Mitglied </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="cell">
-                                <div class="imgArea"><img src="resources/images/hipp_frank_TM2_2631_rgb.jpg" alt=""></div>
-                                <div class="text">
-                                    <h2>Frank Hipp<br>
-                                        <span>Fachkrankenpfleger und stv. Gesamtbetriebsratsvorsitzender Zollernalb Klinikum</span>
-                                    </h2>
-                                    <div class="adresse">
-                                        Am Westbahnhof 6<br>
-                                        72458 Albstadt-Ebingen<br>
-                                    </div>
-                                    <div class="kontaktieren">
-                                        E-Mail: f.hipp@t-online.de
-                                    </div>
-                                    <div class="funktion">
-                                        <!-- <h3>Weitere Funktionen</h3> -->
-                                        <p>Seit 2007 Stadtrat in Albstadt und seit 2005 SPD-Mitglied, damalige Motivation das klare Nein von Kanzler Schröder zum Irakkrieg. <br>
-
-                                            Was hat mich bewogen sich kommunalpolitisch zu engagieren? Zum einen hat mich Politik und auch Geschichte schon seit früher Kindheit sehr interessiert. Die Ära Helmut Schmidt war für mich persönlich sehr prägnant und auch die 70 und frühen 80 Jahre mit der Entspannungspolitik und der Krönung der Widervereinigung von Gesamtdeutschland. Seit dem Berufsleben natürlich die deutsche Gesundheitspolitik und als Gewerkschaftsmitglied bei Verdi sind mir die Arbeitsbedingungen meiner Kolleginnen sehr wichtig. Zum anderen natürlich die Verbindung zur Heimatstadt und die Möglichkeit gestalterisch tätig zu werden. Die Arbeit in unserer Fraktion macht sehr viel Freunde. <br>
-
-                                            In meiner Freizeit bringe ich mich im Freizeitclub Handicap Albstadt mit ein und kann hier sinnvolle Dienste für Menschen mit Handicap leisten.
-                                            <br><br>
-                                        <ul>
-                                            <li>Mitglied im Finanz- und Verwaltungsausschuss</li>
-                                            <li>Abwasserverband "Oberes Eyachtal"</li>
-                                            <li>Gemeinsamer Ausschuss für die vereinbarte Verwaltungsgemeinschaft Albstadt/Bitz </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
+              <div class="flexbox">
+                <div class="gemeinderate subinhalt">
+                  <h2>Gemeinderäte</h2>
+                  <br />
+                  <div class="contents">
+                    <div class="cell">
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/roth_marianne_TM2_2661_rgb.jpg"
+                          alt=""
+                        />
+                      </div>
+                      <div class="text">
+                        <h2>
+                          Marianne Roth<br /><span
+                            >Arzthelferin, verheiratet, 2 Kinder und „Grandma“
+                            von 5 Enkeln</span
+                          >
+                        </h2>
+                        <div class="adresse">
+                          Flandernstr. 35<br />
+                          72458 Albstadt-Ebingen<br />
                         </div>
-
-                    </div>
-                    <div class="kreisraete subinhalt">
-                        <h2>Kreisrat</h2><br>
-                        <div class="contents">
-                            <div class="cell">
-                                <div class="imgArea"><img src="resources/images/frohme_martin_TM2_2426_rgb.jpg" alt=""></div>
-                                <div class="text">
-                                    <!-- <img src="resources/images/Martin Frohme.JPG"> -->
-                                    <h2>Martin Frohme<br><span>Sonderschullehrer i.R. </span></h2>
-                                    <div class="adresse">
-                                        Tieringer Str. 35<br>
-                                        72459 Albstadt-Laufen<br>
-                                    </div>
-                                    <div class="kontaktieren">
-                                        E-Mail: MartinFrohme@t-online.de
-                                    </div>
-                                    <div class="funktion">
-                                        <!-- <h3>Weitere Funktionen</h3> -->
-                                        <p>Seit 33 Jahren bin ich Mitglied des Kreistags im Wahlkreis Albstadt.
-
-                                            Im Technik und Umweltausschuss setze ich mich besonders für die Belange des Umweltschutzes ein, sei es bei der Abfallbeseitigung Müllvermeidung und dem Ausbau der Wertstoffzentren. Die Umweltbelastung der Zementfabrik Holcim habe ich mehrfach wegen veralteter Abgasfilter beanstandet. Ebenso trete ich für den Ausbau der Regionalstadtbahn, der Zollernalbbahn mit der Talgangbahn ein. Hier kann ich meine Ideen auch als Mitglied im Zweckverband Regionalstadtbahn einbringen.
-
-                                            Im Aufsichtsrat des Zollernalb Klinikums engagiere ich mich seit langem für die Zentralklinik zwischen den bevölkerungsreichsten Mittelzentren Albstadt und Balingen. Dort bin ich auch im Bauausschuss der Zollernalbklinik.
-
-                                            Seit Beginn dieser Wahlperiode 2019 bin ich Fraktionsvorsitzender der SPD im Kreistag
-                                            <br><br>
-
-                                        <ul>
-                                            <li>Fraktionsvorsitzender seit 15.07.2019 </li>
-                                            <li>Mitglied im Ausschuss für Umwelt und Technik </li>
-                                            <li>Mitglied im Aufsichtsrat des Zollernalb Klinikums </li>
-                                            <li>Mitglied im Bauausschuss der Zollernalb Klinikums </li>
-                                            <li>Mitglied im Zweckverband Regionalstadtbahn </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="kontaktieren">
+                          E-Mail: jumroth@t-online.de
                         </div>
+                        <div class="funktion">
+                          <!-- <h3>Weitere Funktionen</h3> -->
+                          <p>
+                            Ein solidarisches und gerechtes Zusammenleben aller
+                            Albstädter Bürger liegt mir besonders am Herzen. Als
+                            Stadträtin seit 2003, habe ich mich mit Leidenschaft
+                            für die Belange der Bürger eingebracht. Dazu will
+                            auch weiterhin das mir entgegen gebrachte
+                            Wahlvertrauen konstruktiv und engagiert zum Wohle
+                            aller Bürger einsetzen. Nach wie vor halte ich mich
+                            an den Leitsatz:
+                            <span
+                              >Wer den Bürger verstehen will, muss ihm auf
+                              Augenhöhe begegnen</span
+                            >. <br /><br />
+                          </p>
+
+                          <ul>
+                            <li>
+                              Ehrenamtliche Vertreterin des Herrn
+                              Oberbürgermeisters in Albstadt
+                            </li>
+                            <li>
+                              Mitglied im Ältestenrat des Gemeinderates Albstadt
+                            </li>
+                            <li>
+                              Mitglied im Ausschuss für Soziales, Kultur, Schule
+                              und Sport
+                            </li>
+                            <li>
+                              Aufsichtsrätin der asWohnbau, Beiratsvorsitzende
+                              der VHS
+                            </li>
+                          </ul>
+                          <br />
+                          <ul>
+                            <li>SPD Gemeinderätin von Albstadt</li>
+                            <li>Vorsitzende der SPD Albstadt</li>
+                            <li>Vorsitzende der Quilting Ladies e.V.</li>
+                            <li>Mitglied im ökomenischen Roßberg-Verein</li>
+                            <li>
+                              Ehrenamtliche Tätigkeit im IntegrationsForum der
+                              Stadt Albstadt
+                            </li>
+                            <li>
+                              Mitglied im Migration Beirat des Zollernalbkreises
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
+                    <div class="cell">
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/frohme_martin_TM2_2426_rgb.jpg"
+                          alt=""
+                        />
+                      </div>
+                      <div class="text">
+                        <h2>
+                          Martin Frohme<br /><span
+                            >Sonderschullehrer i.R.
+                          </span>
+                        </h2>
+                        <div class="adresse">
+                          Tieringer Str. 35<br />
+                          72459 Albstadt-Laufen<br />
+                        </div>
+                        <div class="kontaktieren">
+                          E-Mail: MartinFrohme@t-online.de
+                        </div>
+                        <div class="funktion">
+                          <!-- <h3>Weitere Funktionen</h3> -->
+                          <p>
+                            Seit 42 Jahren bin ich Mitglied des Gemeinderats
+                            Albstadt. Im Technik und Umweltausschuss setze ich
+                            mich seit Jahren für die Belange des Umweltschutzes
+                            - Energieeinsparung der städtischen Immobilien,
+                            möglichst geringer Flächenverbrauch - Innen- vor
+                            Außenbebauung und Fotovoltaik auf möglichst vielen
+                            Immobilien und Freiflächen. Der Mensch steht im
+                            Hinblick auf Landschaftsschutz und Umweltschutz
+                            immer an vorderster Stelle. Zum Beispiel für die
+                            Lärmbelästigung und Abgasbelastung in der
+                            Ortsdurchfahrt Lautlingen, hat eine Ortsumfahrung,
+                            für die ich seit mehreren Jahrzehnten gekämpft habe,
+                            erste Priorität. Im Aufsichtsrat der Albstadtwerke
+                            und der Ferngasgesellschaft Albstadt-Gammertingen
+                            engagiere ich mich für eine sichere Wasser- und
+                            Energieversorgung, was in den letzten Monaten immer
+                            wichtiger geworden ist. Als dienstältester
+                            Gemeinderat bin ich stets ein offener
+                            Ansprechpartner gewesen, der zuhören kann und die
+                            Anliegen der Mitbürgerinnen und Mitbürger tatkräftig
+                            vertritt. <br /><br />
+                          </p>
+
+                          <ul>
+                            <li>Mitglied im Technik & Umwelt Ausschuss</li>
+                            <li>
+                              Aufsichtsratsmitglied bei den Albstadtwerken
+                            </li>
+                            <li>Ferngasgesellschaft Albstadt-Gammertingen</li>
+                            <li>Dienstältester Gemeinderat</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="cell">
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/herter_lara_TM2_2614_rgb.jpg"
+                          alt=""
+                        />
+                      </div>
+                      <div class="text">
+                        <h2>Lara Herter<br /><span>Duale Studentin</span></h2>
+                        <div class="adresse">
+                          Albert-Sauter-Straße 14<br />
+                          72461 Albstadt-Onstmettingen<br />
+                        </div>
+                        <div class="kontaktieren">
+                          E-Mail: lara-herter@gmx.de
+                        </div>
+                        <div class="funktion">
+                          <!-- <h3>Weitere Funktionen</h3> -->
+                          <p>
+                            Politik wird halt in Stuttgart und Berlin gemacht?
+                            Von wegen! Was zu verändern geht am besten direkt
+                            vor der Haustür, hier in Albstadt. Deshalb bin ich
+                            leidenschaftlich gerne Gemeinderätin, setze mich für
+                            attraktive Innenstädte und Ortskerne, für ein buntes
+                            Kulturleben, für gute Bus- und Bahnverbindungen ein.
+                            Als eine der jüngsten Kommunalpolitikerinnen liegt
+                            es mir am Herzen, dass sich in Albstadt alle
+                            Generationen wohlfühlen. <br />
+                            <br />
+                          </p>
+
+                          <ul>
+                            <li>
+                              Mitglied im Ausschuss für Technik und Umwelt
+                            </li>
+                            <li>
+                              Mitglied im Beirat der Musik- und Kunstschule
+                            </li>
+                            <li>
+                              Mitglied im Arbeitskreis Städtepartnerschaft mit
+                              Chambéry
+                            </li>
+                            <li>Jüngstes GR-Mitglied</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="cell">
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/hipp_frank_TM2_2631_rgb.jpg"
+                          alt=""
+                        />
+                      </div>
+                      <div class="text">
+                        <h2>
+                          Frank Hipp<br />
+                          <span
+                            >Fachkrankenpfleger und stv.
+                            Gesamtbetriebsratsvorsitzender Zollernalb
+                            Klinikum</span
+                          >
+                        </h2>
+                        <div class="adresse">
+                          Am Westbahnhof 6<br />
+                          72458 Albstadt-Ebingen<br />
+                        </div>
+                        <div class="kontaktieren">
+                          E-Mail: f.hipp@t-online.de
+                        </div>
+                        <div class="funktion">
+                          <!-- <h3>Weitere Funktionen</h3> -->
+                          <p>
+                            Seit 2007 Stadtrat in Albstadt und seit 2005
+                            SPD-Mitglied, damalige Motivation das klare Nein von
+                            Kanzler Schröder zum Irakkrieg. <br />
+
+                            Was hat mich bewogen sich kommunalpolitisch zu
+                            engagieren? Zum einen hat mich Politik und auch
+                            Geschichte schon seit früher Kindheit sehr
+                            interessiert. Die Ära Helmut Schmidt war für mich
+                            persönlich sehr prägnant und auch die 70 und frühen
+                            80 Jahre mit der Entspannungspolitik und der Krönung
+                            der Widervereinigung von Gesamtdeutschland. Seit dem
+                            Berufsleben natürlich die deutsche
+                            Gesundheitspolitik und als Gewerkschaftsmitglied bei
+                            Verdi sind mir die Arbeitsbedingungen meiner
+                            Kolleginnen sehr wichtig. Zum anderen natürlich die
+                            Verbindung zur Heimatstadt und die Möglichkeit
+                            gestalterisch tätig zu werden. Die Arbeit in unserer
+                            Fraktion macht sehr viel Freunde. <br />
+
+                            In meiner Freizeit bringe ich mich im Freizeitclub
+                            Handicap Albstadt mit ein und kann hier sinnvolle
+                            Dienste für Menschen mit Handicap leisten.
+                            <br /><br />
+                          </p>
+
+                          <ul>
+                            <li>
+                              Mitglied im Finanz- und Verwaltungsausschuss
+                            </li>
+                            <li>Abwasserverband "Oberes Eyachtal"</li>
+                            <li>
+                              Gemeinsamer Ausschuss für die vereinbarte
+                              Verwaltungsgemeinschaft Albstadt/Bitz
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+                <div class="kreisraete subinhalt">
+                  <h2>Kreisrat</h2>
+                  <br />
+                  <div class="contents">
+                    <div class="cell">
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/frohme_martin_TM2_2426_rgb.jpg"
+                          alt=""
+                        />
+                      </div>
+                      <div class="text">
+                        <!-- <img src="resources/images/Martin Frohme.JPG"> -->
+                        <h2>
+                          Martin Frohme<br /><span
+                            >Sonderschullehrer i.R.
+                          </span>
+                        </h2>
+                        <div class="adresse">
+                          Tieringer Str. 35<br />
+                          72459 Albstadt-Laufen<br />
+                        </div>
+                        <div class="kontaktieren">
+                          E-Mail: MartinFrohme@t-online.de
+                        </div>
+                        <div class="funktion">
+                          <!-- <h3>Weitere Funktionen</h3> -->
+                          <p>
+                            Seit 33 Jahren bin ich Mitglied des Kreistags im
+                            Wahlkreis Albstadt. Im Technik und Umweltausschuss
+                            setze ich mich besonders für die Belange des
+                            Umweltschutzes ein, sei es bei der Abfallbeseitigung
+                            Müllvermeidung und dem Ausbau der Wertstoffzentren.
+                            Die Umweltbelastung der Zementfabrik Holcim habe ich
+                            mehrfach wegen veralteter Abgasfilter beanstandet.
+                            Ebenso trete ich für den Ausbau der
+                            Regionalstadtbahn, der Zollernalbbahn mit der
+                            Talgangbahn ein. Hier kann ich meine Ideen auch als
+                            Mitglied im Zweckverband Regionalstadtbahn
+                            einbringen. Im Aufsichtsrat des Zollernalb Klinikums
+                            engagiere ich mich seit langem für die Zentralklinik
+                            zwischen den bevölkerungsreichsten Mittelzentren
+                            Albstadt und Balingen. Dort bin ich auch im
+                            Bauausschuss der Zollernalbklinik. Seit Beginn
+                            dieser Wahlperiode 2019 bin ich
+                            Fraktionsvorsitzender der SPD im Kreistag
+                            <br /><br />
+                          </p>
+
+                          <ul>
+                            <li>Fraktionsvorsitzender seit 15.07.2019</li>
+                            <li>
+                              Mitglied im Ausschuss für Umwelt und Technik
+                            </li>
+                            <li>
+                              Mitglied im Aufsichtsrat des Zollernalb Klinikums
+                            </li>
+                            <li>
+                              Mitglied im Bauausschuss der Zollernalb Klinikums
+                            </li>
+                            <li>Mitglied im Zweckverband Regionalstadtbahn</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="content_ausfraktion">
-                <div class="flexbox">
-                    <div class="heading-news" style="grid-area: heading-news"><h2>News</h2></div>
-                    <div class="heading-downloads" style="grid-area: heading-downloads"><h2>Downloads</h2></div>
-                    <div class="news" style="grid-area: news" id="fraktion_newspage">
-                        <div class="beitrag">
-                            <div class="textArea" id="news_textarea">
-                                <div class="imgArea">
-                                    <img src="resources/images/talgangbahn.jpg" alt="">
-
-                                </div>
-                                <h2>Zur Talgangbahn</h2>
-                                <div class="datum">21.05.2022</div>
-                                <div class="text">
-                                    <br>
-                                    <div class="main">
-                                        Für Albstadt und die Region ist die Talgangbahn der Einstieg in die Verkehrswende mit positiven Folgen für den Klimaschutz. Die Stadt Albstadt und wir als Gemeinderät*innen setzten am 21.07.22 ein Zeichen für die kommenden Generationen. Die SPD-Fraktion stimmte daher geschlossen dem vorzeitigen Bau der Talgangbahn zu.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="downloads" style="grid-area: downloads">
-                        <ul>
-                            <li><a href="resources/Haushaltsrede für 2023.pdf" target="_blank" rel="noopener noreferrer">Haushaltsrede 2023</a></li>
-                            <li><a href="resources/Haushaltsrede für 2022.pdf" target="_blank" rel="noopener noreferrer">Haushaltsrede 2022</a></li>
-                            <li><a href="resources/Haushaltsrede für 2021.pdf" target="_blank" rel="noopener noreferrer">Haushaltsrede 2021</a></li>
-                            <li><a href="resources/Haushaltsrede für 2020.pdf" target="_blank" rel="noopener noreferrer">Haushaltsrede 2020</a></li>
-                            <li><a href="resources/Haushaltsrede für 2019.pdf" target="_blank" rel="noopener noreferrer">Haushaltsrede 2019</a></li>
-                            <li><a href="resources/Haushaltsrede für 2018.pdf" target="_blank" rel="noopener noreferrer">Haushaltsrede 2018</a></li>
-                            <li><a href="resources/Haushaltsrede für 2017.pdf" target="_blank" rel="noopener noreferrer">Haushaltsrede 2017</a></li>
-                            <li><a href="resources/Haushaltsrede für 2016.pdf" target="_blank" rel="noopener noreferrer">Haushaltsrede 2016</a></li>
-                        </ul>
-                    </div>
+              <div class="flexbox">
+                <div class="heading-news" style="grid-area: heading-news">
+                  <h2>News</h2>
                 </div>
+                <div
+                  class="heading-downloads"
+                  style="grid-area: heading-downloads"
+                >
+                  <h2>Downloads</h2>
+                </div>
+                <div
+                  class="news"
+                  style="grid-area: news"
+                  id="fraktion_newspage"
+                >
+                  <div class="beitrag">
+                    <div class="textArea" id="news_textarea">
+                      <div class="imgArea">
+                        <img src="resources/images/talgangbahn.jpg" alt="" />
+                      </div>
+                      <h2>Zur Talgangbahn</h2>
+                      <div class="datum">21.05.2022</div>
+                      <div class="text">
+                        <br />
+                        <div class="main">
+                          Für Albstadt und die Region ist die Talgangbahn der
+                          Einstieg in die Verkehrswende mit positiven Folgen für
+                          den Klimaschutz. Die Stadt Albstadt und wir als
+                          Gemeinderät*innen setzten am 21.07.22 ein Zeichen für
+                          die kommenden Generationen. Die SPD-Fraktion stimmte
+                          daher geschlossen dem vorzeitigen Bau der Talgangbahn
+                          zu.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="downloads" style="grid-area: downloads">
+                  <ul>
+                    <li>
+                      <a
+                        href="resources/Haushaltsrede für 2023.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >Haushaltsrede 2023</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="resources/Haushaltsrede für 2022.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >Haushaltsrede 2022</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="resources/Haushaltsrede für 2021.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >Haushaltsrede 2021</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="resources/Haushaltsrede für 2020.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >Haushaltsrede 2020</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="resources/Haushaltsrede für 2019.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >Haushaltsrede 2019</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="resources/Haushaltsrede für 2018.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >Haushaltsrede 2018</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="resources/Haushaltsrede für 2017.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >Haushaltsrede 2017</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="resources/Haushaltsrede für 2016.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >Haushaltsrede 2016</a
+                      >
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
-    </div>
 
-
-
-
-    <div class="historie menupunkt">
-        <div class="heading">
+        <div class="historie menupunkt">
+          <div class="heading">
             <h1>Historie</h1>
-        </div>
-        <div class="areainfo" id="historieinfo" style="text-align: justify; width: 100%">
-            In den ehemals selbstständigen Orten Albstadts ist die Sozialdemokratie seit den 1860er Jahren urkundlich erwähnt. Auf diese traditionsreiche Geschichte der SPD in unserer Stadt sind wir stolz. Viel wurde schon durch uns erreichen und bewegen noch mehr möchten wir umsetzen. Im Folgenden können Ihr entweder die gesamte Geschichte unsere Partei am Stück mit all ihren Höhen und Tiefen nachlesen oder gezielte bestimmte Zeiträume auswählen.
-        </div>
-        <div class="inhalte">
+          </div>
+          <div
+            class="areainfo"
+            id="historieinfo"
+            style="text-align: justify; width: 100%"
+          >
+            In den ehemals selbstständigen Orten Albstadts ist die
+            Sozialdemokratie seit den 1860er Jahren urkundlich erwähnt. Auf
+            diese traditionsreiche Geschichte der SPD in unserer Stadt sind wir
+            stolz. Viel wurde schon durch uns erreichen und bewegen noch mehr
+            möchten wir umsetzen. Im Folgenden können Ihr entweder die gesamte
+            Geschichte unsere Partei am Stück mit all ihren Höhen und Tiefen
+            nachlesen oder gezielte bestimmte Zeiträume auswählen.
+          </div>
+          <div class="inhalte">
             <div class="textarea">
-                <div class="container">
-
-                    <div class="absatz">
-                        <h3 class="text_heading">1890 bis 1918: Gründung der ersten SPD-Ortsvereine<div class="arrow"><</div></h3>
-                        <p class="textcontent">
-                            In der Phase der Liberalisierung nach Abschaffung der restriktiven Sozialistengesetze (Ein Verbot auf Reichsebene von Sozialdemokraten), wurde 1890 in Ebingen und Tailfingen Ortsvereine gegründet. In den kommenden Jahren wurden auch Ortsvereine der SPD in den Gemeinden Pfeffingen, Onstmettingen und Truchtelfingen gegründet. <br> <br> Nur zu den Reichstagswahlen galt das allgemeine Wahlrecht für Männer, auf Landes- und Ortsebene waren das undemokratische Wahlrecht gebunden an die finanziellen Verhältnisse der Bürger. Trotzdem errangen die Ortsvereine des jetzigen Stadtverbandes Albstadt, welche vorrangig von der Arbeiterschaft gewählt wurden, ab 1909 zahlreiche Wahlerfolge und Mandate. Das Ende des Kaiserreiches und die erstmalige Einführung einer demokratischen Republik in Deutschland ist der große Verdienst der SPD. Grundrechte, Frauenwahlrecht waren prägende Bestandteile der Weimarer Republik und der Sozialdemokratie.
-                        </p>
-                        <div class="imgArea">
-                            <figure>
-                                <img src="resources/images/1/1.jpg" alt="" srcset="">
-                                <img src="resources/images/1/2.jpg" alt="" srcset="">
-                            </figure>
-                        </div>
-                    </div>
-
-                    <div class="absatz">
-                        <h3 class="text_heading">1919 bis 1945: Sozialdemokraten und Sozialdemokratinnen in Weimarer Republik und anschließende Verfolgung  <div class="arrow"><</div></h3>
-                        <p class="textcontent">
-                            Die SPD in den heutigen Stadtteilen Albstadts beschritt nach dem Ersten Weltkrieg und der überstanden Hyperinflation eine gute und fortschrittliche Zeit. Allerdings änderte sich das, nachdem die sogenannten „Goldenen Zwanziger“ 1928 endeten. <br> Die Weltwirtschaftskrise veränderte das Wahlverhalten. Die hohe Arbeitslosigkeit und Armut wurden ein Nährboden für Feinde der Demokratie und der Menschlichkeit. Das spiegelte sich auch beim Wahlverhalten nach 1930 ab.  <br><img src="resources/images/diagram.png" alt=""><br> Das Diagramm veranschaulicht dies mit der Veränderung bei den Wahlergebnissen von den Reichstagswahlen 1928 zu den Reichstagswahlen im Juli 1932. Die gemäßigten und demokratischen Parteien wie die konservative Zentrumspartei, die nationalliberale Deutschen Volkspartei (DVP), die linksliberalen Deutsche Demokratische Partei (DDP) und die SPD verloren zusammen in diesem Zeitraum mehr als ein Drittel ihrer Wähler. Die SPD allein verlor auch ungefähr ein Drittel ihrer Stimmen. <br> <br>Die Parteien am Rande des politischen Spektrums bekamen dagegen einen enormen Zuwachs im gleichen Zeitraum. Die Kommunistische Partei Deutschlands (KPD) steigerte ihren Stimmenanteil. Ebenso wie der Rechtsblock, bestehend aus Deutschnationaler Volkspartei (DNVP), welche sich immer mehr nach rechts außen orientierte und der NSDAP. Zusammen konnten sie ihren Wert mehr als verdoppelten. <br> <br> Erwähnenswert ist, dass die Nationalsozialisten auf kommunaler Ebene nicht an die starken Ergebnisse der Reichstagswahlen anknüpfen konnten. Z.B. bei den Kommunalwahlen im Dezember 1931 schaffte es „nur“ ein Nationalsozialist in den Ebinger Gemeinderat. Bis zur Machtergreifung gab es in keinem Gemeinderat eines Albstädter Teilortes eine Mehrheit für den Rechtsblock. Dem Aufstieg der Nationalsozialisten mit der Machtergreifung im Januar 1933 setzte vor allem der SPD-Widerstand entgegen. Sie war die einzige demokratische Partei, welche das Ermächtigungsgesetz ablehnte. <br><br> Angesichts der anfänglichen Scheindemokratie traten bei der zweiten Gemeinderatsitzung in Ebingen die SPD-Räte Zahner, Stoll, Hoch und Fuß jedoch nicht mehr an. In einem Brief an den Vorsitzenden teilten sie mit, dass sie ihre Mandate niederlegen. Das Ende der Demokratie und der Freiheit erreichte auch die kommunale Ebene. <br><br> Die Diktatur der Faschisten hatte zur Folge, dass die SPD verboten wurde. Daraufhin wurden die führenden lokalen Sozialdemokraten, im neu entstandenen Konzentrationslager Heuberg bei Stetten am kalten Markt, inhaftiert. Ein Paradebeispiel von Willkür und Bruch jeglicher Rechtsstaatsnorm durch das Regime der menschenverachtenden Nationalsozialisten. Manche wurden nach Monaten entlassen, andere wiederum in andere Lager verschleppt, z. B. in das Konzentrationslager "Oberer Kuhberg" in Ulm.
-                        </p>
-                        <div class="imgArea">
-                            <figure>
-                                <img src="resources/images/2/1.JPG" alt="" srcset="">
-                                <img src="resources/images/2/2.JPG" alt="" srcset="">
-                                <img src="resources/images/2/3.jpg" alt="" srcset="">
-                                <img src="resources/images/2/4.jpg" alt="" srcset="">
-                            </figure>
-                        </div>
-                    </div>
-
-                    <div class="absatz">
-                        <h3 class="text_heading">1946 bis 1973: Wiedergründung der SPD <div class="arrow"><</div></h3>
-                        <p class="textcontent">
-                            Die Siegermächte ermöglichten erste freie Wahlen auf kommunaler Ebene 1946. Die Ortsvereine der SPD wurden 1946 wiedergegründet. <br><br> Bis zur Gründung von Albstadt im Jahre 1975 durchliefen die Ortsvereine der SPD und ihre Mandatsträger eine wechselvolle Geschichte, auf die wir nur auszugsweise eingehen können. <br><br> Von 1959 bis 1968 war die SPD die stärkste Gemeinderatsfraktion in Ebingen. In Talfingen etablierte sich die SPD zur selben Zeit zur stärksten Kraft im Rathaus und blieb noch länger größte Fraktion bis zum Jahr 1971. <br> Horst Kiesecker, der zwischen 1966 und 1974 Bürgermeister von Talfingen war, vertrat Stadt und Kreis in vier Legislaturperioden im Landtag von Baden-Württemberg. Kiesecker wirkte federführend im Wirtschafts- und Finanzausschuss. Kiesecker war von 1971 bis 1999 im Kreistag und viele Jahre Fraktionsvorsitzender der SPD. <br><br>Leitthema in diesen 25 Jahren war die Ausgestaltung des Sozialstaats in den Gemeinden mit Wohnungsbau, Kindergärten und Schulen, auch unter dem Aspekt der Bildungsgerechtigkeit.<br> Zur Standortsicherung der heimischen Industrie und der Arbeitsplätze forderte die SPD bessere Verkehrsanbindungen.
-                        </p>
-                        <div class="imgArea">
-
-                            <figure>
-                                <img src="resources/images/3/1.jpg" alt="" srcset="">
-                                <img src="resources/images/3/2.jpg" alt="" srcset="">
-                            </figure>
-                        </div>
-                    </div>
-
-                    <div class="absatz">
-                        <h3 class="text_heading">1974 bis 1990: Der SPD-Ortsverein Albstadt<div class="arrow"><</div></h3>
-                        <p class="textcontent">
-                            Die drei SPD-Ortsvereine Ebingen, Tailfingen und Onstmettingen gründeten sieben Monate vor der Stadtgründung Albstadts, im Juni 1974, einen gemeinsamen Ortverein. <br>Horst Kiesecker war der Kandidat zur ersten Albstädter OB Wahl, welche von Hans Pfarr von der CDU gewonnen wurde. <br> Bei den Kommunalwahlen zeigte sich eine Parallelentwicklung. Die eher schwarz wählenden kleinen Stadtteile verschoben das politische Gewicht verstärkt in Richtung CDU.  <br><br> Inhaltlich positionierten sich Ortsverein und Gemeinderatsfraktion entlang der Gleichstellung und Solidarität, wie Ausbau der Kindergärten, der Forderung nach Ganztagesbetreuung oder der Stärkung der Frau innerhalb der Gesellschaft. Ziel war mehr Frauen auch in die Kommunalparlamente zu bringen. Bei der Wahl zum ersten Gemeinderat von Albstadt war zunächst keine Frau in der SPD-Fraktion, dies änderte sich aber im Laufe der Legislatur. Im Jahr 1980 kandidierten schon 13 Frauen auf der SPD-Liste für den Gemeinderat in Albstadt. Dies war knapp ein Drittel der Gesamtzahl. Zwei Frauen und acht Männer erlangten bei der Gemeinderatswahl 1980 Mandate. Die SPD Albstadt sah das als weiteren Erfolg für mehr Gleichstellung. Im Lauf der weiteren Jahre wurde die Liste immer paritätischer.  <br><br>Ergänzend war die SPD die erste Partei, welche eine stärker an der Ökologie orientierte Politik von der Verwaltung einforderte. Bei der Stadt- und Verkehrsplanung, beim Straßen- und Wohnungsbau, bei der Energiepolitik und dem Aufbau der regenerativen Energien. Dazu forderten sie Stärkung des öffentlichen Nahverkehrs, Ausbau von Radwegen, Fußgängerzonen in Ebingen und Tailfingen sowie Umwelt- und Landschaftsschutz. <br> Wer die Wahlprogramme der Albstädter SPD und die Gemeinderatsprotokolle liest, erkennt die Beharrlichkeit, mit welcher die SPD Albstadt im sozialen und ökologischen Bereich Themen aufgegriffen hat, Anträge stellte und damit Impulse setzte. Wie zum Beispiel 1984 als die SPD-Fraktion ein Umwelt-Programm in den Gemeinderat einbrachte.  <br> Viele der geforderten Ziele sind heute erreicht und erscheinen selbstverständlich. Für die SPD-Fraktion war es über Jahrzehnte ein zäher Kampf, der zunächst meist in Abstimmungsniederlagen endete.  <br><br> Ein weiterer wichtiger Aspekt der SPD-Fraktion war die Forderung nach soliden städtischen Finanzen, welches keine Selbstverständlichkeit war. Das stand schon 1975 in der Mitte des SPD-Wahlprospekts zur Gemeinderatswahl und zog sich über Jahrzehnte wie ein roter Faden durch die Politik.
-                        </p>
-                        <div class="imgArea">
-
-                            <figure>
-                                <img src="resources/images/4/1.JPG" alt="" srcset="">
-                                <img src="resources/images/4/2.jpg" alt="" srcset="">
-                                <img src="resources/images/4/3.png" alt="" srcset="">
-                                <img src="resources/images/4/4.jpeg" alt="" srcset="">
-                            </figure>
-                        </div>
-                    </div>
-
-                    <div class="absatz">
-                        <h3 class="text_heading">1991 bis 2011: Kommunaler Triumph - der Albstädter Oberbürgermeister ist Sozialdemokrat<div class="arrow"><</div></h3>
-                        <p class="textcontent">
-                            Höhepunkt für die Albstädter SPD, war der Gewinn der OB Wahl 1991 durch den Kommunalpolitiker Hans-Martin Haller. In seiner Oberbürgermeister Zeit setzte er sich ein für die öffentliche Daseinsvorsorge in der Energieversorgung durch die Übernahme der privaten Strommetze durch die Albstadtwerke, die Ausweitung und Verbesserung des ÖPNVs und die Verlängerung der Öffnungszeiten in den Kindergärten, sowie Einführung einer Kindertagesstätte. Ausgebaut wurden die Hauptverkehrsachsen im Stadtgebiet. Haller packte auch umstrittene Themen an wie die Durchsetzung des Ebinger Tunnel, Sanierung der Langwatte und Erschließung neuer Gewerbegebiete.<br>Unter seiner Ägide war Albstadt regionsweit die erste Stadt, welche die unechte Teilortswahl abschaffte.<br> Hans-Martin Haller war außerdem der einzige Albstädter Oberbürgermeister, in dessen Amtszeit die Schulden der Stadt nicht drastisch erhöht wurden, sondern leicht reduziert werden konnten. 1999 unterlag er bei der OB-Wahl dem CDU-Gegenkandidaten, Dr. Jürgen Gneveckow.<br>Erfolgreich kandidierte Hans Martin Haller ab 2001 dreimal für den Landtag. Während dieser 15 Jahre war er Mitglied im Ausschuss für Finanzen und Wirtschaft, im Verkehrsausschuss und war verkehrspolitischer Sprecher der SPD-Fraktion im Landtag Baden-Württemberg.
-                        </p>
-                        <div class="imgArea">
-
-                            <figure>
-                                <img src="resources/images/5/1.jpg" alt="" srcset="">
-                            </figure>
-                        </div>
-                    </div>
-
-                    <div class="absatz">
-                        <h3 class="text_heading">2012: Schock für die SPD <div class="arrow"><</div></h3>
-                        <p class="textcontent">
-                            Viele Mitglieder haben sich um die SPD im Ehrenamt verdient gemacht. Erschütternd waren wir alle vom zu frühen Tod Markus Dapps. Im Jahr 2012, mit nur 39 Jahren verstarb er unerwartet. Er war Vorsitzender des Albstädter SPD-Stadtverbands ab 2001, Vorsitzender der SPD-Gemeinderatsfraktion ab 2009, mehrfach Zweitkandidat von Horst Kiesecker und Hans-Martin Haller und OB-Kandidat im Jahre 2007. Mit ihm verlor die Albstädter SPD ihren - vom politischen Gegner respektierten - kompetenten Hoffnungsträger. Vor allem aber einen guten Freund und lieben Menschen.
-                        </p>
-                        <div class="imgArea">
-
-                            <figure>
-                                <img src="resources/images/6/1.JPG" alt="" srcset="">
-                            </figure>
-                        </div>
-                    </div>
-
-                    <div class="absatz">
-                        <h3 class="text_heading">2013 bis heute: Die heutige SPD Albstadt <div class="arrow"><</div></h3>
-                        <p class="textcontent">
-                            In den Ortsverband wurden im Jahr 2021 die beiden SPD-Ortsvereine Winterlingen und Bitz integriert, welcher sich von nun an Stadtverband nennen darf. Dieses erweiterte Aufgabenfeld erfordert ein Höchstmaß an ehrenamtlicher Arbeit und Kompetenz. Mit Marianne Roth und Renate Straub wird der Stadtverband von zwei engagierten Frauen geführt. <br><br> Erfolgreich für die SPD verlief die Bundestagswahl 2021. Für den hiesigen Wahlkreis konnte mit Robin Mesarosch nach 27 Jahren wieder ein Sozialdemokrat in den Bundestag für den Wahlkreis Zollernalb – Sigmaringen einziehen.  <br> Seit über 130 Jahren gestalten wir Sozialdemokratinnen und Sozialdemokraten aktiv die Kommunalpolitik in Albstadt.
-                        </p>
-                        <div class="imgArea">
-
-                            <figure>
-                                <img src="resources/images/7/1.jpg" alt="" srcset="">
-                                <img src="resources/images/7/2.JPG" alt="" srcset="">
-                                <img src="resources/images/7/3.jpg" alt="" srcset="">
-                            </figure>
-                        </div>
-                    </div>
-                </div>
-                <div class="timeline">
-
-                    <figure id="timeline">
-                        <div class="headline">
-                            <h2>Zeitachse kommunaler Persönlichkeiten</h2>
-                        </div>
-                        <div class="line">
-                            <div>1965</div>
-                            <div>1970</div>
-                            <div>1975</div>
-                            <div>1980</div>
-                            <div>1985</div>
-                            <div>1990</div>
-                            <div>1995</div>
-                            <div>2000</div>
-                            <div>2005</div>
-                            <div>2010</div>
-                            <div>2015</div>
-                            <div>2020</div>
-                            <div>2025</div>
-                        </div>
-                        <div class="slide">
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Nils Maute</h3>
-
-                                    <p>Parteivorsitzende <br> 2022 bis heute
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/timeline/Nils Maute1.JPG" alt="">
-                                </div>
-                            </div>
-
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Marianne Roth</h3>
-
-                                    <p>Parteivorsitzende <br> 2018 bis heute <br> Fraktionsvorsitzende <br> 2019 bis
-                                        heute</p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/timeline/MarianneRoth2015.jpg" alt="">
-                                </div>
-                            </div>
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Hendrik Dahlhoff</h3>
-
-                                    <p>Parteivorsitzender <br> 2016 bis 2018</p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/timeline/Hendrik Dahlhoff.jpg" alt="">
-                                </div>
-                            </div>
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Elmar Maute</h3>
-
-                                    <p>Fraktionsvorsitzender <br> 2014 - 2019 </p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/timeline/maute_elmar3.png" alt="">
-                                </div>
-                            </div>
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Thomas Müller</h3>
-
-                                    <p>Parteivorsitzender <br> 2012 - 2016 </p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/timeline/ThomasMueller2015.jpg" alt="">
-                                </div>
-                            </div>
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Markus Dapp</h3>
-
-                                    <p>Fraktionsvorsitzender <br> 2009 - 2012 <br> Parteivorsitzender <br> 2001 -
-                                        2012 </p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/timeline/Markus-Dapp.jpg" alt="">
-                                </div>
-                            </div>
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Adolf Lederer</h3>
-
-                                    <p>Parteivorsitzender <br> 1999-2001</p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/timeline/lederer_adolf.jpg" alt="">
-                                </div>
-                            </div>
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Klaus Laxander</h3>
-
-                                    <p>Parteivorsitzender <br> 1997 - 1999</p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/logo.png" alt="">
-                                </div>
-                            </div>
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Hans-Martin Haller</h3>
-
-                                    <p>Landtagsabgeordneter <br> Albstadt <br> 2001 - 2016 <br> Oberbürgermeister
-                                        <br> Albstadt <br> 1991 - 1999
-                                    </p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/timeline/HansMartinHaller2015.png" alt="">
-                                </div>
-                            </div>
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Rainer Günther</h3>
-
-                                    <p>Parteivorsitzender <br> 1985 - 1997 <br> Fraktionsvorsitzender <br> 1977 -
-                                        2009</p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/timeline/Rainer Günther 2013-2.jpg" alt="">
-                                </div>
-                            </div>
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Manfred Fischer</h3>
-
-                                    <p>Parteivorsitzender <br> 1983 - 1985</p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/logo.png" alt="">
-                                </div>
-                            </div>
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Martin Frohme</h3>
-
-                                    <p>Parteivorsitzender <br> 1979 - 1983 <br> Fraktionsvorsitzender <br> 2012 -
-                                        2014</p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/timeline/Martin Frohme 2.jpeg" alt="">
-                                </div>
-                            </div>
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Norbert Fritsch</h3>
-
-                                    <p>Parteivorsitzender <br> 1975 - 1979</p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/timeline/Norbert Fritsch 3.jpeg" alt="">
-                                </div>
-                            </div>
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Erich Meier</h3>
-
-                                    <p>Fraktionsvorsitzender <br> 1975 - 1977</p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/timeline/Erich Meier 2.jpeg" alt="">
-                                </div>
-                            </div>
-
-                            <div class="timestamp">
-                                <div class="textArea">
-                                    <h3>Horst Kiesecker</h3>
-
-                                    <p>Bürgermeister Tailfingen <br> 1966 - 1975 <br> Landtagsabgeordneter <br>
-                                        Albstadt <br> 1991 - 1999 <br> 1992 - 1996</p>
-                                </div>
-                                <div class="imgArea">
-                                    <img src="resources/images/timeline/Horst Kiesecker.jpeg" alt="">
-                                </div>
-                            </div>
-                        </div>
+              <div class="container">
+                <div class="absatz">
+                  <h3 class="text_heading">
+                    1890 bis 1918: Gründung der ersten SPD-Ortsvereine
+                    <div class="arrow"><</div>
+                  </h3>
+                  <p class="textcontent">
+                    In der Phase der Liberalisierung nach Abschaffung der
+                    restriktiven Sozialistengesetze (Ein Verbot auf Reichsebene
+                    von Sozialdemokraten), wurde 1890 in Ebingen und Tailfingen
+                    Ortsvereine gegründet. In den kommenden Jahren wurden auch
+                    Ortsvereine der SPD in den Gemeinden Pfeffingen,
+                    Onstmettingen und Truchtelfingen gegründet. <br />
+                    <br />
+                    Nur zu den Reichstagswahlen galt das allgemeine Wahlrecht
+                    für Männer, auf Landes- und Ortsebene waren das
+                    undemokratische Wahlrecht gebunden an die finanziellen
+                    Verhältnisse der Bürger. Trotzdem errangen die Ortsvereine
+                    des jetzigen Stadtverbandes Albstadt, welche vorrangig von
+                    der Arbeiterschaft gewählt wurden, ab 1909 zahlreiche
+                    Wahlerfolge und Mandate. Das Ende des Kaiserreiches und die
+                    erstmalige Einführung einer demokratischen Republik in
+                    Deutschland ist der große Verdienst der SPD. Grundrechte,
+                    Frauenwahlrecht waren prägende Bestandteile der Weimarer
+                    Republik und der Sozialdemokratie.
+                  </p>
+                  <div class="imgArea">
+                    <figure>
+                      <img src="resources/images/1/1.jpg" alt="" srcset="" />
+                      <img src="resources/images/1/2.jpg" alt="" srcset="" />
                     </figure>
+                  </div>
                 </div>
-                <div class="downloads">
-                    <h2>Downloads</h2>
-                    <ul>
-                        <li><a href="/resources/SPDAusstellung_Albstadt.pdf" target="_blank"
-                               rel="noopener noreferrer">SPD-Ausstellung Albstadt</a></li>
-                    </ul>
+
+                <div class="absatz">
+                  <h3 class="text_heading">
+                    1919 bis 1945: Sozialdemokraten und Sozialdemokratinnen in
+                    Weimarer Republik und anschließende Verfolgung
+                    <div class="arrow"><</div>
+                  </h3>
+                  <p class="textcontent">
+                    Die SPD in den heutigen Stadtteilen Albstadts beschritt nach
+                    dem Ersten Weltkrieg und der überstanden Hyperinflation eine
+                    gute und fortschrittliche Zeit. Allerdings änderte sich das,
+                    nachdem die sogenannten „Goldenen Zwanziger“ 1928 endeten.
+                    <br />
+                    Die Weltwirtschaftskrise veränderte das Wahlverhalten. Die
+                    hohe Arbeitslosigkeit und Armut wurden ein Nährboden für
+                    Feinde der Demokratie und der Menschlichkeit. Das spiegelte
+                    sich auch beim Wahlverhalten nach 1930 ab. <br /><img
+                      src="resources/images/diagram.png"
+                      alt=""
+                    /><br />
+                    Das Diagramm veranschaulicht dies mit der Veränderung bei
+                    den Wahlergebnissen von den Reichstagswahlen 1928 zu den
+                    Reichstagswahlen im Juli 1932. Die gemäßigten und
+                    demokratischen Parteien wie die konservative Zentrumspartei,
+                    die nationalliberale Deutschen Volkspartei (DVP), die
+                    linksliberalen Deutsche Demokratische Partei (DDP) und die
+                    SPD verloren zusammen in diesem Zeitraum mehr als ein
+                    Drittel ihrer Wähler. Die SPD allein verlor auch ungefähr
+                    ein Drittel ihrer Stimmen. <br />
+                    <br />Die Parteien am Rande des politischen Spektrums
+                    bekamen dagegen einen enormen Zuwachs im gleichen Zeitraum.
+                    Die Kommunistische Partei Deutschlands (KPD) steigerte ihren
+                    Stimmenanteil. Ebenso wie der Rechtsblock, bestehend aus
+                    Deutschnationaler Volkspartei (DNVP), welche sich immer mehr
+                    nach rechts außen orientierte und der NSDAP. Zusammen
+                    konnten sie ihren Wert mehr als verdoppelten. <br />
+                    <br />
+                    Erwähnenswert ist, dass die Nationalsozialisten auf
+                    kommunaler Ebene nicht an die starken Ergebnisse der
+                    Reichstagswahlen anknüpfen konnten. Z.B. bei den
+                    Kommunalwahlen im Dezember 1931 schaffte es „nur“ ein
+                    Nationalsozialist in den Ebinger Gemeinderat. Bis zur
+                    Machtergreifung gab es in keinem Gemeinderat eines
+                    Albstädter Teilortes eine Mehrheit für den Rechtsblock. Dem
+                    Aufstieg der Nationalsozialisten mit der Machtergreifung im
+                    Januar 1933 setzte vor allem der SPD-Widerstand entgegen.
+                    Sie war die einzige demokratische Partei, welche das
+                    Ermächtigungsgesetz ablehnte. <br /><br />
+                    Angesichts der anfänglichen Scheindemokratie traten bei der
+                    zweiten Gemeinderatsitzung in Ebingen die SPD-Räte Zahner,
+                    Stoll, Hoch und Fuß jedoch nicht mehr an. In einem Brief an
+                    den Vorsitzenden teilten sie mit, dass sie ihre Mandate
+                    niederlegen. Das Ende der Demokratie und der Freiheit
+                    erreichte auch die kommunale Ebene. <br /><br />
+                    Die Diktatur der Faschisten hatte zur Folge, dass die SPD
+                    verboten wurde. Daraufhin wurden die führenden lokalen
+                    Sozialdemokraten, im neu entstandenen Konzentrationslager
+                    Heuberg bei Stetten am kalten Markt, inhaftiert. Ein
+                    Paradebeispiel von Willkür und Bruch jeglicher
+                    Rechtsstaatsnorm durch das Regime der menschenverachtenden
+                    Nationalsozialisten. Manche wurden nach Monaten entlassen,
+                    andere wiederum in andere Lager verschleppt, z. B. in das
+                    Konzentrationslager "Oberer Kuhberg" in Ulm.
+                  </p>
+                  <div class="imgArea">
+                    <figure>
+                      <img src="resources/images/2/1.JPG" alt="" srcset="" />
+                      <img src="resources/images/2/2.JPG" alt="" srcset="" />
+                      <img src="resources/images/2/3.jpg" alt="" srcset="" />
+                      <img src="resources/images/2/4.jpg" alt="" srcset="" />
+                    </figure>
+                  </div>
                 </div>
+
+                <div class="absatz">
+                  <h3 class="text_heading">
+                    1946 bis 1973: Wiedergründung der SPD
+                    <div class="arrow"><</div>
+                  </h3>
+                  <p class="textcontent">
+                    Die Siegermächte ermöglichten erste freie Wahlen auf
+                    kommunaler Ebene 1946. Die Ortsvereine der SPD wurden 1946
+                    wiedergegründet. <br /><br />
+                    Bis zur Gründung von Albstadt im Jahre 1975 durchliefen die
+                    Ortsvereine der SPD und ihre Mandatsträger eine wechselvolle
+                    Geschichte, auf die wir nur auszugsweise eingehen können.
+                    <br /><br />
+                    Von 1959 bis 1968 war die SPD die stärkste
+                    Gemeinderatsfraktion in Ebingen. In Talfingen etablierte
+                    sich die SPD zur selben Zeit zur stärksten Kraft im Rathaus
+                    und blieb noch länger größte Fraktion bis zum Jahr 1971.
+                    <br />
+                    Horst Kiesecker, der zwischen 1966 und 1974 Bürgermeister
+                    von Talfingen war, vertrat Stadt und Kreis in vier
+                    Legislaturperioden im Landtag von Baden-Württemberg.
+                    Kiesecker wirkte federführend im Wirtschafts- und
+                    Finanzausschuss. Kiesecker war von 1971 bis 1999 im Kreistag
+                    und viele Jahre Fraktionsvorsitzender der SPD.
+                    <br /><br />Leitthema in diesen 25 Jahren war die
+                    Ausgestaltung des Sozialstaats in den Gemeinden mit
+                    Wohnungsbau, Kindergärten und Schulen, auch unter dem Aspekt
+                    der Bildungsgerechtigkeit.<br />
+                    Zur Standortsicherung der heimischen Industrie und der
+                    Arbeitsplätze forderte die SPD bessere Verkehrsanbindungen.
+                  </p>
+                  <div class="imgArea">
+                    <figure>
+                      <img src="resources/images/3/1.jpg" alt="" srcset="" />
+                      <img src="resources/images/3/2.jpg" alt="" srcset="" />
+                    </figure>
+                  </div>
+                </div>
+
+                <div class="absatz">
+                  <h3 class="text_heading">
+                    1974 bis 1990: Der SPD-Ortsverein Albstadt
+                    <div class="arrow"><</div>
+                  </h3>
+                  <p class="textcontent">
+                    Die drei SPD-Ortsvereine Ebingen, Tailfingen und
+                    Onstmettingen gründeten sieben Monate vor der Stadtgründung
+                    Albstadts, im Juni 1974, einen gemeinsamen Ortverein.
+                    <br />Horst Kiesecker war der Kandidat zur ersten Albstädter
+                    OB Wahl, welche von Hans Pfarr von der CDU gewonnen wurde.
+                    <br />
+                    Bei den Kommunalwahlen zeigte sich eine Parallelentwicklung.
+                    Die eher schwarz wählenden kleinen Stadtteile verschoben das
+                    politische Gewicht verstärkt in Richtung CDU. <br /><br />
+                    Inhaltlich positionierten sich Ortsverein und
+                    Gemeinderatsfraktion entlang der Gleichstellung und
+                    Solidarität, wie Ausbau der Kindergärten, der Forderung nach
+                    Ganztagesbetreuung oder der Stärkung der Frau innerhalb der
+                    Gesellschaft. Ziel war mehr Frauen auch in die
+                    Kommunalparlamente zu bringen. Bei der Wahl zum ersten
+                    Gemeinderat von Albstadt war zunächst keine Frau in der
+                    SPD-Fraktion, dies änderte sich aber im Laufe der
+                    Legislatur. Im Jahr 1980 kandidierten schon 13 Frauen auf
+                    der SPD-Liste für den Gemeinderat in Albstadt. Dies war
+                    knapp ein Drittel der Gesamtzahl. Zwei Frauen und acht
+                    Männer erlangten bei der Gemeinderatswahl 1980 Mandate. Die
+                    SPD Albstadt sah das als weiteren Erfolg für mehr
+                    Gleichstellung. Im Lauf der weiteren Jahre wurde die Liste
+                    immer paritätischer. <br /><br />Ergänzend war die SPD die
+                    erste Partei, welche eine stärker an der Ökologie
+                    orientierte Politik von der Verwaltung einforderte. Bei der
+                    Stadt- und Verkehrsplanung, beim Straßen- und Wohnungsbau,
+                    bei der Energiepolitik und dem Aufbau der regenerativen
+                    Energien. Dazu forderten sie Stärkung des öffentlichen
+                    Nahverkehrs, Ausbau von Radwegen, Fußgängerzonen in Ebingen
+                    und Tailfingen sowie Umwelt- und Landschaftsschutz. <br />
+                    Wer die Wahlprogramme der Albstädter SPD und die
+                    Gemeinderatsprotokolle liest, erkennt die Beharrlichkeit,
+                    mit welcher die SPD Albstadt im sozialen und ökologischen
+                    Bereich Themen aufgegriffen hat, Anträge stellte und damit
+                    Impulse setzte. Wie zum Beispiel 1984 als die SPD-Fraktion
+                    ein Umwelt-Programm in den Gemeinderat einbrachte. <br />
+                    Viele der geforderten Ziele sind heute erreicht und
+                    erscheinen selbstverständlich. Für die SPD-Fraktion war es
+                    über Jahrzehnte ein zäher Kampf, der zunächst meist in
+                    Abstimmungsniederlagen endete. <br /><br />
+                    Ein weiterer wichtiger Aspekt der SPD-Fraktion war die
+                    Forderung nach soliden städtischen Finanzen, welches keine
+                    Selbstverständlichkeit war. Das stand schon 1975 in der
+                    Mitte des SPD-Wahlprospekts zur Gemeinderatswahl und zog
+                    sich über Jahrzehnte wie ein roter Faden durch die Politik.
+                  </p>
+                  <div class="imgArea">
+                    <figure>
+                      <img src="resources/images/4/1.JPG" alt="" srcset="" />
+                      <img src="resources/images/4/2.jpg" alt="" srcset="" />
+                      <img src="resources/images/4/3.png" alt="" srcset="" />
+                      <img src="resources/images/4/4.jpeg" alt="" srcset="" />
+                    </figure>
+                  </div>
+                </div>
+
+                <div class="absatz">
+                  <h3 class="text_heading">
+                    1991 bis 2011: Kommunaler Triumph - der Albstädter
+                    Oberbürgermeister ist Sozialdemokrat
+                    <div class="arrow"><</div>
+                  </h3>
+                  <p class="textcontent">
+                    Höhepunkt für die Albstädter SPD, war der Gewinn der OB Wahl
+                    1991 durch den Kommunalpolitiker Hans-Martin Haller. In
+                    seiner Oberbürgermeister Zeit setzte er sich ein für die
+                    öffentliche Daseinsvorsorge in der Energieversorgung durch
+                    die Übernahme der privaten Strommetze durch die
+                    Albstadtwerke, die Ausweitung und Verbesserung des ÖPNVs und
+                    die Verlängerung der Öffnungszeiten in den Kindergärten,
+                    sowie Einführung einer Kindertagesstätte. Ausgebaut wurden
+                    die Hauptverkehrsachsen im Stadtgebiet. Haller packte auch
+                    umstrittene Themen an wie die Durchsetzung des Ebinger
+                    Tunnel, Sanierung der Langwatte und Erschließung neuer
+                    Gewerbegebiete.<br />Unter seiner Ägide war Albstadt
+                    regionsweit die erste Stadt, welche die unechte Teilortswahl
+                    abschaffte.<br />
+                    Hans-Martin Haller war außerdem der einzige Albstädter
+                    Oberbürgermeister, in dessen Amtszeit die Schulden der Stadt
+                    nicht drastisch erhöht wurden, sondern leicht reduziert
+                    werden konnten. 1999 unterlag er bei der OB-Wahl dem
+                    CDU-Gegenkandidaten, Dr. Jürgen Gneveckow.<br />Erfolgreich
+                    kandidierte Hans Martin Haller ab 2001 dreimal für den
+                    Landtag. Während dieser 15 Jahre war er Mitglied im
+                    Ausschuss für Finanzen und Wirtschaft, im Verkehrsausschuss
+                    und war verkehrspolitischer Sprecher der SPD-Fraktion im
+                    Landtag Baden-Württemberg.
+                  </p>
+                  <div class="imgArea">
+                    <figure>
+                      <img src="resources/images/5/1.jpg" alt="" srcset="" />
+                    </figure>
+                  </div>
+                </div>
+
+                <div class="absatz">
+                  <h3 class="text_heading">
+                    2012: Schock für die SPD
+                    <div class="arrow"><</div>
+                  </h3>
+                  <p class="textcontent">
+                    Viele Mitglieder haben sich um die SPD im Ehrenamt verdient
+                    gemacht. Erschütternd waren wir alle vom zu frühen Tod
+                    Markus Dapps. Im Jahr 2012, mit nur 39 Jahren verstarb er
+                    unerwartet. Er war Vorsitzender des Albstädter
+                    SPD-Stadtverbands ab 2001, Vorsitzender der
+                    SPD-Gemeinderatsfraktion ab 2009, mehrfach Zweitkandidat von
+                    Horst Kiesecker und Hans-Martin Haller und OB-Kandidat im
+                    Jahre 2007. Mit ihm verlor die Albstädter SPD ihren - vom
+                    politischen Gegner respektierten - kompetenten
+                    Hoffnungsträger. Vor allem aber einen guten Freund und
+                    lieben Menschen.
+                  </p>
+                  <div class="imgArea">
+                    <figure>
+                      <img src="resources/images/6/1.JPG" alt="" srcset="" />
+                    </figure>
+                  </div>
+                </div>
+
+                <div class="absatz">
+                  <h3 class="text_heading">
+                    2013 bis heute: Die heutige SPD Albstadt
+                    <div class="arrow"><</div>
+                  </h3>
+                  <p class="textcontent">
+                    In den Ortsverband wurden im Jahr 2021 die beiden
+                    SPD-Ortsvereine Winterlingen und Bitz integriert, welcher
+                    sich von nun an Stadtverband nennen darf. Dieses erweiterte
+                    Aufgabenfeld erfordert ein Höchstmaß an ehrenamtlicher
+                    Arbeit und Kompetenz. Mit Marianne Roth und Renate Straub
+                    wird der Stadtverband von zwei engagierten Frauen geführt.
+                    <br /><br />
+                    Erfolgreich für die SPD verlief die Bundestagswahl 2021. Für
+                    den hiesigen Wahlkreis konnte mit Robin Mesarosch nach 27
+                    Jahren wieder ein Sozialdemokrat in den Bundestag für den
+                    Wahlkreis Zollernalb – Sigmaringen einziehen. <br />
+                    Seit über 130 Jahren gestalten wir Sozialdemokratinnen und
+                    Sozialdemokraten aktiv die Kommunalpolitik in Albstadt.
+                  </p>
+                  <div class="imgArea">
+                    <figure>
+                      <img src="resources/images/7/1.jpg" alt="" srcset="" />
+                      <img src="resources/images/7/2.JPG" alt="" srcset="" />
+                      <img src="resources/images/7/3.jpg" alt="" srcset="" />
+                    </figure>
+                  </div>
+                </div>
+              </div>
+              <div class="timeline">
+                <figure id="timeline">
+                  <div class="headline">
+                    <h2>Zeitachse kommunaler Persönlichkeiten</h2>
+                  </div>
+                  <div class="line">
+                    <div>1965</div>
+                    <div>1970</div>
+                    <div>1975</div>
+                    <div>1980</div>
+                    <div>1985</div>
+                    <div>1990</div>
+                    <div>1995</div>
+                    <div>2000</div>
+                    <div>2005</div>
+                    <div>2010</div>
+                    <div>2015</div>
+                    <div>2020</div>
+                    <div>2025</div>
+                  </div>
+                  <div class="slide">
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Nils Maute</h3>
+
+                        <p>
+                          Parteivorsitzende <br />
+                          2022 bis heute
+                        </p>
+                      </div>
+
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/timeline/Nils Maute1.JPG"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Marianne Roth</h3>
+
+                        <p>
+                          Parteivorsitzende <br />
+                          2018 bis heute <br />
+                          Fraktionsvorsitzende <br />
+                          2019 bis heute
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/timeline/MarianneRoth2015.jpg"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Hendrik Dahlhoff</h3>
+
+                        <p>
+                          Parteivorsitzender <br />
+                          2016 bis 2018
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/timeline/Hendrik Dahlhoff.jpg"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Elmar Maute</h3>
+
+                        <p>
+                          Fraktionsvorsitzender <br />
+                          2014 - 2019
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/timeline/maute_elmar3.png"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Thomas Müller</h3>
+
+                        <p>
+                          Parteivorsitzender <br />
+                          2012 - 2016
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/timeline/ThomasMueller2015.jpg"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Markus Dapp</h3>
+
+                        <p>
+                          Fraktionsvorsitzender <br />
+                          2009 - 2012 <br />
+                          Parteivorsitzender <br />
+                          2001 - 2012
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/timeline/Markus-Dapp.jpg"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Adolf Lederer</h3>
+
+                        <p>
+                          Parteivorsitzender <br />
+                          1999-2001
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/timeline/lederer_adolf.jpg"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Klaus Laxander</h3>
+
+                        <p>
+                          Parteivorsitzender <br />
+                          1997 - 1999
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img src="resources/images/logo.png" alt="" />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Hans-Martin Haller</h3>
+
+                        <p>
+                          Landtagsabgeordneter <br />
+                          Albstadt <br />
+                          2001 - 2016 <br />
+                          Oberbürgermeister <br />
+                          Albstadt <br />
+                          1991 - 1999
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/timeline/HansMartinHaller2015.png"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Rainer Günther</h3>
+
+                        <p>
+                          Parteivorsitzender <br />
+                          1985 - 1997 <br />
+                          Fraktionsvorsitzender <br />
+                          1977 - 2009
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/timeline/Rainer Günther 2013-2.jpg"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Manfred Fischer</h3>
+
+                        <p>
+                          Parteivorsitzender <br />
+                          1983 - 1985
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img src="resources/images/logo.png" alt="" />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Martin Frohme</h3>
+
+                        <p>
+                          Parteivorsitzender <br />
+                          1979 - 1983 <br />
+                          Fraktionsvorsitzender <br />
+                          2012 - 2014
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/timeline/Martin Frohme 2.jpeg"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Norbert Fritsch</h3>
+
+                        <p>
+                          Parteivorsitzender <br />
+                          1975 - 1979
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/timeline/Norbert Fritsch 3.jpeg"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Erich Meier</h3>
+
+                        <p>
+                          Fraktionsvorsitzender <br />
+                          1975 - 1977
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/timeline/Erich Meier 2.jpeg"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+
+                    <div class="timestamp">
+                      <div class="textArea">
+                        <h3>Horst Kiesecker</h3>
+
+                        <p>
+                          Bürgermeister Tailfingen <br />
+                          1966 - 1975 <br />
+                          Landtagsabgeordneter <br />
+                          Albstadt <br />
+                          1991 - 1999 <br />
+                          1992 - 1996
+                        </p>
+                      </div>
+                      <div class="imgArea">
+                        <img
+                          src="resources/images/timeline/Horst Kiesecker.jpeg"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </figure>
+              </div>
+              <div class="downloads">
+                <h2>Downloads</h2>
+                <ul>
+                  <li>
+                    <a
+                      href="/resources/SPDAusstellung_Albstadt.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >SPD-Ausstellung Albstadt</a
+                    >
+                  </li>
+                </ul>
+              </div>
             </div>
+          </div>
         </div>
-    </div>
 
-
-
-
-    <div class="kontakte menupunkt">
-        <div class="heading">
+        <div class="kontakte menupunkt">
+          <div class="heading">
             <h1>Kontakt</h1>
-        </div>
-        <div class="areainfo" id="historieinfo">
-            Haben Sie noch Fragen zu unserem Stadtverband oder zu unserer politischen Arbeit? Dann kontaktieren Sie uns doch einfach.
-        </div>
-        <div class="inhalte">
+          </div>
+          <div class="areainfo" id="historieinfo">
+            Haben Sie noch Fragen zu unserem Stadtverband oder zu unserer
+            politischen Arbeit? Dann kontaktieren Sie uns doch einfach.
+          </div>
+          <div class="inhalte">
             <div class="txt">
-                <h2>Kontaktieren Sie uns doch!</h2>
-                <div class="kontaktwege">
-                    <a href="https://www.facebook.com/spd.albstadt/"><img src="resources/images/pictogram/Rot/RGB/PNG/Social/SPD_Facebook_rot_RGB.png" alt=""></a>
-                    <a href="#"><img src="resources/images/pictogram/Rot/RGB/PNG/Social/SPD_Twitter_rot_RGB.png" alt=""></a>
-                    <a href="https://www.instagram.com/spdalbstadt/"><img src="resources/images/pictogram/Rot/RGB/PNG/Social/SPD_Instagram_rot_RGB.png" alt=""></a>
+              <h2>Kontaktieren Sie uns doch!</h2>
+              <div class="kontaktwege">
+                <a href="https://www.facebook.com/spd.albstadt/"
+                  ><img
+                    src="resources/images/pictogram/Rot/RGB/PNG/Social/SPD_Facebook_rot_RGB.png"
+                    alt=""
+                /></a>
+                <a href="#"
+                  ><img
+                    src="resources/images/pictogram/Rot/RGB/PNG/Social/SPD_Twitter_rot_RGB.png"
+                    alt=""
+                /></a>
+                <a href="https://www.instagram.com/spdalbstadt/"
+                  ><img
+                    src="resources/images/pictogram/Rot/RGB/PNG/Social/SPD_Instagram_rot_RGB.png"
+                    alt=""
+                /></a>
+              </div>
+              <form
+                action="https://formsubmit.co/mautenils@icloud.com"
+                method="POST"
+                id="mail_recieve"
+              >
+                <div class="name">
+                  <div class="col">
+                    <label>Vorname</label>
+                    <input
+                      type="text"
+                      name="Vorname"
+                      placeholder="Vorname"
+                      required
+                      class="firstname req"
+                    />
+                  </div>
+                  <div class="col">
+                    <label>Nachname</label>
+                    <input
+                      type="text"
+                      name="Nachname"
+                      placeholder="Nachname"
+                      required
+                      class="lastname req"
+                    />
+                  </div>
                 </div>
-                <form action="https://formsubmit.co/mautenils@icloud.com" method="POST" id="mail_recieve">
-                    <div class="name">
-                        <div class="col">
-                            <label>Vorname</label>
-                            <input type="text" name="Vorname" placeholder="Vorname" required class="firstname req">
-                        </div>
-                        <div class="col">
-                            <label>Nachname</label>
-                            <input type="text" name="Nachname" placeholder="Nachname" required class="lastname req">
-                        </div>
-                    </div>
 
-                    <div class="email">
-                        <div class="col">
-                            <label>E-Mail</label>
-                            <input type="email" name="email" required placeholder="E-Mail" class="email req">
-                        </div>
-                    </div>
+                <div class="email">
+                  <div class="col">
+                    <label>E-Mail</label>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      placeholder="E-Mail"
+                      class="email req"
+                    />
+                  </div>
+                </div>
 
-                    <div class="text">
-                        <div class="col">
-                            <label>Ihre Nachricht</label>
-                            <textarea rows="5" cols="60" name="textarea" placeholder="Text eingeben" required
-                                      class="message" style="resize: none;" minlength="10"></textarea>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn">Abschicken</button>
-                </form>
+                <div class="text">
+                  <div class="col">
+                    <label>Ihre Nachricht</label>
+                    <textarea
+                      rows="5"
+                      cols="60"
+                      name="textarea"
+                      placeholder="Text eingeben"
+                      required
+                      class="message"
+                      style="resize: none"
+                      minlength="10"
+                    ></textarea>
+                  </div>
+                </div>
+                <button type="submit" class="btn">Abschicken</button>
+              </form>
             </div>
             <div class="image">
-                <img src="resources/images/Gruppenbild.JPG" id="img" alt="">
+              <img src="resources/images/Gruppenbild.JPG" id="img" alt="" />
             </div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    </div>
-
-    <div class="menu-icon" id="menu-icon">
+      <div class="menu-icon" id="menu-icon">
         <div class="top icon"></div>
         <div class="bottom icon"></div>
-    </div>
-    <div class="title">
+      </div>
+      <div class="title">
         <div class="slidein">
-            <div class="marianneroth">
-                <img src="resources/images/Marianne Roth.JPG" alt="">
-                <p><span>Marianne Roth</span><br> Vorsitzende</p>
-            </div>
-            <div class="nilsmaute">
-                <img src="resources/images/Nils Maute1.JPG" alt="">
-                <p><span>Nils Maute</span><br> Vorsitzender</p>
-            </div>
+          <div class="marianneroth">
+            <img src="resources/images/Marianne Roth.JPG" alt="" />
+            <p>
+              <span>Marianne Roth</span><br />
+              Vorsitzende
+            </p>
+          </div>
+          <div class="nilsmaute">
+            <img src="resources/images/Nils Maute1.JPG" alt="" />
+            <p>
+              <span>Nils Maute</span><br />
+              Vorsitzender
+            </p>
+          </div>
         </div>
         <div class="headingBx">
-            <div class="logo">
-                <a href="#"><img src="resources/images/logo_no_bg.png" alt=""></a>
-            </div>
-            <div class="heading">
-                Soziale<br>Politik für<br>Dich.
-            </div>
+          <div class="logo">
+            <a href="#"><img src="resources/images/logo_no_bg.png" alt="" /></a>
+          </div>
+          <div class="heading">Soziale<br />Politik für<br />Dich.</div>
         </div>
-    </div>
-    <div class="navigator">
+      </div>
+      <div class="navigator">
         <nav class="nav">
-            <ul>
-                <li><a href="#" class="trigger_aktuelles" id="trigger_aktuelles">Aktuelles</a></li>
-                <li><a href="#" class="trigger_partei" id="trigger_partei">Partei</a></li>
-                <li><a href="#" class="trigger_fraktion" id="trigger_fraktion">Fraktion</a></li>
-                <li><a href="#" class="trigger_historie" id="trigger_historie">Historie</a></li>
-                <li><a href="#" class="trigger_kontakte" id="trigger_kontakte">Kontakt</a></li>
-            </ul>
+          <ul>
+            <li>
+              <a href="#" class="trigger_aktuelles" id="trigger_aktuelles"
+                >Aktuelles</a
+              >
+            </li>
+            <li>
+              <a href="#" class="trigger_partei" id="trigger_partei">Partei</a>
+            </li>
+            <li>
+              <a href="#" class="trigger_fraktion" id="trigger_fraktion"
+                >Fraktion</a
+              >
+            </li>
+            <li>
+              <a href="#" class="trigger_historie" id="trigger_historie"
+                >Historie</a
+              >
+            </li>
+            <li>
+              <a href="#" class="trigger_kontakte" id="trigger_kontakte"
+                >Kontakt</a
+              >
+            </li>
+          </ul>
         </nav>
-    </div>
-    <div class="loading">
-        <img src="resources/images/sync.svg" id="loading_icon" alt="">
-    </div>
-    <footer>
-
-    </footer>
-</main>
-</body>
-<script type="application/json" src="resources/data/data.json"> </script>
-<script src="js/index.js"></script>
-<script src="js/events/events.js"></script>
-<script src="js/news/news.js"></script>
-<script src="js/app.js"></script>
-<script>
-</script>
-
+      </div>
+      <div class="loading">
+        <img src="resources/images/sync.svg" id="loading_icon" alt="" />
+      </div>
+      <footer></footer>
+    </main>
+  </body>
+  <script type="application/json" src="resources/data/data.json"></script>
+  <script src="js/index.js"></script>
+  <script src="js/events/events.js"></script>
+  <script src="js/news/news.js"></script>
+  <script src="js/app.js"></script>
+  <script></script>
 </html>
