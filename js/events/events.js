@@ -23,7 +23,6 @@ fetch("../resources/data/events/events.json")
         eventEntry.objects.forEach(eventOccurence => {
             const event_clone = events.cloneNode(true);
             eventEntry.instance.appendChild(event_clone);
-        
             insertData(event_clone, eventOccurence);
         })
     });
