@@ -615,8 +615,8 @@ footer {
   background: #e3000f;
   color: white;
   margin-top: 20px;
-  text-align: justify;
-  text-justify: inter-word;
+  /* text-align: justify; 
+  text-justify: inter-word;*/
 }
 
 .content .aktuelles .inhalte .newspage .beitrag h2 {
@@ -635,6 +635,14 @@ footer {
     flex-direction: column;
     width: 100%;
   }
+  .content .aktuelles .inhalte .newspage .beitrag h2 {
+    padding: 0px;
+    color: white;
+    font-family: "Font-Heading";
+    font-weight: bold;
+    font-size: 1.5rem;
+  }
+  
 }
 
 .content .aktuelles .inhalte .newspage .beitrag .textArea {
@@ -687,6 +695,9 @@ footer {
   }
 }
 
+#news_textarea > div.text > div {
+  text-align: justify;
+}
 .content .aktuelles .inhalte .mainpage .embed {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -1294,8 +1305,8 @@ footer {
 }
 
 .content .kontakte .inhalte .image {
-  width: 50%;
-  padding: 50px;
+  width: 60%;
+  padding: 20px;
 }
 
 .content .kontakte .inhalte .image img {
@@ -1308,6 +1319,7 @@ footer {
 @media (max-width: 700px) {
   .content .kontakte .inhalte .image {
     width: 100%;
+    padding: 0px;
   }
 }
 
@@ -2260,6 +2272,14 @@ footer {
     width: 100%;
     padding: 0;
   }
+  .fraktion .inhalte .content_personen .flexbox .subinhalt .cell h2 span {
+    position: relative;
+    line-height: 10px;
+    top: -5px;
+    font-size: 0.6rem;
+    font-weight: bold;
+    word-break: keep-all;
+  }
 }
 
 @media (max-width: 1000px) {
@@ -2361,7 +2381,7 @@ footer {
   background: #e3000f;
   color: white;
   margin-top: 20px;
-  text-align: justify;
+  /* text-align: justify; */
   text-justify: inter-word;
 }
 
