@@ -1382,15 +1382,20 @@ footer {
 }
 
 .content .historie .inhalte .textarea .container .absatz {
-  margin-bottom: 7px;
-  text-align: justify;
-  text-justify: inter-word;
+  margin-bottom: -22px;
 }
 
 .content .historie .inhalte .textarea .container .absatz .textcontent img {
   width: 100%;
 }
-
+body > main > div.content > div.historie.menupunkt > div.inhalte > div > div.container > div:nth-child(odd) > p{
+  text-align: justify;
+  text-justify: inter-word;
+}
+body > main > div.content > div.historie.menupunkt > div.inhalte > div > div.container > div:nth-child(even) > p{
+  text-align: justify;
+  text-justify: inter-word;
+}
 .content .historie .inhalte .textarea .container .absatz h3 {
   font-size: 1.25rem;
   text-transform: uppercase;
@@ -1403,8 +1408,8 @@ footer {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: justify;
-  -ms-flex-pack: justify;
+  /* -webkit-box-pack: justify;
+  -ms-flex-pack: justify; */
   justify-content: space-between;
   position: relative;
   padding-right: 5px;
@@ -1436,7 +1441,7 @@ footer {
 }
 
 .content .historie .inhalte .textarea .container .absatz.active p {
-  display: contents;
+  display: block;
 }
 
 .content .historie .inhalte .textarea .container .absatz.active .imgArea {
