@@ -1,16 +1,46 @@
 const left = document.querySelector(".title");
 const right = document.querySelector(".navigator");
 const content = document.querySelector(".menupunkt");
-
-for (const contentKey of [
-  ".aktuelles",
-  ".partei",
-  ".fraktion",
-  ".historie",
-  ".kontakte",
-]) {
+const browserhistory = [];
+const navs = [".aktuelles", ".partei", ".fraktion", ".historie", ".kontakte"];
+const navTrigger = [
+  "#trigger_aktuelles",
+  "#trigger_partei",
+  "#trigger_fraktion",
+  "#trigger_historie",
+  "#trigger_kontakte",
+];
+for (const contentKey of navs) {
   document.querySelector(contentKey).style.display = "none";
 }
+
+for(const navTriggerElement of navTrigger){
+  const navAnchor = document.querySelector(navTriggerElement);
+    navAnchor.addEventListener("click", function (event) {
+      event.preventDefault();
+      browserhistory.push(navTriggerElement)
+  })
+}
+const returnToHome = document.querySelector("#menu-icon");
+returnToHome.addEventListener("click", function (event) {
+      event.preventDefault();
+      browserhistory.pop();
+  })
+
+document.addEventListener("keydown", KeyCheck);  //or however you are calling your method
+function KeyCheck(event)
+{
+   var KeyID = event.keyCode;
+   switch(KeyID)
+   {
+    case 8:
+      if (browserhistory.length !== 0) {
+        browserhistory.pop();
+        document.getElementById("menu-icon").click();
+      }
+   }
+}
+
 
 //aktuelles
 document.querySelector(".trigger_aktuelles").onclick = function () {
@@ -141,7 +171,7 @@ document.querySelector("#toPartei").onclick = function () {
   document.querySelector("#abgeordneter").classList.remove("active");
   document.querySelector("#partei").classList.add("active");
   document.querySelector("#parteiinfo").innerHTML =
-    "Das sind die Mitglieder des SPD Albstadt Vorstandes, dieser wurde bei der Jahreshauptversammlung im Juli 2022gewählt. ";
+    "Das sind die Mitglieder des SPD Albstadt Vorstandes, dieser wurde bei der Jahreshauptversammlung im Juli 2022 gewählt. ";
 };
 document.querySelector("#toSchwerpunkte").onclick = function () {
   document.querySelector("#schwerpunkte").classList.add("active");
