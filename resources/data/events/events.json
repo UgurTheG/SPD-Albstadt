@@ -1,0 +1,121 @@
+{
+    "2023": {
+        "6" : [
+            {
+                "header": "Vorstandssitzung 2023",
+                "event": "Veranstaltung",
+                "text": "Dies soll ein lockeres Treffen zum Austauschen, Diskutieren und Kennenlernen sein. Jeder, der Zeit und Lust hat, ist herzlich eingeladen zu kommen. Dieser Stammtisch gibt Interessierten die Möglichkeit in einer netten Runde, die SPD und Ihre Mitglieder in Albstadt kennen zu lernen.",
+                "time": "Montag, den 12. Juni 2023 um 18:00 Uhr",
+                "place": "Kräuterkasten, Im Hof 19, 72458 Albstadt-Ebingen",
+                "image": "/resources/images/rathaus.JPG"
+            },
+            {
+                "header": "SPD Albstadt vor Ort",
+                "event": "Veranstaltung",
+                "text": "Dies soll ein lockeres Treffen zum Austauschen, Diskutieren und Kennenlernen sein. Jeder, der Zeit und Lust hat, ist herzlich eingeladen zu kommen. Dieser Stammtisch gibt Interessierten die Möglichkeit in einer netten Runde, die SPD und Ihre Mitglieder in Albstadt kennen zu lernen.",
+                "time": "Mittwoch, den 07. Juni 2023 um 18:00 Uhr",
+                "place": "Onstmettingen Sportheim, Zaislen 1, 72461 Albstadt-Onstmettingen",
+                "image": "/resources/images/rathaus.JPG"
+            }
+        ],
+        "5": [
+            {
+                "header": "Beste Bildung für Albstadt<br>Mit Stefan Fulst-Blei MdL (bildungspolitischer Sprecher der SPD-Landtagsfraktion) und Jürgen Langenkämper (Vorsitzender des Gesamtelternbeirats Albstadt)",
+                "event": "Veranstaltung",
+                "text": "Wie sieht eigentlich die Schule der Zukunft aus - und stehen die besten Schulen dann auch in Albstadt? Von Digitalisierung über Inklusion bis hin zu Sanierungsstaus, wir sprechen mit Jürgen Langenkämper und Stefan Fulst-Blei darüber, was sich konkret verändern muss. Schüler, Eltern, Lehrkräfte und alle, die sich für Bildungspolitik interessieren, sind herzlich eingeladen!",
+                "time": "Montag, den 08. Mai 2023",
+                "place": "Wird noch bekannt gegeben um 19:00 Uhr",
+                "image": "/resources/images/rathaus.JPG"
+            },
+            {
+                "header": "SPD Albstadt vor Ort",
+                "event": "Veranstaltung",
+                "text": "Dies soll ein lockeres Treffen zum Austauschen, Diskutieren und Kennenlernen sein, nach dem gemeinsamen Spazieren. Jeder, der Zeit und Lust hat, ist herzlich eingeladen zu kommen. Dieser Stammtisch gibt Interessierten die Möglichkeit in einer netten Runde, die SPD und Ihre Mitglieder in Albstadt kennen zu lernen.",
+                "time": "Mittwoch, den 03. Mai 2023 um 18:00 Uhr",
+                "place": "Clubheim, Zillhauser Str. 57/1, 72459 Albstadt-Pfeffingen",
+                "image": "/resources/images/rathaus.JPG"
+            },
+            {
+                "header": "SPD Frühjahr Spaziergang",
+                "event": "Veranstaltung",
+                "text": "",
+                "time": "Mittwoch, den 03. Mai 2023 um 16:30 Uhr",
+                "place": "Albstadt-Burgfelden",
+                "image": "/resources/images/rathaus.JPG"
+            }
+        ],
+        "4": [
+            {
+                "header": "Erweiterte Vorstandssitzung 2023",
+                "event": "Veranstaltung",
+                "text": "Unser Fokus bei dieser Vorstandssitzung ist die weitere Auseinandersetzung, mit welche die SPD Albstadt zukünftig befassen möchte. Freunde, Bekannte und Verwandte sind ebenfalls eingeladen! Wir freuen uns immer, wenn ein paar neue Gesichter zu sehen sind.",
+                "time": "Mittwoch, den 19.04.2023 um 18:00 Uhr",
+                "place": "Krone Lautlingen, Laufener Straße 19, 72459 Albstadt-Lautlingen",
+                "image": "/resources/images/rathaus.JPG"
+            }
+        ],
+        "3": [
+            {
+                "header": "SPD Albstadt vor Ort am Internationalen Frauentag",
+                "event": "Veranstaltung",
+                "text": "Dieses soll ein lockeres Treffen zum Austauschen, Diskutieren und Kennenlernen sein. Wir wollen gemeinsam den internationalen Frauentag feiern. Jeder, der Zeit und Lust hat, ist herzlich eingeladen zu kommen. Dieser „Stammtisch“ gibt Interessierten die Möglichkeit in einer netten Runde, die SPD und Ihre Mitglieder in Albstadt kennen zu lernen.",
+                "time": "Mittwoch, den 08. März 2023 um 17:30 Uhr",
+                "place": "Josis Klause, Kirchengraben 2, 72458 Albstadt-Ebingen",
+                "image": "/resources/images/rathaus.JPG"
+            },
+            {
+                "header": "Aktion zum Weltfrauen Tag",
+                "event": "Veranstaltung",
+                "text": "",
+                "time": "Mittwoch, den 08. März 2023 um 15:00 Uhr bis 17:00 Uhr",
+                "place": "Marktstraße, 72458 Albstadt-Ebingen",
+                "image": "/resources/images/rathaus.JPG"
+            },
+            {
+                "header": "Mahnwache zum Ukraine Krieg",
+                "event": "Veranstaltung",
+                "text": "Zum Anlass des trauriger „Jahrestages\" vom 24. Februar möchten wir als SPD Albstadt in Kooperation mit anderen demokratischen Organisationen, Vereinen und Parteien eine Mahnwache organisieren. Mit ein paar wenigen Redeimpulsen und musikalischen Beiträgen. Im Fokus soll unsere Solidarität mit der ukrainischen Bevölkerung stehen.",
+                "time": "Mittwoch, den 01. März 2023 um 18:30 und 19:30 Uhr",
+                "place": "Vor dem Albstädter Rathaus, Marktstraße 35, 72458 Albstadt-Ebingen",
+                "image": "/resources/images/rathaus.JPG"
+            }
+        ],
+        "2": [
+            {
+                "header": "SPD Albstadt vor Ort",
+                "event": "Veranstaltung",
+                "text": "Dieser ist ein lockeres Treffen zum austauschen, diskutieren und kennenlernen sein. Jeder der Zeit und Lust hat ist herzlich eingeladen zu kommen. Diese Stammtische geben Interessierten die Möglichkeit in einer netten Runde die SPD und Ihre Mitglieder in Albstadt kennen zu lernen und somit können wir womöglich den das ein oder andere neue Mitglied gewinnen.",
+                "time": "Mittwoch, den 08. Februar 2023 um 18:00 Uhr",
+                "place": "Cafe am Markt, Kronenstraße 1, 72461 Albstadt-Tailfingen ",
+                "image": "/resources/images/rathaus.JPG"
+            },
+            {
+                "header": "1. Erweiterte Vorstandssitzung 2023",
+                "event": "Veranstaltung",
+                "text": "Unser Fokus bei dieser Vorstandssitzung ist die weitere Auseinandersetzung, mit welchen Schwerpunkten die SPD Albstadt sich zukünftig befassen möchte. Freunde, Bekannte und Verwandte sind ebenfalls eingeladen! Wir freuen uns immer, wenn wir paar neue Gesichter sehen.",
+                "time": "Montag, den 13. Februar 2023 um 18:00 Uhr",
+                "place": "Landhaus Stiegel, Zitterhofstraße 1, 72461 Albstadt",
+                "image": "/resources/images/rathaus.JPG"
+            }
+        ],
+        "1": [
+            {
+                "header": "Energiekrise - wie kamen wir rein und wie kommen wir wieder raus. Mit Bundestagsabgeordneter Robin Mesarosch.",
+                "event": "Veranstaltung",
+                "text": "Wie kann ich meine Stromrechnung noch bezahlen? Wie Gas, Öl oder Pellets? Wir stecken mitten in einer Krise, ausgelöst durch den russischen Angriffskrieg auf die Ukraine. Im Eiltempo entstehen neue Gesetze. Mindestens genauso schnell entstehen aber auch Mythen und Gerüchte. Der SPD-Abgeordnete für Zollernalb-Sigmaringen Robin Mesarosch arbeitet im Ausschuss für Klimaschutz und Energie des Bundestages mit. Gerne will er an dem Abend zu Klarheit beitragen und alle Fragen zum Thema Energie beantworten. Gemeinsam mit den SPD-Verbänden Albstadt und Meßstetten laden sie alle Interessierten zur Diskussion ein.",
+                "time": "Freitag, den 28.10.2022 um 18:30 Uhr",
+                "place": "Konferenzraum der Festhalle Albstadt-Ebingen. in der Hohenzollernstraße 10, 72458 Albstadt",
+                "image": "/resources/images/stadthalle.JPG"
+            },
+            {
+                "header": "2. Erweiterte Vorstandssitzung",
+                "event": "Veranstaltung",
+                "text": "Unser Fokus bei dieser Vorstandssitzung ist die weitere Auseinandersetzung, mit welchen Schwerpunkten die SPD Albstadt sich zukünftig befassen möchte. Freunde, Bekannte und Verwandte sind ebenfalls eingeladen! Wir freuen uns immer, wenn wir paar neue Gesichter sehen.",
+                "time": "Montag, den 07.11.2022 um 18:00 Uhr",
+                "place": "Carlos Tapas Bar, im Hof 14, 72458 Albstadt-Ebingen.",
+                "image": "/resources/images/zeitungsleser.JPG"
+            }
+        ]
+    }
+    
+}

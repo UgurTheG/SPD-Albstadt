@@ -10,78 +10,15 @@ let counter = 0
 // Aktuelles
 
 // News Preview
-let news_parent = document.querySelector("#figure");
-let preview_item = document.querySelector(".preview_item");
-
-let events = document.querySelector(".eintrag");
-let event_parent_current = document.querySelector("#current");
-let event_parent_next = document.querySelector("#next");
-
 let partei_parent = document.querySelector(".partei .grid");
 let partei_cell = partei_parent.querySelector(".cell");
-
-let month = new Date().getMonth() + 1
-let year = new Date().getFullYear()
-
-const months = [
-    'Januar',
-    'Februar',
-    'März',
-    'April',
-    'Mai',
-    'Juni',
-    'Juli',
-    'August',
-    'September',
-    'Oktober',
-    'November',
-    'Dezember'
-];
-
-document.querySelector("#kalendermonat").innerHTML = months[month-1]
-
-let n_month = month % 12 + 1
 
 fetch("../resources/data/data.json")
     .then((response) => {
         return response.json();
     })
     .then((data) => {
-        for (const dataNew of data.news) {
-            const news_clone = preview_item.cloneNode(true);
-            news_parent.appendChild(news_clone);
 
-            news_clone.querySelector("h3").innerHTML = dataNew.heading;
-            news_clone.querySelector("p").innerHTML = dataNew.text;
-            news_clone.style.backgroundImage = "url(" + dataNew.image + ")"
-        }
-        news_parent.removeChild(preview_item);
-
-        if (data[`${month}_${year}`] != null) {
-            for (let j = 0; j < data[`${month}_${year}`].length; j++) {
-
-                const event_clone = events.cloneNode(true);
-
-                event_parent_current.appendChild(event_clone);
-
-                const { header, event, text, time, place, image } = data[`${month}_${year}`][j]
-
-                insertData(event_clone, event, header, text, time, place, image);
-
-            }
-            event_parent_current.removeChild(events);
-        }
-
-        if (data[`${n_month}_${year}`] != null) {
-            for (let k = 0; k < data[`${n_month}_${year}`].length; k++) {
-                const event_clone = events.cloneNode(true);
-                event_parent_next.appendChild(event_clone);
-
-                const { event, header, text, time, place, image } = data[`${n_month}_${year}`][k];
-
-                insertData(event_clone, event, header, text, time, place, image);
-            }
-        }
         const dataNewsFull = data.news_full
         for (let z = 0; z < dataNewsFull.length; z++) {
             const blog_clone = document.querySelector(".newspage .beitrag").cloneNode(true);
@@ -176,12 +113,3 @@ let historie_heading = document.querySelectorAll(".absatz .text_heading")
 historie_heading.forEach(el => el.addEventListener('click', ev =>  {
     ev.target.parentElement.classList.toggle("active")
 }));
-
-function insertData(event_clone, event, header, text, time, place, image) {
-    event_clone.querySelector(".event").innerHTML = event;
-    event_clone.querySelector(".name").innerHTML = header;
-    event_clone.querySelector(".text").innerHTML = text;
-    event_clone.querySelector(".time p").innerHTML = time;
-    event_clone.querySelector(".place p").innerHTML = place
-    event_clone.querySelector(".imageArea img").src = image
-}
