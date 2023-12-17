@@ -84,7 +84,7 @@
             "phone": "(07431) 51822",
             "mail": "jumroth@t-online.de",
             "more": "Gemeinderätin der Stadt Albstadt",
-            "image": "/resources/images/Marianne Roth.webp"
+            "image": "/resources/images/MarianneRoth.webp"
         },
         {
             "name": "Nils Maute",
@@ -94,7 +94,7 @@
             "phone": "",
             "mail": "mautenils@icloud.com",
             "more": "Beisitzer SPD Zollernalb",
-            "image": "/resources/images/Nils Maute1.webp"
+            "image": "/resources/images/NilsMaute1.webp"
         },
         {
             "name": "Renate Straub",
@@ -104,7 +104,7 @@
             "phone": "(07432) 13679",
             "mail": "",
             "more": "",
-            "image": "/resources/images/Renate Straub.webp"
+            "image": "/resources/images/RenateStraub.webp"
         },
         {
             "name": "Gerhard Heusel",
@@ -114,7 +114,7 @@
             "phone": "(07431) 51822",
             "mail": "DGHeusel@aol.com",
             "more": "",
-            "image": "/resources/images/Gerhard Heusel.webp"
+            "image": "/resources/images/GerhardHeusel.webp"
         },
         {
             "name": "Simon Much",
@@ -124,7 +124,7 @@
             "phone": "",
             "mail": "",
             "more": "Presse & Schriftführer*in",
-            "image": "/resources/images/Simon Much.webp"
+            "image": "/resources/images/SimonMuch.webp"
         },
         {
             "name": "Martin Frohme",
@@ -134,7 +134,7 @@
             "phone": "",
             "mail": "MartinFrohme@t-online.de",
             "more": "Gemeinderat der Stadt Albstadt, Kreisrat im Zollernalbkreis, Fraktionsvorsitzender der SPD Kreistags Fraktion Zollernalb",
-            "image": "/resources/images/Martin Frohme.webp"
+            "image": "/resources/images/MartinFrohme.webp"
         },
         {
             "name": "Frank Hipp",
@@ -144,7 +144,7 @@
             "phone": "",
             "mail": "",
             "more": "Gemeinderat der Stadt Albstadt",
-            "image": "/resources/images/Frank Hipp.webp"
+            "image": "/resources/images/FrankHipp.webp"
         },
         {
             "name": "Carmen Soudani",
@@ -164,7 +164,7 @@
             "phone": "",
             "mail": "",
             "more": "",
-            "image": "/resources/images/Connie Wohnhas.webp"
+            "image": "/resources/images/ConnieWohnhas.webp"
         }
     ],
     "historie": [
