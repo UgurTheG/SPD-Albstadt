@@ -26,11 +26,6 @@ fetch("../resources/data/events/Jahresplanung SPD Albstadt für die Homepage.xl
     const workbook = XLSX.read(data, { type: 'array' });
     for (const sheetName of workbook.SheetNames) {
       for (let sheetInfo of XLSX.utils.sheet_to_json(workbook.Sheets[sheetName])) {
-
-        console.log(sheetInfo.Datum);
-        console.log(nextYear);
-        console.log(sheetInfo.Datum.includes(nextYear));
-        console.log(nextMonthFormat);
         let eventsClone = eventObject.cloneNode(true);
         eventsClone.style.display='';
         insertData(eventsClone, sheetInfo);
