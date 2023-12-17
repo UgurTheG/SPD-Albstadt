@@ -13,21 +13,7 @@ for (const contentKey of navs) {
   document.querySelector(contentKey).style.display = "none";
 }
 
-for(const navTriggerElement of navTrigger){
-  const navAnchor = document.querySelector(navTriggerElement);
-    navAnchor.addEventListener("click", function (event) {
-      event.preventDefault();
-      browserhistory.push(navTriggerElement)
-  })
-}
-const returnToHome = document.querySelector("#menu-icon");
-returnToHome.addEventListener("click", function (event) {
-      event.preventDefault();
-      browserhistory.pop();
-  })
-
-
-//aktuelles
+// aktuelles
 document.querySelector(".trigger_aktuelles").onclick = function () {
   left.classList.toggle("active");
   right.classList.toggle("active");
