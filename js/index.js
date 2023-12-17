@@ -80,7 +80,7 @@ document.querySelector(".trigger_historie").onclick = function () {
   document.querySelector(".historie").style.display = "block";
   document.querySelector(".kontakte").style.display = "none";
 };
-//kontakte
+// kontakte
 document.querySelector(".trigger_kontakte").onclick = function () {
   left.classList.toggle("active");
   right.classList.toggle("active");
