@@ -39,8 +39,8 @@ fetch("../resources/data/events/Jahresplanung SPD Albstadt für die Homepage.xl
   });
 
 function insertData(eventClone, eventOccurence) {
-  eventClone.querySelector(".name").innerHTML = "Veranstaltung";
-  eventClone.querySelector(".event").innerHTML = eventOccurence.Name;
+  eventClone.querySelector(".name").innerHTML = eventOccurence.Name;
+  eventClone.querySelector(".event").innerHTML = "Veranstaltung";
   eventClone.querySelector(".text").innerHTML = eventOccurence.Thema;
   eventClone.querySelector(".time p").innerHTML = eventOccurence.Datum;
   eventClone.querySelector(".place p").innerHTML = eventOccurence.Ort;
