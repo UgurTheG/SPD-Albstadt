@@ -20,11 +20,11 @@ fetch("../resources/data/data.json")
     .then((data) => {
 
         const dataNewsFull = data.news_full
-        for (let z = 0; z < dataNewsFull.length; z++) {
+        for (const element of dataNewsFull) {
             const blog_clone = document.querySelector(".newspage .beitrag").cloneNode(true);
             document.querySelector(".newspage .beitrag").parentElement.appendChild(blog_clone);
 
-            const { heading, date, text, image} = dataNewsFull[z];
+            const { heading, date, text, image} = element;
             blog_clone.querySelector("h2").innerText = heading
             blog_clone.querySelector(".datum").innerText = date
             blog_clone.querySelector(".main").innerHTML = text
@@ -32,10 +32,10 @@ fetch("../resources/data/data.json")
         }
         document.querySelector(".newspage").removeChild(document.querySelector(".newspage .beitrag"));
 
-        for (let y = 0; y < data.news_fraktion.length; y++) {
+        for (const element of data.news_fraktion) {
             const clone_blog = document.querySelector("#fraktion_newspage .beitrag").cloneNode(true);
             document.querySelector("#fraktion_newspage .beitrag").parentElement.appendChild(clone_blog);
-            const { heading, date, text, image} = data.news_fraktion[y];
+            const { heading, date, text, image} = element;
 
             clone_blog.querySelector("h2").innerText = heading
             clone_blog.querySelector(".datum").innerText = date
@@ -45,7 +45,7 @@ fetch("../resources/data/data.json")
         document.querySelector("#fraktion_newspage").removeChild(document.querySelector("#fraktion_newspage .beitrag"));
 
         let dataPartei = data.partei
-        for (let l = 0; l < dataPartei.length; l++) {
+        for (const element of dataPartei) {
             const partei_clone = partei_cell.cloneNode(true);
             partei_parent.appendChild(partei_clone);
             partei_clone.addEventListener("click", (e) => {
@@ -53,7 +53,7 @@ fetch("../resources/data/data.json")
                 e.currentTarget.classList.toggle("active");
             });
 
-            const { name, title, street, place, phone, mail, more, image } = dataPartei[l];
+            const { name, title, street, place, phone, mail, more, image } = element;
 
             partei_clone.querySelector(".name").innerHTML = name;
             partei_clone.querySelector(".text h2").innerHTML = name;

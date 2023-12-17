@@ -1,7 +1,6 @@
 const left = document.querySelector(".title");
 const right = document.querySelector(".navigator");
 const content = document.querySelector(".menupunkt");
-const browserhistory = [];
 const navs = [".aktuelles", ".partei", ".fraktion", ".historie", ".kontakte"];
 const navTrigger = [
   "#trigger_aktuelles",
@@ -26,20 +25,6 @@ returnToHome.addEventListener("click", function (event) {
       event.preventDefault();
       browserhistory.pop();
   })
-
-document.addEventListener("keydown", KeyCheck);  //or however you are calling your method
-function KeyCheck(event)
-{
-   var KeyID = event.keyCode;
-   switch(KeyID)
-   {
-    case 8:
-      if (browserhistory.length !== 0) {
-        browserhistory.pop();
-        document.getElementById("menu-icon").click();
-      }
-   }
-}
 
 
 //aktuelles
@@ -94,8 +79,6 @@ document.querySelector(".trigger_fraktion").onclick = function () {
   document
     .querySelectorAll(".selector ul li.active")
     .forEach((f) => f.classList.remove("active"));
-  // document.querySelectorAll(".selector ul li")[0].classList.add("active")
-  //selector.classList.remove("active");
 };
 //historie
 document.querySelector(".trigger_historie").onclick = function () {
