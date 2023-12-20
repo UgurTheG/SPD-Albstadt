@@ -2,7 +2,7 @@
 let images = []
 
 for (let a = 1; a <= 5; a++) {
-    images[a] = "resources/images/gallery/"+a+".jpeg"
+    images[a] = "resources/images/gallery/"+a+".webp"
 }
 
 let counter = 0
