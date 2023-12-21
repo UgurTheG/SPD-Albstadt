@@ -6,7 +6,7 @@
         "place": "72458 Albstadt-Ebingen",
         "phone": "(07431) 51822",
         "mail": "jumroth@t-online.de",
-        "more": "Gemeinderätin der Stadt Albstadt",
+        "more": ["Gemeinderätin der Stadt Albstadt"],
         "image": "/resources/images/MarianneRoth.webp"
     },
     {
@@ -16,7 +16,7 @@
         "place": "72461 Albstadt-Truchtelfingen",
         "phone": "",
         "mail": "mautenils@icloud.com",
-        "more": "Beisitzer SPD Zollernalb",
+        "more": ["Beisitzer SPD Zollernalb"],
         "image": "/resources/images/NilsMaute1.webp"
     },
     {
@@ -26,7 +26,7 @@
         "place": "72459 Albstadt-Pfeffingen",
         "phone": "(07432) 13679",
         "mail": "",
-        "more": "",
+        "more": [],
         "image": "/resources/images/RenateStraub.webp"
     },
     {
@@ -36,7 +36,7 @@
         "place": "72458 Albstadt-Ebingen",
         "phone": "(07431) 51822",
         "mail": "DGHeusel@aol.com",
-        "more": "",
+        "more": [],
         "image": "/resources/images/GerhardHeusel.webp"
     },
     {
@@ -46,7 +46,7 @@
         "place": "",
         "phone": "",
         "mail": "",
-        "more": "Presse & Schriftführer*in",
+        "more": ["Presse & Schriftführer*in"],
         "image": "/resources/images/SimonMuch.webp"
     },
     {
@@ -56,7 +56,7 @@
         "place": "72459 Albstadt-Laufen",
         "phone": "",
         "mail": "MartinFrohme@t-online.de",
-        "more": "Gemeinderat der Stadt Albstadt, Kreisrat im Zollernalbkreis, Fraktionsvorsitzender der SPD Kreistags Fraktion Zollernalb",
+        "more": ["Gemeinderat der Stadt Albstadt", "Kreisrat im Zollernalbkreis", "Fraktionsvorsitzender der SPD Kreistagsfraktion Zollernalb"],
         "image": "/resources/images/MartinFrohme.webp"
     },
     {
@@ -66,7 +66,7 @@
         "place": "72458 Albstadt-Ebingen",
         "phone": "",
         "mail": "",
-        "more": "Gemeinderat der Stadt Albstadt",
+        "more": ["Gemeinderat der Stadt Albstadt"],
         "image": "/resources/images/FrankHipp.webp"
     },
     {
@@ -76,7 +76,7 @@
         "place": "",
         "phone": "",
         "mail": "",
-        "more": "",
+        "more": [],
         "image": "/resources/images/CarmenSoudani.webp"
     },
     {
@@ -86,7 +86,7 @@
         "place": "",
         "phone": "",
         "mail": "",
-        "more": "",
+        "more": [],
         "image": "/resources/images/ConnieWohnhas.webp"
     }
 ]

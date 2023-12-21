@@ -25,12 +25,20 @@ fetch('resources/data/partei/mitglieder.json')
         parteiClone.querySelector('.text .mail').innerHTML = `E-Mail: ${mail}`;
       }
       if (phone !== '') {
-        parteiClone.querySelector('.text .phone').innerHTML = `Tel.: ${phone}`;
+        parteiClone.querySelector('.text .phone').innerHTML = `Telefonnummer: ${phone}`;
       }
 
       parteiClone.querySelector('.text .street').innerHTML = street;
       parteiClone.querySelector('.text .place').innerHTML = place;
-      parteiClone.querySelector('.text .more').innerHTML = more;
+      if (more.length !== 0) {
+        const unorderedList = document.createElement('ul');
+        more.forEach((responsability) => {
+          const list = document.createElement('li');
+          list.innerHTML = responsability;
+          unorderedList.appendChild(list);
+        });
+        parteiClone.querySelector('.text .more').appendChild(unorderedList);
+      }
       parteiClone.querySelector('img').src = image;
     });
 
