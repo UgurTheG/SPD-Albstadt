@@ -7,7 +7,7 @@ for (let year = startYear; year >= endYear; year -= 1) {
   const liElement = document.createElement('li');
 
   const aElement = document.createElement('a');
-  aElement.setAttribute('href', `resources/Haushaltsrede für ${year}.pdf`);
+  aElement.setAttribute('href', `resources/data/fraktion/haushaltsreden/${year}.pdf`);
   aElement.setAttribute('target', '_blank');
   aElement.setAttribute('rel', 'noopener noreferrer');
   aElement.textContent = `Haushaltsrede ${year}`;

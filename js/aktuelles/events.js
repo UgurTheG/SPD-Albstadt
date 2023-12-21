@@ -11,12 +11,13 @@ const current = new Intl.DateTimeFormat(
   'de',
   { month: 'long' },
 ).format(new Date());
-document.querySelector('#kalendermonat').innerHTML = current;
+document.querySelector('#kalendermonat').innerHTML = `${current} ${currentYear}`;
 
 const future = new Intl.DateTimeFormat(
   'de',
   { month: 'long' },
 ).format(new Date(nextYear, nextMonth - 1));
+document.querySelector('#kalendernachmonat').innerHTML = `${future} ${nextYear}`;
 
 function createHeadline(headline) {
   const headlineDiv = document.createElement('div');
@@ -128,7 +129,7 @@ function createStructure(sheetInfo) {
 function checkDateTime(sheetDate, sheetTime, sheetMonth) {
   return sheetDate.includes(sheetTime) && sheetDate.toLowerCase().includes(sheetMonth);
 }
-fetch('../resources/data/events/Jahresplanung SPD Albstadt für die Homepage.xlsx')
+fetch('../resources/data/aktuelles/Termine.xlsx')
   .then((response) => response.arrayBuffer())
   .then((data) => {
     const workbook = XLSX.read(data, { type: 'array' });
