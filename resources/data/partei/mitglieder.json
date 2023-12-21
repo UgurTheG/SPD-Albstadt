@@ -1,0 +1,92 @@
+[
+    {
+        "name": "Marianne Roth",
+        "title": "Vorsitzende",
+        "street": "Flanderstraße 35",
+        "place": "72458 Albstadt-Ebingen",
+        "phone": "(07431) 51822",
+        "mail": "jumroth@t-online.de",
+        "more": "Gemeinderätin der Stadt Albstadt",
+        "image": "/resources/images/MarianneRoth.webp"
+    },
+    {
+        "name": "Nils Maute",
+        "title": "Vorsitzender",
+        "street": "Reuterweg 18",
+        "place": "72461 Albstadt-Truchtelfingen",
+        "phone": "",
+        "mail": "mautenils@icloud.com",
+        "more": "Beisitzer SPD Zollernalb",
+        "image": "/resources/images/NilsMaute1.webp"
+    },
+    {
+        "name": "Renate Straub",
+        "title": "Stellvertretende Vorsitzende",
+        "street": "Paulinestraße 50",
+        "place": "72459 Albstadt-Pfeffingen",
+        "phone": "(07432) 13679",
+        "mail": "",
+        "more": "",
+        "image": "/resources/images/RenateStraub.webp"
+    },
+    {
+        "name": "Gerhard Heusel",
+        "title": "Kassierer",
+        "street": "Schmiechastraße 173",
+        "place": "72458 Albstadt-Ebingen",
+        "phone": "(07431) 51822",
+        "mail": "DGHeusel@aol.com",
+        "more": "",
+        "image": "/resources/images/GerhardHeusel.webp"
+    },
+    {
+        "name": "Simon Much",
+        "title": "Referent für Öffentlichkeitsarbeit",
+        "street": "",
+        "place": "",
+        "phone": "",
+        "mail": "",
+        "more": "Presse & Schriftführer*in",
+        "image": "/resources/images/SimonMuch.webp"
+    },
+    {
+        "name": "Martin Frohme",
+        "title": "Beisitzer",
+        "street": "Tieringer Str. 35",
+        "place": "72459 Albstadt-Laufen",
+        "phone": "",
+        "mail": "MartinFrohme@t-online.de",
+        "more": "Gemeinderat der Stadt Albstadt, Kreisrat im Zollernalbkreis, Fraktionsvorsitzender der SPD Kreistags Fraktion Zollernalb",
+        "image": "/resources/images/MartinFrohme.webp"
+    },
+    {
+        "name": "Frank Hipp",
+        "title": "Beisitzer",
+        "street": "Am Westbahnhof 6",
+        "place": "72458 Albstadt-Ebingen",
+        "phone": "",
+        "mail": "",
+        "more": "Gemeinderat der Stadt Albstadt",
+        "image": "/resources/images/FrankHipp.webp"
+    },
+    {
+        "name": "Carmen Soudani",
+        "title": "Beisitzerin",
+        "street": "",
+        "place": "",
+        "phone": "",
+        "mail": "",
+        "more": "",
+        "image": "/resources/images/CarmenSoudani.webp"
+    },
+    {
+        "name": "Connie Wohnhas",
+        "title": "Beisitzerin",
+        "street": "",
+        "place": "",
+        "phone": "",
+        "mail": "",
+        "more": "",
+        "image": "/resources/images/ConnieWohnhas.webp"
+    }
+]

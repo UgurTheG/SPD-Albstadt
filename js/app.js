@@ -1,115 +1,78 @@
 // Default
-let images = []
+const images = [];
 
-for (let a = 1; a <= 5; a++) {
-    images[a] = "resources/images/gallery/"+a+".webp"
+for (let a = 1; a <= 5; a += 1) {
+  images[a] = `resources/images/gallery/${a}.webp`;
 }
 
-let counter = 0
+let counter = 1;
 
 // Aktuelles
 
 // News Preview
-let partei_parent = document.querySelector(".partei .grid");
-let partei_cell = partei_parent.querySelector(".cell");
+fetch('../resources/data/data.json')
+  .then((response) => response.json())
+  .then((data) => {
+    const dataNewsFull = data.news_full;
+    dataNewsFull.forEach((element) => {
+      const newsPageBeitrag = document.querySelector('.newspage .beitrag').cloneNode(true);
+      document.querySelector('.newspage').appendChild(newsPageBeitrag);
 
-fetch("../resources/data/data.json")
-    .then((response) => {
-        return response.json();
-    })
-    .then((data) => {
-
-        const dataNewsFull = data.news_full
-        for (const element of dataNewsFull) {
-            const blog_clone = document.querySelector(".newspage .beitrag").cloneNode(true);
-            document.querySelector(".newspage .beitrag").parentElement.appendChild(blog_clone);
-
-            const { heading, date, text, image} = element;
-            blog_clone.querySelector("h2").innerText = heading
-            blog_clone.querySelector(".datum").innerText = date
-            blog_clone.querySelector(".main").innerHTML = text
-            blog_clone.querySelector("img").src = image
-        }
-        document.querySelector(".newspage").removeChild(document.querySelector(".newspage .beitrag"));
-
-        for (const element of data.news_fraktion) {
-            const clone_blog = document.querySelector("#fraktion_newspage .beitrag").cloneNode(true);
-            document.querySelector("#fraktion_newspage .beitrag").parentElement.appendChild(clone_blog);
-            const { heading, date, text, image} = element;
-
-            clone_blog.querySelector("h2").innerText = heading
-            clone_blog.querySelector(".datum").innerText = date
-            clone_blog.querySelector(".main").innerHTML = text
-            clone_blog.querySelector("img").src = image
-        }
-        document.querySelector("#fraktion_newspage").removeChild(document.querySelector("#fraktion_newspage .beitrag"));
-
-        let dataPartei = data.partei
-        for (const element of dataPartei) {
-            const partei_clone = partei_cell.cloneNode(true);
-            partei_parent.appendChild(partei_clone);
-            partei_clone.addEventListener("click", (e) => {
-                e.currentTarget.parentElement.querySelectorAll(".active").forEach(f => f.classList.remove("active"));
-                e.currentTarget.classList.toggle("active");
-            });
-
-            const { name, title, street, place, phone, mail, more, image } = element;
-
-            partei_clone.querySelector(".name").innerHTML = name;
-            partei_clone.querySelector(".text h2").innerHTML = name;
-            partei_clone.querySelector(".text h3").innerHTML = title;
-            partei_clone.querySelector(".partei_title").innerHTML = title
-
-            if (mail !== "") {
-                partei_clone.querySelector(".text .mail").innerHTML = "E-Mail: " + mail;
-            }
-            if (phone !== "") {
-                partei_clone.querySelector(".text .phone").innerHTML = "Tel.: " + phone;
-            }
-
-            partei_clone.querySelector(".text .street").innerHTML = street;
-            partei_clone.querySelector(".text .place").innerHTML = place;
-            partei_clone.querySelector(".text .more").innerHTML = more;
-            partei_clone.querySelector("img").src = image;
-        }
-        partei_parent.removeChild(partei_cell);
+      const {
+        heading, date, text, image,
+      } = element;
+      newsPageBeitrag.querySelector('h2').innerText = heading;
+      newsPageBeitrag.querySelector('.datum').innerText = date;
+      newsPageBeitrag.querySelector('.main').innerHTML = text;
+      newsPageBeitrag.querySelector('img').src = image;
     });
 
-document.querySelector(".content_abgeordneter .gallery .next").addEventListener("click", () => {
-    counter++
-    if (counter > images.length-1){
-        counter = 1
-    }
-    document.querySelector(".gallery figure img").src = images[counter]
-})
+    document.querySelector('.newspage').removeChild(document.querySelector('.newspage .beitrag'));
 
-document.querySelector(".content_abgeordneter .gallery .previous").addEventListener("click", () => {
-    document.querySelector(".gallery figure img").src = images[counter < 1 ? counter = images.length -1 : counter --]
-})
+    data.news_fraktion.forEach((element) => {
+      const newsPageBeitragClone = document.querySelector('#fraktion_newspage .beitrag').cloneNode(true);
+      document.querySelector('#fraktion_newspage').appendChild(newsPageBeitragClone);
+      const {
+        heading, date, text, image,
+      } = element;
 
-let fraktioncell_partent = document.querySelector(".content_personen .flexbox .kreisraete .contents").childNodes
-fraktioncell_partent.forEach(el => el.addEventListener('click', eventtt => {
-    eventtt.currentTarget.classList.toggle("active")
-}));
+      newsPageBeitragClone.querySelector('h2').innerText = heading;
+      newsPageBeitragClone.querySelector('.datum').innerText = date;
+      newsPageBeitragClone.querySelector('.main').innerHTML = text;
+      newsPageBeitragClone.querySelector('img').src = image;
+    });
 
-for (const element of ["aktuelles", "partei", "fraktion", "historie", "kontakte"]) {
-   document.getElementById("trigger_"+element).addEventListener('click', _ => {
-        document.getElementById("menu-icon").style.visibility = "visible";
-    })
-}
+    document.querySelector('#fraktion_newspage').removeChild(document.querySelector('#fraktion_newspage .beitrag'));
+  });
 
-document.getElementById("menu-icon").addEventListener('click', _ => {
-    document.getElementById("menu-icon").style.visibility = "hidden";
-})
+document.querySelector('.content_abgeordneter .gallery .next').addEventListener('click', () => {
+  counter += 1;
+  if (counter > images.length - 1) {
+    counter = 1;
+  }
+  document.querySelector('.gallery figure img').src = images[counter];
+});
 
-let fraktioncell_parent1 = document.querySelector(".content_personen .flexbox .gemeinderate .contents").childNodes
-fraktioncell_parent1.forEach(el => el.addEventListener('click', eventt => {
-    eventt.currentTarget.classList.toggle("active")
-}));
+document.querySelector('.content_abgeordneter .gallery .previous').addEventListener('click', () => {
+  counter -= 1;
+  if (counter < 1) {
+    counter = images.length - 1;
+  }
+  document.querySelector('.gallery figure img').src = images[counter];
+});
 
+['aktuelles', 'partei', 'fraktion', 'historie', 'kontakte'].forEach((element) => {
+  document.getElementById(`trigger_${element}`).addEventListener('click', () => {
+    document.getElementById('menu-icon').style.visibility = 'visible';
+  });
+});
 
-let historie_heading = document.querySelectorAll(".absatz .text_heading")
+document.getElementById('menu-icon').addEventListener('click', () => {
+  document.getElementById('menu-icon').style.visibility = 'hidden';
+});
 
-historie_heading.forEach(el => el.addEventListener('click', ev =>  {
-    ev.target.parentElement.classList.toggle("active")
+const historieHeading = document.querySelectorAll('.absatz .text_heading');
+
+historieHeading.forEach((el) => el.addEventListener('click', (ev) => {
+  ev.target.parentElement.classList.toggle('active');
 }));

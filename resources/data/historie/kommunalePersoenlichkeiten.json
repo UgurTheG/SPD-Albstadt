@@ -1,0 +1,177 @@
+[
+    {
+      "name": "Nils Maute",
+      "roles": [
+        {
+          "role": "Parteivorsitzender",
+          "period": "2022 bis heute"
+        }
+      ],
+      "img": "Nils Maute1.webp"
+    },
+    {
+      "name": "Marianne Roth",
+      "roles": [
+        {
+          "role": "Parteivorsitzende",
+          "period": "2018 bis heute"
+        },
+        {
+          "role": "Fraktionsvorsitzende",
+          "period": "2019 bis heute"
+        }
+      ],
+      "img": "MarianneRoth2015.webp"
+    },
+    {
+      "name": "Hendrik Dahlhoff",
+      "roles": [
+        {
+          "role": "Parteivorsitzender",
+          "period": "2016 bis 2018"
+        }
+      ],
+      "img": "Hendrik Dahlhoff.webp"
+    },
+    {
+      "name": "Elmar Maute",
+      "roles": [
+        {
+          "role": "Fraktionsvorsitzender",
+          "period": "2014 - 2019"
+        }
+      ],
+      "img": "maute_elmar3.webp"
+    },
+    {
+      "name": "Thomas Müller",
+      "roles": [
+        {
+          "role": "Parteivorsitzender",
+          "period": "2012 - 2016"
+        }
+      ],
+      "img": "ThomasMueller2015.webp"
+    },
+    {
+      "name": "Markus Dapp",
+      "roles": [
+        {
+          "role": "Fraktionsvorsitzender",
+          "period": "2009 - 2012"
+        },
+        {
+          "role": "Parteivorsitzender",
+          "period": "2001 - 2012"
+        }
+      ],
+      "img": "Markus-Dapp.webp"
+    },
+    {
+      "name": "Adolf Lederer",
+      "roles": [
+        {
+          "role": "Parteivorsitzender",
+          "period": "1999-2001"
+        }
+      ],
+      "img": "lederer_adolf.webp"
+    },
+    {
+      "name": "Klaus Laxander",
+      "roles": [
+        {
+          "role": "Parteivorsitzender",
+          "period": "1997 - 1999"
+        }
+      ],
+      "img": ""
+    },
+    {
+      "name": "Hans-Martin Haller",
+      "roles": [
+        {
+          "role": "Oberbürgermeister Albstadt",
+          "period": "1991 - 1999"
+        },
+        {
+          "role": "Landtagsabgeordneter im Wahlkreis 63",
+          "period": "2001 - 2016"
+        }
+      ],
+      "img": "HansMartinHaller2015.webp"
+    },
+    {
+      "name": "Rainer Günther",
+      "roles": [
+        {
+          "role": "Parteivorsitzender",
+          "period": "1985 - 1997"
+        },
+        {
+          "role": "Fraktionsvorsitzender",
+          "period": "1977 - 2009"
+        }
+      ],
+      "img": "Rainer Günther 2013-2.webp"
+    },
+    {
+      "name": "Manfred Fischer",
+      "roles": [
+        {
+          "role": "Parteivorsitzender",
+          "period": "1983 - 1985"
+        }
+      ],
+      "img": ""
+    },
+    {
+      "name": "Martin Frohme",
+      "roles": [
+        {
+          "role": "Parteivorsitzender",
+          "period": "1979 - 1983"
+        },
+        {
+          "role": "Fraktionsvorsitzender",
+          "period": "2012 - 2014"
+        }
+      ],
+      "img": "Martin Frohme 2.webp"
+    },
+    {
+      "name": "Norbert Fritsch",
+      "roles": [
+        {
+          "role": "Parteivorsitzender",
+          "period": "1975 - 1979"
+        }
+      ],
+      "img": "Norbert Fritsch 3.webp"
+    },
+    {
+      "name": "Erich Meier",
+      "roles": [
+        {
+          "role": "Fraktionsvorsitzender",
+          "period": "1975 - 1977"
+        }
+      ],
+      "img": "Erich Meier 2.webp"
+    },
+    {
+      "name": "Horst Kiesecker",
+      "roles": [
+        {
+          "role": "Bürgermeister Tailfingen",
+          "period": "1966 - 1975"
+        },
+        {
+          "role": "Landtagsabgeordneter im Wahlkreis 63",
+          "period": "1991 - 1999,<br>1992 - 1996"
+        }
+      ],
+      "img": "Horst Kiesecker.webp"
+    }
+  ]
+  

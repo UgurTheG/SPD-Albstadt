@@ -1,18 +1,16 @@
-let news_parent = document.querySelector("#figure");
-let preview_item = document.querySelector(".preview_item");
+const newsFigure = document.querySelector('#figure');
+const previewItem = document.querySelector('.preview_item');
 
-fetch("../resources/data/news/news.json")
-  .then((response) => {
-    return response.json();
-  })
+fetch('../resources/data/news/news.json')
+  .then((response) => response.json())
   .then((data) => {
-    for (const dataNew of data.news) {
-      const news_clone = preview_item.cloneNode(true);
-      news_parent.appendChild(news_clone);
+    data.news.forEach((dataNew) => {
+      const newsClone = previewItem.cloneNode(true);
+      newsFigure.appendChild(newsClone);
 
-      news_clone.querySelector("h3").innerHTML = dataNew.heading;
-      news_clone.querySelector("p").innerHTML = dataNew.text;
-      news_clone.style.backgroundImage = "url(" + dataNew.image + ")";
-    }
-    news_parent.removeChild(preview_item);
+      newsClone.querySelector('h3').innerHTML = dataNew.heading;
+      newsClone.querySelector('p').innerHTML = dataNew.text;
+      newsClone.style.backgroundImage = `url(${dataNew.image})`;
+    });
+    newsFigure.removeChild(previewItem);
   });

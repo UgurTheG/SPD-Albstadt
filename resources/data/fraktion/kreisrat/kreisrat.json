@@ -1,0 +1,20 @@
+[
+    {
+      "name": "Martin Frohme",
+      "subtitle": "Sonderschullehrer i.R.",
+      "image": "resources/images/frohme_martin_TM2_2426_rgb.webp",
+      "address": "Tieringer Str. 35",
+      "zipCode": "72459 Albstadt-Laufen",
+      "email": "MartinFrohme@t-online.de",
+      "functions": {
+        "paragraph": "Seit 33 Jahren bin ich Mitglied des Kreistags im Wahlkreis Albstadt. Im Technik und Umweltausschuss setze ich mich besonders für die Belange des Umweltschutzes ein, sei es bei der Abfallbeseitigung Müllvermeidung und dem Ausbau der Wertstoffzentren. Die Umweltbelastung der Zementfabrik Holcim habe ich mehrfach wegen veralteter Abgasfilter beanstandet. Ebenso trete ich für den Ausbau der Regionalstadtbahn, der Zollernalbbahn mit der Talgangbahn ein. Hier kann ich meine Ideen auch als Mitglied im Zweckverband Regionalstadtbahn einbringen. Im Aufsichtsrat des Zollernalb Klinikums engagiere ich mich seit langem für die Zentralklinik zwischen den bevölkerungsreichsten Mittelzentren Albstadt und Balingen. Dort bin ich auch im Bauausschuss der Zollernalbklinik. Seit Beginn dieser Wahlperiode 2019 bin ich Fraktionsvorsitzender der SPD im Kreistag",
+        "listItems": [
+          "Fraktionsvorsitzender seit 15.07.2019",
+          "Mitglied im Ausschuss für Umwelt und Technik",
+          "Mitglied im Aufsichtsrat des Zollernalb Klinikums",
+          "Mitglied im Bauausschuss der Zollernalb Klinikums",
+          "Mitglied im Zweckverband Regionalstadtbahn"
+        ]
+      }
+    }
+  ]
