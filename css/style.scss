@@ -534,12 +534,6 @@ footer {
                             font-size: 4rem;
                         }
                     }
-                    // p::first-letter {
-                    //     font-size: 1rem;
-                    //     line-height: 1.25rem;
-                    //     padding: 0px 0px;
-                    //     margin: 0;
-                    // }
     
                     .news {
                         top: 30px;
@@ -674,10 +668,6 @@ footer {
                         width: 100%;
                         margin-right: 10px
                     }
-    
-                    // @media(max-width: $phone) {
-                    //     padding: 20px
-                    // }
     
                     h3 {
                         @include font-text();
@@ -1020,7 +1010,6 @@ footer {
 
             .textarea {
                 width: 100%;
-                // height: max-content;
                 overflow: hidden;
                 position: relative;
 
@@ -1099,7 +1088,6 @@ footer {
                             grid-area: gallery;
                             justify-content: center;
                             align-items: flex-start;
-                            // background: #555;
                             box-shadow: 0px 0px 3px 2px lightgrey; 
                             position: relative;
 
@@ -1381,7 +1369,6 @@ footer {
                         display: flex;
                         justify-content: center;
                         align-items: flex-start;
-                        // background: #555;
                         box-shadow: 0px 0px 3px 2px lightgrey; 
     
                         
@@ -1704,7 +1691,6 @@ footer {
 
                             p {
                                 margin-top: 10px;
-                                // padding: 10px;
 
                                 @media (max-width: $tablet) {
                                     font-size: 1rem;
