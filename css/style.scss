@@ -1145,108 +1145,6 @@ footer {
 
                 }
 
-                // .container {
-                //     position: relative;
-                //     display: grid;
-                //     grid-template-columns: 1fr 3fr;
-                //     grid-template-rows: 1fr;
-                //     gap: 0px 0px;
-                //     grid-template-areas: ". .";
-
-                //     @media (max-width: $tablet) {
-                //         display: grid;
-                //         grid-template-columns: 1fr;
-                //         grid-template-rows: 0.75fr 3fr;
-                //         gap: 0px 0px;
-                //         grid-template-areas:
-                //             "."
-                //             ".";
-                //     }
-
-                //     .guideline {
-                //         height: 50vh;
-                //         position: sticky;
-                //         display: flex;
-                //         justify-content: center;
-                //         align-items: center;
-
-                //         ul {
-                //             list-style-type: none;
-
-                //             li {
-                //                 margin: 10px;
-                //                 padding: 10px;
-                //                 transform: translateX(10px);
-                //                 transition: 0.25s;
-                //                 cursor: pointer;
-
-                //                 @media (max-width: $tablet) {
-                //                     margin: 2.5px;
-                //                     padding: 2.5px;
-                //                 }
-
-                //                 &.active {
-                //                     color: darkslategrey;
-                //                     list-style-type: disc;
-                //                     transform: translateX(0px);
-                //                 }
-                //             }
-                //         }
-
-                //         @media (max-width: $tablet) {
-                //         }
-                //     }
-                //     .text {
-                //         box-shadow: 0px 0px 3px 2px lightgrey;
-                //         height: max-content;
-                //         padding: 20px;
-                //         display: none;
-
-                //         img {
-                //             float: left;
-                //             width: 30%;
-                //         }
-        
-
-                //         &.active {
-                //             display: block;
-                //         }
-
-                //         .text_heading {
-                //             h3 {
-                //                 display: none;
-
-                //                 &.active {
-                //                     display: contents;
-                //                 }
-                //             }
-                //         }
-
-                //         .textcontent {
-                //             display: none;
-
-                //             &.active {
-                //                 background: orange;
-                //                 display: contents;
-                //             }
-                //         }
-                //     }
-
-                //     h2 {
-                //         font-size: 2rem;
-                //     }
-
-                //     h3 {
-                //         font-size: 2rem;
-                //         text-transform: uppercase;
-                //         letter-spacing: 3px;
-                //         color: #aaa;
-                //     }
-                //     img {
-                //         width: 100%;
-                //     }
-                // }
-
                 @media (max-width: $tablet) {
                     width: 100%;
                 }
@@ -1432,17 +1330,29 @@ footer {
                 display: flex;
             }
         }
-
         .flexbox {
             display: none;
 
+            .displayname {
+                font-size: 2rem;
+                position: absolute;
+                z-index: 10;
+                background: $primary;
+                color: white;
+                width: 100%;
+                text-align: center;
+    
+                a {
+                    text-decoration: none;
+                    color: white
+                }
+            }
             .content_abgeordneter {
                 width: 100%;
                 position: relative;
                 height: auto;
     
                 .container {
-                    display: grid; 
                     grid-template-columns:  0.8fr 1.2fr;
                     grid-template-rows: 0.6fr 1.4fr; 
                     gap: 20px 0px; 
@@ -1451,7 +1361,6 @@ footer {
                       "gallery gallery";
     
                     @media (max-width: $tablet) {
-                        display: grid; 
                         grid-auto-columns: 1fr; 
                         grid-template-columns: 1fr; 
                         grid-template-rows: 0.2fr 0.65fr 1fr; 
@@ -1515,19 +1424,6 @@ footer {
                                 
                             }
     
-                            .displayname {
-                                font-size: 2rem;
-                                z-index: 10;
-                                background: $primary;
-                                color: white;
-                                width: 100%;
-                                text-align: center;
-
-                                a {
-                                    text-decoration: none;
-                                    color: white
-                                }
-                            }
     
                             .imgArea {
                                 max-height: 250px;
@@ -2006,149 +1902,7 @@ footer {
                     }
                 }
             }
-        }
-
-        .content_abgeordneter {
-            width: 100%;
-            display: none;
-            position: absolute;
-            top: 20px;
-            height: auto;
-            &.active {
-                display: contents;
-            }
-
-            .container {
-                display: grid; 
-                grid-template-columns:  0.8fr 1.2fr;
-                grid-template-rows: 0.6fr 1.4fr; 
-                gap: 20px 0px; 
-                grid-template-areas: 
-                  "introtext contacts"
-                  "gallery gallery";
-
-                @media (max-width: $tablet) {
-                    display: grid; 
-                    grid-auto-columns: 1fr; 
-                    grid-template-columns: 1fr; 
-                    grid-template-rows: 0.2fr 0.65fr 1fr; 
-                    gap: 30px 0px; 
-                    grid-template-areas: 
-                      "introtext"
-                      "gallery"
-                      "contacts"; 
-                }
-
-                .introtext {
-                    grid-area: introtext;
-                    
-                }
-                .gallery {
-                    height: 70vh;
-                    grid-area: gallery;
-                    display: flex;
-                    justify-content: center;
-                    align-items: flex-start;
-                    // background: #555;
-                    box-shadow: 0px 0px 3px 2px lightgrey; 
-
-                    
-                    .previous, .next {
-                        display: flex;
-                        align-items: center;
-                        font-size: 2.5rem;
-                        padding: 20px;
-                        cursor: pointer;
-                        user-select: none;
-                        align-self: center;
-                    }
-
-                    figure {
-                        width: 100%;
-                        height: 100%;
-                        display: flex;
-
-                        img {
-                            width: 100%;
-                            object-fit: contain;
-                        }
-                    }
-                }
-                .contacts {
-                    grid-area: contacts;
-                    display: grid; 
-                    grid-template-columns: 1.3fr 0.3fr 1.4fr; 
-                    grid-template-rows: 1.4fr; 
-                    gap: 0px 0px; 
-                    grid-template-areas: 
-                      ". . ."; 
-
-                    .display {
-                        width: 100%;
-                        position: relative;
-                        display: flex;
-                        flex-direction: column;
-
-                        @media (max-width: $tablet) {
-                            
-                        }
-
-                        .displayname {
-                            font-size: 2rem;
-                            z-index: 10;
-                            background: $primary;
-                            color: white;
-                            width: 100%;
-                            text-align: center;
-                        }
-
-                        .imgArea {
-                            max-height: 250px;
-                            width: 100%;
-                            position: relative;
-                            background: #000;
-                            overflow: hidden;
-
-                            img {
-                                width: 100%;
-                                position:relative;
-                                top: -100px;
-                                object-fit: cover;
-                            }
-                        }
-                    }
-                    .links {
-                        display: flex;
-                        flex-direction: column;
-                        padding: 0;
-                        margin: 0;
-
-                        .instagram, .facebook, .twitter {
-                            width: 0%;
-
-                            .logo {
-                               width: 42px;
-                               margin: 10px;
-
-                               img {
-                                position: relative;
-                                width: 100%;
-                            }
-                            }
-                        }  
-                    }
-                    .information {
-                        span {
-                            color: $primary;
-                            font-weight: bold;
-                        }
-                    }
-                }
-            }
-        }
-
-        
-        
+        }     
 
         .trigger {
             width: 100%;
@@ -2237,12 +1991,6 @@ footer {
         background: #121212;
         transition: 0.2s ease-in-out;
     }
-    // .top {
-    //     position: relative;
-    // }
-    // .middle {
-    //     width: 15px;
-    // }
     .bottom.active {
         transform: rotate(45deg);
     }
