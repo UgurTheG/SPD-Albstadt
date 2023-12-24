@@ -45,21 +45,6 @@ fetch('../resources/data/data.json')
     document.querySelector('#fraktion_newspage').removeChild(document.querySelector('#fraktion_newspage .beitrag'));
   });
 
-document.querySelector('.content_abgeordneter .gallery .next').addEventListener('click', () => {
-  counter += 1;
-  if (counter > images.length - 1) {
-    counter = 1;
-  }
-  document.querySelector('.gallery figure img').src = images[counter];
-});
-
-document.querySelector('.content_abgeordneter .gallery .previous').addEventListener('click', () => {
-  counter -= 1;
-  if (counter < 1) {
-    counter = images.length - 1;
-  }
-  document.querySelector('.gallery figure img').src = images[counter];
-});
 
 ['aktuelles', 'partei', 'fraktion', 'historie', 'kontakte'].forEach((element) => {
   document.getElementById(`trigger_${element}`).addEventListener('click', () => {

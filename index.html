@@ -14,24 +14,52 @@
   <link rel="icon" type="image/x-icon" href="resources/images/favicon.ico" />
   <title>SPD Albstadt</title>
   <meta name="description" content="" />
+  <script type="module">
+    import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs'
+
+    const swiper = new Swiper('.swiper', {
+      // Optional parameters
+      direction: 'horizontal',
+      loop: true,
+
+      // If we need pagination
+      pagination: {
+        el: '.swiper-pagination',
+      },
+
+      // Navigation arrows
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+
+      // And if we need scrollbar
+      scrollbar: {
+        el: '.swiper-scrollbar',
+      },
+    });
+  </script>
   <script>
     tailwind.config = {
-    theme: {
-    extend: {
-      colors: {
-        spdRot: '#e3000f',
+      theme: {
+        extend: {
+          colors: {
+            spdRot: '#e3000f',
+          },
+          backgroundColors: {
+            spdRot: '#e3000f',
+          },
+          fontFamily: {
+            'fontText': ['"Font-Text"'],
+          }
+        },
       },
-      fontFamily: {
-        'fontText': ['"Font-Text"'],
-      }
-    },
-  },
-}
+    }
   </script>
 </head>
 
 <body class="bg-white font-fontText p-0">
-<main>
+  <main>
     <div class="content">
       <div class="aktuelles menupunkt">
         <div class="heading">
@@ -57,7 +85,9 @@
                     </div>
                   </figure>
                 </div>
-                <button type="submit" class="px-[20px] py-[10px] mx-[0] my-[10px] bg-none bg-spdRot text-white border-[1px] border-[solid] border-white cursor-pointer [transition:0.4s] hover:bg-none hover:text-spdRot hover:border-[1px] hover:border-[solid] hover:border-spdRot" id="toNews">
+                <button type="submit"
+                  class="px-[20px] py-[10px] mx-[0] my-[10px] bg-none bg-spdRot text-white border-[1px] border-[solid] border-white cursor-pointer [transition:0.4s] hover:bg-none hover:text-spdRot hover:border-[1px] hover:border-[solid] hover:border-spdRot"
+                  id="toNews">
                   Mehr lesen
                 </button>
               </div>
@@ -112,15 +142,23 @@
         <div class="heading">
           <h1>Partei</h1>
         </div>
-        <div class="relative mb-5 w-4/5 -mt-5 [@media(max-width:1600px)]:w-[70%] [@media(max-width:1000px)]:w-[90%]" id="parteiinfo">
-                      Das sind die Mitglieder des SPD-Albstadt Vorstandes, die bei der Jahreshauptversammlung im Juli 2022 gewählt wurden.
+        <div class="relative mb-5 w-4/5 -mt-5 [@media(max-width:1600px)]:w-[70%] [@media(max-width:1000px)]:w-[90%]"
+          id="parteiinfo">
+          Das sind die Mitglieder des SPD-Albstadt Vorstandes, die bei der Jahreshauptversammlung im Juli 2022 gewählt
+          wurden.
         </div>
         <div class="inhalte">
           <div class="flex w-full justify-center relative" id="menu_partei">
             <ul class="flex justify-center">
-              <li class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold" id="toPartei">Vorstand</li>
-              <li class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold" id="toSchwerpunkte">Schwerpunkte</li>
-              <li class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold" id="toAbgeordneter">Abgeordneter</li>
+              <li
+                class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold"
+                id="toPartei">Vorstand</li>
+              <li
+                class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold"
+                id="toSchwerpunkte">Schwerpunkte</li>
+              <li
+                class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold"
+                id="toAbgeordneter">Abgeordneter</li>
             </ul>
           </div>
           <div class="grid" id="partei">
@@ -160,23 +198,26 @@
           </div>
 
           <div class="flexbox" id="abgeordneter">
-            <div class="content_abgeordneter">
-              <div class="container">
-                <div class="gallery">
-                  <div class="previous">
-                    <p><</p>
+            <div class="w-full relative h-auto">
+              <div
+                class='grid-cols-[0.8fr_1.2fr] grid-rows-[0.6fr_1.4fr] gap-[20px 0px] [grid-template-areas: "gallery_gallery"] [@media(max-width:1000px)]:auto-cols-[1fr] [@media(max-width:1000px)]:grid-cols-[1fr] [@media(max-width:1000px)]:grid-rows-[0.2fr_0.65fr_1fr] [@media(max-width:1000px)]:gap-[30px [@media(max-width:1000px)]:0px] [@media(max-width:1000px)]:[grid-template-areas:"gallery"_"contacts"]'>
+                <div
+                  class="swiper h-[70vh] [grid-area:gallery] flex justify-center items-start [box-shadow:0px_0px_3px_2px_lightgrey]">
+                  <div class="swiper-wrapper w-full h-full flex">
+                    <img class="swiper-slide w-full object-contain" src="resources/images/gallery/1.webp" />
+                    <img class="swiper-slide w-full object-contain" src="resources/images/gallery/2.webp" />
+                    <img class="swiper-slide w-full object-contain" src="resources/images/gallery/3.webp" />
+                    <img class="swiper-slide w-full object-contain" src="resources/images/gallery/4.webp" />
+                    <img class="swiper-slide w-full object-contain" src="resources/images/gallery/5.webp" />
                   </div>
-                  <figure>
-                    <img src="resources/images/gallery/1.webp" alt="" />
-                  </figure>
-                  <div class="next">
-                    <p>></p>
+                  <div class="swiper-pagination"></div>
+                  <div class="swiper-button-prev flex items-center text-3xl p-5 cursor-pointer select-none self-center">
                   </div>
-                  <div class="displayname">
-                    <a href="https://robin-mesarosch.de/">Robin Mesarosch</a>
+                  <div class="swiper-button-next flex items-center text-3xl p-5 cursor-pointer select-none self-center">
                   </div>
-                  <div class="links"></div>
-                  <div class="information"></div>
+                  <div class="text-3xl absolute z-10 bg-spdRot text-white w-full text-center">
+                    <a class="no-underline text-white" href="https://robin-mesarosch.de/">Robin Mesarosch</a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -188,7 +229,8 @@
         <div class="heading">
           <h1>Fraktion</h1>
         </div>
-        <div class="relative mb-5 w-4/5 -mt-5 [@media(max-width:1600px)]:w-[70%] [@media(max-width:1000px)]:w-[90%]" id="fraktioninfo">
+        <div class="relative mb-5 w-4/5 -mt-5 [@media(max-width:1600px)]:w-[70%] [@media(max-width:1000px)]:w-[90%]"
+          id="fraktioninfo">
           Das sind unsere Mitglieder, die erfolgreich bei den letzten
           Kommunalwahlen waren. Nun gestalten sie die Politik vor Ort mit,
           entweder im Gemeinderat Albstadt oder im Kreistag Zollernalb. Wollt
@@ -198,8 +240,12 @@
         <div class="inhalte">
           <div class="flex w-full justify-center relative" id="menu_fraktion">
             <ul class="flex justify-center">
-              <li class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold"  id="toMand">Mandatsträger</li>
-              <li class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold"  id="toNewsFraktion">Neues der Fraktion</li>
+              <li
+                class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold"
+                id="toMand">Mandatsträger</li>
+              <li
+                class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold"
+                id="toNewsFraktion">Neues der Fraktion</li>
             </ul>
           </div>
           <div class="content_personen">
@@ -261,7 +307,8 @@
         <div class="heading">
           <h1>Historie</h1>
         </div>
-        <div class="relative mb-5 w-4/5 -mt-5 [@media(max-width:1600px)]:w-[70%] [@media(max-width:1000px)]:w-[90%]" id="historieinfo" style="text-align: justify; width: 100%">
+        <div class="relative mb-5 w-4/5 -mt-5 [@media(max-width:1600px)]:w-[70%] [@media(max-width:1000px)]:w-[90%]"
+          id="historieinfo" style="text-align: justify; width: 100%">
           In den ehemals selbstständigen Orten Albstadts ist die
           Sozialdemokratie seit den 1860er Jahren urkundlich erwähnt. Auf
           diese traditionsreiche Geschichte der SPD in unserer Stadt sind wir
@@ -300,7 +347,9 @@
         <div class="heading">
           <h1>Kontakt</h1>
         </div>
-        <div class="fixed top-9 left-8 h-10 w-8 cursor-pointer [@media(max-width:700px)]:left-[90%] [@media(max-width:700px)]:top-8" id="historieinfo">
+        <div
+          class="fixed top-9 left-8 h-10 w-8 cursor-pointer [@media(max-width:700px)]:left-[90%] [@media(max-width:700px)]:top-8"
+          id="historieinfo">
           Haben Sie noch Fragen zu unserem Stadtverband oder zu unserer
           politischen Arbeit? Dann kontaktieren Sie uns doch einfach.
         </div>
@@ -342,15 +391,20 @@
                     style="resize: none" minlength="10"></textarea>
                 </div>
               </div>
-              <button type="submit" class="px-5 py-3 mx-0 my-3 bg-none bg-spdRot text-white border-[1px] border-solid border-white cursor-pointer [transition:0.4s] hover:bg-none hover:text-spdRot hover:border-[1px] hover:border-[solid] hover:border-spdRot">Abschicken</button>
+              <button type="submit"
+                class="px-5 py-3 mx-0 my-3 bg-none bg-spdRot text-white border-[1px] border-solid border-white cursor-pointer [transition:0.4s] hover:bg-none hover:text-spdRot hover:border-[1px] hover:border-[solid] hover:border-spdRot">Abschicken</button>
             </form>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="fixed top-9 left-8 h-10 w-8 cursor- z-[100] [@media(max-width:700px)]:left-[90%] [@media(max-width:700px)]:top-[30px]" id="menu-icon">
-      <div class="h-1 mt-1 w-8 bg-black [transition:0.2s_ease-in-out] active:-rotate-45 active:-translate-x-24 active:translate-y-24" id="top"></div>
+    <div
+      class="fixed top-9 left-8 h-10 w-8 cursor- z-[100] [@media(max-width:700px)]:left-[90%] [@media(max-width:700px)]:top-[30px]"
+      id="menu-icon">
+      <div
+        class="h-1 mt-1 w-8 bg-black [transition:0.2s_ease-in-out] active:-rotate-45 active:-translate-x-24 active:translate-y-24"
+        id="top"></div>
       <div class="h-1 mt-1 w-8 bg-black [transition:0.2s_ease-in-out] active:rotate-45" id="bottom"></div>
     </div>
     <div class="title">
