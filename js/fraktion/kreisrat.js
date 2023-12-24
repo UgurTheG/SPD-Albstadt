@@ -30,6 +30,7 @@ fetch('resources/data/fraktion/kreisrat/kreisrat.json')
       const p = document.createElement('p');
       p.innerHTML = profile.functions.paragraph;
       const ul = document.createElement('ul');
+      ul.className = "list-disc";
       profile.functions.listItems.forEach((item) => {
         const li = document.createElement('li');
         li.textContent = item;

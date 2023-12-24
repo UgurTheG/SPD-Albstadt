@@ -270,7 +270,6 @@ $menu-animation: 0.75s ease-in-out;
         background: none;
 
         ul {
-            list-style-type: none;
 
             li {
                 padding: 17.5px;
@@ -1921,7 +1920,6 @@ footer {
 
             ul {
                 color: white;
-                list-style-type: none;
 
 
                 .trigger {
@@ -1977,40 +1975,5 @@ footer {
     }
     .top.active {
         transform: rotate(-45deg) translate(-6.5px, 6.5px);
-    }
-}
-
-button {
-    padding: 10px 20px;
-    margin: 10px 0;
-    background: none;
-    background: $primary;
-    color: white;
-    border: 1px solid white;
-    cursor: pointer;
-}
-.menu {
-    display: flex;
-    width: 100%;
-    justify-content: center;
-    position: relative;
-
-    ul {
-        display: flex;
-        list-style-type: none; 
-        justify-content: center;
-    }
-    li {
-        cursor: pointer;
-        font-size: 1.25rem;
-        padding-left: 10px;
-        padding-right: 10px;
-        margin-bottom: 20px;
-        border-left: $primary 1px solid;
-
-        &.active {
-            border-left: $primary 2px solid;
-            font-weight: bold;
-        }
     }
 }

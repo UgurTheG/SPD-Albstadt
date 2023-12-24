@@ -12,8 +12,8 @@ document.querySelector('.trigger_aktuelles').onclick = () => {
   left.classList.toggle('active');
   right.classList.toggle('active');
   content.classList.toggle('active');
-  document.querySelector('.bottom').classList.remove('active');
-  document.querySelector('.top').classList.remove('active');
+  document.getElementById('bottom').classList.remove('active');
+  document.getElementById('top').classList.remove('active');
 
   document.querySelector('.aktuelles').style.display = 'block';
   document.querySelector('.aktuelles .mainpage').style.display = 'block';
@@ -28,8 +28,8 @@ document.querySelector('.trigger_partei').onclick = () => {
   left.classList.toggle('active');
   right.classList.toggle('active');
   content.classList.toggle('active');
-  document.querySelector('.bottom').classList.remove('active');
-  document.querySelector('.top').classList.remove('active');
+  document.getElementById('bottom').classList.remove('active');
+  document.getElementById('top').classList.remove('active');
   document.querySelector('#partei').classList.add('active');
   document.querySelector('#toPartei').classList.add('active');
 
@@ -44,8 +44,8 @@ document.querySelector('.trigger_fraktion').onclick = () => {
   left.classList.toggle('active');
   right.classList.toggle('active');
   content.classList.toggle('active');
-  document.querySelector('.bottom').classList.remove('active');
-  document.querySelector('.top').classList.remove('active');
+  document.getElementById('bottom').classList.remove('active');
+  document.getElementById('top').classList.remove('active');
   document.querySelector('#toMand').classList.add('active');
 
   document.querySelector('.aktuelles').style.display = 'none';
@@ -65,8 +65,8 @@ document.querySelector('.trigger_historie').onclick = () => {
   left.classList.toggle('active');
   right.classList.toggle('active');
   content.classList.toggle('active');
-  document.querySelector('.bottom').classList.remove('active');
-  document.querySelector('.top').classList.remove('active');
+  document.getElementById('bottom').classList.remove('active');
+  document.getElementById('top').classList.remove('active');
 
   document.querySelector('.aktuelles').style.display = 'none';
   document.querySelector('.partei').style.display = 'none';
@@ -79,8 +79,8 @@ document.querySelector('.trigger_kontakte').onclick = () => {
   left.classList.toggle('active');
   right.classList.toggle('active');
   content.classList.toggle('active');
-  document.querySelector('.bottom').classList.remove('active');
-  document.querySelector('.top').classList.remove('active');
+  document.getElementById('bottom').classList.remove('active');
+  document.getElementById('top').classList.remove('active');
 
   document.querySelector('.aktuelles').style.display = 'none';
   document.querySelector('.partei').style.display = 'none';
@@ -89,11 +89,11 @@ document.querySelector('.trigger_kontakte').onclick = () => {
   document.querySelector('.kontakte').style.display = 'block';
 };
 
-document.querySelector('.menu-icon').onclick = () => {
+document.getElementById('menu-icon').onclick = () => {
   left.classList.toggle('active');
   right.classList.toggle('active');
-  document.querySelector('.bottom').classList.toggle('active');
-  document.querySelector('.top').classList.toggle('active');
+  document.getElementById('bottom').classList.toggle('active');
+  document.getElementById('top').classList.toggle('active');
 
   document.querySelector('.loading').style.animation = 'none';
   document.querySelector('#loading_icon').style.animation = 'none';

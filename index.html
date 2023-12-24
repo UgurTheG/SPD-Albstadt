@@ -14,9 +14,23 @@
   <link rel="icon" type="image/x-icon" href="resources/images/favicon.ico" />
   <title>SPD Albstadt</title>
   <meta name="description" content="" />
+  <script>
+    tailwind.config = {
+    theme: {
+    extend: {
+      colors: {
+        spdRot: '#e3000f',
+      },
+      fontFamily: {
+        'fontText': ['"Font-Text"'],
+      }
+    },
+  },
+}
+  </script>
 </head>
 
-<body class="bg-[#fff] font-fontText p-0">
+<body class="bg-white font-fontText p-0">
 <main>
     <div class="content">
       <div class="aktuelles menupunkt">
@@ -43,7 +57,7 @@
                     </div>
                   </figure>
                 </div>
-                <button type="submit" class="px-[20px] py-[10px] mx-[0] my-[10px] bg-none bg-[#e3000f] text-[white] border-[1px] border-[solid] border-[white] cursor-pointer [transition:0.4s] hover:bg-none hover:text-[rgb(227,_0,_15)] hover:border-[1px] hover:border-[solid] hover:border-[rgb(227,0,15)]" id="toNews">
+                <button type="submit" class="px-[20px] py-[10px] mx-[0] my-[10px] bg-none bg-spdRot text-white border-[1px] border-[solid] border-white cursor-pointer [transition:0.4s] hover:bg-none hover:text-spdRot hover:border-[1px] hover:border-[solid] hover:border-spdRot" id="toNews">
                   Mehr lesen
                 </button>
               </div>
@@ -102,11 +116,11 @@
                       Das sind die Mitglieder des SPD-Albstadt Vorstandes, die bei der Jahreshauptversammlung im Juli 2022 gewählt wurden.
         </div>
         <div class="inhalte">
-          <div class="menu" id="menu_partei">
-            <ul>
-              <li id="toPartei">Vorstand</li>
-              <li id="toSchwerpunkte">Schwerpunkte</li>
-              <li id="toAbgeordneter">Abgeordneter</li>
+          <div class="flex w-full justify-center relative" id="menu_partei">
+            <ul class="flex justify-center">
+              <li class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold" id="toPartei">Vorstand</li>
+              <li class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold" id="toSchwerpunkte">Schwerpunkte</li>
+              <li class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold" id="toAbgeordneter">Abgeordneter</li>
             </ul>
           </div>
           <div class="grid" id="partei">
@@ -182,10 +196,10 @@
           aus der Fraktion“ vorbei.
         </div>
         <div class="inhalte">
-          <div class="menu" id="menu_fraktion">
-            <ul>
-              <li id="toMand">Mandatsträger</li>
-              <li id="toNewsFraktion">Neues der Fraktion</li>
+          <div class="flex w-full justify-center relative" id="menu_fraktion">
+            <ul class="flex justify-center">
+              <li class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold"  id="toMand">Mandatsträger</li>
+              <li class="cursor-pointer text-xl pl-2 pr-2 mb-5 border-l border-solid border-spdRot active:border-solid active:border-l-2 active:border-spdRot active:font-bold"  id="toNewsFraktion">Neues der Fraktion</li>
             </ul>
           </div>
           <div class="content_personen">
@@ -286,7 +300,7 @@
         <div class="heading">
           <h1>Kontakt</h1>
         </div>
-        <div class="relative mb-5 w-4/5 -mt-5 [@media(max-width:1600px)]:w-[70%] [@media(max-width:1000px)]:w-[90%]" id="historieinfo">
+        <div class="fixed top-9 left-8 h-10 w-8 cursor-pointer [@media(max-width:700px)]:left-[90%] [@media(max-width:700px)]:top-8" id="historieinfo">
           Haben Sie noch Fragen zu unserem Stadtverband oder zu unserer
           politischen Arbeit? Dann kontaktieren Sie uns doch einfach.
         </div>
@@ -328,16 +342,16 @@
                     style="resize: none" minlength="10"></textarea>
                 </div>
               </div>
-              <button type="submit" class="px-[20px] py-[10px] mx-[0] my-[10px] bg-none bg-[#e3000f] text-[white] border-[1px] border-[solid] border-[white] cursor-pointer [transition:0.4s] hover:bg-none hover:text-[rgb(227,_0,_15)] hover:border-[1px] hover:border-[solid] hover:border-[rgb(227,0,15)]">Abschicken</button>
+              <button type="submit" class="px-5 py-3 mx-0 my-3 bg-none bg-spdRot text-white border-[1px] border-solid border-white cursor-pointer [transition:0.4s] hover:bg-none hover:text-spdRot hover:border-[1px] hover:border-[solid] hover:border-spdRot">Abschicken</button>
             </form>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="menu-icon" id="menu-icon">
-      <div class="top icon"></div>
-      <div class="bottom icon"></div>
+    <div class="fixed top-9 left-8 h-10 w-8 cursor- z-[100] [@media(max-width:700px)]:left-[90%] [@media(max-width:700px)]:top-[30px]" id="menu-icon">
+      <div class="h-1 mt-1 w-8 bg-black [transition:0.2s_ease-in-out] active:-rotate-45 active:-translate-x-24 active:translate-y-24" id="top"></div>
+      <div class="h-1 mt-1 w-8 bg-black [transition:0.2s_ease-in-out] active:rotate-45" id="bottom"></div>
     </div>
     <div class="title">
       <div class="slidein">
@@ -366,19 +380,19 @@
     <div class="navigator">
       <nav class="nav">
         <ul>
-          <li>
+          <li id="aktuelles">
             <a href="#" class="trigger_aktuelles" id="trigger_aktuelles">Aktuelles</a>
           </li>
-          <li>
+          <li id="partei">
             <a href="#" class="trigger_partei" id="trigger_partei">Partei</a>
           </li>
-          <li>
+          <li id="fraktion">
             <a href="#" class="trigger_fraktion" id="trigger_fraktion">Fraktion</a>
           </li>
-          <li>
+          <li id="historie">
             <a href="#" class="trigger_historie" id="trigger_historie">Historie</a>
           </li>
-          <li>
+          <li id="kontakt">
             <a href="#" class="trigger_kontakte" id="trigger_kontakte">Kontakt</a>
           </li>
         </ul>
