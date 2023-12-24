@@ -41,11 +41,6 @@ $menu-animation: 0.75s ease-in-out;
     margin: 0;
     box-sizing: border-box;
 }
-body {
-    background: #fff;
-    @include font-text();
-    padding: 0;
-}
 
 //left-sided title
 .title {
@@ -1994,14 +1989,6 @@ button {
     border: 1px solid white;
     cursor: pointer;
 }
-.btn {
-    transition: 0.4s;
-}
-.btn:hover {
-    background: none;
-    color: $primary;
-    border: 1px solid $primary;
-}
 .menu {
     display: flex;
     width: 100%;
@@ -2025,19 +2012,5 @@ button {
             border-left: $primary 2px solid;
             font-weight: bold;
         }
-    }
-}
-.areainfo {
-    position: relative;
-    margin-bottom: 20px;
-    width: 80%;
-    margin-top: -20px;
-
-    @media (max-width: $laptop) {
-        width: 70%;
-    }
-
-    @media (max-width: $tablet) {
-        width: 90%;
     }
 }

@@ -16,11 +16,6 @@
   margin: 0;
   box-sizing: border-box;
 }
-body {
-  background: #fff;
-  font-family: "Font-Text";
-  padding: 0;
-}
 .title {
   position: fixed;
   top: 0;
@@ -1758,23 +1753,7 @@ footer {
 .menu-icon .top.active {
   transform: rotate(-45deg) translate(-6.5px, 6.5px);
 }
-button {
-  padding: 10px 20px;
-  margin: 10px 0;
-  background: none;
-  background: #e3000f;
-  color: white;
-  border: 1px solid white;
-  cursor: pointer;
-}
-.btn {
-  transition: 0.4s;
-}
-.btn:hover {
-  background: none;
-  color: #e3000f;
-  border: 1px solid #e3000f;
-}
+
 .menu {
   display: flex;
   width: 100%;
@@ -1797,20 +1776,4 @@ button {
 .menu li.active {
   border-left: #e3000f 2px solid;
   font-weight: bold;
-}
-.areainfo {
-  position: relative;
-  margin-bottom: 20px;
-  width: 80%;
-  margin-top: -20px;
-}
-@media (max-width: 1600px) {
-  .areainfo {
-    width: 70%;
- }
-}
-@media (max-width: 1000px) {
-  .areainfo {
-    width: 90%;
- }
 }

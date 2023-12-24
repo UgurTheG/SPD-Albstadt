@@ -4,6 +4,7 @@
 <head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <meta charset="UTF-8" />
@@ -15,8 +16,8 @@
   <meta name="description" content="" />
 </head>
 
-<body>
-  <main>
+<body class="bg-[#fff] font-fontText p-0">
+<main>
     <div class="content">
       <div class="aktuelles menupunkt">
         <div class="heading">
@@ -42,7 +43,7 @@
                     </div>
                   </figure>
                 </div>
-                <button type="submit" class="btn" id="toNews">
+                <button type="submit" class="px-[20px] py-[10px] mx-[0] my-[10px] bg-none bg-[#e3000f] text-[white] border-[1px] border-[solid] border-[white] cursor-pointer [transition:0.4s] hover:bg-none hover:text-[rgb(227,_0,_15)] hover:border-[1px] hover:border-[solid] hover:border-[rgb(227,0,15)]" id="toNews">
                   Mehr lesen
                 </button>
               </div>
@@ -97,9 +98,8 @@
         <div class="heading">
           <h1>Partei</h1>
         </div>
-        <div class="areainfo" id="parteiinfo" style="text-align: justify; width: 100%">
-          Das sind die Mitglieder des SPD-Albstadt Vorstandes, die bei der
-          Jahreshauptversammlung im Juli 2022 gewählt wurden.
+        <div class="relative mb-5 w-4/5 -mt-5 [@media(max-width:1600px)]:w-[70%] [@media(max-width:1000px)]:w-[90%]" id="parteiinfo">
+                      Das sind die Mitglieder des SPD-Albstadt Vorstandes, die bei der Jahreshauptversammlung im Juli 2022 gewählt wurden.
         </div>
         <div class="inhalte">
           <div class="menu" id="menu_partei">
@@ -174,7 +174,7 @@
         <div class="heading">
           <h1>Fraktion</h1>
         </div>
-        <div class="areainfo" id="fraktioninfo">
+        <div class="relative mb-5 w-4/5 -mt-5 [@media(max-width:1600px)]:w-[70%] [@media(max-width:1000px)]:w-[90%]" id="fraktioninfo">
           Das sind unsere Mitglieder, die erfolgreich bei den letzten
           Kommunalwahlen waren. Nun gestalten sie die Politik vor Ort mit,
           entweder im Gemeinderat Albstadt oder im Kreistag Zollernalb. Wollt
@@ -247,7 +247,7 @@
         <div class="heading">
           <h1>Historie</h1>
         </div>
-        <div class="areainfo" id="historieinfo" style="text-align: justify; width: 100%">
+        <div class="relative mb-5 w-4/5 -mt-5 [@media(max-width:1600px)]:w-[70%] [@media(max-width:1000px)]:w-[90%]" id="historieinfo" style="text-align: justify; width: 100%">
           In den ehemals selbstständigen Orten Albstadts ist die
           Sozialdemokratie seit den 1860er Jahren urkundlich erwähnt. Auf
           diese traditionsreiche Geschichte der SPD in unserer Stadt sind wir
@@ -286,7 +286,7 @@
         <div class="heading">
           <h1>Kontakt</h1>
         </div>
-        <div class="areainfo" id="historieinfo">
+        <div class="relative mb-5 w-4/5 -mt-5 [@media(max-width:1600px)]:w-[70%] [@media(max-width:1000px)]:w-[90%]" id="historieinfo">
           Haben Sie noch Fragen zu unserem Stadtverband oder zu unserer
           politischen Arbeit? Dann kontaktieren Sie uns doch einfach.
         </div>
@@ -328,7 +328,7 @@
                     style="resize: none" minlength="10"></textarea>
                 </div>
               </div>
-              <button type="submit" class="btn">Abschicken</button>
+              <button type="submit" class="px-[20px] py-[10px] mx-[0] my-[10px] bg-none bg-[#e3000f] text-[white] border-[1px] border-[solid] border-[white] cursor-pointer [transition:0.4s] hover:bg-none hover:text-[rgb(227,_0,_15)] hover:border-[1px] hover:border-[solid] hover:border-[rgb(227,0,15)]">Abschicken</button>
             </form>
           </div>
         </div>
