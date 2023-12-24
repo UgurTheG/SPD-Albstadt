@@ -1948,32 +1948,3 @@ footer {
         }
     }
 }
-
-.menu-icon {
-    position: fixed;
-    top: 35px;
-    left: 30px;
-    height: 40px;
-    width: 30px;
-    cursor: pointer;
-    z-index: 100;
-
-    @media (max-width: $phone) {
-        left: 90%;
-        top: 30px;
-    }
-
-    .icon {
-        height: 4px;
-        margin-top: 5px;
-        width: 30px;
-        background: #121212;
-        transition: 0.2s ease-in-out;
-    }
-    .bottom.active {
-        transform: rotate(45deg);
-    }
-    .top.active {
-        transform: rotate(-45deg) translate(-6.5px, 6.5px);
-    }
-}
