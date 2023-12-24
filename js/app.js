@@ -1,14 +1,3 @@
-// Default
-const images = [];
-
-for (let a = 1; a <= 5; a += 1) {
-  images[a] = `resources/images/gallery/${a}.webp`;
-}
-
-let counter = 1;
-
-// Aktuelles
-
 // News Preview
 fetch('../resources/data/data.json')
   .then((response) => response.json())

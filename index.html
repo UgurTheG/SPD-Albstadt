@@ -18,15 +18,17 @@
     import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs'
 
     const swiper = new Swiper('.swiper', {
-      // Optional parameters
+      autoHeight: true,
+      autoWeight: true,
       direction: 'horizontal',
-      loop: true,
 
       // If we need pagination
       pagination: {
         el: '.swiper-pagination',
       },
-
+      keyboard: {
+        enabled: true,
+      },
       // Navigation arrows
       navigation: {
         nextEl: '.swiper-button-next',
@@ -165,12 +167,12 @@
             <div class="cell">
               <img src="resources/images/timeline/MarianneRoth2015.webp" alt="" />
               <div class="name_title">
-                <div class="name">Marianne Roth</div>
-                <div class="partei_title">Vorsitzende</div>
+                <div class="name"></div>
+                <div class="partei_title"></div>
               </div>
               <div class="text">
-                <h2>Mariane Roth</h2>
-                <h3>Vorsitzende</h3>
+                <h2></h2>
+                <h3></h3>
                 <div class="adresse">
                   <div class="street"></div>
                   <div class="place"></div>
@@ -188,9 +190,9 @@
             </div>
           </div>
 
-          <div class="schwerpunkte" id="schwerpunkte">
-            <div class="content_schwerpunkte">
-              <div class="message404">
+          <div class="flexbox" id="schwerpunkte">
+            <div class="w-full h-full justify-center items-center active:flex">
+              <div class="text-center">
                 Dieser Teil befindet sich aktuell noch im Aufbau. <br />
                 <h2>Schauen Sie bald vorbei!</h2>
               </div>
@@ -198,26 +200,21 @@
           </div>
 
           <div class="flexbox" id="abgeordneter">
-            <div class="w-full relative h-auto">
-              <div
-                class='grid-cols-[0.8fr_1.2fr] grid-rows-[0.6fr_1.4fr] gap-[20px 0px] [grid-template-areas: "gallery_gallery"] [@media(max-width:1000px)]:auto-cols-[1fr] [@media(max-width:1000px)]:grid-cols-[1fr] [@media(max-width:1000px)]:grid-rows-[0.2fr_0.65fr_1fr] [@media(max-width:1000px)]:gap-[30px [@media(max-width:1000px)]:0px] [@media(max-width:1000px)]:[grid-template-areas:"gallery"_"contacts"]'>
-                <div
-                  class="swiper h-[70vh] [grid-area:gallery] flex justify-center items-start [box-shadow:0px_0px_3px_2px_lightgrey]">
-                  <div class="swiper-wrapper w-full h-full flex">
-                    <img class="swiper-slide w-full object-contain" src="resources/images/gallery/1.webp" />
-                    <img class="swiper-slide w-full object-contain" src="resources/images/gallery/2.webp" />
-                    <img class="swiper-slide w-full object-contain" src="resources/images/gallery/3.webp" />
-                    <img class="swiper-slide w-full object-contain" src="resources/images/gallery/4.webp" />
-                    <img class="swiper-slide w-full object-contain" src="resources/images/gallery/5.webp" />
+            <div class="relative w-1/2">
+              <div>
+                <div class="text-2xl absolute z-10 bg-spdRot text-white w-full text-center">
+                  <a href="https://robin-mesarosch.de/">Robin Mesarosch</a>
+                </div>
+                <div class="swiper shadow-2xl">
+                  <div class="swiper-wrapper flex">
+                    <img class="swiper-slide" src="resources/images/gallery/1.webp" />
+                    <img class="swiper-slide" src="resources/images/gallery/2.webp" />
+                    <img class="swiper-slide" src="resources/images/gallery/3.webp" />
+                    <img class="swiper-slide" src="resources/images/gallery/5.webp" />
                   </div>
                   <div class="swiper-pagination"></div>
-                  <div class="swiper-button-prev flex items-center text-3xl p-5 cursor-pointer select-none self-center">
-                  </div>
-                  <div class="swiper-button-next flex items-center text-3xl p-5 cursor-pointer select-none self-center">
-                  </div>
-                  <div class="text-3xl absolute z-10 bg-spdRot text-white w-full text-center">
-                    <a class="no-underline text-white" href="https://robin-mesarosch.de/">Robin Mesarosch</a>
-                  </div>
+                  <div class="swiper-button-prev"></div>
+                  <div class="swiper-button-next"></div>
                 </div>
               </div>
             </div>

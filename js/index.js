@@ -115,10 +115,7 @@ document.querySelector('#toNews').onclick = () => {
   }, 300);
 };
 
-const menup = document.querySelector('#menu_partei');
-const parteiMenue = menup.querySelector('ul').childNodes;
-
-parteiMenue.forEach((el) => el.addEventListener('click', (event) => {
+document.querySelector('#menu_partei').querySelector('ul').childNodes.forEach((el) => el.addEventListener('click', (event) => {
   event.currentTarget.parentElement
     .querySelectorAll('.active')
     .forEach((f) => f.classList.remove('active'));
@@ -144,10 +141,7 @@ document.querySelector('#toAbgeordneter').onclick = () => {
   document.querySelector('#parteiinfo').innerHTML = 'Robin Mesarosch ist seit der Bundestagswahl 2021 unser Abgeordneter für den Wahlkreis Zollernalb-Sigmaringen. In Berlin ist er in den Ausschüssen für Digitalisierung sowie Klimaschutz und Energie. Darum kämpft er auch in unserer Region und unserer Stadt für diese Themen. Für mehr Informationen zu seiner Arbeit entweder bei Facebook, Instagram oder Twitter vorbeischauen oder auf den unteren roten Balken mit Robin Mesarosch klicken und Ihr kommt auf seine Website. ';
 };
 
-const menuf = document.querySelector('#menu_fraktion');
-const fraktionsMitglieder = menuf.querySelector('ul').childNodes;
-
-fraktionsMitglieder.forEach((ele) => ele.addEventListener('click', (event) => {
+document.querySelector('#menu_fraktion').querySelector('ul').childNodes.forEach((ele) => ele.addEventListener('click', (event) => {
   event.currentTarget.parentElement
     .querySelectorAll('.active')
     .forEach((f) => f.classList.remove('active'));
