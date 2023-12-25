@@ -383,13 +383,21 @@
 
               <div class="text">
                 <div class="col">
-                  <label>Ihre Nachricht</label>
-                  <textarea rows="5" cols="60" name="textarea" placeholder="Text eingeben" required class="message"
-                    style="resize: none" minlength="10"></textarea>
+                  <label class="mb-1 text-sm">Ihre Nachricht</label>
+                  <textarea 
+                    rows="5" 
+                    cols="60" 
+                    name="textarea" 
+                    placeholder="Text eingeben" 
+                    required 
+                    class="message p-2.5 h-24 font-text text-sm w-full resize-none"
+                    minlength="10"
+                  ></textarea>
                 </div>
               </div>
+              
               <button type="submit"
-                class="px-5 py-3 mx-0 my-3 bg-none bg-spdRot text-white border-[1px] border-solid border-white cursor-pointer [transition:0.4s] hover:bg-none hover:text-spdRot hover:border-[1px] hover:border-[solid] hover:border-spdRot">Abschicken</button>
+                class="px-5 py-3 mx-0 my-3 bg-none bg-spdRot text-white border-[1px] border-solid border-white cursor-pointer [transition:0.4s] hover:bg-none hover:text-spdRot hover:border-[1px] hover:border-solid hover:border-spdRot">Abschicken</button>
             </form>
           </div>
         </div>

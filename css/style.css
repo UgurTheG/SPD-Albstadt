@@ -835,25 +835,6 @@ footer {
   margin: 1px 2.5px;
   padding: 5px 10px;
 }
-.content .kontakte .inhalte .txt form .text .col {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-}
-.content .kontakte .inhalte .txt form .text .col label {
-  margin: 1px 2.5px;
-  font-size: 0.85rem;
-}
-.content .kontakte .inhalte .txt form .text .col textarea {
-  padding: 10px 10px;
-  height: 100px;
-  font-family: "Font-Text";
-  font-size: 0.85rem;
-  width: 100%;
-}
-.content .kontakte .inhalte .txt form .text .col textarea::placeholder {
-  text-align: start;
-}
 .content .kontakte .inhalte .image {
   width: 50%;
   padding: 50px;
@@ -877,8 +858,6 @@ footer {
   flex-wrap: wrap;
   padding: 0;
   font-family: "Font-Text";
- /* Handle */
- /* Handle on hover */
 }
 .content .historie .inhalte ::-webkit-scrollbar {
   width: 10px;
