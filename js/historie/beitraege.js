@@ -35,6 +35,8 @@ fetch('resources/data/historie/historie.json')
       fragment.appendChild(historyPostHeading);
       fragment.appendChild(historyPostContent);
     });
+    historyPosts.removeChild(templateHeading);
+    historyPosts.removeChild(templateContent);
 
     historyPosts.appendChild(fragment);
   })
