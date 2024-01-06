@@ -6,12 +6,7 @@ fetch('resources/data/partei/mitglieder.json')
   .then((data) => {
     data.forEach((element) => {
       const parteiClone = parteiCell.cloneNode(true);
-      parteiParent.appendChild(parteiClone);
-      parteiClone.addEventListener('click', (e) => {
-        e.currentTarget.parentElement.querySelectorAll('.active').forEach((f) => f.classList.remove('active'));
-        e.currentTarget.classList.toggle('active');
-      });
-
+     
       const {
         name, title, street, place, phone, mail, more, image,
       } = element;
@@ -40,6 +35,16 @@ fetch('resources/data/partei/mitglieder.json')
         parteiClone.querySelector('.text .more').appendChild(unorderedList);
       }
       parteiClone.querySelector('img').src = image;
+      parteiClone.addEventListener('click', (e) => {
+        const tmpClass = e.currentTarget.className;
+
+        e.currentTarget.parentElement.querySelectorAll('.active').forEach((f) => f.classList.remove('active'));
+        if (!tmpClass.includes('active')){
+          e.currentTarget.classList.toggle('active');
+        }
+
+      });
+      parteiParent.appendChild(parteiClone);
     });
 
     parteiParent.removeChild(parteiCell);

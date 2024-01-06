@@ -1,37 +1,45 @@
-const container = document.getElementById('historiebeitraege');
+const historyPosts = document.querySelector('#accordion-nested-parent');
+const templateHeading = document.querySelector('#accordion-collapse-heading-1');
+const templateContent = document.querySelector('#accordion-collapse-body-1');
+let idCounter = 0;
 
 fetch('resources/data/historie/historie.json')
   .then((response) => response.json())
   .then((data) => {
-    data.forEach((period) => {
-      const absatzDiv = document.createElement('div');
-      absatzDiv.className = 'absatz';
+    const fragment = document.createDocumentFragment();
 
-      const heading = document.createElement('h3');
-      heading.className = 'text_heading';
-      heading.innerHTML = `${period.title} <div class="arrow"><</div>`;
-      absatzDiv.appendChild(heading);
+    data.forEach((historyEntry) => {
+      const historyPostHeading = templateHeading.cloneNode(true);
+      const historyPostContent = templateContent.cloneNode(true);
+      const headingId = `accordion-collapse-heading-${++idCounter}`;
 
-      const contentParagraph = document.createElement('p');
-      contentParagraph.className = 'textcontent';
-      contentParagraph.innerHTML = period.content;
-      contentParagraph.style.textAlign = 'justify';
-      absatzDiv.appendChild(contentParagraph);
+      historyPostHeading.querySelector('#historyHeader').textContent = historyEntry.title;
+      historyPostContent.querySelector('#historyContent').textContent = historyEntry.content;
 
-      const imgAreaDiv = document.createElement('div');
-      imgAreaDiv.className = 'imgArea';
-      const figure = document.createElement('figure');
-      period.images.forEach((imageSrc) => {
-        const img = document.createElement('img');
-        img.src = imageSrc;
-        figure.appendChild(img);
+      historyPostHeading.id = headingId;
+
+      const button = historyPostHeading.querySelector('#historyButton');
+      button.dataset.accordionTarget = `#accordion-collapse-body-${idCounter}`;
+      button.setAttribute('aria-controls', `accordion-collapse-body-${idCounter}`);
+
+      historyPostContent.id = `accordion-collapse-body-${idCounter}`;
+      historyPostContent.setAttribute('aria-labelledby', headingId);
+
+      historyEntry.images.forEach((imageSrc) => {
+        const historyImage = document.createElement("img");
+        historyImage.className = 'swiper-slide';
+        historyImage.src = imageSrc;
+        historyPostContent.querySelector('#historySlider').appendChild(historyImage);
       });
-      imgAreaDiv.appendChild(figure);
 
-      absatzDiv.appendChild(imgAreaDiv);
-      absatzDiv.childNodes.forEach((el) => el.addEventListener('click', (ev) => {
-        ev.target.parentElement.classList.toggle('active');
-      }));
-      container.appendChild(absatzDiv);
+      fragment.appendChild(historyPostHeading);
+      fragment.appendChild(historyPostContent);
     });
+    historyPosts.removeChild(templateHeading);
+    historyPosts.removeChild(templateContent);
+
+    historyPosts.appendChild(fragment);
+  })
+  .catch(error => {
+    console.error('Error fetching historical data:', error);
   });

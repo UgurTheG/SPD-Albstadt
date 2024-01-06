@@ -5,7 +5,7 @@ const ulElement = document.querySelector('.downloads ul');
 
 for (let year = startYear; year >= endYear; year -= 1) {
   const liElement = document.createElement('li');
-
+liElement.className = 'list-disc';
   const aElement = document.createElement('a');
   aElement.setAttribute('href', `resources/data/fraktion/haushaltsreden/${year}.pdf`);
   aElement.setAttribute('target', '_blank');
