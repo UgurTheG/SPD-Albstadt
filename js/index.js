@@ -156,5 +156,5 @@ document.querySelector('#toMand').onclick = () => {
 document.querySelector('#toNewsFraktion').onclick = () => {
   document.querySelector('.content_personen').classList.remove('active');
   document.querySelector('.content_ausfraktion').classList.add('active');
-  document.querySelector('#fraktioninfo').innerHTML = 'Bei dieser Rubrik teilen wir unsere Ansichten, Inhalte und wie wir bei wichtigen Abstimmungen entschieden haben. Das in kürze und auf den Punkt gebracht. ';
+  document.querySelector('#fraktioninfo').innerHTML = 'Bei dieser Rubrik teilen wir unsere Ansichten, Inhalte und wie wir bei wichtigen Abstimmungen entschieden haben. Das in Kürze und auf den Punkt gebracht. ';
 };

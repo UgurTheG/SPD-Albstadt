@@ -301,18 +301,7 @@
     transform: rotate(360deg);
  }
 }
-footer {
-  width: 100%;
-  height: 30vh;
-  position: relative;
-  background: #e3000f;
-  margin-top: 50px;
-}
-@media (max-width: 700px) {
-  footer {
-    width: 100vw;
- }
-}
+
 .content {
   display: flex;
   position: relative;
@@ -709,134 +698,7 @@ footer {
     width: 100%;
  }
 }
-.content .kontakte .inhalte {
-  width: 100%;
-  height: auto;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
-  padding: 0;
-}
-@media (max-width: 700px) {
-  .content .kontakte .inhalte {
-    flex-direction: column;
- }
-}
-.content .kontakte .inhalte .kontaktwege {
-  display: flex;
-  justify-content: start;
-}
-.content .kontakte .inhalte .kontaktwege a {
-  margin: 10px;
-}
-.content .kontakte .inhalte .kontaktwege a img {
-  width: 50px;
-}
-.content .kontakte .inhalte .txt {
-  width: 50%;
-}
-@media (max-width: 700px) {
-  .content .kontakte .inhalte .txt {
-    width: 100%;
- }
-}
-.content .kontakte .inhalte .txt h2 {
-  padding-bottom: 20px;
-  font-size: 4rem;
-  font-weight: 500;
-  font-family: "Font-Heading";
-}
-@media (max-width: 700px) {
-  .content .kontakte .inhalte .txt h2 {
-    font-size: 2rem;
- }
-}
-.content .kontakte .inhalte .txt form {
-  width: 100%;
-  height: auto;
-  position: relative;
-  font-family: "Font-Text";
-}
-.content .kontakte .inhalte .txt form input {
-  caret-color: black;
-}
-.content .kontakte .inhalte .txt form textarea {
-  caret-color: black;
-  resize: vertical;
-}
-.content .kontakte .inhalte .txt form input:required:valid {
-  border: 1px solid;
-  border-color: green;
-}
-.content .kontakte .inhalte .txt form input:required:invalid {
-  border: 1px solid;
-  border-color: red;
-}
-.content .kontakte .inhalte .txt form input:required {
-  border: 1px solid;
-}
-.content .kontakte .inhalte .txt form .name {
-  position: relative;
-  display: flex;
-  flex-direction: row;
-}
-@media (max-width: 1000px) {
-  .content .kontakte .inhalte .txt form .name {
-    flex-direction: column;
-    margin: 10px 0px;
- }
-}
-.content .kontakte .inhalte .txt form .name .col {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-}
-@media (max-width: 700px) {
-  .content .kontakte .inhalte .txt form .name .col {
-    margin: 5px 0px;
- }
-}
-.content .kontakte .inhalte .txt form .name .col label {
-  margin: 1px 2.5px;
-  font-size: 0.85rem;
-}
-.content .kontakte .inhalte .txt form .name .col input {
-  margin: 1px 2.5px;
-  padding: 5px 10px;
-}
-.content .kontakte .inhalte .txt form .name .col input::placeholder {
-  color: #818181;
-}
-.content .kontakte .inhalte .txt form .email {
-  margin: 10px 0px;
-}
-.content .kontakte .inhalte .txt form .email .col {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-}
-.content .kontakte .inhalte .txt form .email .col label {
-  margin: 1px 2.5px;
-  font-size: 0.85rem;
-}
-.content .kontakte .inhalte .txt form .email .col input {
-  margin: 1px 2.5px;
-  padding: 5px 10px;
-}
-.content .kontakte .inhalte .image {
-  width: 50%;
-  padding: 50px;
-}
-.content .kontakte .inhalte .image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-@media (max-width: 700px) {
-  .content .kontakte .inhalte .image {
-    width: 100%;
- }
-}
+
 .content .historie .inhalte {
   width: 100%;
   height: auto;
@@ -1080,6 +942,7 @@ footer {
   transform: translateY(-150px);
   height: 150px;
 }
+
 .content .historie .inhalte .timeline figure .slide .timestamp .textArea {
   position: absolute;
   width: 100%;
@@ -1229,7 +1092,6 @@ footer {
   left: 0;
   background: white;
   width: 100%;
-  height: 17.5%;
   text-align: center;
   color: black;
   z-index: 3;
