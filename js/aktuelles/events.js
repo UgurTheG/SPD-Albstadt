@@ -91,7 +91,7 @@ function createDescription(sheetInfo) {
   descriptionDiv.className = 'description';
 
   const textDiv = document.createElement('div');
-  textDiv.className = 'text';
+  textDiv.className = 'text text-justify';
   textDiv.textContent = sheetInfo.Thema || 'Veranstaltung';
 
   const detailsDiv = createDetails(sheetInfo);
