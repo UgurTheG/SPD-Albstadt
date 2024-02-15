@@ -92,7 +92,7 @@ function createDescription(sheetInfo) {
 
   const textDiv = document.createElement('div');
   textDiv.className = 'text text-justify';
-  textDiv.textContent = sheetInfo.Thema || 'Veranstaltung';
+  textDiv.textContent = sheetInfo.Thema;
 
   const detailsDiv = createDetails(sheetInfo);
 

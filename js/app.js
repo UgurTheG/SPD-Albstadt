@@ -1,8 +1,8 @@
 // News Preview
-fetch('../resources/data/data.json')
+fetch('../resources/data/news/news.json')
   .then((response) => response.json())
   .then((data) => {
-    const dataNewsFull = data.news_full;
+    const dataNewsFull = data.news;
     dataNewsFull.forEach((element) => {
       const newsPageBeitrag = document.querySelector('.newspage .beitrag').cloneNode(true);
       document.querySelector('.newspage').appendChild(newsPageBeitrag);
@@ -17,8 +17,12 @@ fetch('../resources/data/data.json')
     });
 
     document.querySelector('.newspage').removeChild(document.querySelector('.newspage .beitrag'));
+  });
 
-    data.news_fraktion.forEach((element) => {
+  fetch('../resources/data/data.json')
+  .then((response) => response.json())
+  .then((data) => {
+data.news_fraktion.forEach((element) => {
       const newsPageBeitragClone = document.querySelector('#fraktion_newspage .beitrag').cloneNode(true);
       document.querySelector('#fraktion_newspage').appendChild(newsPageBeitragClone);
       const {
