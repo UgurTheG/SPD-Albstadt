@@ -1,8 +1,7 @@
 const left = document.querySelector('.title');
 const right = document.querySelector('.navigator');
 const content = document.querySelector('.menupunkt');
-const navs = ['.aktuelles', '.partei', '.fraktion', '.historie', '.kontakte'];
-
+const navs = ['.aktuelles', '.partei', '.fraktion', '.historie', '.kontakte', '.datenschutz', '.impressum'];
 navs.forEach((contentKey) => {
   document.querySelector(contentKey).style.display = 'none';
 });
@@ -22,6 +21,8 @@ document.querySelector('.trigger_aktuelles').onclick = () => {
   document.querySelector('.fraktion').style.display = 'none';
   document.querySelector('.historie').style.display = 'none';
   document.querySelector('.kontakte').style.display = 'none';
+  document.querySelector('.datenschutz').style.display = 'none';
+  document.querySelector('.impressum').style.display = 'none';
 };
 // partei
 document.querySelector('.trigger_partei').onclick = () => {
@@ -38,6 +39,8 @@ document.querySelector('.trigger_partei').onclick = () => {
   document.querySelector('.fraktion').style.display = 'none';
   document.querySelector('.historie').style.display = 'none';
   document.querySelector('.kontakte').style.display = 'none';
+  document.querySelector('.datenschutz').style.display = 'none';
+  document.querySelector('.impressum').style.display = 'none';
 };
 // fraktion
 document.querySelector('.trigger_fraktion').onclick = () => {
@@ -53,6 +56,9 @@ document.querySelector('.trigger_fraktion').onclick = () => {
   document.querySelector('.fraktion').style.display = 'block';
   document.querySelector('.historie').style.display = 'none';
   document.querySelector('.kontakte').style.display = 'none';
+  document.querySelector('.datenschutz').style.display = 'none';
+  document.querySelector('.impressum').style.display = 'none';
+
 
   document.querySelector('.content_personen').classList.add('active');
 
@@ -73,7 +79,10 @@ document.querySelector('.trigger_historie').onclick = () => {
   document.querySelector('.fraktion').style.display = 'none';
   document.querySelector('.historie').style.display = 'block';
   document.querySelector('.kontakte').style.display = 'none';
+  document.querySelector('.datenschutz').style.display = 'none';
+  document.querySelector('.impressum').style.display = 'none';
 };
+
 // kontakte
 document.querySelector('.trigger_kontakte').onclick = () => {
   left.classList.toggle('active');
@@ -87,6 +96,39 @@ document.querySelector('.trigger_kontakte').onclick = () => {
   document.querySelector('.fraktion').style.display = 'none';
   document.querySelector('.historie').style.display = 'none';
   document.querySelector('.kontakte').style.display = 'block';
+  document.querySelector('.datenschutz').style.display = 'none';
+  document.querySelector('.impressum').style.display = 'none';
+};
+
+// Datenschutz
+document.querySelector('.trigger_datenschutz').onclick = () => {
+  content.classList.toggle('active');
+  document.getElementById('bottom').classList.remove('active');
+  document.getElementById('top').classList.remove('active');
+
+  document.querySelector('.aktuelles').style.display = 'none';
+  document.querySelector('.partei').style.display = 'none';
+  document.querySelector('.fraktion').style.display = 'none';
+  document.querySelector('.historie').style.display = 'none';
+  document.querySelector('.kontakte').style.display = 'none';
+  document.querySelector('.datenschutz').style.display = 'block';
+  document.querySelector('.impressum').style.display = 'none';
+
+};
+
+// Impressum
+document.querySelector('.trigger_impressum').onclick = () => {
+  content.classList.toggle('active');
+  document.getElementById('bottom').classList.remove('active');
+  document.getElementById('top').classList.remove('active');
+
+  document.querySelector('.aktuelles').style.display = 'none';
+  document.querySelector('.partei').style.display = 'none';
+  document.querySelector('.fraktion').style.display = 'none';
+  document.querySelector('.historie').style.display = 'none';
+  document.querySelector('.kontakte').style.display = 'none';
+  document.querySelector('.datenschutz').style.display = 'none';
+  document.querySelector('.impressum').style.display = 'block';
 };
 
 document.getElementById('menu-icon').onclick = () => {
@@ -111,6 +153,8 @@ document.querySelector('#toNews').onclick = () => {
     document.querySelector('.fraktion').style.display = 'none';
     document.querySelector('.historie').style.display = 'none';
     document.querySelector('.kontakte').style.display = 'none';
+    document.querySelector('.datenschutz').style.display = 'none';
+    document.querySelector('.impressum').style.display = 'none';
     window.scrollTo(0, 0);
   }, 300);
 };

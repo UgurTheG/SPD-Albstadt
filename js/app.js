@@ -39,7 +39,7 @@ data.news_fraktion.forEach((element) => {
   });
 
 
-['aktuelles', 'partei', 'fraktion', 'historie', 'kontakte'].forEach((element) => {
+['aktuelles', 'partei', 'fraktion', 'historie', 'kontakte', 'datenschutz', 'impressum'].forEach((element) => {
   document.getElementById(`trigger_${element}`).addEventListener('click', () => {
     document.getElementById('menu-icon').style.visibility = 'visible';
   });
