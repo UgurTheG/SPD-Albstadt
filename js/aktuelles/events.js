@@ -127,7 +127,8 @@ function createStructure(sheetInfo) {
   return eintragDiv;
 }
 function checkDateTime(sheetDate, sheetTime, sheetMonth) {
-  return sheetDate.includes(sheetTime) && sheetDate.toLowerCase().includes(sheetMonth);
+  return sheetDate.includes(sheetTime) &&
+  sheetDate.toLowerCase().includes(sheetMonth)
 }
 fetch('../resources/data/aktuelles/Termine.xlsx')
   .then((response) => response.arrayBuffer())
