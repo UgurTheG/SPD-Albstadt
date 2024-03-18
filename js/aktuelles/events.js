@@ -127,8 +127,11 @@ function createStructure(sheetInfo) {
   return eintragDiv;
 }
 function checkDateTime(sheetDate, sheetTime, sheetMonth) {
+  moment.locale('de');
+  const givenDate = moment(sheetDate, 'dddd, [den] D. MMMM YYYY [um] HH:mm [Uhr]');
+
   return sheetDate.includes(sheetTime) &&
-  sheetDate.toLowerCase().includes(sheetMonth)
+  sheetDate.toLowerCase().includes(sheetMonth) && !givenDate.isBefore(moment())
 }
 fetch('../resources/data/aktuelles/Termine.xlsx')
   .then((response) => response.arrayBuffer())
