@@ -1,13 +1,13 @@
 {
     "news":  [
         {
-            "heading": "Aufstellung für den Gemeinderat",
+            "heading": "Kandidierende für den Gemeinderat",
             "date": "Datum: 04.April 2024",
             "text": "Schauen Sie sich unsere Gemeinderatsliste für die Kommunalwahl 2024 an! Wir sind stolz darauf, eine junge wie auch erfahrene Gruppe von Kandidatinnen und Kandidaten präsentieren zu können, die sich für die Belange unserer Stadt einsetzen. Hier ist der Link zur Pressemitteilung, in der Sie die vollständige Liste einsehen können: \"<a target='_blank' class='text-blue-500' href='resources/data/news/gemeinderatsliste.pdf'>Pressemitteilung Gemeinderatsliste 2024</a>\"",
             "image": "/resources/images/news/gemeinderat2024.webp"
         },
         {
-            "heading": "Aufstellung für den Kreistag",
+            "heading": "Kandidierende für den Kreistag",
             "date": "Datum: 04.April 2024",
             "text": "Die SPD Albstadt präsentiert stolz ihre Kreistagsliste für die Kommunalwahl 2024! Unsere Liste besteht aus jungen und profilierten Kandidatinnen und Kandidaten, die bereit sind, sich für die Zukunft unseres Kreises einzusetzen. Hier ist der Link zur Pressemitteilung mit der vollständigen Liste: \"<a target='_blank' class='text-blue-500' href='resources/data/news/kreistagsliste.pdf'>Pressemitteilung Kreistagsliste 2024</a>\"",
             "image": "/resources/images/news/kreistag2024.webp"
