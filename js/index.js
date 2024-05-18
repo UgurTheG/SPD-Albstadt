@@ -176,7 +176,7 @@ document.querySelector('#toSchwerpunkte').onclick = () => {
   document.querySelector('#schwerpunkte').classList.add('active');
   document.querySelector('#abgeordneter').classList.remove('active');
   document.querySelector('#partei').classList.remove('active');
-  document.querySelector('#parteiinfo').innerHTML = 'Im Mittelpunkt unserer politischen Arbeit für Albstadt stehen die folgenden Punkte. Haben wir dieselbe Meinung, dann lasst Ihr uns das Wissen und wir versuchen gemeinsam das umzusetzen. ';
+  document.querySelector('#parteiinfo').innerHTML = 'Besonders wichtig sind uns in den kommenden fünf Jahren zwei Schwerpunkte: Zum einen Industrie und Arbeitsplätze, denn ohne Arbeit möchte hier niemand wohnen oder herziehen, und ohne die dazugehörige faire Bezahlung kann sich niemand das Leben in der Stadt leisten. Der zweite Schwerpunkt ist Soziales und Bildung, denn das hält die Stadt gesellschaftlich zusammen, es gibt unseren Kindern und Jugendlichen das mit, was sie brauchen, um ihr Leben in die Hand zu nehmen.';
 };
 document.querySelector('#toAbgeordneter').onclick = () => {
   document.querySelector('#schwerpunkte').classList.remove('active');
