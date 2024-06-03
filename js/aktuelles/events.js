@@ -68,7 +68,7 @@ function createPlaceDiv(place) {
   iconDiv.appendChild(img);
 
   const p = document.createElement('p');
-  p.innerHTML = place;
+  p.innerHTML = place.replace(/\n/g, '<br>');
   placeDiv.appendChild(iconDiv);
   placeDiv.appendChild(p);
 
