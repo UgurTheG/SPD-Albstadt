@@ -1,0 +1,49 @@
+[
+  {
+    "id": "1",
+    "datum": "2026-04-08",
+    "uhrzeit": "19:30",
+    "titel": "Monatlicher Stammtisch",
+    "ort": "Gasthaus Ochsen, Ebingen",
+    "beschreibung": "Offener Stammtisch für alle Mitglieder und Interessierte. Keine Anmeldung erforderlich – einfach vorbeikommen!"
+  },
+  {
+    "id": "2",
+    "datum": "2026-04-15",
+    "uhrzeit": "18:00",
+    "titel": "Mitgliederversammlung April",
+    "ort": "SPD-Büro, Stadtgarten 1, Ebingen",
+    "beschreibung": "Reguläre Mitgliederversammlung mit Berichten aus Gemeinderat und Kreistag sowie Diskussion aktueller Themen."
+  },
+  {
+    "id": "3",
+    "datum": "2026-05-01",
+    "uhrzeit": "10:00",
+    "titel": "1. Mai – Tag der Arbeit",
+    "ort": "Marktplatz Ebingen",
+    "beschreibung": "Gemeinsame Kundgebung mit DGB und Gewerkschaften. Reden, Musik, anschließend geselliges Beisammensein. Alle willkommen!"
+  },
+  {
+    "id": "4",
+    "datum": "2026-05-13",
+    "uhrzeit": "19:30",
+    "titel": "Monatlicher Stammtisch Mai",
+    "ort": "Gasthaus Ochsen, Ebingen",
+    "beschreibung": "Offener Stammtisch für alle Mitglieder und Interessierte."
+  },
+  {
+    "id": "5",
+    "datum": "2026-06-21",
+    "uhrzeit": "14:00",
+    "titel": "Sommerfest der SPD Albstadt",
+    "ort": "Stadtgarten Albstadt-Ebingen",
+    "beschreibung": "Unser jährliches Sommerfest mit Reden, Musik und gutem Essen. Familien und Kinder herzlich willkommen!"
+  },
+  {
+    "id": "1",
+    "uhrzeit": "19:30",
+    "titel": "Monatlicher Stammtisch Juli",
+    "ort": "Gasthaus Ochsen, Ebingen",
+    "beschreibung": "Offener Stammtisch für alle Mitglieder und Interessierte."
+  }
+]

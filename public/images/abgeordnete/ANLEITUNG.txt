@@ -1,0 +1,9 @@
+=== FOTOS ABGEORDNETE ===
+Hier Fotos der Abgeordneten ablegen.
+DATEINAME:  vorname-nachname.jpg
+BEISPIEL:   petra-politiker.jpg
+EMPFOHLENE BILDGRÖSSE:  400 x 400 Pixel (quadratisch)
+DATEIFORMATE:            .jpg oder .png
+ANSCHLIESSEND in public/data/party.json unter "abgeordnete"
+den Wert von "bildUrl" anpassen:
+  "bildUrl": "/images/abgeordnete/petra-politiker.jpg"

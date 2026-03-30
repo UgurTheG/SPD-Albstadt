@@ -1,0 +1,23 @@
+{
+  "name": "SPD Albstadt",
+  "short_name": "SPD Albstadt",
+  "description": "Sozialdemokratische Partei Deutschlands, Ortsverein Albstadt.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#E3000F",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}
+

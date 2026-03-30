@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.spd-albstadt.de/sitemap.xml
+

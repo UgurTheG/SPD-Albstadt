@@ -1,0 +1,10 @@
+=== FOTOS VORSTAND ===
+Hier Fotos der Vorstandsmitglieder ablegen.
+DATEINAME:  vorname-nachname.jpg
+BEISPIEL:   max-mustermann.jpg
+            maria-musterfrau.jpg
+EMPFOHLENE BILDGRÖSSE:  400 x 400 Pixel (quadratisch)
+DATEIFORMATE:            .jpg oder .png
+ANSCHLIESSEND in public/data/party.json beim jeweiligen Mitglied
+den Wert von "bildUrl" anpassen:
+  "bildUrl": "/images/vorstand/max-mustermann.jpg"
