@@ -77,48 +77,33 @@ export default function Kontakt() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Section header + group photo side by side */}
-        <div className="grid lg:grid-cols-2 gap-10 items-center mb-16">
-          <motion.div
-            ref={ref}
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
-            className="relative"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-1 w-12 bg-spd-red dark:bg-white/50 rounded-full" />
-              <span className="text-spd-red dark:text-white/70 font-semibold text-sm uppercase tracking-wider">Kontakt</span>
-            </div>
-            <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-4 text-left">
-              Schreiben Sie uns
-            </h2>
-            <p className="text-lg text-gray-500 dark:text-white/70">
-              Haben Sie Fragen, Anregungen oder möchten Sie Mitglied werden? Wir freuen uns auf Ihre Nachricht.
-            </p>
-          </motion.div>
+        {/* Section header */}
+        <motion.div
+          ref={ref}
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="relative mb-12"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-1 w-12 bg-spd-red dark:bg-white/50 rounded-full" />
+            <span className="text-spd-red dark:text-white/70 font-semibold text-sm uppercase tracking-wider">Kontakt</span>
+          </div>
+          <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-4 text-left">
+            Schreiben Sie uns
+          </h2>
+          <p className="text-lg text-gray-500 dark:text-white/70 max-w-2xl">
+            Haben Sie Fragen, Anregungen oder möchten Sie Mitglied werden? Wir freuen uns auf Ihre Nachricht.
+          </p>
+        </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="rounded-2xl overflow-hidden ring-1 ring-gray-200 dark:ring-white/15 shadow-xl shadow-black/10 dark:shadow-black/30"
-          >
-            <img
-              src="/images/kontakt/gruppenbild.webp"
-              alt="SPD Albstadt – Gruppenbild"
-              className="w-full h-auto block"
-            />
-          </motion.div>
-        </div>
-
-        <div className="grid lg:grid-cols-5 gap-12">
+        <div className="grid lg:grid-cols-5 gap-8 items-stretch">
           {/* Form — 3 columns */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.15 }}
-            className="lg:col-span-3"
+            className="lg:col-span-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col"
           >
             <AnimatePresence mode="wait">
               {status === 'success' ? (
@@ -127,7 +112,7 @@ export default function Kontakt() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-white dark:bg-white/10 border border-gray-200 dark:border-white/20 rounded-3xl p-10 flex flex-col items-center text-center shadow-sm"
+                  className="flex-1 flex flex-col items-center justify-center text-center"
                 >
                   <motion.div
                     initial={{ scale: 0 }}
@@ -154,7 +139,7 @@ export default function Kontakt() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="space-y-4"
+                  className="flex-1 flex flex-col space-y-4"
                 >
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
@@ -210,7 +195,7 @@ export default function Kontakt() {
                   </div>
                   </div>
 
-                  <div>
+                  <div className="flex-1 flex flex-col">
                     <label className="block text-gray-700 dark:text-white text-xs font-semibold mb-2 uppercase tracking-wide">
                       Ihre Nachricht *
                     </label>
@@ -221,7 +206,7 @@ export default function Kontakt() {
                       required
                       rows={5}
                       placeholder="Schreiben Sie Ihre Nachricht hier..."
-                      className={`${inputClass} resize-none`}
+                      className={`${inputClass} resize-none flex-1 min-h-30`}
                     />
                   </div>
 
@@ -271,6 +256,15 @@ export default function Kontakt() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="lg:col-span-2 flex flex-col gap-6"
           >
+            {/* Group photo */}
+            <div className="rounded-2xl overflow-hidden ring-1 ring-gray-200 dark:ring-white/10 shadow-sm">
+              <img
+                src="/images/kontakt/gruppenbild.webp"
+                alt="SPD Albstadt – Gruppenbild"
+                className="w-full h-auto block"
+              />
+            </div>
+
             <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
               <h4 className="text-gray-900 dark:text-white font-bold mb-5 text-lg">Kontaktdaten</h4>
               <div className="space-y-4">
@@ -325,22 +319,6 @@ export default function Kontakt() {
                 </div>
               </div>
             </div>
-
-            <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
-              <h4 className="text-gray-900 dark:text-white font-bold mb-2">Mitglied werden</h4>
-              <p className="text-gray-500 dark:text-white/60 text-sm leading-relaxed mb-4">
-                Gemeinsam sind wir stärker. Werden Sie Teil der SPD Albstadt und gestalten Sie unsere Stadt aktiv mit.
-              </p>
-              <a
-                href="https://www.spd.de/unterstuetzen/mitglied-werden"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-spd-red dark:bg-white/10 text-white dark:text-white font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-spd-red-dark dark:hover:bg-white/20 transition-colors"
-              >
-                Jetzt Mitglied werden →
-              </a>
-            </div>
-
           </motion.div>
         </div>
       </div>
