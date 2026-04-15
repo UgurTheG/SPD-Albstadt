@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Lightbox from 'yet-another-react-lightbox'
 import Counter from 'yet-another-react-lightbox/plugins/counter'
@@ -60,9 +60,7 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
   const caption = captions?.[active]
   const total = images.length
 
-  // Drag state
-  const dragX = useMotionValue(0)
-  const dragOpacity = useTransform(dragX, [-150, 0, 150], [0.6, 1, 0.6])
+  // Touch swipe state
   const isDragging = useRef(false)
   const dragStartX = useRef(0)
   const dragStartY = useRef(0)
@@ -93,9 +91,9 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
   }, [active, go, lightboxOpen, total])
 
   const slideVariants = {
-    enter: (d: number) => ({ x: d > 0 ? 300 : -300, opacity: 0 }),
+    enter: (d: number) => ({ x: d > 0 ? '100%' : '-100%', opacity: 0 }),
     center: { x: 0, opacity: 1 },
-    exit: (d: number) => ({ x: d > 0 ? -300 : 300, opacity: 0 }),
+    exit: (d: number) => ({ x: d > 0 ? '-100%' : '100%', opacity: 0 }),
   }
 
   if (images.length === 0) return null
@@ -108,7 +106,6 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
     isHorizontalDrag.current = null
     dragStartX.current = e.touches[0].clientX
     dragStartY.current = e.touches[0].clientY
-    dragX.set(0)
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -121,9 +118,9 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
       isHorizontalDrag.current = Math.abs(dx) > Math.abs(dy)
     }
 
+    // Prevent vertical scroll when swiping horizontally
     if (isHorizontalDrag.current) {
       e.stopPropagation()
-      dragX.set(dx)
     }
   }
 
@@ -134,17 +131,12 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
     const dy = e.changedTouches[0].clientY - dragStartY.current
 
     if (total > 1 && isHorizontalDrag.current && Math.abs(dx) > 50) {
-      dragX.set(0)
       go(active + (dx > 0 ? -1 : 1))
     } else if (!isHorizontalDrag.current && Math.abs(dy) < 10 && Math.abs(dx) < 10) {
       // It was a tap — open lightbox
       if (!(e.target as HTMLElement).closest('button, a, [role="button"]')) {
         setLightboxOpen(true)
       }
-      dragX.set(0)
-    } else {
-      // Snap back
-      animate(dragX, 0, { type: 'spring', stiffness: 400, damping: 40 })
     }
     isHorizontalDrag.current = null
   }
@@ -160,24 +152,22 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
         onTouchEnd={handleTouchEnd}
       >
         <div className="relative aspect-video overflow-hidden">
-          <motion.div className="absolute inset-0" style={{ x: dragX, opacity: dragOpacity }}>
-            <AnimatePresence initial={false} custom={direction} mode="popLayout">
-              <motion.img
-                key={active}
-                src={images[active]}
-                alt={`${alt} – Foto ${active + 1}`}
-                loading="lazy"
-                className="absolute inset-0 w-full h-full object-cover"
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                draggable={false}
-              />
-            </AnimatePresence>
-          </motion.div>
+          <AnimatePresence initial={false} custom={direction} mode="wait">
+            <motion.img
+              key={active}
+              src={images[active]}
+              alt={`${alt} – Foto ${active + 1}`}
+              loading="lazy"
+              className="absolute inset-0 w-full h-full object-cover"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              draggable={false}
+            />
+          </AnimatePresence>
         </div>
 
         {/* Prev / Next arrows */}
