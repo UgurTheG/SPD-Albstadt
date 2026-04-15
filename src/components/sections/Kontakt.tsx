@@ -64,7 +64,10 @@ export default function Kontakt() {
     <section id="kontakt" className="py-24 bg-gray-50 dark:bg-red-950 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 pointer-events-none">
-        <svg className="absolute inset-0 w-full h-full opacity-[0.04] dark:opacity-[0.06] text-spd-red dark:text-white" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          className="absolute inset-0 w-full h-full opacity-[0.04] dark:opacity-[0.06] text-spd-red dark:text-white"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <defs>
             <pattern id="kontakt-grid" width="40" height="40" patternUnits="userSpaceOnUse">
               <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="1" />
@@ -87,7 +90,9 @@ export default function Kontakt() {
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="h-1 w-12 bg-spd-red dark:bg-white/50 rounded-full" />
-            <span className="text-spd-red dark:text-white/70 font-semibold text-sm uppercase tracking-wider">Kontakt</span>
+            <span className="text-spd-red dark:text-white/70 font-semibold text-sm uppercase tracking-wider">
+              Kontakt
+            </span>
           </div>
           <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-4 text-left">
             Schreiben Sie uns
@@ -177,22 +182,28 @@ export default function Kontakt() {
                       Betreff *
                     </label>
                     <div className="relative">
-                    <select
-                      name="betreff"
-                      value={formData.betreff}
-                      onChange={handleChange}
-                      required
-                      className={`${inputClass} cursor-pointer appearance-none`}
-                    >
-                      <option value="" disabled>Bitte wählen Sie einen Betreff</option>
-                      <option value="Mitglied werden">Mitglied werden</option>
-                      <option value="Allgemeine Anfrage">Allgemeine Anfrage</option>
-                      <option value="Presseanfrage">Presseanfrage</option>
-                      <option value="Veranstaltungen">Veranstaltungen</option>
-                      <option value="Sonstiges">Sonstiges</option>
-                    </select>
-                    <ChevronDown size={15} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/40 pointer-events-none" strokeWidth={2} />
-                  </div>
+                      <select
+                        name="betreff"
+                        value={formData.betreff}
+                        onChange={handleChange}
+                        required
+                        className={`${inputClass} cursor-pointer appearance-none`}
+                      >
+                        <option value="" disabled>
+                          Bitte wählen Sie einen Betreff
+                        </option>
+                        <option value="Mitglied werden">Mitglied werden</option>
+                        <option value="Allgemeine Anfrage">Allgemeine Anfrage</option>
+                        <option value="Presseanfrage">Presseanfrage</option>
+                        <option value="Veranstaltungen">Veranstaltungen</option>
+                        <option value="Sonstiges">Sonstiges</option>
+                      </select>
+                      <ChevronDown
+                        size={15}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/40 pointer-events-none"
+                        strokeWidth={2}
+                      />
+                    </div>
                   </div>
 
                   <div className="flex-1 flex flex-col">
@@ -213,7 +224,8 @@ export default function Kontakt() {
                   {status === 'error' && (
                     <div className="flex items-center gap-2.5 bg-red-50 dark:bg-white text-spd-red rounded-xl px-4 py-3 text-sm font-medium border border-red-200 dark:border-transparent">
                       <AlertCircle size={16} className="shrink-0" />
-                      Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder schreiben Sie uns direkt per E-Mail.
+                      Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder schreiben Sie uns direkt per
+                      E-Mail.
                     </div>
                   )}
 
@@ -275,7 +287,8 @@ export default function Kontakt() {
                   <div>
                     <p className="text-gray-900 dark:text-white font-semibold text-sm">Anschrift</p>
                     <p className="text-gray-500 dark:text-white/60 text-sm mt-0.5 leading-relaxed">
-                      SPD Albstadt<br />
+                      SPD Albstadt
+                      <br />
                       Stadtgarten 1<br />
                       72458 Albstadt-Ebingen
                     </p>
@@ -287,7 +300,10 @@ export default function Kontakt() {
                   </div>
                   <div>
                     <p className="text-gray-900 dark:text-white font-semibold text-sm">E-Mail</p>
-                    <a href="mailto:info@spd-albstadt.de" className="text-gray-500 dark:text-white/60 text-sm hover:text-spd-red dark:hover:text-white transition-colors mt-0.5 block">
+                    <a
+                      href="mailto:info@spd-albstadt.de"
+                      className="text-gray-500 dark:text-white/60 text-sm hover:text-spd-red dark:hover:text-white transition-colors mt-0.5 block"
+                    >
                       info@spd-albstadt.de
                     </a>
                   </div>
@@ -298,7 +314,10 @@ export default function Kontakt() {
                   </div>
                   <div>
                     <p className="text-gray-900 dark:text-white font-semibold text-sm">Telefon</p>
-                    <a href="tel:+497431000000" className="text-gray-500 dark:text-white/60 text-sm hover:text-spd-red dark:hover:text-white transition-colors mt-0.5 block">
+                    <a
+                      href="tel:+497431000000"
+                      className="text-gray-500 dark:text-white/60 text-sm hover:text-spd-red dark:hover:text-white transition-colors mt-0.5 block"
+                    >
                       07431 / 000 000
                     </a>
                   </div>
@@ -325,4 +344,3 @@ export default function Kontakt() {
     </section>
   )
 }
-

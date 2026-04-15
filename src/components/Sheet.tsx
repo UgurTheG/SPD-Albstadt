@@ -26,7 +26,9 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
   // Close on Escape
   useEffect(() => {
     if (!open) return
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [open, onClose])
@@ -51,9 +53,7 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
     let dismissing = false
 
     const onTouchStart = (e: TouchEvent) => {
-      const isInteractive = (e.target as HTMLElement).closest(
-        'button, a, input, textarea, select, [role="button"]'
-      )
+      const isInteractive = (e.target as HTMLElement).closest('button, a, input, textarea, select, [role="button"]')
       if (isInteractive) return
       startY = e.touches[0].clientY
       startScrollTop = el.scrollTop
@@ -61,9 +61,7 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
     }
 
     const onTouchMove = (e: TouchEvent) => {
-      const isInteractive = (e.target as HTMLElement).closest(
-        'button, a, input, textarea, select, [role="button"]'
-      )
+      const isInteractive = (e.target as HTMLElement).closest('button, a, input, textarea, select, [role="button"]')
       if (isInteractive) return
 
       const deltaY = e.touches[0].clientY - startY
@@ -115,8 +113,18 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
           <motion.div
             ref={sheetRef}
             initial={{ y: '100%', scale: 0.98, opacity: 0 }}
-            animate={{ y: 0, scale: 1, opacity: 1, transition: { type: 'spring', damping: 42, stiffness: 260, mass: 1.2 } }}
-            exit={{ y: '100%', scale: 0.98, opacity: 0, transition: { type: 'tween', duration: 0.3, ease: [0.4, 0, 1, 1] } }}
+            animate={{
+              y: 0,
+              scale: 1,
+              opacity: 1,
+              transition: { type: 'spring', damping: 42, stiffness: 260, mass: 1.2 },
+            }}
+            exit={{
+              y: '100%',
+              scale: 0.98,
+              opacity: 0,
+              transition: { type: 'tween', duration: 0.3, ease: [0.4, 0, 1, 1] },
+            }}
             drag="y"
             dragControls={dragControls}
             dragListener={false}
@@ -133,7 +141,10 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
             {/* Mobile drag handle — large touch target to initiate swipe-down-to-dismiss */}
             <div
               className="sm:hidden flex justify-center pt-5 pb-4 touch-none select-none cursor-grab active:cursor-grabbing"
-              onPointerDown={e => { e.stopPropagation(); dragControls.start(e) }}
+              onPointerDown={e => {
+                e.stopPropagation()
+                dragControls.start(e)
+              }}
             >
               <div className="w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
             </div>

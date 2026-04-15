@@ -23,15 +23,15 @@ function CaptionOverlay({ caption }: { caption: string }) {
       className="absolute bottom-0 inset-x-0 bg-linear-to-t from-black/85 via-black/50 to-transparent px-4 pt-8 pb-3 z-10"
       onClick={e => e.stopPropagation()}
     >
-      <p
-        ref={textRef}
-        className={`text-xs text-gray-200 leading-snug italic ${expanded ? '' : 'line-clamp-2'}`}
-      >
+      <p ref={textRef} className={`text-xs text-gray-200 leading-snug italic ${expanded ? '' : 'line-clamp-2'}`}>
         {caption}
       </p>
       {(isClamped || expanded) && (
         <button
-          onClick={e => { e.stopPropagation(); setExpanded(v => !v) }}
+          onClick={e => {
+            e.stopPropagation()
+            setExpanded(v => !v)
+          }}
           className="text-[10px] font-semibold text-white/60 hover:text-white mt-1 transition-colors"
         >
           {expanded ? '↑ Weniger' : 'Mehr lesen ↓'}
@@ -68,17 +68,21 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
   const dragStartY = useRef(0)
   const isHorizontalDrag = useRef<boolean | null>(null)
 
-  const go = useCallback((to: number) => {
-    const now = Date.now()
-    if (now - lastNavTime.current < THROTTLE_MS) return
-    lastNavTime.current = now
-    const next = ((to % total) + total) % total
-    setDirection(next > active ? 1 : -1)
-    setActive(next)
-  }, [active, total])
+  const go = useCallback(
+    (to: number) => {
+      const now = Date.now()
+      if (now - lastNavTime.current < THROTTLE_MS) return
+      lastNavTime.current = now
+      const next = ((to % total) + total) % total
+      setDirection(next > active ? 1 : -1)
+      setActive(next)
+    },
+    [active, total],
+  )
 
   // Keyboard navigation
   useEffect(() => {
+    if (total <= 1) return
     const handler = (e: KeyboardEvent) => {
       if (lightboxOpen) return
       if (e.key === 'ArrowLeft') go(active - 1)
@@ -86,7 +90,7 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [active, go, lightboxOpen])
+  }, [active, go, lightboxOpen, total])
 
   const slideVariants = {
     enter: (d: number) => ({ x: d > 0 ? 300 : -300, opacity: 0 }),
@@ -108,7 +112,7 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging.current) return
+    if (!isDragging.current || total <= 1) return
     const dx = e.touches[0].clientX - dragStartX.current
     const dy = e.touches[0].clientY - dragStartY.current
 
@@ -119,9 +123,7 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
 
     if (isHorizontalDrag.current) {
       e.stopPropagation()
-      // Resist at edges if only 1 image
-      const resistance = total === 1 ? 0.15 : 1
-      dragX.set(dx * resistance)
+      dragX.set(dx)
     }
   }
 
@@ -131,7 +133,7 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
     const dx = e.changedTouches[0].clientX - dragStartX.current
     const dy = e.changedTouches[0].clientY - dragStartY.current
 
-    if (isHorizontalDrag.current && Math.abs(dx) > 50) {
+    if (total > 1 && isHorizontalDrag.current && Math.abs(dx) > 50) {
       animate(dragX, dx > 0 ? 300 : -300, { duration: 0.2 }).then(() => {
         dragX.set(0)
         go(active + (dx > 0 ? -1 : 1))
@@ -160,10 +162,7 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
         onTouchEnd={handleTouchEnd}
       >
         <div className="relative aspect-video overflow-hidden">
-          <motion.div
-            className="absolute inset-0"
-            style={{ x: dragX, opacity: dragOpacity }}
-          >
+          <motion.div className="absolute inset-0" style={{ x: dragX, opacity: dragOpacity }}>
             <AnimatePresence initial={false} custom={direction} mode="popLayout">
               <motion.img
                 key={active}
@@ -187,7 +186,10 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
         {total > 1 && (
           <>
             <button
-              onClick={e => { e.stopPropagation(); go(active - 1) }}
+              onClick={e => {
+                e.stopPropagation()
+                go(active - 1)
+              }}
               className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full
                          bg-white/90 dark:bg-gray-900/90 text-gray-800 dark:text-white
                          shadow-lg shadow-black/20 backdrop-blur-sm
@@ -199,7 +201,10 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
               <ChevronLeft size={18} strokeWidth={2.5} />
             </button>
             <button
-              onClick={e => { e.stopPropagation(); go(active + 1) }}
+              onClick={e => {
+                e.stopPropagation()
+                go(active + 1)
+              }}
               className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full
                          bg-white/90 dark:bg-gray-900/90 text-gray-800 dark:text-white
                          shadow-lg shadow-black/20 backdrop-blur-sm
@@ -230,7 +235,10 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
           {images.map((_, i) => (
             <button
               key={i}
-              onClick={() => { setDirection(i > active ? 1 : -1); setActive(i) }}
+              onClick={() => {
+                setDirection(i > active ? 1 : -1)
+                setActive(i)
+              }}
               className={`rounded-full transition-all duration-300 ${
                 i === active
                   ? 'w-6 h-2 bg-spd-red'
@@ -259,4 +267,3 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
     </div>
   )
 }
-

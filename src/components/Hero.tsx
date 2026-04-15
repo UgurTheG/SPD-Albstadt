@@ -21,16 +21,15 @@ export default function Hero({ navigateTo }: HeroProps) {
   const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0])
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.05])
   return (
-    <section
-      ref={ref}
-      id="hero"
-      className="relative h-screen min-h-[600px] overflow-hidden bg-spd-red dark:bg-red-950"
-    >
+    <section ref={ref} id="hero" className="relative h-screen min-h-[600px] overflow-hidden bg-spd-red dark:bg-red-950">
       {/* Background layers */}
       <motion.div style={{ scale }} className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-b from-spd-red via-spd-red-dark to-[#8B000A] dark:from-red-950 dark:via-red-950 dark:to-[#1a0000]" />
         {/* Radial vignette — darkens edges, keeps center bright */}
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 40%, transparent 0%, rgba(0,0,0,0.35) 100%)' }} />
+        <div
+          className="absolute inset-0"
+          style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 40%, transparent 0%, rgba(0,0,0,0.35) 100%)' }}
+        />
         <svg className="absolute inset-0 w-full h-full opacity-[0.05]" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -106,7 +105,7 @@ export default function Hero({ navigateTo }: HeroProps) {
         </motion.div>
       </motion.div>
       {/* Bottom fade — softens the hard edge into the next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black dark:from-gray-950 to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-gray-950 dark:from-gray-950 to-transparent z-10 pointer-events-none" />
 
       {/* Scroll indicator */}
       <motion.button
