@@ -134,10 +134,8 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
     const dy = e.changedTouches[0].clientY - dragStartY.current
 
     if (total > 1 && isHorizontalDrag.current && Math.abs(dx) > 50) {
-      animate(dragX, dx > 0 ? 300 : -300, { duration: 0.2 }).then(() => {
-        dragX.set(0)
-        go(active + (dx > 0 ? -1 : 1))
-      })
+      dragX.set(0)
+      go(active + (dx > 0 ? -1 : 1))
     } else if (!isHorizontalDrag.current && Math.abs(dy) < 10 && Math.abs(dx) < 10) {
       // It was a tap — open lightbox
       if (!(e.target as HTMLElement).closest('button, a, [role="button"]')) {

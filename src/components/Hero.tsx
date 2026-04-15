@@ -21,10 +21,10 @@ export default function Hero({ navigateTo }: HeroProps) {
   const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0])
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.05])
   return (
-    <section ref={ref} id="hero" className="relative h-screen min-h-[600px] overflow-hidden bg-spd-red dark:bg-red-950">
+    <section ref={ref} id="hero" className="relative h-screen min-h-150 overflow-hidden bg-spd-red dark:bg-red-950">
       {/* Background layers */}
       <motion.div style={{ scale }} className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-spd-red via-spd-red-dark to-[#8B000A] dark:from-red-950 dark:via-red-950 dark:to-[#1a0000]" />
+        <div className="absolute inset-0 bg-linear-to-b from-spd-red via-spd-red-dark to-[#8B000A] dark:from-red-950 dark:via-red-950 dark:to-[#1a0000]" />
         {/* Radial vignette — darkens edges, keeps center bright */}
         <div
           className="absolute inset-0"
@@ -38,11 +38,11 @@ export default function Hero({ navigateTo }: HeroProps) {
           </defs>
           <rect width="100%" height="100%" fill="url(#grid)" />
         </svg>
-        <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full bg-white/[0.03]" />
-        <div className="absolute top-1/3 -left-48 w-[400px] h-[400px] rounded-full bg-white/[0.03]" />
-        <div className="absolute -bottom-24 right-1/4 w-[300px] h-[300px] rounded-full bg-white/[0.03]" />
+        <div className="absolute -top-32 -right-32 w-125 h-125 rounded-full bg-white/3" />
+        <div className="absolute top-1/3 -left-48 w-100 h-100 rounded-full bg-white/3" />
+        <div className="absolute -bottom-24 right-1/4 w-75 h-75 rounded-full bg-white/3" />
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none select-none">
-          <span className="text-[20vw] font-black text-white/[0.03] tracking-tighter leading-none">SPD</span>
+          <span className="text-[20vw] font-black text-white/3 tracking-tighter leading-none">SPD</span>
         </div>
       </motion.div>
       {/* Main content with parallax */}
