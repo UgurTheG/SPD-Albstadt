@@ -11,10 +11,10 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #ffffff;
+  background-color: #030712;
 }
 html.dark {
-  background-color: #030712;
+  background-color: #000000;
 }
 body {
   margin: 0;
@@ -23,10 +23,10 @@ body {
   hyphens: auto;
   -webkit-hyphens: auto;
   hyphenate-limit-chars: 6 3 3;
-  background-color: #ffffff;
+  background-color: #030712;
 }
 html.dark body {
-  background-color: #030712;
+  background-color: #000000;
 }
 #root {
   min-height: 100dvh;
