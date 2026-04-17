@@ -25,7 +25,7 @@ export default async function handler(_req: unknown, res: ApiResponse) {
     const body = await upstream.text()
 
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8')
-    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=3600')
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
     res.status(200).end(body)
   } catch (err) {
     res.setHeader('Content-Type', 'application/json')
