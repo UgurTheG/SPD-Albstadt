@@ -7,13 +7,13 @@
   "kontakt": {
     "adresse": "SPD Albstadt\nStadtgarten 1\n72458 Albstadt-Ebingen",
     "email": "info@spd-albstadt.de",
-    "telefon": "07431 / 000 000",
+    "telefon": "07431 / 000 001",
     "formspreeUrl": "https://formspree.io/f/xqegbkyl"
   },
   "buerozeiten": [
     {
       "tage": "Montag – Freitag",
-      "zeit": "10:00 – 16:00"
+      "zeit": "10:00 – 16:00 Uhr"
     },
     {
       "tage": "Samstag",
