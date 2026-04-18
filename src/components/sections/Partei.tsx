@@ -30,7 +30,6 @@ interface Mitglied {
   address?: string
   place?: string
   bildUrl: string
-  bildUrls?: string[]
   bio: string
 }
 
@@ -41,7 +40,6 @@ interface Abgeordneter {
   email: string
   website?: string
   bildUrl: string
-  bildUrls?: string[]
   bio: string
 }
 
@@ -202,7 +200,7 @@ export default function Partei() {
               >
                 {/* Full portrait */}
                 {(() => {
-                  const imgs = [...(m.bildUrl ? [m.bildUrl] : []), ...(m.bildUrls || [])].filter(Boolean)
+                  const imgs = m.bildUrl ? [m.bildUrl] : []
                   return imgs.length > 0 ? (
                     <div className="aspect-3/4 overflow-hidden">
                       <img loading="lazy" src={imgs[0]} alt={m.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />

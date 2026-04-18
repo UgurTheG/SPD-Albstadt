@@ -10,7 +10,6 @@ interface Gemeinderat {
   name: string
   beruf?: string
   bildUrl: string
-  bildUrls?: string[]
   seit: string
   address?: string
   zipCode?: string
@@ -25,7 +24,6 @@ interface FraktionNews {
   titel: string
   inhalt: string
   bildUrl?: string
-  bildUrls?: string[]
 }
 
 interface FraktionData {
@@ -73,7 +71,7 @@ const itemVariants: Variants = {
 }
 
 function MemberCard({ member, onClick }: { member: Gemeinderat; onClick: () => void }) {
-  const images = [...(member.bildUrl ? [member.bildUrl] : []), ...(member.bildUrls || [])].filter(Boolean)
+  const images = member.bildUrl ? [member.bildUrl] : []
   return (
     <motion.div
       variants={itemVariants}
@@ -282,9 +280,9 @@ export default function Fraktion() {
                              hover:-translate-y-1
                              transition-all duration-500"
                 >
-                  {(n.bildUrls?.length || n.bildUrl) && (
-                    <div className="aspect-video overflow-hidden">
-                      <img loading="lazy" src={n.bildUrl || n.bildUrls?.[0]} alt={n.titel}
+                  {n.bildUrl && (
+                      <div className="aspect-4/3 overflow-hidden bg-gray-100 dark:bg-gray-800">
+                        <img loading="lazy" src={n.bildUrl} alt={n.titel}
                            className="w-full h-full object-cover"/>
                     </div>
                   )}
@@ -418,9 +416,9 @@ export default function Fraktion() {
       <Sheet open={!!selectedFraktionNews} onClose={() => setSelectedFraktionNews(null)} size="lg">
         {selectedFraktionNews && (
           <div>
-            {(selectedFraktionNews.bildUrls?.length || selectedFraktionNews.bildUrl) && (
+            {selectedFraktionNews.bildUrl && (
               <PhotoGallery
-                  images={[...(selectedFraktionNews.bildUrl ? [selectedFraktionNews.bildUrl] : []), ...(selectedFraktionNews.bildUrls || [])].filter(Boolean)}
+                  images={[selectedFraktionNews.bildUrl]}
                 alt={selectedFraktionNews.titel}
               />
             )}

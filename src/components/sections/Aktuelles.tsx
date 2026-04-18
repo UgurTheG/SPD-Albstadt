@@ -388,7 +388,10 @@ export default function Aktuelles() {
       setIcsError(null)
       try {
         const res = await fetch('/api/ics')
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        if (!res.ok) {
+          if (!cancelled) setIcsError(`Fehler beim Laden: HTTP ${res.status}`)
+          return
+        }
         const text = await res.text()
         const events = parseICS(text)
         if (!cancelled) {
