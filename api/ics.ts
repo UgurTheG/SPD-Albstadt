@@ -1,4 +1,18 @@
-const ICS_URL = 'https://p122-caldav.icloud.com/published/2/MjAwNjQzOTY4MjEyMDA2NMLddxkvT8tcvLgVQ6dehz9MjxtnrIu92Njn-UIJMnCsZGmJiYheC8PfQYwRBU5bm1kz0SaQASNZwa3q6BbwXjg'
+import {readFileSync} from 'fs'
+import {join} from 'path'
+
+const DEFAULT_ICS_URL = 'https://p122-caldav.icloud.com/published/2/MjAwNjQzOTY4MjEyMDA2NMLddxkvT8tcvLgVQ6dehz9MjxtnrIu92Njn-UIJMnCsZGmJiYheC8PfQYwRBU5bm1kz0SaQASNZwa3q6BbwXjg'
+
+function getIcsUrl(): string {
+  try {
+    const configPath = join(process.cwd(), 'public', 'data', 'config.json')
+    const raw = readFileSync(configPath, 'utf-8')
+    const config = JSON.parse(raw) as { icsUrl?: string }
+    if (config.icsUrl) return config.icsUrl
+  } catch { /* use default */
+  }
+  return DEFAULT_ICS_URL
+}
 
 type ApiResponse = {
   setHeader: (name: string, value: string) => void
@@ -9,7 +23,9 @@ type ApiResponse = {
 
 export default async function handler(_req: unknown, res: ApiResponse) {
   try {
-    const upstream = await fetch(ICS_URL, {
+    const icsUrl = getIcsUrl()
+
+    const upstream = await fetch(icsUrl, {
       headers: {
         'User-Agent': 'SPD-Albstadt-Website/1.0',
         'Accept': 'text/calendar, text/plain, */*',
@@ -32,4 +48,3 @@ export default async function handler(_req: unknown, res: ApiResponse) {
     res.status(502).json({ error: err instanceof Error ? err.message : 'Unknown error' })
   }
 }
-
