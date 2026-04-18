@@ -1,7 +1,7 @@
-import { X } from 'lucide-react'
-import { motion, AnimatePresence, useDragControls, useMotionValue, animate, type PanInfo } from 'framer-motion'
-import { useEffect, useRef, type ReactNode } from 'react'
-import { lockScroll } from '../utils/scrollLock'
+import {X} from 'lucide-react'
+import {animate, AnimatePresence, motion, type PanInfo, useDragControls, useMotionValue} from 'framer-motion'
+import {type ReactNode, useEffect, useRef} from 'react'
+import {lockScroll} from '../utils/scrollLock'
 
 interface SheetProps {
   open: boolean
@@ -67,7 +67,7 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
       const deltaY = e.touches[0].clientY - startY
 
       // Enter dismiss mode when at the very top and pulling down
-      if (!dismissing && startScrollTop === 0 && deltaY > 5) {
+      if (!dismissing && startScrollTop <= 1 && deltaY > 5) {
         dismissing = true
       }
 
