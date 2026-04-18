@@ -1,6 +1,6 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import {useCallback, useEffect, useRef, useState} from 'react'
+import {AnimatePresence, motion} from 'framer-motion'
+import {ChevronLeft, ChevronRight} from 'lucide-react'
 import Lightbox from 'yet-another-react-lightbox'
 import Counter from 'yet-another-react-lightbox/plugins/counter'
 import 'yet-another-react-lightbox/styles.css'
@@ -20,7 +20,7 @@ function CaptionOverlay({ caption }: { caption: string }) {
 
   return (
     <div
-      className="absolute bottom-0 inset-x-0 bg-linear-to-t from-black/90 via-black/60 to-transparent px-4 pt-10 pb-6 z-10"
+        className="absolute bottom-0 inset-x-0 bg-linear-to-t from-black via-black/70 to-transparent px-4 pt-10 pb-6 z-10"
       onClick={e => e.stopPropagation()}
     >
       <p ref={textRef} className={`text-xs text-gray-200 leading-snug italic ${expanded ? '' : 'line-clamp-2'}`}>
