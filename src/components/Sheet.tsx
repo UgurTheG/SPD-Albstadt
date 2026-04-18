@@ -49,14 +49,12 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
     const el = sheetRef.current
 
     let startY = 0
-    let startScrollTop = 0
     let dismissing = false
 
     const onTouchStart = (e: TouchEvent) => {
       const isInteractive = (e.target as HTMLElement).closest('button, a, input, textarea, select, [role="button"]')
       if (isInteractive) return
       startY = e.touches[0].clientY
-      startScrollTop = el.scrollTop
       dismissing = false
     }
 
@@ -64,16 +62,21 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
       const isInteractive = (e.target as HTMLElement).closest('button, a, input, textarea, select, [role="button"]')
       if (isInteractive) return
 
-      const deltaY = e.touches[0].clientY - startY
+      const currentY = e.touches[0].clientY
+      const deltaY = currentY - startY
 
-      // Enter dismiss mode when at the very top and pulling down
-      if (!dismissing && startScrollTop <= 1 && deltaY > 5) {
+      // Enter dismiss mode when currently at the top and pulling down.
+      // Check live scrollTop (not the snapshot from touchstart) because
+      // momentum scrolling may still be settling after a fast fling up.
+      if (!dismissing && el.scrollTop <= 1 && deltaY > 5) {
         dismissing = true
+        // Re-anchor so the sheet doesn't jump by the pre-dismiss delta
+        startY = currentY
       }
 
       if (dismissing) {
         e.preventDefault() // prevent native scroll — only works because listener is non-passive
-        sheetY.set(Math.max(0, deltaY))
+        sheetY.set(Math.max(0, currentY - startY))
       }
     }
 
