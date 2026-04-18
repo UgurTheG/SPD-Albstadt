@@ -517,18 +517,27 @@ function collectImagePaths(tabConfig, data) {
 }
 
 function findOrphanImages() {
+  // Collect ALL image paths currently referenced across ALL tabs (new state)
+  const allCurrentPaths = new Set()
+  for (const tab of TABS) {
+    if (!tab.file || !state[tab.key]) continue
+    for (const p of collectImagePaths(tab, state[tab.key])) {
+      allCurrentPaths.add(p)
+    }
+  }
+
+  // Find images that were removed from dirty tabs and are not referenced anywhere else
   const orphans = []
   for (const tabKey of dirtyTabs) {
     const tab = TABS.find(t => t.key === tabKey)
     if (!tab || !tab.file) continue
     if (!originalState[tabKey] || !state[tabKey]) continue
     const oldPaths = collectImagePaths(tab, originalState[tabKey])
-    const newPaths = collectImagePaths(tab, state[tabKey])
     for (const p of oldPaths) {
-      if (!newPaths.has(p)) orphans.push(p)
+      if (!allCurrentPaths.has(p)) orphans.push(p)
     }
   }
-  return orphans
+  return [...new Set(orphans)]
 }
 
 async function deleteFileFromGitHub(filePath, message) {
