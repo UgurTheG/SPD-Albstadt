@@ -726,9 +726,14 @@ function showCropOverlay(file) {
     toolbar.appendChild(el('button', {
       className: 'px-5 py-2.5 rounded-xl bg-gray-700 text-white font-semibold text-sm hover:bg-gray-600 transition-colors',
       onClick: () => {
-        // Reset crop to full image
-        crop = { x: 0, y: 0, w: canvas.width, h: canvas.height }
-        draw()
+        // Use full image — export without cropping
+        const outCanvas = document.createElement('canvas')
+        outCanvas.width = img.width
+        outCanvas.height = img.height
+        outCanvas.getContext('2d').drawImage(img, 0, 0)
+        const base64 = outCanvas.toDataURL('image/webp', 0.85).split(',')[1]
+        overlay.remove()
+        resolve(base64)
       }
     }, 'Ganzes Bild'))
     toolbar.appendChild(el('button', {
