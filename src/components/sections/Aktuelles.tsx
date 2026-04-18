@@ -1,14 +1,14 @@
-import { useState, useRef, useEffect, useMemo, memo, type MouseEvent as ReactMouseEvent } from 'react'
-import { motion, useInView } from 'framer-motion'
-import { Calendar, CalendarPlus, Clock, MapPin, Tag, ChevronRight, ChevronLeft, Camera, ExternalLink } from 'lucide-react'
-import { useData } from '../../hooks/useData'
-import { INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME } from '../../shared/instagram.ts'
-import { FEATURES } from '../../config/features'
+import {memo, type MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef, useState} from 'react'
+import {motion, useInView} from 'framer-motion'
+import {Calendar, CalendarPlus, Camera, ChevronLeft, ChevronRight, Clock, ExternalLink, MapPin, Tag} from 'lucide-react'
+import {useData} from '../../hooks/useData'
+import {INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME} from '../../shared/instagram.ts'
+import {FEATURES} from '../../config/features'
 import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
-import { parseICS, type ICSEvent } from '../../utils/icsParser'
-import { formatLocation } from '../../utils/formatLocation'
-import { createEvent, type DateArray } from 'ics'
+import {type ICSEvent, parseICS} from '../../utils/icsParser'
+import {formatLocation} from '../../utils/formatLocation'
+import {createEvent, type DateArray} from 'ics'
 
 interface NewsItem {
   id: string
@@ -565,7 +565,7 @@ export default function Aktuelles() {
                 <div className="flex items-start gap-4">
                   {(news.bildUrls?.length || news.bildUrl) && (
                     <img
-                      src={news.bildUrls?.[0] ?? news.bildUrl}
+                        src={news.bildUrl || news.bildUrls?.[0]}
                       alt={news.titel}
                       loading="lazy"
                       className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-200 dark:bg-gray-800 object-cover"
@@ -813,7 +813,7 @@ export default function Aktuelles() {
           <div>
             {(selectedNews.bildUrls?.length || selectedNews.bildUrl) && (
               <PhotoGallery
-                images={selectedNews.bildUrls?.length ? selectedNews.bildUrls : selectedNews.bildUrl ? [selectedNews.bildUrl] : []}
+                  images={[...(selectedNews.bildUrl ? [selectedNews.bildUrl] : []), ...(selectedNews.bildUrls || [])].filter(Boolean)}
                 alt={selectedNews.titel}
               />
             )}

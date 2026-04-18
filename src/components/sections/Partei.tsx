@@ -1,7 +1,19 @@
-import { useState, useRef, type ElementType } from 'react'
-import { motion, useInView, type Variants } from 'framer-motion'
-import { GraduationCap, Home, Leaf, Bus, Briefcase, Users, Mail, MapPin, Building2, Phone, ExternalLink } from 'lucide-react'
-import { useData } from '../../hooks/useData'
+import {type ElementType, useRef, useState} from 'react'
+import {motion, useInView, type Variants} from 'framer-motion'
+import {
+  Briefcase,
+  Building2,
+  Bus,
+  ExternalLink,
+  GraduationCap,
+  Home,
+  Leaf,
+  Mail,
+  MapPin,
+  Phone,
+  Users
+} from 'lucide-react'
+import {useData} from '../../hooks/useData'
 import Sheet from '../Sheet'
 
 interface Schwerpunkt {
@@ -190,7 +202,7 @@ export default function Partei() {
               >
                 {/* Full portrait */}
                 {(() => {
-                  const imgs = m.bildUrls?.length ? m.bildUrls : m.bildUrl ? [m.bildUrl] : []
+                  const imgs = [...(m.bildUrl ? [m.bildUrl] : []), ...(m.bildUrls || [])].filter(Boolean)
                   return imgs.length > 0 ? (
                     <div className="aspect-3/4 overflow-hidden">
                       <img loading="lazy" src={imgs[0]} alt={m.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />

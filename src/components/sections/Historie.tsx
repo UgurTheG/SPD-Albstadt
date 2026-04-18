@@ -1,7 +1,7 @@
-import { useRef, useState, useMemo, useCallback, memo } from 'react'
-import { motion, useInView } from 'framer-motion'
-import { ChevronRight, Images } from 'lucide-react'
-import { useData } from '../../hooks/useData'
+import {memo, useCallback, useMemo, useRef, useState} from 'react'
+import {motion, useInView} from 'framer-motion'
+import {ChevronRight, Images} from 'lucide-react'
+import {useData} from '../../hooks/useData'
 import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
 
@@ -19,6 +19,7 @@ interface Persoenlichkeit {
   rolle: string
   beschreibung: string
   bildUrl: string
+  bildUrls?: string[]
 }
 
 interface HistoryData {
@@ -317,6 +318,14 @@ export default function Historie() {
             {/* Body */}
             <div className="px-6 pt-6 pb-8">
               <div className="w-8 h-0.5 bg-spd-red/40 rounded-full mb-5" />
+              {selectedPerson.bildUrls && selectedPerson.bildUrls.length > 0 && (
+                  <div className="mb-6">
+                    <PhotoGallery
+                        images={selectedPerson.bildUrls}
+                        alt={selectedPerson.name}
+                    />
+                  </div>
+              )}
               <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">{selectedPerson.beschreibung}</p>
             </div>
           </div>

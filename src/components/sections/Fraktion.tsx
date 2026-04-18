@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
-import { motion, useInView, type Variants } from 'framer-motion'
-import { MapPin, Mail, Building2, FileDown, ExternalLink } from 'lucide-react'
-import { useData } from '../../hooks/useData'
+import {useEffect, useMemo, useRef, useState} from 'react'
+import {motion, useInView, type Variants} from 'framer-motion'
+import {Building2, ExternalLink, FileDown, Mail, MapPin} from 'lucide-react'
+import {useData} from '../../hooks/useData'
 import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
-import { FEATURES } from '../../config/features'
+import {FEATURES} from '../../config/features'
 
 interface Gemeinderat {
   name: string
@@ -73,7 +73,7 @@ const itemVariants: Variants = {
 }
 
 function MemberCard({ member, onClick }: { member: Gemeinderat; onClick: () => void }) {
-  const images = member.bildUrls?.length ? member.bildUrls : member.bildUrl ? [member.bildUrl] : []
+  const images = [...(member.bildUrl ? [member.bildUrl] : []), ...(member.bildUrls || [])].filter(Boolean)
   return (
     <motion.div
       variants={itemVariants}
@@ -284,7 +284,8 @@ export default function Fraktion() {
                 >
                   {(n.bildUrls?.length || n.bildUrl) && (
                     <div className="aspect-video overflow-hidden">
-                      <img loading="lazy" src={n.bildUrls?.[0] ?? n.bildUrl} alt={n.titel} className="w-full h-full object-cover" />
+                      <img loading="lazy" src={n.bildUrl || n.bildUrls?.[0]} alt={n.titel}
+                           className="w-full h-full object-cover"/>
                     </div>
                   )}
                   <div className="p-5 sm:p-6">
@@ -419,7 +420,7 @@ export default function Fraktion() {
           <div>
             {(selectedFraktionNews.bildUrls?.length || selectedFraktionNews.bildUrl) && (
               <PhotoGallery
-                images={selectedFraktionNews.bildUrls?.length ? selectedFraktionNews.bildUrls : selectedFraktionNews.bildUrl ? [selectedFraktionNews.bildUrl] : []}
+                  images={[...(selectedFraktionNews.bildUrl ? [selectedFraktionNews.bildUrl] : []), ...(selectedFraktionNews.bildUrls || [])].filter(Boolean)}
                 alt={selectedFraktionNews.titel}
               />
             )}
