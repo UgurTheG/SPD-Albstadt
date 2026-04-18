@@ -25,7 +25,7 @@ const SECTIONS = [
         <br />
         Telefon: (07431) 51822<br />
         E-Mail:{' '}
-        <a href="mailto:jumroth@t-online.de" className="text-spd-red hover:underline">
+        <a href="mailto:jumroth@t-online.de" className="text-spd-red dark:text-red-400 hover:underline">
           jumroth@t-online.de
         </a>
       </p>
@@ -36,7 +36,7 @@ const SECTIONS = [
     content: (
       <p>
         Die verwendeten Server-Domains werden von Hostinger International Ltd (
-        <a href="https://www.hostinger.de" target="_blank" rel="noopener noreferrer" className="text-spd-red hover:underline">
+        <a href="https://www.hostinger.de" target="_blank" rel="noopener noreferrer" className="text-spd-red dark:text-red-400 hover:underline">
           https://www.hostinger.de
         </a>
         ) bereitgestellt. Nähere Informationen zur Erhebung und Nutzung der Daten durch Hostinger finden sich in den
@@ -45,7 +45,7 @@ const SECTIONS = [
           href="https://www.hostinger.de/datenschutz-bestimmungen"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-spd-red hover:underline"
+          className="text-spd-red dark:text-red-400 hover:underline"
         >
           https://www.hostinger.de/datenschutz-bestimmungen
         </a>
@@ -58,7 +58,7 @@ const SECTIONS = [
     content: (
       <p>
         Auf der Seite{' '}
-        <a href="https://www.spd-albstadt.de" target="_blank" rel="noopener noreferrer" className="text-spd-red hover:underline">
+        <a href="https://www.spd-albstadt.de" target="_blank" rel="noopener noreferrer" className="text-spd-red dark:text-red-400 hover:underline">
           www.spd-albstadt.de
         </a>{' '}
         werden Cookies verwendet. Wir nutzen nur technisch erforderliche Cookies.
@@ -81,7 +81,7 @@ const SECTIONS = [
     content: (
       <p>
         Die Webseite{' '}
-        <a href="https://www.spd-albstadt.de" target="_blank" rel="noopener noreferrer" className="text-spd-red hover:underline">
+        <a href="https://www.spd-albstadt.de" target="_blank" rel="noopener noreferrer" className="text-spd-red dark:text-red-400 hover:underline">
           www.spd-albstadt.de
         </a>{' '}
         benutzt kein Analysetool.
@@ -93,7 +93,7 @@ const SECTIONS = [
     content: (
       <p>
         Auf der Seite{' '}
-        <a href="https://www.spd-albstadt.de" target="_blank" rel="noopener noreferrer" className="text-spd-red hover:underline">
+        <a href="https://www.spd-albstadt.de" target="_blank" rel="noopener noreferrer" className="text-spd-red dark:text-red-400 hover:underline">
           www.spd-albstadt.de
         </a>{' '}
         wird ein Kontaktformular zur Verfügung gestellt. Senden Sie dieses ab, werden folgende Informationen
@@ -114,7 +114,7 @@ const SECTIONS = [
           href="https://eur-lex.europa.eu/eli/reg/2016/679/2016-05-04"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-spd-red hover:underline"
+          className="text-spd-red dark:text-red-400 hover:underline"
         >
           Datenschutzgrundverordnung
         </a>{' '}
@@ -129,7 +129,7 @@ const SECTIONS = [
           href="https://www.baden-wuerttemberg.datenschutz.de/beschwerde/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-spd-red hover:underline"
+          className="text-spd-red dark:text-red-400 hover:underline"
         >
           https://www.baden-wuerttemberg.datenschutz.de/beschwerde/
         </a>
@@ -157,7 +157,7 @@ export default function Datenschutz() {
   return (
     <main className="flex-1 pt-20 pb-16">
       {/* Header */}
-      <section className="bg-linear-to-br from-spd-red via-spd-red to-red-700 text-white py-16">
+      <section className="bg-linear-to-br from-spd-red via-spd-red to-red-700 dark:from-red-900 dark:via-red-900 dark:to-red-950 text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 24 }}

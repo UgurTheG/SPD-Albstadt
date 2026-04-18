@@ -15,7 +15,7 @@ const SECTIONS = [
         <p>
           Telefon: (07431) 51822<br />
           E-Mail:{' '}
-          <a href="mailto:jumroth@t-online.de" className="text-spd-red hover:underline">
+          <a href="mailto:jumroth@t-online.de" className="text-spd-red dark:text-red-400 hover:underline">
             jumroth@t-online.de
           </a>
         </p>
@@ -34,7 +34,7 @@ const SECTIONS = [
         <p className="mb-4">
           Telefon: (07431) 51822<br />
           E-Mail:{' '}
-          <a href="mailto:jumroth@t-online.de" className="text-spd-red hover:underline">
+          <a href="mailto:jumroth@t-online.de" className="text-spd-red dark:text-red-400 hover:underline">
             jumroth@t-online.de
           </a>
         </p>
@@ -76,7 +76,7 @@ export default function Impressum() {
   return (
     <main className="flex-1 pt-20 pb-16">
       {/* Header */}
-      <section className="bg-linear-to-br from-spd-red via-spd-red to-red-700 text-white py-16">
+      <section className="bg-linear-to-br from-spd-red via-spd-red to-red-700 dark:from-red-900 dark:via-red-900 dark:to-red-950 text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
