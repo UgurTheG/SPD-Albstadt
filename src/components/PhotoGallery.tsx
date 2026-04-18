@@ -214,9 +214,6 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
             {active + 1} / {total}
           </span>
         )}
-
-        {/* Caption overlay */}
-        {caption && <CaptionOverlay caption={caption} />}
       </div>
 
       {/* Dot indicators */}
