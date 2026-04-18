@@ -20,7 +20,7 @@ function CaptionOverlay({ caption }: { caption: string }) {
 
   return (
     <div
-      className="absolute bottom-0 inset-x-0 bg-linear-to-t from-black/85 via-black/50 to-transparent px-4 pt-8 pb-3 z-10"
+      className="absolute bottom-0 inset-x-0 bg-linear-to-t from-black/90 via-black/60 to-transparent px-4 pt-10 pb-4 z-10"
       onClick={e => e.stopPropagation()}
     >
       <p ref={textRef} className={`text-xs text-gray-200 leading-snug italic ${expanded ? '' : 'line-clamp-2'}`}>
