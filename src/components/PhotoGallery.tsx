@@ -32,7 +32,7 @@ function CaptionOverlay({ caption }: { caption: string }) {
             e.stopPropagation()
             setExpanded(v => !v)
           }}
-          className="text-[10px] font-semibold text-white/60 hover:text-white mt-1 transition-colors"
+          className="text-xs font-semibold text-white/60 hover:text-white mt-1 py-2 px-3 -mx-3 -mb-2 min-h-[44px] flex items-center transition-colors"
         >
           {expanded ? '↑ Weniger' : 'Mehr lesen ↓'}
         </button>
