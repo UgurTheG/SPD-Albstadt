@@ -19,6 +19,7 @@ interface NewsItem {
   kategorie: string
   bildUrl: string
   bildUrls?: string[]
+  bildBeschreibungen?: string[]
 }
 
 interface EventItem {
@@ -818,6 +819,7 @@ export default function Aktuelles() {
             {(selectedNews.bildUrls?.length || selectedNews.bildUrl) && (
               <PhotoGallery
                   images={[...(selectedNews.bildUrl ? [selectedNews.bildUrl] : []), ...(selectedNews.bildUrls || [])].filter(Boolean)}
+                  captions={selectedNews.bildBeschreibungen}
                 alt={selectedNews.titel}
               />
             )}

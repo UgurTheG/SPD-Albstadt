@@ -3,43 +3,11 @@ import {AnimatePresence, motion} from 'framer-motion'
 import {ChevronLeft, ChevronRight} from 'lucide-react'
 import Lightbox from 'yet-another-react-lightbox'
 import Counter from 'yet-another-react-lightbox/plugins/counter'
+import Captions from 'yet-another-react-lightbox/plugins/captions'
 import 'yet-another-react-lightbox/styles.css'
 import 'yet-another-react-lightbox/plugins/counter.css'
+import 'yet-another-react-lightbox/plugins/captions.css'
 
-// ── Caption overlay ──────────────────────────────────────────────────────────
-
-function CaptionOverlay({ caption }: { caption: string }) {
-  const [expanded, setExpanded] = useState(false)
-  const textRef = useRef<HTMLParagraphElement>(null)
-  const [isClamped, setIsClamped] = useState(false)
-
-  useEffect(() => {
-    const el = textRef.current
-    if (el) setIsClamped(el.scrollHeight > el.clientHeight + 2)
-  }, [caption])
-
-  return (
-    <div
-        className="absolute bottom-0 inset-x-0 bg-linear-to-t from-black via-black/70 to-transparent px-4 pt-10 pb-6 z-10"
-      onClick={e => e.stopPropagation()}
-    >
-      <p ref={textRef} className={`text-xs text-gray-200 leading-snug italic ${expanded ? '' : 'line-clamp-2'}`}>
-        {caption}
-      </p>
-      {(isClamped || expanded) && (
-        <button
-          onClick={e => {
-            e.stopPropagation()
-            setExpanded(v => !v)
-          }}
-          className="relative text-[10px] font-semibold text-white/60 hover:text-white mt-1 transition-colors before:absolute before:-inset-3 before:content-['']"
-        >
-          {expanded ? '↑ Weniger' : 'Mehr lesen ↓'}
-        </button>
-      )}
-    </div>
-  )
-}
 
 // ── PhotoGallery ─────────────────────────────────────────────────────────────
 
@@ -57,7 +25,6 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const lastNavTime = useRef(0)
   const THROTTLE_MS = 300
-  const caption = captions?.[active]
   const total = images.length
 
   // Touch swipe state
@@ -98,7 +65,10 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
 
   if (images.length === 0) return null
 
-  const slides = images.map(src => ({ src }))
+  const slides = images.map((src, i) => ({
+    src,
+    description: captions?.[i] || undefined,
+  }))
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if ((e.target as HTMLElement).closest('button, a, [role="button"]')) return
@@ -168,8 +138,6 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
               draggable={false}
             />
           </AnimatePresence>
-          {/* Caption overlay */}
-          {caption && <CaptionOverlay caption={caption}/>}
         </div>
 
         {/* Prev / Next arrows */}
@@ -244,7 +212,8 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
         slides={slides}
         index={active}
         on={{ view: ({ index }) => setActive(index) }}
-        plugins={[Counter]}
+        plugins={[Counter, Captions]}
+        captions={{descriptionTextAlign: 'center'}}
         carousel={{ finite: false }}
         controller={{ closeOnBackdropClick: true }}
         styles={{
