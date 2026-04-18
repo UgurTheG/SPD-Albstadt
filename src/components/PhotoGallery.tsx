@@ -168,6 +168,8 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
               draggable={false}
             />
           </AnimatePresence>
+          {/* Caption overlay */}
+          {caption && <CaptionOverlay caption={caption}/>}
         </div>
 
         {/* Prev / Next arrows */}
