@@ -20,7 +20,7 @@ function CaptionOverlay({ caption }: { caption: string }) {
 
   return (
     <div
-      className="absolute bottom-0 inset-x-0 bg-linear-to-t from-black/90 via-black/60 to-transparent px-4 pt-10 pb-4 z-10"
+      className="absolute bottom-0 inset-x-0 bg-linear-to-t from-black/90 via-black/60 to-transparent px-4 pt-10 pb-6 z-10"
       onClick={e => e.stopPropagation()}
     >
       <p ref={textRef} className={`text-xs text-gray-200 leading-snug italic ${expanded ? '' : 'line-clamp-2'}`}>
@@ -32,7 +32,7 @@ function CaptionOverlay({ caption }: { caption: string }) {
             e.stopPropagation()
             setExpanded(v => !v)
           }}
-          className="text-xs font-semibold text-white/60 hover:text-white mt-1 py-2 px-3 -mx-3 -mb-2 min-h-[44px] flex items-center transition-colors"
+          className="relative text-[10px] font-semibold text-white/60 hover:text-white mt-1 transition-colors before:absolute before:-inset-3 before:content-['']"
         >
           {expanded ? '↑ Weniger' : 'Mehr lesen ↓'}
         </button>
