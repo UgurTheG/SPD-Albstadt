@@ -268,7 +268,8 @@ const TABS = [
       { key: 'zusammenfassung', label: 'Zusammenfassung', type: 'textarea' },
       { key: 'inhalt', label: 'Inhalt', type: 'textarea' },
       { key: 'kategorie', label: 'Kategorie', type: 'select', options: ['Gemeinderat','Veranstaltung','Haushalt','Ortsverein','Wahl'] },
-      { key: 'bildUrl', label: 'Bild', type: 'image', imageDir: 'news' },
+      {key: 'bildUrl', label: 'Titelbild', type: 'image', imageDir: 'news'},
+      {key: 'bildUrls', label: 'Weitere Bilder', type: 'imagelist', imageDir: 'news'},
     ]
   },
   {
@@ -294,7 +295,8 @@ const TABS = [
           {key: 'phone', label: 'Telefon', type: 'text'},
           {key: 'address', label: 'Adresse', type: 'text'},
           {key: 'place', label: 'PLZ & Ort', type: 'text'},
-          {key: 'bildUrl', label: 'Bild', type: 'image', imageDir: 'vorstand'},
+          {key: 'bildUrl', label: 'Profilbild', type: 'image', imageDir: 'vorstand'},
+          {key: 'bildUrls', label: 'Weitere Bilder', type: 'imagelist', imageDir: 'vorstand'},
           {key: 'bio', label: 'Biografie', type: 'textarea'},
         ]
       },
@@ -306,7 +308,8 @@ const TABS = [
           {key: 'wahlkreis', label: 'Wahlkreis', type: 'text'},
           {key: 'email', label: 'E-Mail', type: 'email'},
           {key: 'website', label: 'Website', type: 'url'},
-          {key: 'bildUrl', label: 'Bild', type: 'image', imageDir: 'abgeordnete'},
+          {key: 'bildUrl', label: 'Profilbild', type: 'image', imageDir: 'abgeordnete'},
+          {key: 'bildUrls', label: 'Weitere Bilder', type: 'imagelist', imageDir: 'abgeordnete'},
           {key: 'bio', label: 'Biografie', type: 'textarea'},
         ]
       },
@@ -323,7 +326,8 @@ const TABS = [
         fields: [
           { key: 'name', label: 'Name', type: 'text', required: true },
           { key: 'beruf', label: 'Beruf', type: 'text' },
-          { key: 'bildUrl', label: 'Bild', type: 'image', imageDir: 'gemeinderaete' },
+          {key: 'bildUrl', label: 'Profilbild', type: 'image', imageDir: 'gemeinderaete'},
+          {key: 'bildUrls', label: 'Weitere Bilder', type: 'imagelist', imageDir: 'gemeinderaete'},
           { key: 'seit', label: 'Im Rat seit', type: 'text' },
           { key: 'address', label: 'Adresse', type: 'text' },
           { key: 'zipCode', label: 'PLZ & Ort', type: 'text' },
@@ -337,7 +341,8 @@ const TABS = [
         fields: [
           { key: 'name', label: 'Name', type: 'text', required: true },
           { key: 'beruf', label: 'Beruf', type: 'text' },
-          { key: 'bildUrl', label: 'Bild', type: 'image', imageDir: 'kreisraete' },
+          {key: 'bildUrl', label: 'Profilbild', type: 'image', imageDir: 'kreisraete'},
+          {key: 'bildUrls', label: 'Weitere Bilder', type: 'imagelist', imageDir: 'kreisraete'},
           { key: 'seit', label: 'Im Rat seit', type: 'text' },
           { key: 'address', label: 'Adresse', type: 'text' },
           { key: 'zipCode', label: 'PLZ & Ort', type: 'text' },
@@ -352,7 +357,8 @@ const TABS = [
           { key: 'datum', label: 'Datum', type: 'date' },
           { key: 'titel', label: 'Titel', type: 'text', required: true },
           { key: 'inhalt', label: 'Inhalt', type: 'textarea' },
-          { key: 'bildUrl', label: 'Bild', type: 'image', imageDir: 'news' },
+          {key: 'bildUrl', label: 'Titelbild', type: 'image', imageDir: 'news'},
+          {key: 'bildUrls', label: 'Weitere Bilder', type: 'imagelist', imageDir: 'news'},
         ]
       },
     ]
@@ -384,7 +390,8 @@ const TABS = [
           { key: 'jahre', label: 'Jahre', type: 'text' },
           { key: 'rolle', label: 'Rolle', type: 'text' },
           { key: 'beschreibung', label: 'Beschreibung', type: 'textarea' },
-          { key: 'bildUrl', label: 'Bild', type: 'image', imageDir: 'persoenlichkeiten' },
+          {key: 'bildUrl', label: 'Profilbild', type: 'image', imageDir: 'persoenlichkeiten'},
+          {key: 'bildUrls', label: 'Weitere Bilder', type: 'imagelist', imageDir: 'persoenlichkeiten'},
         ]
       },
     ]
