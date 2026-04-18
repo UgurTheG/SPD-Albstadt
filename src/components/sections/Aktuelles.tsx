@@ -18,6 +18,7 @@ interface NewsItem {
   inhalt: string
   kategorie: string
   bildUrl: string
+  bildBeschreibung?: string
   bildUrls?: string[]
   bildBeschreibungen?: string[]
 }
@@ -819,7 +820,7 @@ export default function Aktuelles() {
             {(selectedNews.bildUrls?.length || selectedNews.bildUrl) && (
               <PhotoGallery
                   images={[...(selectedNews.bildUrl ? [selectedNews.bildUrl] : []), ...(selectedNews.bildUrls || [])].filter(Boolean)}
-                  captions={selectedNews.bildBeschreibungen}
+                  captions={[...(selectedNews.bildUrl ? [selectedNews.bildBeschreibung || ''] : []), ...(selectedNews.bildBeschreibungen || [])]}
                 alt={selectedNews.titel}
               />
             )}

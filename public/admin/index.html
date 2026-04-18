@@ -269,8 +269,14 @@ const TABS = [
       { key: 'inhalt', label: 'Inhalt', type: 'textarea' },
       { key: 'kategorie', label: 'Kategorie', type: 'select', options: ['Gemeinderat','Veranstaltung','Haushalt','Ortsverein','Wahl'] },
       {key: 'bildUrl', label: 'Titelbild', type: 'image', imageDir: 'news'},
-      {key: 'bildUrls', label: 'Weitere Bilder', type: 'imagelist', imageDir: 'news'},
-      {key: 'bildBeschreibungen', label: 'Bildunterschriften', type: 'stringlist'},
+      {key: 'bildBeschreibung', label: 'Bildunterschrift Titelbild', type: 'text'},
+      {
+        key: 'bildUrls',
+        label: 'Weitere Bilder',
+        type: 'imagelist',
+        imageDir: 'news',
+        captionsKey: 'bildBeschreibungen'
+      },
     ]
   },
   {
@@ -377,8 +383,13 @@ const TABS = [
           { key: 'jahr', label: 'Jahr(e)', type: 'text', required: true },
           { key: 'titel', label: 'Titel', type: 'text', required: true },
           { key: 'beschreibung', label: 'Beschreibung', type: 'textarea' },
-          {key: 'bilder', label: 'Bilder', type: 'imagelist', imageDir: 'historie'},
-          { key: 'bilderBeschreibungen', label: 'Bildunterschriften', type: 'stringlist' },
+          {
+            key: 'bilder',
+            label: 'Bilder',
+            type: 'imagelist',
+            imageDir: 'historie',
+            captionsKey: 'bilderBeschreibungen'
+          },
         ]
       },
       {
@@ -1069,12 +1080,21 @@ function renderField(field, value, onChange, contextItem) {
 
   } else if (field.type === 'imagelist') {
     const list = Array.isArray(value) ? [...value] : []
+    const captionsKey = field.captionsKey
+    const captions = captionsKey && contextItem ? (Array.isArray(contextItem[captionsKey]) ? [...contextItem[captionsKey]] : []) : null
     const container = el('div', {className: 'space-y-3'})
+
+    function syncCaptions() {
+      if (captions !== null && captionsKey && contextItem) {
+        contextItem[captionsKey] = [...captions]
+      }
+    }
 
     function rebuildImageList() {
       container.innerHTML = ''
       list.forEach((item, i) => {
-        const card = el('div', {className: 'flex gap-3 items-start bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 border border-gray-100 dark:border-gray-700/50'})
+        const card = el('div', {className: 'bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 border border-gray-100 dark:border-gray-700/50'})
+        const topRow = el('div', {className: 'flex gap-3 items-start'})
 
         // Preview thumbnail
         const preview = el('img', {
@@ -1085,7 +1105,7 @@ function renderField(field, value, onChange, contextItem) {
         preview.onerror = () => {
           preview.style.display = 'none'
         }
-        card.appendChild(preview)
+        topRow.appendChild(preview)
 
         const right = el('div', {className: 'flex-1 min-w-0 space-y-2'})
 
@@ -1143,20 +1163,42 @@ function renderField(field, value, onChange, contextItem) {
           className: 'text-xs text-red-400 hover:text-red-600 dark:hover:text-red-400 px-2 shrink-0',
           onClick: () => {
             list.splice(i, 1);
+            if (captions) captions.splice(i, 1)
             onChange([...list]);
+            syncCaptions()
             rebuildImageList()
           }
         }, '✕ Entfernen'))
         right.appendChild(btnRow)
 
-        card.appendChild(right)
+        topRow.appendChild(right)
+        card.appendChild(topRow)
+
+        // Caption input beneath the image
+        if (captions !== null) {
+          const captionInp = el('input', {
+            type: 'text',
+            className: inputClass + ' mt-2',
+            placeholder: 'Bildunterschrift (optional)'
+          })
+          captionInp.value = captions[i] || ''
+          captionInp.addEventListener('input', () => {
+            captions[i] = captionInp.value
+            syncCaptions()
+            onChange([...list]) // trigger dirty state
+          })
+          card.appendChild(captionInp)
+        }
+
         container.appendChild(card)
       })
       container.appendChild(el('button', {
         className: 'text-xs text-spd font-semibold hover:underline',
         onClick: () => {
           list.push('');
+          if (captions) captions.push('')
           onChange([...list]);
+          syncCaptions()
           rebuildImageList()
         }
       }, '+ Bild hinzufügen'))
