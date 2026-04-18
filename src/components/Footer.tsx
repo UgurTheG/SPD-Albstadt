@@ -1,4 +1,5 @@
-import { Mail, Heart } from 'lucide-react'
+import {Heart, Mail} from 'lucide-react'
+import {useConfig} from '../hooks/useConfig'
 
 const FacebookIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -20,6 +21,10 @@ interface FooterProps {
 
 export default function Footer({ navigateTo }: FooterProps) {
   const year = new Date().getFullYear()
+  const config = useConfig()
+  const email = config?.kontakt?.email || 'info@spd-albstadt.de'
+  const facebookUrl = config?.social?.facebookUrl || 'https://www.facebook.com/spdalbstadt'
+  const instagramUrl = config?.social?.instagramUrl || 'https://www.instagram.com/spdalbstadt/'
 
   return (
     <footer className="bg-gray-950 dark:bg-black text-gray-400 py-16">
@@ -37,15 +42,15 @@ export default function Footer({ navigateTo }: FooterProps) {
               Sozialdemokratische Partei Deutschlands, Ortsverein Albstadt. Für eine gerechte, soziale und zukunftsorientierte Stadtpolitik.
             </p>
             <a
-              href="mailto:info@spd-albstadt.de"
+                href={`mailto:${email}`}
               className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors mb-5"
             >
               <Mail size={14} />
-              info@spd-albstadt.de
+              {email}
             </a>
             <div className="flex items-center gap-2.5">
               <a
-                href="https://www.facebook.com/spdalbstadt"
+                  href={facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
@@ -54,7 +59,7 @@ export default function Footer({ navigateTo }: FooterProps) {
                 <FacebookIcon />
               </a>
               <a
-                href="https://www.instagram.com/spdalbstadt/"
+                  href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"

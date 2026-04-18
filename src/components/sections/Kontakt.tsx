@@ -1,6 +1,7 @@
-import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
-import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, ChevronDown } from 'lucide-react'
+import {type ChangeEvent, type FormEvent, useRef, useState} from 'react'
+import {AnimatePresence, motion, useInView} from 'framer-motion'
+import {AlertCircle, CheckCircle, ChevronDown, Mail, MapPin, Phone, Send} from 'lucide-react'
+import {useConfig} from '../../hooks/useConfig'
 
 interface FormData {
   name: string
@@ -14,6 +15,7 @@ export default function Kontakt() {
   const isInView = useInView(ref, { once: true, margin: '-80px' })
   const [formData, setFormData] = useState<FormData>({ name: '', email: '', betreff: '', nachricht: '' })
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
+  const config = useConfig()
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -23,14 +25,7 @@ export default function Kontakt() {
     e.preventDefault()
     setStatus('sending')
 
-    // -------------------------------------------------------
-    // INTEGRATION HINWEIS: Um das Formular zu aktivieren,
-    // erstellen Sie ein kostenloses Konto auf formspree.io,
-    // erstellen Sie ein Formular und ersetzen Sie die URL unten
-    // mit Ihrer eigenen Formspree-URL, z.B.:
-    // "https://formspree.io/f/IHRE_FORMULAR_ID"
-    // -------------------------------------------------------
-    const FORMSPREE_URL = 'https://formspree.io/f/xqegbkyl' // Hier Ihre Formspree-URL eintragen
+    const FORMSPREE_URL = config?.kontakt?.formspreeUrl || 'https://formspree.io/f/xqegbkyl'
 
     if (!FORMSPREE_URL) {
       // Demo mode: simulate success
@@ -59,6 +54,13 @@ export default function Kontakt() {
 
   const inputClass =
     'w-full bg-white dark:bg-red-900/40 border border-gray-200 dark:border-white/20 rounded-xl px-4 py-3.5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-red-300/60 focus:outline-none focus:ring-2 focus:ring-spd-red/25 dark:focus:ring-white/30 transition-all duration-200 text-sm'
+
+  const kontakt = config?.kontakt
+  const buerozeiten = config?.buerozeiten
+  const adresseLines = (kontakt?.adresse || 'SPD Albstadt\nStadtgarten 1\n72458 Albstadt-Ebingen').split('\n')
+  const email = kontakt?.email || 'info@spd-albstadt.de'
+  const telefon = kontakt?.telefon || '07431 / 000 000'
+  const telefonLink = '+49' + telefon.replace(/[^0-9]/g, '').replace(/^0/, '')
 
   return (
     <section id="kontakt" className="py-24 bg-gray-50 dark:bg-red-950 relative overflow-hidden">
@@ -287,10 +289,12 @@ export default function Kontakt() {
                   <div>
                     <p className="text-gray-900 dark:text-white font-semibold text-sm">Anschrift</p>
                     <p className="text-gray-500 dark:text-white/60 text-sm mt-0.5 leading-relaxed">
-                      SPD Albstadt
-                      <br />
-                      Stadtgarten 1<br />
-                      72458 Albstadt-Ebingen
+                      {adresseLines.map((line, index) => (
+                          <span key={index}>
+                          {line}
+                            {index < adresseLines.length - 1 && <br/>}
+                        </span>
+                      ))}
                     </p>
                   </div>
                 </div>
@@ -301,10 +305,10 @@ export default function Kontakt() {
                   <div>
                     <p className="text-gray-900 dark:text-white font-semibold text-sm">E-Mail</p>
                     <a
-                      href="mailto:info@spd-albstadt.de"
+                        href={`mailto:${email}`}
                       className="text-gray-500 dark:text-white/60 text-sm hover:text-spd-red dark:hover:text-white transition-colors mt-0.5 block"
                     >
-                      info@spd-albstadt.de
+                      {email}
                     </a>
                   </div>
                 </div>
@@ -315,10 +319,10 @@ export default function Kontakt() {
                   <div>
                     <p className="text-gray-900 dark:text-white font-semibold text-sm">Telefon</p>
                     <a
-                      href="tel:+497431000000"
+                        href={`tel:${telefonLink}`}
                       className="text-gray-500 dark:text-white/60 text-sm hover:text-spd-red dark:hover:text-white transition-colors mt-0.5 block"
                     >
-                      07431 / 000 000
+                      {telefon}
                     </a>
                   </div>
                 </div>
@@ -328,14 +332,15 @@ export default function Kontakt() {
             <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
               <h4 className="text-gray-900 dark:text-white font-bold mb-3">Bürozeiten</h4>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-white/60">Montag – Freitag</span>
-                  <span className="text-gray-900 dark:text-white font-medium">10:00 – 16:00</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-white/60">Samstag</span>
-                  <span className="text-gray-900 dark:text-white font-medium">Nach Vereinbarung</span>
-                </div>
+                {(buerozeiten || [{tage: 'Montag – Freitag', zeit: '10:00 – 16:00'}, {
+                  tage: 'Samstag',
+                  zeit: 'Nach Vereinbarung'
+                }]).map((b, index) => (
+                    <div key={index} className="flex justify-between">
+                      <span className="text-gray-500 dark:text-white/60">{b.tage}</span>
+                      <span className="text-gray-900 dark:text-white font-medium">{b.zeit}</span>
+                    </div>
+                ))}
               </div>
             </div>
           </motion.div>

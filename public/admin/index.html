@@ -398,6 +398,33 @@ const TABS = [
     topFields: [
       {key: 'icsUrl', label: 'Kalender-URL (ICS)', type: 'text'},
     ],
+    sections: [
+      {
+        key: 'kontakt', label: 'Kontaktdaten',
+        isSingleObject: true,
+        fields: [
+          {key: 'adresse', label: 'Anschrift (Zeilenumbrüche mit Enter)', type: 'textarea'},
+          {key: 'email', label: 'E-Mail-Adresse', type: 'email'},
+          {key: 'telefon', label: 'Telefon', type: 'text'},
+          {key: 'formspreeUrl', label: 'Formspree-URL (Kontaktformular)', type: 'url'},
+        ]
+      },
+      {
+        key: 'buerozeiten', label: 'Bürozeiten',
+        fields: [
+          {key: 'tage', label: 'Tage', type: 'text', required: true},
+          {key: 'zeit', label: 'Zeit', type: 'text', required: true},
+        ]
+      },
+      {
+        key: 'social', label: 'Social Media',
+        isSingleObject: true,
+        fields: [
+          {key: 'facebookUrl', label: 'Facebook-URL', type: 'url'},
+          {key: 'instagramUrl', label: 'Instagram-URL', type: 'url'},
+        ]
+      },
+    ]
   },
 ]
 
@@ -1176,6 +1203,33 @@ function renderField(field, value, onChange, contextItem) {
     row.appendChild(el('span', { className: 'text-sm font-medium text-gray-500 dark:text-gray-400' }, 'Uhr'))
     wrapper.appendChild(row)
 
+  } else if (field.type === 'toggle') {
+    const row = el('div', {className: 'flex items-center gap-3'})
+    const btn = el('button', {
+      type: 'button',
+      className: value
+              ? 'w-11 h-6 rounded-full bg-spd relative transition-colors'
+              : 'w-11 h-6 rounded-full bg-gray-300 dark:bg-gray-600 relative transition-colors',
+      onClick: () => {
+        const newVal = !value
+        onChange(newVal)
+        btn.className = newVal
+                ? 'w-11 h-6 rounded-full bg-spd relative transition-colors'
+                : 'w-11 h-6 rounded-full bg-gray-300 dark:bg-gray-600 relative transition-colors'
+        dot.style.transform = newVal ? 'translateX(20px)' : 'translateX(0px)'
+        label.textContent = newVal ? 'Aktiv' : 'Inaktiv'
+      }
+    })
+    const dot = el('span', {
+      className: 'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform',
+      style: value ? 'transform:translateX(20px)' : 'transform:translateX(0px)'
+    })
+    btn.appendChild(dot)
+    row.appendChild(btn)
+    const label = el('span', {className: 'text-sm text-gray-600 dark:text-gray-400'}, value ? 'Aktiv' : 'Inaktiv')
+    row.appendChild(label)
+    wrapper.appendChild(row)
+
   } else {
     const inp = el('input', { type: field.type || 'text', className: inputClass })
     inp.value = value || ''
@@ -1365,17 +1419,37 @@ function renderTab(tabConfig) {
         const summary = el('summary', {
           className: 'flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 mb-4'
         })
-        summary.appendChild(el('h3', {
-          className: 'text-sm font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400'
-        }, `${section.label} (${(data[section.key] || []).length})`))
-        summary.appendChild(el('span', { className: 'text-xs text-gray-400' }, '▼'))
-        details.appendChild(summary)
-        if (!data[section.key]) data[section.key] = []
-        const sectionContainer = el('div')
-        renderArrayEditor(sectionContainer, section.fields, data[section.key], () => {
-          summary.querySelector('h3').textContent = `${section.label} (${data[section.key].length})`
-        }, tabConfig.key)
-        details.appendChild(sectionContainer)
+
+        if (section.isSingleObject) {
+          // Single object section — render fields directly
+          if (!data[section.key]) data[section.key] = {}
+          summary.appendChild(el('h3', {
+            className: 'text-sm font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400'
+          }, section.label))
+          summary.appendChild(el('span', {className: 'text-xs text-gray-400'}, '▼'))
+          details.appendChild(summary)
+          const sectionContainer = el('div', {className: 'space-y-3'})
+          for (const field of section.fields) {
+            sectionContainer.appendChild(renderField(field, data[section.key][field.key], (v) => {
+              data[section.key][field.key] = v;
+              markDirty(tabConfig.key)
+            }))
+          }
+          details.appendChild(sectionContainer)
+        } else {
+          // Array section — existing behavior
+          summary.appendChild(el('h3', {
+            className: 'text-sm font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400'
+          }, `${section.label} (${(data[section.key] || []).length})`))
+          summary.appendChild(el('span', {className: 'text-xs text-gray-400'}, '▼'))
+          details.appendChild(summary)
+          if (!data[section.key]) data[section.key] = []
+          const sectionContainer = el('div')
+          renderArrayEditor(sectionContainer, section.fields, data[section.key], () => {
+            summary.querySelector('h3').textContent = `${section.label} (${data[section.key].length})`
+          }, tabConfig.key)
+          details.appendChild(sectionContainer)
+        }
         area.appendChild(details)
       }
     }

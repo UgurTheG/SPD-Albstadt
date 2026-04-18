@@ -4,7 +4,7 @@ import {Building2, ExternalLink, FileDown, Mail, MapPin} from 'lucide-react'
 import {useData} from '../../hooks/useData'
 import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
-import {FEATURES} from '../../config/features'
+import {useFeatures} from '../../hooks/useFeatures'
 
 interface Gemeinderat {
   name: string
@@ -109,6 +109,7 @@ function MemberCard({ member, onClick }: { member: Gemeinderat; onClick: () => v
 export default function Fraktion() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
+  const features = useFeatures()
   const { data } = useData<FraktionData>('/data/fraktion.json')
   const [selectedMember, setSelectedMember] = useState<Gemeinderat | null>(null)
   const [selectedFraktionNews, setSelectedFraktionNews] = useState<FraktionNews | null>(null)
@@ -251,7 +252,7 @@ export default function Fraktion() {
         </div>
 
         {/* Fraktion News */}
-        {FEATURES.FRAKTION_NEWS && data?.news && data.news.length > 0 && (
+        {features.FRAKTION_NEWS && data?.news && data.news.length > 0 && (
           <div className="mb-20">
             <motion.h3
               initial={{ opacity: 0, x: -20 }}
@@ -412,7 +413,7 @@ export default function Fraktion() {
       </div>
 
       {/* Fraktion news detail sheet */}
-      {FEATURES.FRAKTION_NEWS && (
+      {features.FRAKTION_NEWS && (
       <Sheet open={!!selectedFraktionNews} onClose={() => setSelectedFraktionNews(null)} size="lg">
         {selectedFraktionNews && (
           <div>

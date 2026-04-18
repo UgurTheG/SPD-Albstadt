@@ -3,7 +3,7 @@ import {motion, useInView} from 'framer-motion'
 import {Calendar, CalendarPlus, Camera, ChevronLeft, ChevronRight, Clock, ExternalLink, MapPin, Tag} from 'lucide-react'
 import {useData} from '../../hooks/useData'
 import {INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME} from '../../shared/instagram.ts'
-import {FEATURES} from '../../config/features'
+import {useFeatures} from '../../hooks/useFeatures'
 import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
 import {type ICSEvent, parseICS} from '../../utils/icsParser'
@@ -369,6 +369,7 @@ export default function Aktuelles() {
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null)
   const [visibleCount, setVisibleCount] = useState(5)
   const [activeTag, setActiveTag] = useState<string>('Alle')
+  const features = useFeatures()
   const [canInstagramScrollLeft, setCanInstagramScrollLeft] = useState(false)
   const [canInstagramScrollRight, setCanInstagramScrollRight] = useState(false)
   const isInstagramDragging = useRef(false)
@@ -417,7 +418,7 @@ export default function Aktuelles() {
   const { data: newsItems } = useData<NewsItem[]>('/data/news.json')
   const instagramScrollRef = useRef<HTMLDivElement>(null)
   const { data: instagramFeed, loading: instagramLoading, error: instagramError } = useData<InstagramFeedResponse>(
-    FEATURES.INSTAGRAM_FEED ? '/api/instagram' : ''
+      features.INSTAGRAM_FEED ? '/api/instagram' : ''
   )
 
   const allTags = newsItems
@@ -687,7 +688,7 @@ export default function Aktuelles() {
         </motion.div>
 
         {/* ── Instagram (after news) ── */}
-        {FEATURES.INSTAGRAM_FEED && (
+        {features.INSTAGRAM_FEED && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
