@@ -373,7 +373,7 @@ const TABS = [
           { key: 'jahr', label: 'Jahr(e)', type: 'text', required: true },
           { key: 'titel', label: 'Titel', type: 'text', required: true },
           { key: 'beschreibung', label: 'Beschreibung', type: 'textarea' },
-          { key: 'bilder', label: 'Bilder-URLs', type: 'stringlist' },
+          {key: 'bilder', label: 'Bilder', type: 'imagelist', imageDir: 'historie'},
           { key: 'bilderBeschreibungen', label: 'Bildunterschriften', type: 'stringlist' },
         ]
       },
@@ -493,6 +493,11 @@ function collectImagePaths(tabConfig, data) {
         }
         if (f.type === 'stringlist' && f.key === 'bilder' && Array.isArray(item[f.key])) {
           for (const url of item[f.key]) { if (url && url.startsWith('/images/')) paths.add(url) }
+        }
+        if (f.type === 'imagelist' && Array.isArray(item[f.key])) {
+          for (const url of item[f.key]) {
+            if (url && url.startsWith('/images/')) paths.add(url)
+          }
         }
       }
     }
@@ -1008,6 +1013,104 @@ function renderField(field, value, onChange, contextItem) {
       }, '+ Hinzufügen'))
     }
     rebuildList()
+    wrapper.appendChild(container)
+
+  } else if (field.type === 'imagelist') {
+    const list = Array.isArray(value) ? [...value] : []
+    const container = el('div', {className: 'space-y-3'})
+
+    function rebuildImageList() {
+      container.innerHTML = ''
+      list.forEach((item, i) => {
+        const card = el('div', {className: 'flex gap-3 items-start bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 border border-gray-100 dark:border-gray-700/50'})
+
+        // Preview thumbnail
+        const preview = el('img', {
+          className: 'w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-700 shrink-0'
+        })
+        preview.src = item || ''
+        preview.style.display = item ? 'block' : 'none'
+        preview.onerror = () => {
+          preview.style.display = 'none'
+        }
+        card.appendChild(preview)
+
+        const right = el('div', {className: 'flex-1 min-w-0 space-y-2'})
+
+        // URL input
+        const inp = el('input', {type: 'text', className: inputClass, placeholder: '/images/... oder https://...'})
+        inp.value = item || ''
+        inp.addEventListener('input', () => {
+          list[i] = inp.value;
+          onChange([...list])
+          preview.src = inp.value
+          preview.style.display = inp.value ? 'block' : 'none'
+        })
+        right.appendChild(inp)
+
+        // Button row
+        const btnRow = el('div', {className: 'flex gap-2'})
+
+        // Upload button
+        const fileInput = el('input', {type: 'file', accept: 'image/*', className: 'hidden'})
+        const uploadBtn = el('button', {
+          className: 'shrink-0 bg-gray-100 dark:bg-gray-800 hover:bg-spd hover:text-white text-gray-600 dark:text-gray-300 text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors',
+          onClick: () => fileInput.click()
+        }, '📁 Hochladen')
+        fileInput.addEventListener('change', async () => {
+          const file = fileInput.files[0];
+          if (!file) return
+          const base64 = await showCropOverlay(file)
+          if (!base64) {
+            fileInput.value = '';
+            return
+          }
+          try {
+            const imageDir = field.imageDir || 'historie'
+            const nameSlug = slugify(file.name.replace(/\.[^.]+$/, '')) + '-' + Date.now()
+            const ghFilePath = `public/images/${imageDir}/${nameSlug}.webp`
+            const publicUrl = `/images/${imageDir}/${nameSlug}.webp`
+            pendingUploads.push({ghPath: ghFilePath, base64, message: `admin: Bild ${nameSlug}.webp hochgeladen`})
+            list[i] = publicUrl;
+            onChange([...list])
+            inp.value = publicUrl
+            preview.src = `data:image/webp;base64,${base64}`
+            preview.style.display = 'block'
+            setStatus('Bild vorbereitet — wird beim Veröffentlichen hochgeladen', 'success')
+          } catch (e) {
+            setStatus('Fehler: ' + e.message, 'error')
+          } finally {
+            fileInput.value = ''
+          }
+        })
+        btnRow.appendChild(fileInput)
+        btnRow.appendChild(uploadBtn)
+
+        // Remove button
+        btnRow.appendChild(el('button', {
+          className: 'text-xs text-red-400 hover:text-red-600 dark:hover:text-red-400 px-2 shrink-0',
+          onClick: () => {
+            list.splice(i, 1);
+            onChange([...list]);
+            rebuildImageList()
+          }
+        }, '✕ Entfernen'))
+        right.appendChild(btnRow)
+
+        card.appendChild(right)
+        container.appendChild(card)
+      })
+      container.appendChild(el('button', {
+        className: 'text-xs text-spd font-semibold hover:underline',
+        onClick: () => {
+          list.push('');
+          onChange([...list]);
+          rebuildImageList()
+        }
+      }, '+ Bild hinzufügen'))
+    }
+
+    rebuildImageList()
     wrapper.appendChild(container)
 
   } else if (field.type === 'date') {
