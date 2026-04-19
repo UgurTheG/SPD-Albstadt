@@ -63,7 +63,7 @@ export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePag
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => handleNav('home')}
-              className="flex items-center gap-2.5 group shrink-0"
+              className={`flex items-center gap-2.5 group shrink-0 ${isHome ? 'hidden' : ''}`}
               aria-label="Startseite"
             >
               <img src="/spd-logo.svg" alt="SPD" className="w-9 h-9 rounded-lg shadow-md group-hover:scale-105 transition-transform" />
