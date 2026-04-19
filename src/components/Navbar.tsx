@@ -67,11 +67,13 @@ export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePag
               aria-label="Startseite"
             >
               <img src="/spd-logo.svg" alt="SPD" className="w-9 h-9 rounded-lg shadow-md group-hover:scale-105 transition-transform" />
-              <span className={`font-bold text-lg tracking-tight transition-colors duration-300 ${
-                solid ? 'text-gray-900 dark:text-white' : 'text-white'
-              }`}>
-                Albstadt
-              </span>
+              {!isHome && (
+                  <span className={`font-bold text-lg tracking-tight transition-colors duration-300 ${
+                      solid ? 'text-gray-900 dark:text-white' : 'text-white'
+                  }`}>
+                  Albstadt
+                </span>
+              )}
             </button>
 
             {/* Breadcrumb separator when on a section */}
@@ -84,7 +86,7 @@ export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePag
                   transition={{ duration: 0.2 }}
                   className="flex items-center gap-2 min-w-0"
                 >
-                  <span className="text-gray-300 dark:text-gray-600 hidden sm:block">/</span>
+                  <span className="text-gray-300 dark:text-gray-600">/</span>
                   <span className="font-semibold text-spd-red text-sm truncate">
                     {SECTION_LABELS[activePage]}
                   </span>
