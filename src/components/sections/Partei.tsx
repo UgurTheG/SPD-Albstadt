@@ -306,7 +306,7 @@ export default function Partei() {
                 <img
                   src={selectedPerson.bildUrl}
                   alt={selectedPerson.name}
-                  className="w-full block landscape:max-h-[55vh] landscape:object-cover landscape:object-top sm:landscape:max-h-none"
+                  className="w-full block max-h-[60vh] object-cover object-top sm:max-h-[80vh]"
                 />
               ) : (
                 <div className="w-full aspect-square bg-linear-to-br from-spd-red to-spd-red-dark flex items-center justify-center">
