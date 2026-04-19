@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {useState} from 'react'
 import {AnimatePresence, motion} from 'framer-motion'
 import {ChevronLeft, Menu, Moon, Sun, X} from 'lucide-react'
 
@@ -26,38 +26,19 @@ const SECTION_LABELS: Record<string, string> = {
 }
 
 export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePage }: NavbarProps) {
-  const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const isHome = activePage === 'home'
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
 
   const handleNav = (id: string) => {
     navigateTo(id)
     setMenuOpen(false)
   }
 
-  // Navbar is always solid when on a section page; transparent on home when not scrolled
-  const solid = !isHome || scrolled
-  // Hide the navbar while scrolled on the landing page; always show on other pages
-  const hidden = isHome && scrolled
+  const solid = true
 
   return (
     <nav
-      style={{
-        transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
-        willChange: 'transform',
-      }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-[transform,background-color,box-shadow] duration-200 ease-out motion-reduce:transition-none ${
-        solid
-          ? 'bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl shadow-lg shadow-black/5 dark:shadow-black/30'
-          : 'bg-transparent'
-      }`}
+      className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl shadow-lg shadow-black/5 dark:shadow-black/30"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">

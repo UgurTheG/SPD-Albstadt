@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowUp } from 'lucide-react'
+import { ArrowUp, Moon, Sun } from 'lucide-react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Footer from './components/Footer'
@@ -75,12 +75,22 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
-      <Navbar
-        darkMode={darkMode}
-        toggleDarkMode={() => setDarkMode(d => !d)}
-        navigateTo={navigateTo}
-        activePage={isHome ? 'home' : location.pathname.slice(1)}
-      />
+      {isHome ? (
+        <button
+          onClick={() => setDarkMode(d => !d)}
+          className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 p-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+          aria-label="Dark mode umschalten"
+        >
+          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
+      ) : (
+        <Navbar
+          darkMode={darkMode}
+          toggleDarkMode={() => setDarkMode(d => !d)}
+          navigateTo={navigateTo}
+          activePage={location.pathname.slice(1)}
+        />
+      )}
 
       <AnimatePresence mode="wait">
         <motion.div
