@@ -149,17 +149,19 @@ export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePag
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className={`md:hidden p-2.5 rounded-xl transition-all duration-200 ${
-                solid
-                  ? 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
-              }`}
-              aria-label="Menü öffnen"
-            >
-              {menuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
+            {!isHome && (
+                <button
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    className={`md:hidden p-2.5 rounded-xl transition-all duration-200 ${
+                        solid
+                            ? 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                            : 'text-white/80 hover:text-white hover:bg-white/10'
+                    }`}
+                    aria-label="Menü öffnen"
+                >
+                  {menuOpen ? <X size={20}/> : <Menu size={20}/>}
+                </button>
+            )}
           </div>
         </div>
       </div>
