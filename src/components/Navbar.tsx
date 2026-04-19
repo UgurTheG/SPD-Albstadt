@@ -44,12 +44,14 @@ export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePag
 
   // Navbar is always solid when on a section page; transparent on home when not scrolled
   const solid = !isHome || scrolled
+  // Hide the navbar while scrolled on the landing page; always show on other pages
+  const hidden = isHome && scrolled
 
   return (
     <motion.nav
       initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
+      animate={{ y: hidden ? -80 : 0, opacity: hidden ? 0 : 1 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-400 ${
         solid
           ? 'bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl shadow-lg shadow-black/5 dark:shadow-black/30'
