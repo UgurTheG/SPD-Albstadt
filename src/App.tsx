@@ -78,7 +78,7 @@ export default function App() {
       {isHome ? (
         <button
           onClick={() => setDarkMode(d => !d)}
-          className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 p-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 p-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors"
           aria-label="Dark mode umschalten"
         >
           {darkMode ? <Sun size={18} /> : <Moon size={18} />}
