@@ -123,9 +123,11 @@ function toDateStr(d: Date) {
 const CalendarView = memo(function CalendarView({
   events,
   onSelectEvent,
+                                                  onSelectDayEvents,
 }: {
   events: EventItem[]
   onSelectEvent: (e: EventItem) => void
+  onSelectDayEvents: (events: EventItem[]) => void
 }) {
   const [current, setCurrent] = useState(() => {
     const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), 1)
@@ -218,7 +220,7 @@ const CalendarView = memo(function CalendarView({
             <button
               key={i}
               disabled={!hasEvs}
-              onClick={() => hasEvs && onSelectEvent(dayEvs[0])}
+              onClick={() => hasEvs && (dayEvs.length === 1 ? onSelectEvent(dayEvs[0]) : onSelectDayEvents(dayEvs))}
               className={`relative flex flex-col items-center justify-start pt-0.5 sm:pt-1 pb-1 sm:pb-1.5 rounded-lg sm:rounded-xl min-h-9 sm:min-h-11 transition-all
                 ${!thisMonth ? 'opacity-20' : ''}
                 ${hasEvs ? 'cursor-pointer hover:bg-spd-red/8 dark:hover:bg-spd-red/15' : 'cursor-default'}
@@ -369,6 +371,7 @@ export default function Aktuelles() {
   const isInView = useInView(ref, { once: true, margin: '-80px' })
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null)
+  const [dayEventsPickerList, setDayEventsPickerList] = useState<EventItem[]>([])
   const [visibleCount, setVisibleCount] = useState(5)
   const [activeTag, setActiveTag] = useState<string>('Alle')
   const features = useFeatures()
@@ -685,6 +688,7 @@ export default function Aktuelles() {
                   beschreibung: e.beschreibung,
                 }))}
                 onSelectEvent={setSelectedEvent}
+                onSelectDayEvents={setDayEventsPickerList}
               />
             )}
         </motion.div>
@@ -842,6 +846,63 @@ export default function Aktuelles() {
         )}
       </Sheet>
 
+
+      {/* Day events picker sheet (multiple events on one day) */}
+      <Sheet open={dayEventsPickerList.length > 0} onClose={() => setDayEventsPickerList([])}>
+        {dayEventsPickerList.length > 0 && (
+            <div>
+              <div
+                  className="bg-linear-to-br from-spd-red via-spd-red to-spd-red-dark px-5 sm:px-6 pt-6 sm:pt-8 pb-5 sm:pb-6 relative overflow-hidden">
+                <div
+                    className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.12),transparent_50%)]"/>
+                <div className="relative">
+                  <p className="text-white/80 text-xs font-semibold uppercase tracking-wider mb-1">
+                    {formatEventDate(dayEventsPickerList[0].datum).full}
+                  </p>
+                  <h3 className="font-black text-white text-lg sm:text-xl leading-tight">
+                    {dayEventsPickerList.length} Termine an diesem Tag
+                  </h3>
+                </div>
+              </div>
+              <div className="px-3 sm:px-5 py-3 sm:py-4 space-y-1">
+                {dayEventsPickerList.map(e => {
+                  const {day, month: mon} = formatEventDate(e.datum)
+                  return (
+                      <div
+                          key={e.id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => {
+                            setDayEventsPickerList([]);
+                            setSelectedEvent(e)
+                          }}
+                          onKeyDown={ev => {
+                            if (ev.key === 'Enter' || ev.key === ' ') {
+                              ev.preventDefault();
+                              setDayEventsPickerList([]);
+                              setSelectedEvent(e)
+                            }
+                          }}
+                          className="w-full flex items-center gap-2.5 sm:gap-3 text-left p-2.5 sm:p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors group cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-gray-800"
+                      >
+                        <div
+                            className="shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-spd-red text-white flex flex-col items-center justify-center">
+                          <span className="text-xs sm:text-sm font-black leading-none">{day}</span>
+                          <span className="text-[7px] sm:text-[8px] uppercase opacity-80 tracking-wide">{mon}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-gray-900 dark:text-white truncate group-hover:text-spd-red transition-colors">{e.titel}</p>
+                          <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 truncate">{e.uhrzeit} Uhr{e.ort ? ` · ${e.ort}` : ''}</p>
+                        </div>
+                        <ChevronRight size={14}
+                                      className="text-gray-300 dark:text-gray-600 group-hover:text-spd-red transition-colors shrink-0"/>
+                      </div>
+                  )
+                })}
+              </div>
+            </div>
+        )}
+      </Sheet>
 
       {/* Event detail sheet (shared by both calendars) */}
       <Sheet open={!!selectedEvent} onClose={() => setSelectedEvent(null)}>
