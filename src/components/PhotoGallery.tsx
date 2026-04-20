@@ -4,6 +4,7 @@ import {ChevronLeft, ChevronRight} from 'lucide-react'
 import Lightbox from 'yet-another-react-lightbox'
 import Counter from 'yet-another-react-lightbox/plugins/counter'
 import Captions from 'yet-another-react-lightbox/plugins/captions'
+import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
 import 'yet-another-react-lightbox/plugins/counter.css'
 import 'yet-another-react-lightbox/plugins/captions.css'
@@ -212,9 +213,16 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
         slides={slides}
         index={active}
         on={{ view: ({ index }) => setActive(index) }}
-        plugins={[Counter, Captions]}
+        plugins={[Counter, Captions, Zoom]}
         captions={{descriptionTextAlign: 'center'}}
-        carousel={{ finite: false }}
+        carousel={{ finite: total <= 1 }}
+        zoom={{
+          maxZoomPixelRatio: 3,
+          scrollToZoom: true,
+          doubleTapDelay: 300,
+          doubleClickDelay: 300,
+          pinchZoomDistanceFactor: 100,
+        }}
         controller={{ closeOnBackdropClick: true }}
         styles={{
           container: { backgroundColor: 'rgba(0, 0, 0, 0.95)' },

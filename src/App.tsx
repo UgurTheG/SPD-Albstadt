@@ -15,14 +15,14 @@ const Datenschutz = lazy(() => import('./components/sections/Datenschutz'))
 const Impressum   = lazy(() => import('./components/sections/Impressum'))
 
 const PAGE_TITLES: Record<string, string> = {
-  '/':            'SPD Albstadt – Für eine gerechte Stadtpolitik',
-  '/aktuelles':   'Aktuelles & Termine – SPD Albstadt',
-  '/partei':      'Die SPD Albstadt – Partei & Vorstand',
-  '/fraktion':    'SPD-Fraktion im Gemeinderat Albstadt',
-  '/historie':    'Geschichte der SPD Albstadt',
-  '/kontakt':     'Kontakt – SPD Albstadt',
-  '/datenschutz': 'Datenschutz – SPD Albstadt',
-  '/impressum':   'Impressum – SPD Albstadt',
+  '/':            'SPD Albstadt',
+  '/aktuelles':   'SPD Albstadt / Aktuelles',
+  '/partei':      'SPD Albstadt / Partei',
+  '/fraktion':    'SPD Albstadt / Fraktion',
+  '/historie':    'SPD Albstadt / Historie',
+  '/kontakt':     'SPD Albstadt / Kontakt',
+  '/datenschutz': 'SPD Albstadt / Datenschutz',
+  '/impressum':   'SPD Albstadt / Impressum',
 }
 
 // Direction: 1 = going deeper, -1 = going back to home
