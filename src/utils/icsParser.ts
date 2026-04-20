@@ -29,11 +29,17 @@ export function parseICS(icsText: string): ICSEvent[] {
   const pad = (n: number) => String(n).padStart(2, '0')
 
   const now = new Date()
+  const horizonStart = ICAL.Time.fromJSDate(
+    new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()),
+    false,
+  )
   const horizonEnd = ICAL.Time.fromJSDate(
     new Date(now.getFullYear() + 2, now.getMonth(), now.getDate()),
     false,
   )
-  const MAX_OCCURRENCES = 500
+  // Safety bound against pathological RRULEs. With the 3-year window this
+  // comfortably covers a daily series whose DTSTART is up to ~10 years old.
+  const MAX_ITERATIONS = 5000
 
   const pushOccurrence = (
     uid: string,
@@ -83,18 +89,22 @@ export function parseICS(icsText: string): ICSEvent[] {
     const iterator = event.iterator()
     let next = iterator.next()
     let i = 0
-    while (next && i < MAX_OCCURRENCES) {
+    let emitted = 0
+    while (next && i < MAX_ITERATIONS) {
       if (next.compare(horizonEnd) > 0) break
-      const details = event.getOccurrenceDetails(next)
-      pushOccurrence(
-        uid,
-        i,
-        details.startDate.toJSDate(),
-        details.startDate.isDate,
-        details.item.summary || '',
-        details.item.location || '',
-        details.item.description || '',
-      )
+      if (next.compare(horizonStart) >= 0) {
+        const details = event.getOccurrenceDetails(next)
+        pushOccurrence(
+          uid,
+          emitted,
+          details.startDate.toJSDate(),
+          details.startDate.isDate,
+          details.item.summary || '',
+          details.item.location || '',
+          details.item.description || '',
+        )
+        emitted++
+      }
       next = iterator.next()
       i++
     }
