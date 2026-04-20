@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, UserPlus } from 'lucide-react'
 interface HeroProps {
   navigateTo: (id: string) => void
 }
@@ -81,11 +81,27 @@ export default function Hero({ navigateTo }: HeroProps) {
           <br className="hidden sm:block" /> sozial, gerecht und zukunftsorientiert.
         </motion.p>
 
+        {/* Primary CTA */}
+        <motion.a
+          href="https://www.spd.de/unterstuetzen/mitglied-werden"
+          target="_blank"
+          rel="noopener noreferrer"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.4, ease: 'easeOut' }}
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.97 }}
+          className="inline-flex items-center gap-2 bg-white text-spd-red font-bold px-7 py-3.5 rounded-full text-sm sm:text-base shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/30 transition-shadow mb-8 cursor-pointer"
+        >
+          <UserPlus size={18} strokeWidth={2.5} />
+          Mitglied werden
+        </motion.a>
+
         {/* Navigation pills */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.45, ease: 'easeOut' }}
+          transition={{ duration: 0.7, delay: 0.55, ease: 'easeOut' }}
           className="flex flex-wrap justify-center gap-2.5"
         >
           {NAV_ITEMS.map((item, i) => (
