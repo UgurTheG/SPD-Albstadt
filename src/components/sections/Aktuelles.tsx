@@ -1,6 +1,6 @@
 import {memo, type MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef, useState} from 'react'
 import {motion, useInView} from 'framer-motion'
-import {Calendar, CalendarPlus, Camera, ChevronLeft, ChevronRight, Clock, ExternalLink, MapPin, Tag} from 'lucide-react'
+import {Calendar, CalendarPlus, Camera, ChevronLeft, ChevronRight, Clock, ExternalLink, MapPin, Search, Tag, X} from 'lucide-react'
 import {useData} from '../../hooks/useData'
 import {INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME} from '../../shared/instagram.ts'
 import {useFeatures} from '../../hooks/useFeatures'
@@ -374,6 +374,7 @@ export default function Aktuelles() {
   const [dayEventsPickerList, setDayEventsPickerList] = useState<EventItem[]>([])
   const [visibleCount, setVisibleCount] = useState(5)
   const [activeTag, setActiveTag] = useState<string>('Alle')
+  const [searchQuery, setSearchQuery] = useState('')
   const features = useFeatures()
   const [canInstagramScrollLeft, setCanInstagramScrollLeft] = useState(false)
   const [canInstagramScrollRight, setCanInstagramScrollRight] = useState(false)
@@ -430,8 +431,19 @@ export default function Aktuelles() {
     ? ['Alle', ...Array.from(new Set(newsItems.map(n => n.kategorie)))]
     : ['Alle']
 
+  const normalizedQuery = searchQuery.trim().toLowerCase()
   const filteredNews = newsItems
-    ? activeTag === 'Alle' ? newsItems : newsItems.filter(n => n.kategorie === activeTag)
+    ? newsItems
+        .filter(n => activeTag === 'Alle' || n.kategorie === activeTag)
+        .filter(n => {
+          if (!normalizedQuery) return true
+          return (
+            n.titel.toLowerCase().includes(normalizedQuery) ||
+            n.zusammenfassung.toLowerCase().includes(normalizedQuery) ||
+            n.inhalt.toLowerCase().includes(normalizedQuery) ||
+            n.kategorie.toLowerCase().includes(normalizedQuery)
+          )
+        })
     : null
 
   const visibleNews = filteredNews?.slice(0, visibleCount)
@@ -439,6 +451,11 @@ export default function Aktuelles() {
 
   function handleTagChange(tag: string) {
     setActiveTag(tag)
+    setVisibleCount(5)
+  }
+
+  function handleSearchChange(value: string) {
+    setSearchQuery(value)
     setVisibleCount(5)
   }
 
@@ -546,6 +563,37 @@ export default function Aktuelles() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.2 }}
+            className="relative mb-4"
+          >
+            <label htmlFor="news-search" className="sr-only">Neuigkeiten durchsuchen</label>
+            <Search
+              size={16}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none"
+            />
+            <input
+              id="news-search"
+              type="search"
+              value={searchQuery}
+              onChange={e => handleSearchChange(e.target.value)}
+              placeholder="Neuigkeiten durchsuchen…"
+              className="w-full pl-10 pr-10 py-2.5 text-sm rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-spd-red/50 focus:ring-2 focus:ring-spd-red/20 transition-all"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => handleSearchChange('')}
+                aria-label="Suche zurücksetzen"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-spd-red hover:bg-spd-red/10 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.25 }}
             className="flex flex-wrap items-center gap-2 mb-6"
           >
@@ -613,8 +661,17 @@ export default function Aktuelles() {
 
           {filteredNews && filteredNews.length === 0 && (
             <div className="text-center py-10 text-gray-400 dark:text-gray-600">
-              <Tag size={28} className="mx-auto mb-3 opacity-40" />
-              <p className="text-sm">Keine Beiträge für diese Kategorie</p>
+              {normalizedQuery ? (
+                <>
+                  <Search size={28} className="mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">Keine Beiträge für „{searchQuery}"</p>
+                </>
+              ) : (
+                <>
+                  <Tag size={28} className="mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">Keine Beiträge für diese Kategorie</p>
+                </>
+              )}
             </div>
           )}
 
