@@ -214,7 +214,7 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
         on={{ view: ({ index }) => setActive(index) }}
         plugins={[Counter, Captions]}
         captions={{descriptionTextAlign: 'center'}}
-        carousel={{ finite: false }}
+        carousel={{ finite: total <= 1 }}
         controller={{ closeOnBackdropClick: true }}
         styles={{
           container: { backgroundColor: 'rgba(0, 0, 0, 0.95)' },
