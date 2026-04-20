@@ -219,9 +219,7 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
         zoom={{
           maxZoomPixelRatio: 3,
           scrollToZoom: true,
-          doubleTapDelay: 300,
-          doubleClickDelay: 300,
-          pinchZoomDistanceFactor: 100,
+          pinchZoomDistanceFactor: 50,
         }}
         controller={{ closeOnBackdropClick: true }}
         styles={{
