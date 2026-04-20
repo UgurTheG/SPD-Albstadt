@@ -23,6 +23,8 @@ const SECTION_LABELS: Record<string, string> = {
   fraktion: 'Fraktion',
   historie: 'Historie',
   kontakt: 'Kontakt',
+  datenschutz: 'Datenschutz',
+  impressum: 'Impressum',
 }
 
 export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePage }: NavbarProps) {
