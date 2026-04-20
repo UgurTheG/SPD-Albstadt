@@ -27,6 +27,7 @@ interface EventItem {
   id: string
   datum: string
   uhrzeit: string
+  ganztaegig?: boolean
   titel: string
   ort: string
   beschreibung: string
@@ -84,16 +85,20 @@ function formatInstagramDate(dateStr: string | null): string {
 
 
 function downloadICS(event: EventItem) {
-  const [hours, minutes] = event.uhrzeit.split(':').map(Number)
   const d = new Date(event.datum + 'T00:00:00')
-  d.setHours(hours || 0, minutes || 0, 0, 0)
 
-  const start: DateArray = [d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes()]
+  const start: DateArray = event.ganztaegig
+    ? [d.getFullYear(), d.getMonth() + 1, d.getDate()]
+    : (() => {
+        const [hours, minutes] = event.uhrzeit.split(':').map(Number)
+        d.setHours(hours || 0, minutes || 0, 0, 0)
+        return [d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes()]
+      })()
 
   const { error, value } = createEvent({
     start,
     startInputType: 'local',
-    duration: { hours: 2 },
+    duration: event.ganztaegig ? { days: 1 } : { hours: 2 },
     title: event.titel,
     location: event.ort,
     description: event.beschreibung || undefined,
@@ -266,7 +271,7 @@ const CalendarView = memo(function CalendarView({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] sm:text-xs font-bold text-gray-900 dark:text-white truncate group-hover:text-spd-red transition-colors">{e.titel}</p>
-                  <p className="text-[9px] sm:text-[10px] text-gray-400 dark:text-gray-500 truncate">{weekday} · {e.uhrzeit} Uhr{e.ort ? ` · ${e.ort}` : ''}</p>
+                  <p className="text-[9px] sm:text-[10px] text-gray-400 dark:text-gray-500 truncate">{weekday} · {e.ganztaegig ? 'Ganztägig' : `${e.uhrzeit} Uhr`}{e.ort ? ` · ${e.ort}` : ''}</p>
                 </div>
                 <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                   <button
@@ -322,7 +327,7 @@ function EventDetailContent({ event }: { event: EventItem }) {
             </div>
             <div>
               <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Uhrzeit</p>
-              <p className="text-sm font-bold text-gray-900 dark:text-white">{event.uhrzeit} Uhr</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">{event.ganztaegig ? 'Ganztägig' : `${event.uhrzeit} Uhr`}</p>
             </div>
           </div>
           {event.ort && (
@@ -740,6 +745,7 @@ export default function Aktuelles() {
                   id: e.id,
                   datum: e.datum,
                   uhrzeit: e.uhrzeit,
+                  ganztaegig: e.ganztaegig,
                   titel: e.titel,
                   ort: e.ort,
                   beschreibung: e.beschreibung,
@@ -951,7 +957,7 @@ export default function Aktuelles() {
                           <p className="text-sm font-bold text-gray-900 dark:text-white truncate group-hover:text-spd-red transition-colors">{e.titel}</p>
                           <div className="flex items-center gap-1.5 mt-0.5">
                             <Clock size={10} className="text-gray-400 dark:text-gray-500 shrink-0"/>
-                            <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 truncate">{e.uhrzeit} Uhr{e.ort ? ` · ${e.ort}` : ''}</p>
+                            <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 truncate">{e.ganztaegig ? 'Ganztägig' : `${e.uhrzeit} Uhr`}{e.ort ? ` · ${e.ort}` : ''}</p>
                           </div>
                         </div>
                         <div
