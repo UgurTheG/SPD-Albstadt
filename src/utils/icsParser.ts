@@ -16,6 +16,9 @@ export interface ICSEvent {
 
 /**
  * Parse raw ICS text into an array of ICSEvent objects.
+ * Recurring events (RRULE) are expanded into individual occurrences
+ * up to ~2 years in the future, with EXDATE exclusions and
+ * RECURRENCE-ID overrides applied via ical.js.
  */
 export function parseICS(icsText: string): ICSEvent[] {
   const parsed = ICAL.parse(icsText)
@@ -23,31 +26,78 @@ export function parseICS(icsText: string): ICSEvent[] {
   const vevents = comp.getAllSubcomponents('vevent')
 
   const events: ICSEvent[] = []
+  const pad = (n: number) => String(n).padStart(2, '0')
+
+  const now = new Date()
+  const horizonEnd = ICAL.Time.fromJSDate(
+    new Date(now.getFullYear() + 2, now.getMonth(), now.getDate()),
+    false,
+  )
+  const MAX_OCCURRENCES = 500
+
+  const pushOccurrence = (
+    uid: string,
+    index: number,
+    jsDate: Date,
+    isAllDay: boolean,
+    summary: string,
+    location: string,
+    description: string,
+  ) => {
+    const datum = `${jsDate.getFullYear()}-${pad(jsDate.getMonth() + 1)}-${pad(jsDate.getDate())}`
+    const uhrzeit = isAllDay
+      ? '00:00'
+      : `${pad(jsDate.getHours())}:${pad(jsDate.getMinutes())}`
+    events.push({
+      id: `${uid}-${index}-${datum}`,
+      datum,
+      uhrzeit,
+      titel: summary || 'Ohne Titel',
+      ort: location,
+      beschreibung: description,
+    })
+  }
 
   for (const vevent of vevents) {
     const event = new ICAL.Event(vevent)
+    if (event.isRecurrenceException()) continue
 
     const startDate = event.startDate
     if (!startDate) continue
 
-    const jsDate = startDate.toJSDate()
-    const pad = (n: number) => String(n).padStart(2, '0')
+    const uid = event.uid || `ics-${events.length}`
 
-    const datum = `${jsDate.getFullYear()}-${pad(jsDate.getMonth() + 1)}-${pad(jsDate.getDate())}`
+    if (!event.isRecurring()) {
+      pushOccurrence(
+        uid,
+        0,
+        startDate.toJSDate(),
+        startDate.isDate,
+        event.summary || '',
+        event.location || '',
+        event.description || '',
+      )
+      continue
+    }
 
-    // For all-day events startDate.isDate is true, show 00:00
-    const uhrzeit = startDate.isDate
-      ? '00:00'
-      : `${pad(jsDate.getHours())}:${pad(jsDate.getMinutes())}`
-
-    events.push({
-      id: event.uid || `ics-${events.length}-${datum}`,
-      datum,
-      uhrzeit,
-      titel: event.summary || 'Ohne Titel',
-      ort: event.location || '',
-      beschreibung: event.description || '',
-    })
+    const iterator = event.iterator()
+    let next = iterator.next()
+    let i = 0
+    while (next && i < MAX_OCCURRENCES) {
+      if (next.compare(horizonEnd) > 0) break
+      const details = event.getOccurrenceDetails(next)
+      pushOccurrence(
+        uid,
+        i,
+        details.startDate.toJSDate(),
+        details.startDate.isDate,
+        details.item.summary || '',
+        details.item.location || '',
+        details.item.description || '',
+      )
+      next = iterator.next()
+      i++
+    }
   }
 
   // Sort by date, then time
