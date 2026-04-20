@@ -1,7 +1,7 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowUp, Moon, Sun } from 'lucide-react'
+import {lazy, Suspense, useEffect, useState} from 'react'
+import {Route, Routes, useLocation, useNavigate} from 'react-router-dom'
+import {AnimatePresence, motion} from 'framer-motion'
+import {ArrowUp, Moon, Sun} from 'lucide-react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Footer from './components/Footer'
@@ -13,6 +13,7 @@ const Historie    = lazy(() => import('./components/sections/Historie'))
 const Kontakt     = lazy(() => import('./components/sections/Kontakt'))
 const Datenschutz = lazy(() => import('./components/sections/Datenschutz'))
 const Impressum   = lazy(() => import('./components/sections/Impressum'))
+const ErrorPage = lazy(() => import('./components/sections/ErrorPage'))
 
 const PAGE_TITLES: Record<string, string> = {
   '/':            'SPD Albstadt',
@@ -114,8 +115,20 @@ export default function App() {
               <Route path="/kontakt"     element={<><Kontakt /><Footer navigateTo={navigateTo} /></>} />
               <Route path="/datenschutz" element={<><Datenschutz /><Footer navigateTo={navigateTo} /></>} />
               <Route path="/impressum"   element={<><Impressum /><Footer navigateTo={navigateTo} /></>} />
-              {/* Fallback — redirect unknown paths to home */}
-              <Route path="*" element={<><Hero navigateTo={navigateTo} /><Footer navigateTo={navigateTo} /></>} />
+              {/* Error pages */}
+              <Route path="/400"
+                     element={<><ErrorPage code={400} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
+              <Route path="/403"
+                     element={<><ErrorPage code={403} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
+              <Route path="/408"
+                     element={<><ErrorPage code={408} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
+              <Route path="/500"
+                     element={<><ErrorPage code={500} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
+              <Route path="/503"
+                     element={<><ErrorPage code={503} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
+              {/* Catch-all → 404 */}
+              <Route path="*"
+                     element={<><ErrorPage code={404} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
             </Routes>
           </Suspense>
         </motion.div>

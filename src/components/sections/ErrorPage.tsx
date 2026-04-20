@@ -1,0 +1,96 @@
+import {motion} from 'framer-motion'
+import {AlertTriangle, ArrowLeft, Ban, Clock, Home, Search, ServerCrash, ShieldOff} from 'lucide-react'
+
+interface ErrorPageProps {
+    code: number
+    navigateTo: (id: string) => void
+}
+
+const ERROR_CONFIG: Record<number, { icon: typeof Home; title: string; description: string }> = {
+    400: {
+        icon: AlertTriangle,
+        title: 'Ungültige Anfrage',
+        description: 'Die Anfrage konnte nicht verarbeitet werden. Bitte überprüfen Sie die URL und versuchen Sie es erneut.',
+    },
+    403: {
+        icon: ShieldOff,
+        title: 'Zugriff verweigert',
+        description: 'Sie haben leider keine Berechtigung, diese Seite aufzurufen.',
+    },
+    404: {
+        icon: Search,
+        title: 'Seite nicht gefunden',
+        description: 'Die angeforderte Seite existiert leider nicht. Möglicherweise wurde sie verschoben oder entfernt.',
+    },
+    408: {
+        icon: Clock,
+        title: 'Zeitüberschreitung',
+        description: 'Die Anfrage hat zu lange gedauert. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.',
+    },
+    500: {
+        icon: ServerCrash,
+        title: 'Serverfehler',
+        description: 'Auf dem Server ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+    },
+    503: {
+        icon: Ban,
+        title: 'Vorübergehend nicht verfügbar',
+        description: 'Die Seite wird gerade gewartet und ist vorübergehend nicht erreichbar. Bitte versuchen Sie es in Kürze erneut.',
+    },
+}
+
+export default function ErrorPage({code, navigateTo}: ErrorPageProps) {
+    const config = ERROR_CONFIG[code] ?? ERROR_CONFIG[404]!
+    const Icon = config.icon
+
+    return (
+        <section className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950 px-4">
+            <motion.div
+                initial={{opacity: 0, y: 30}}
+                animate={{opacity: 1, y: 0}}
+                transition={{duration: 0.6, ease: 'easeOut'}}
+                className="text-center max-w-md"
+            >
+                {/* Status code with icon as middle digit */}
+                <div className="flex items-center justify-center gap-1 sm:gap-2 mb-8 select-none">
+          <span className="text-[7rem] sm:text-[10rem] font-black leading-none text-gray-200 dark:text-gray-800">
+            {String(code)[0]}
+          </span>
+                    <div
+                        className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center shrink-0">
+                        <Icon size={40} strokeWidth={1.5} className="text-spd-red sm:w-12 sm:h-12"/>
+                    </div>
+                    <span
+                        className="text-[7rem] sm:text-[10rem] font-black leading-none text-gray-200 dark:text-gray-800">
+            {String(code)[2]}
+          </span>
+                </div>
+
+                <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mb-3">
+                    {config.title}
+                </h1>
+                <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
+                    {config.description}
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <button
+                        onClick={() => navigateTo('home')}
+                        className="inline-flex items-center gap-2 bg-spd-red hover:bg-spd-red-dark text-white font-semibold px-6 py-3 rounded-xl transition-colors cursor-pointer"
+                    >
+                        <Home size={16}/>
+                        Zur Startseite
+                    </button>
+                    <button
+                        onClick={() => window.history.back()}
+                        className="inline-flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-spd-red font-semibold px-6 py-3 rounded-xl transition-colors cursor-pointer"
+                    >
+                        <ArrowLeft size={16}/>
+                        Zurück
+                    </button>
+                </div>
+            </motion.div>
+        </section>
+    )
+}
+
