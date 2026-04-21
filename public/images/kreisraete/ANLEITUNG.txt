@@ -1,9 +1,0 @@
-=== FOTOS KREISRAETE ===
-Hier Fotos der Kreisratsmitglieder ablegen.
-DATEINAME:  vorname-nachname.jpg
-BEISPIEL:   werner-kreisrat.jpg
-EMPFOHLENE BILDGRÖSSE:  400 x 400 Pixel (quadratisch)
-DATEIFORMATE:            .jpg oder .png
-ANSCHLIESSEND in public/data/fraktion.json unter "kreisraete"
-den Wert von "bildUrl" anpassen:
-  "bildUrl": "/images/kreisraete/werner-kreisrat.jpg"

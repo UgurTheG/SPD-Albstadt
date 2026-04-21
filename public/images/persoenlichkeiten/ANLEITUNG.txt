@@ -1,9 +1,0 @@
-=== FOTOS KOMMUNALE PERSOENLICHKEITEN ===
-Hier historische Fotos der kommunalen Persoenlichkeiten ablegen.
-DATEINAME:  vorname-nachname.jpg
-BEISPIEL:   johann-schmitt.jpg
-EMPFOHLENE BILDGRÖSSE:  400 x 400 Pixel (quadratisch)
-DATEIFORMATE:            .jpg oder .png
-ANSCHLIESSEND in public/data/history.json unter "persoenlichkeiten"
-den Wert von "bildUrl" anpassen:
-  "bildUrl": "/images/persoenlichkeiten/johann-schmitt.jpg"

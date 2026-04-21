@@ -1,9 +1,0 @@
-=== FOTOS GEMEINDERAETE ===
-Hier Fotos der Gemeinderatsmitglieder ablegen.
-DATEINAME:  vorname-nachname.jpg
-BEISPIEL:   hans-beispiel.jpg
-EMPFOHLENE BILDGRÖSSE:  400 x 400 Pixel (quadratisch)
-DATEIFORMATE:            .jpg oder .png
-ANSCHLIESSEND in public/data/fraktion.json unter "gemeinderaete"
-den Wert von "bildUrl" anpassen:
-  "bildUrl": "/images/gemeinderaete/hans-beispiel.jpg"
