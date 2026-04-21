@@ -4,7 +4,7 @@ import type {FieldConfig} from '../types'
 import {slugify} from '../lib/images'
 import {useAdminStore} from '../store'
 import {ICON_LIST, loadIconSvg} from '../lib/icons'
-import {Calendar, ImagePlus, Link as LinkIcon, Mail, Phone, Plus, Search, Upload, X} from 'lucide-react'
+import {ArrowDown, ArrowUp, Calendar, ImagePlus, Link as LinkIcon, Mail, Phone, Plus, Search, Upload, X} from 'lucide-react'
 import CropOverlay from './CropOverlay'
 
 const inputCls = 'w-full bg-white/60 dark:bg-gray-800/40 border border-gray-200/80 dark:border-gray-700/60 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-spd-red/20 focus:border-spd-red/40 focus:bg-white dark:focus:bg-gray-800/80 dark:text-white dark:placeholder-gray-500 transition-all duration-200 backdrop-blur-sm'
@@ -347,6 +347,8 @@ function ImageListField({field, value, onChange, contextItem}: {
                         url={item}
                         caption={captions[i] || ''}
                         hasCaption={!!captionsKey}
+                        index={i}
+                        total={list.length}
                         onUrlChange={v => {
                             const n = [...list];
                             n[i] = v;
@@ -364,6 +366,20 @@ function ImageListField({field, value, onChange, contextItem}: {
                             n.splice(i, 1)
                             const c = [...captions];
                             c.splice(i, 1)
+                            syncCaptions(c)
+                            onChange(n)
+                        }}
+                        onMoveUp={() => {
+                            if (i === 0) return
+                            const n = [...list]; [n[i - 1], n[i]] = [n[i], n[i - 1]]
+                            const c = [...captions]; [c[i - 1], c[i]] = [c[i], c[i - 1]]
+                            syncCaptions(c)
+                            onChange(n)
+                        }}
+                        onMoveDown={() => {
+                            if (i >= list.length - 1) return
+                            const n = [...list]; [n[i], n[i + 1]] = [n[i + 1], n[i]]
+                            const c = [...captions]; [c[i], c[i + 1]] = [c[i + 1], c[i]]
                             syncCaptions(c)
                             onChange(n)
                         }}
@@ -387,10 +403,10 @@ function ImageListField({field, value, onChange, contextItem}: {
     )
 }
 
-function ImageListItem({url, caption, hasCaption, onUrlChange, onCaptionChange, onUpload, onRemove}: {
-    url: string; caption: string; hasCaption: boolean
+function ImageListItem({url, caption, hasCaption, index, total, onUrlChange, onCaptionChange, onUpload, onRemove, onMoveUp, onMoveDown}: {
+    url: string; caption: string; hasCaption: boolean; index: number; total: number
     onUrlChange: (v: string) => void; onCaptionChange: (v: string) => void
-    onUpload: (f: File) => void; onRemove: () => void
+    onUpload: (f: File) => void; onRemove: () => void; onMoveUp: () => void; onMoveDown: () => void
 }) {
     const fileRef = useRef<HTMLInputElement>(null)
     const [showUrl, setShowUrl] = useState(!url)
@@ -398,6 +414,19 @@ function ImageListItem({url, caption, hasCaption, onUrlChange, onCaptionChange, 
         <div
             className="bg-white/50 dark:bg-gray-800/30 backdrop-blur-sm rounded-2xl p-3 sm:p-4 border border-gray-200/50 dark:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
             <div className="flex gap-3 items-start">
+                {/* Reorder buttons */}
+                {total > 1 && (
+                    <div className="flex flex-col gap-1 shrink-0 pt-1">
+                        <button type="button" disabled={index === 0} onClick={onMoveUp}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-spd-red hover:bg-spd-red/10 disabled:opacity-25 disabled:hover:text-gray-400 disabled:hover:bg-transparent transition-all">
+                            <ArrowUp size={13}/>
+                        </button>
+                        <button type="button" disabled={index >= total - 1} onClick={onMoveDown}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-spd-red hover:bg-spd-red/10 disabled:opacity-25 disabled:hover:text-gray-400 disabled:hover:bg-transparent transition-all">
+                            <ArrowDown size={13}/>
+                        </button>
+                    </div>
+                )}
                 {url ? (
                     <img src={url} alt=""
                          className="w-16 h-16 rounded-xl object-cover border border-gray-200/60 dark:border-gray-700/60 shrink-0 shadow-sm"
