@@ -89,6 +89,101 @@ export async function deleteFile(token: string, filePath: string, message: strin
     })
 }
 
+export interface TreeFileChange {
+    path: string
+    content?: string        // for text files (UTF-8)
+    base64Content?: string  // for binary files
+    delete?: boolean
+}
+
+/**
+ * Create a single commit with multiple file changes using the Git Trees API.
+ * This replaces multiple individual commits with one atomic commit.
+ */
+export async function commitTree(token: string, message: string, changes: TreeFileChange[]) {
+    if (changes.length === 0) return
+    const h = headers(token)
+    const base = apiBase()
+
+    // 1. Get the latest commit SHA on the branch
+    const refRes = await fetch(`${base}/git/ref/heads/${BRANCH}`, {headers: h})
+    if (!refRes.ok) throw new Error('Branch nicht gefunden')
+    const refData = await refRes.json()
+    const latestCommitSha: string = refData.object.sha
+
+    // 2. Get the tree SHA of that commit
+    const commitRes = await fetch(`${base}/git/commits/${latestCommitSha}`, {headers: h})
+    if (!commitRes.ok) throw new Error('Commit nicht gefunden')
+    const commitData = await commitRes.json()
+    const baseTreeSha: string = commitData.tree.sha
+
+    // 3. Build tree entries
+    const treeEntries: Record<string, unknown>[] = []
+
+    for (const change of changes) {
+        if (change.delete) {
+            // To delete a file, set sha to null
+            treeEntries.push({
+                path: change.path,
+                mode: '100644',
+                type: 'blob',
+                sha: null,
+            })
+        } else if (change.base64Content) {
+            // For binary files, create a blob first
+            const blobRes = await fetch(`${base}/git/blobs`, {
+                method: 'POST', headers: h,
+                body: JSON.stringify({content: change.base64Content, encoding: 'base64'}),
+            })
+            if (!blobRes.ok) throw new Error(`Blob-Erstellung fehlgeschlagen für ${change.path}`)
+            const blobData = await blobRes.json()
+            treeEntries.push({
+                path: change.path,
+                mode: '100644',
+                type: 'blob',
+                sha: blobData.sha,
+            })
+        } else if (change.content !== undefined) {
+            // For text files, content can be inlined
+            treeEntries.push({
+                path: change.path,
+                mode: '100644',
+                type: 'blob',
+                content: change.content,
+            })
+        }
+    }
+
+    // 4. Create new tree
+    const treeRes = await fetch(`${base}/git/trees`, {
+        method: 'POST', headers: h,
+        body: JSON.stringify({base_tree: baseTreeSha, tree: treeEntries}),
+    })
+    if (!treeRes.ok) throw new Error('Tree-Erstellung fehlgeschlagen')
+    const treeData = await treeRes.json()
+
+    // 5. Create commit
+    const newCommitRes = await fetch(`${base}/git/commits`, {
+        method: 'POST', headers: h,
+        body: JSON.stringify({
+            message,
+            tree: treeData.sha,
+            parents: [latestCommitSha],
+        }),
+    })
+    if (!newCommitRes.ok) throw new Error('Commit-Erstellung fehlgeschlagen')
+    const newCommitData = await newCommitRes.json()
+
+    // 6. Update branch reference
+    const updateRefRes = await fetch(`${base}/git/refs/heads/${BRANCH}`, {
+        method: 'PATCH', headers: h,
+        body: JSON.stringify({sha: newCommitData.sha}),
+    })
+    if (!updateRefRes.ok) throw new Error('Branch-Update fehlgeschlagen')
+
+    return newCommitData
+}
+
 export async function listDirectory(token: string, dirPath: string) {
     const res = await fetch(`${apiBase()}/contents/${dirPath}?ref=${BRANCH}&t=${Date.now()}`, {
         headers: {

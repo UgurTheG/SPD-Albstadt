@@ -2,7 +2,7 @@ import {create} from 'zustand'
 import type {GHUser, PendingUpload, TabConfig} from './types'
 import {TABS} from './config/tabs'
 import {collectImagePaths} from './lib/images'
-import {commitBinaryFile, commitFile, deleteFile, validateToken} from './lib/github'
+import {commitTree, validateToken, type TreeFileChange} from './lib/github'
 
 const TOKEN_KEY = 'spd-admin-token'
 const DARK_KEY = 'spd-admin-dark'
@@ -297,40 +297,37 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         if (!tab?.ghPath) return
         set({publishing: true})
         try {
+            const changes: TreeFileChange[] = []
             const currentPaths = collectImagePaths(tab as TabConfig, s[tabKey] as Record<string, unknown>)
-            const tabUploads: PendingUpload[] = []
+
+            // Collect relevant image uploads
             const otherUploads: PendingUpload[] = []
             for (const upload of pendingUploads) {
                 const publicUrl = upload.ghPath.replace(/^public/, '')
                 if (currentPaths.has(publicUrl)) {
-                    tabUploads.push(upload)
+                    changes.push({path: upload.ghPath, base64Content: upload.base64})
                 } else {
                     otherUploads.push(upload)
                 }
             }
-            const failedUploads: PendingUpload[] = []
-            for (const upload of tabUploads) {
-                try {
-                    await commitBinaryFile(token, upload.ghPath, upload.base64, upload.message)
-                } catch {
-                    failedUploads.push(upload)
-                }
-            }
+
+            // Collect orphan deletions
             if (orphansToDelete) {
                 for (const imgPath of orphansToDelete) {
-                    try {
-                        await deleteFile(token, 'public' + imgPath, `admin: Bild ${imgPath.split('/').pop()} entfernt`)
-                    } catch (e) {
-                        console.error('Fehler beim Löschen:', imgPath, e)
-                    }
+                    changes.push({path: 'public' + imgPath, delete: true})
                 }
             }
+
+            // Add JSON file
             const json = JSON.stringify(s[tabKey], null, 2) + '\n'
             const fileName = tab.file?.split('/').pop() ?? tab.key
-            await commitFile(token, tab.ghPath, json, `admin: ${fileName} aktualisiert`)
+            changes.push({path: tab.ghPath, content: json})
+
+            await commitTree(token, `admin: ${fileName} aktualisiert`, changes)
+
             get().resetOriginal(tabKey)
             set(prev => ({
-                pendingUploads: [...otherUploads, ...failedUploads],
+                pendingUploads: otherUploads,
                 statusMessage: 'Veröffentlicht! Seite wird in ~1 Min. aktualisiert.',
                 statusType: 'success',
                 statusCounter: prev.statusCounter + 1,
@@ -379,41 +376,55 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         if (publishing) return
         set({publishing: true})
         try {
+            const changes: TreeFileChange[] = []
+
+            // Collect image uploads
+            for (const upload of pendingUploads) {
+                changes.push({path: upload.ghPath, base64Content: upload.base64})
+            }
+
+            // Collect orphan deletions
             if (orphansToDelete) {
                 for (const imgPath of orphansToDelete) {
-                    try {
-                        await deleteFile(token, 'public' + imgPath, `admin: Bild ${imgPath.split('/').pop()} entfernt`)
-                    } catch (e) {
-                        console.error('Fehler beim Löschen:', imgPath, e)
-                    }
+                    changes.push({path: 'public' + imgPath, delete: true})
                 }
             }
-            const remaining: PendingUpload[] = []
-            for (const upload of pendingUploads) {
-                try {
-                    await commitBinaryFile(token, upload.ghPath, upload.base64, upload.message)
-                } catch {
-                    remaining.push(upload)
-                }
-            }
-            set({pendingUploads: remaining})
+
+            // Collect dirty JSON files
             const dirty = get().dirtyTabs()
-            let success = 0, fail = 0
+            const dirtyKeys: string[] = []
             for (const tabKey of dirty) {
                 const tab = TABS.find(t => t.key === tabKey)
                 if (!tab?.ghPath) continue
-                try {
-                    const json = JSON.stringify(get().state[tabKey], null, 2) + '\n'
-                    const fileName = tab.file?.split('/').pop() ?? tab.key
-                    await commitFile(token, tab.ghPath, json, `admin: ${fileName} aktualisiert`)
-                    get().resetOriginal(tabKey)
-                    success++
-                } catch {
-                    fail++
-                }
+                const json = JSON.stringify(get().state[tabKey], null, 2) + '\n'
+                changes.push({path: tab.ghPath, content: json})
+                dirtyKeys.push(tabKey)
             }
-            if (fail === 0) set(prev => ({statusMessage: `${success} Datei(en) veröffentlicht!`, statusType: 'success', statusCounter: prev.statusCounter + 1}))
-            else set(prev => ({statusMessage: `${success} OK, ${fail} Fehler`, statusType: 'error', statusCounter: prev.statusCounter + 1}))
+
+            if (changes.length === 0) {
+                set(prev => ({statusMessage: 'Nichts zu veröffentlichen.', statusType: 'info', statusCounter: prev.statusCounter + 1}))
+                return
+            }
+
+            // Build commit message
+            const fileNames = dirtyKeys.map(k => {
+                const tab = TABS.find(t => t.key === k)
+                return tab?.file?.split('/').pop() ?? k
+            })
+            const message = `admin: ${fileNames.join(', ')} aktualisiert`
+
+            await commitTree(token, message, changes)
+
+            // Reset state
+            for (const tabKey of dirtyKeys) {
+                get().resetOriginal(tabKey)
+            }
+            set(prev => ({
+                pendingUploads: [],
+                statusMessage: `${dirtyKeys.length} Datei(en) veröffentlicht!`,
+                statusType: 'success',
+                statusCounter: prev.statusCounter + 1,
+            }))
         } catch (e) {
             set(prev => ({statusMessage: 'Fehler: ' + (e as Error).message, statusType: 'error', statusCounter: prev.statusCounter + 1}))
         } finally {
