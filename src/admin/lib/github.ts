@@ -10,6 +10,14 @@ function apiBase() {
     return `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`
 }
 
+/** Encode a UTF-8 string to base64 safely (handles all Unicode). */
+function utf8ToBase64(str: string): string {
+    const bytes = new TextEncoder().encode(str)
+    let binary = ''
+    for (const b of bytes) binary += String.fromCharCode(b)
+    return btoa(binary)
+}
+
 export async function validateToken(token: string) {
     const res = await fetch('https://api.github.com/user', {headers: headers(token)})
     if (!res.ok) throw new Error('Token ungültig')
@@ -26,7 +34,7 @@ export async function commitFile(token: string, filePath: string, content: strin
     if (existing.ok) sha = (await existing.json()).sha
     const body: Record<string, unknown> = {
         message,
-        content: btoa(unescape(encodeURIComponent(content))),
+        content: utf8ToBase64(content),
         branch: BRANCH,
     }
     if (sha) body.sha = sha

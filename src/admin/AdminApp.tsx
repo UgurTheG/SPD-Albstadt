@@ -1,17 +1,17 @@
 import {useEffect, useState} from 'react'
 import {
-  Building2,
-  FileText,
-  Landmark,
-  LogOut,
-  Menu,
-  Moon,
-  Newspaper,
-  Rocket,
-  Settings,
-  Sun,
-  Users,
-  X
+    Building2,
+    FileText,
+    Landmark,
+    LogOut,
+    Menu,
+    Moon,
+    Newspaper,
+    Rocket,
+    Settings,
+    Sun,
+    Users,
+    X
 } from 'lucide-react'
 import {AnimatePresence, motion} from 'framer-motion'
 import {toast, Toaster} from 'sonner'
@@ -20,7 +20,6 @@ import {TABS} from './config/tabs'
 import LoginScreen from './components/LoginScreen'
 import TabEditor from './components/TabEditor'
 import HaushaltsredenEditor from './components/HaushaltsredenEditor'
-import OrphanModal from './components/OrphanModal'
 
 const TAB_ICON_MAP: Record<string, React.ReactNode> = {
     news: <Newspaper size={18}/>,
@@ -44,17 +43,16 @@ export default function AdminApp() {
         dirtyTabs,
         publishing,
         publishAll,
-        findOrphanImages,
         statusMessage,
         statusType,
-        dataLoaded
+        dataLoaded,
+        statusCounter,
     } = useAdminStore()
-    const [orphans, setOrphans] = useState<string[] | null>(null)
     const [sidebarOpen, setSidebarOpen] = useState(false)
 
     useEffect(() => {
         tryAutoLogin()
-    }, [])
+    }, [tryAutoLogin])
 
     // Sync active tab from URL hash on mount and hash changes
     useEffect(() => {
@@ -85,19 +83,14 @@ export default function AdminApp() {
         if (statusType === 'success') toast.success(statusMessage)
         else if (statusType === 'error') toast.error(statusMessage)
         else toast(statusMessage)
-    }, [statusMessage, statusType])
+    }, [statusMessage, statusType, statusCounter])
 
     if (!token || !user) return <LoginScreen/>
 
     const dirty = dirtyTabs()
-    const currentTab = TABS.find(t => t.key === activeTab)!
+    const currentTab = TABS.find(t => t.key === activeTab) ?? TABS[0]
 
     const handlePublishAll = () => {
-        const o = findOrphanImages()
-        if (o.length > 0) {
-            setOrphans(o);
-            return
-        }
         publishAll()
     }
 
@@ -106,20 +99,6 @@ export default function AdminApp() {
             className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
             <Toaster position="top-right" richColors closeButton theme={darkMode ? 'dark' : 'light'}/>
 
-            {orphans && (
-                <OrphanModal
-                    orphans={orphans}
-                    onConfirm={toDelete => {
-                        setOrphans(null);
-                        publishAll(toDelete)
-                    }}
-                    onKeep={() => {
-                        setOrphans(null);
-                        publishAll()
-                    }}
-                    onCancel={() => setOrphans(null)}
-                />
-            )}
 
             {/* Mobile sidebar overlay */}
             <AnimatePresence>

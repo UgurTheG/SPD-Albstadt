@@ -28,6 +28,7 @@ interface AdminState {
     publishing: boolean
     statusMessage: string
     statusType: 'info' | 'success' | 'error'
+    statusCounter: number
 
     // Computed
     dirtyTabs: () => Set<string>
@@ -70,6 +71,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     publishing: false,
     statusMessage: '',
     statusType: 'info',
+    statusCounter: 0,
 
     dirtyTabs: () => {
         const {state: s, originalState: os} = get()
@@ -157,25 +159,40 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         if (!tab?.ghPath) return
         set({publishing: true})
         try {
-            // Flush pending uploads
-            const remaining: PendingUpload[] = []
+            // Flush only pending uploads related to this tab
+            const tabUploads: PendingUpload[] = []
+            const otherUploads: PendingUpload[] = []
+            const tabGhDir = tab.ghPath ? tab.ghPath.replace(/\/[^/]+$/, '') : ''
             for (const upload of pendingUploads) {
+                if (tabGhDir && upload.ghPath.startsWith(tabGhDir.replace('/data/', '/images/'))) {
+                    tabUploads.push(upload)
+                } else {
+                    otherUploads.push(upload)
+                }
+            }
+            const failedUploads: PendingUpload[] = []
+            for (const upload of tabUploads) {
                 try {
                     await commitBinaryFile(token, upload.ghPath, upload.base64, upload.message)
                 } catch {
-                    remaining.push(upload)
+                    failedUploads.push(upload)
                 }
             }
             const json = JSON.stringify(s[tabKey], null, 2) + '\n'
             await commitFile(token, tab.ghPath, json, `admin: ${tab.file!.split('/').pop()} aktualisiert`)
             get().resetOriginal(tabKey)
-            set({
-                pendingUploads: remaining,
+            set(prev => ({
+                pendingUploads: [...otherUploads, ...failedUploads],
                 statusMessage: 'Veröffentlicht! Seite wird in ~1 Min. aktualisiert.',
-                statusType: 'success'
-            })
+                statusType: 'success',
+                statusCounter: prev.statusCounter + 1,
+            }))
         } catch (e) {
-            set({statusMessage: 'Fehler: ' + (e as Error).message, statusType: 'error'})
+            set(prev => ({
+                statusMessage: 'Fehler: ' + (e as Error).message,
+                statusType: 'error',
+                statusCounter: prev.statusCounter + 1
+            }))
         } finally {
             set({publishing: false})
         }
@@ -220,10 +237,22 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                     fail++
                 }
             }
-            if (fail === 0) set({statusMessage: `${success} Datei(en) veröffentlicht!`, statusType: 'success'})
-            else set({statusMessage: `${success} OK, ${fail} Fehler`, statusType: 'error'})
+            if (fail === 0) set(prev => ({
+                statusMessage: `${success} Datei(en) veröffentlicht!`,
+                statusType: 'success',
+                statusCounter: prev.statusCounter + 1
+            }))
+            else set(prev => ({
+                statusMessage: `${success} OK, ${fail} Fehler`,
+                statusType: 'error',
+                statusCounter: prev.statusCounter + 1
+            }))
         } catch (e) {
-            set({statusMessage: 'Fehler: ' + (e as Error).message, statusType: 'error'})
+            set(prev => ({
+                statusMessage: 'Fehler: ' + (e as Error).message,
+                statusType: 'error',
+                statusCounter: prev.statusCounter + 1
+            }))
         } finally {
             set({publishing: false})
         }
@@ -238,7 +267,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         })
     },
 
-    setStatus: (msg, type) => set({statusMessage: msg, statusType: type}),
+    setStatus: (msg, type) => set(prev => ({
+        statusMessage: msg,
+        statusType: type,
+        statusCounter: prev.statusCounter + 1
+    })),
 
     findOrphanImages: () => {
         const {state: s, originalState: os} = get()

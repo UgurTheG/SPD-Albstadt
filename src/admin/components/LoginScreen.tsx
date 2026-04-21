@@ -7,6 +7,11 @@ export default function LoginScreen() {
     const [token, setToken] = useState('')
     const {login, loginError, loginLoading} = useAdminStore()
 
+    const isValidTokenFormat = (t: string) => {
+        const trimmed = t.trim()
+        return trimmed.startsWith('ghp_') || trimmed.startsWith('github_pat_') || trimmed.startsWith('gho_')
+    }
+
     return (
         <div
             className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 relative overflow-hidden">
@@ -67,9 +72,16 @@ export default function LoginScreen() {
                             </motion.p>
                         )}
 
+                        {token.trim() && !isValidTokenFormat(token) && (
+                            <p className="text-xs text-amber-500 text-left bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-xl">
+                                Token sollte mit <code className="font-mono">ghp_</code> oder <code
+                                className="font-mono">github_pat_</code> beginnen.
+                            </p>
+                        )}
+
                         <button
                             type="submit"
-                            disabled={loginLoading || !token.trim()}
+                            disabled={loginLoading || !token.trim() || !isValidTokenFormat(token)}
                             className="w-full bg-gradient-to-r from-spd-red to-spd-red-dark text-white font-bold py-4 rounded-2xl hover:shadow-xl hover:shadow-spd-red/25 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:hover:shadow-none disabled:hover:scale-100"
                         >
                             {loginLoading ? (

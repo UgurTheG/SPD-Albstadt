@@ -35,7 +35,8 @@ export default function TabEditor({tab}: Props) {
     }
 
     const handleDownload = () => {
-        const filename = tab.file!.split('/').pop()!
+        if (!tab.file) return
+        const filename = tab.file.split('/').pop()!
         const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'})
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a');
@@ -100,8 +101,16 @@ export default function TabEditor({tab}: Props) {
 function ObjectEditor({tab, data}: { tab: TabConfig; data: Record<string, unknown> }) {
     const updateState = useAdminStore(s => s.updateState)
 
-    const triggerUpdate = () => {
-        updateState(tab.key, JSON.parse(JSON.stringify(data)))
+    const updateField = (key: string, value: unknown) => {
+        const clone = JSON.parse(JSON.stringify(data))
+        clone[key] = value
+        updateState(tab.key, clone)
+    }
+
+    const updateSection = (sectionKey: string, value: unknown) => {
+        const clone = JSON.parse(JSON.stringify(data))
+        clone[sectionKey] = value
+        updateState(tab.key, clone)
     }
 
     return (
@@ -115,10 +124,7 @@ function ObjectEditor({tab, data}: { tab: TabConfig; data: Record<string, unknow
                             key={field.key}
                             field={field}
                             value={data[field.key]}
-                            onChange={v => {
-                                data[field.key] = v;
-                                triggerUpdate()
-                            }}
+                            onChange={v => updateField(field.key, v)}
                         />
                     ))}
                 </div>
@@ -127,24 +133,23 @@ function ObjectEditor({tab, data}: { tab: TabConfig; data: Record<string, unknow
             {/* Sections */}
             {tab.sections?.map(section => (
                 <SectionEditor key={section.key} section={section} data={data} tabKey={tab.key}
-                               onUpdate={triggerUpdate}/>
+                               onSectionChange={(val) => updateSection(section.key, val)}/>
             ))}
         </div>
     )
 }
 
-function SectionEditor({section, data, tabKey, onUpdate}: {
+function SectionEditor({section, data, tabKey, onSectionChange}: {
     section: SectionConfig
     data: Record<string, unknown>
     tabKey: string
-    onUpdate: () => void
+    onSectionChange: (value: unknown) => void
 }) {
     const [open, setOpen] = useState(true)
     const sec = section
 
     if (sec.isSingleObject) {
-        if (!data[sec.key]) data[sec.key] = {}
-        const obj = data[sec.key] as Record<string, unknown>
+        const obj = (data[sec.key] ?? {}) as Record<string, unknown>
         return (
             <div className="mb-6">
                 <button type="button" onClick={() => setOpen(!open)}
@@ -167,8 +172,7 @@ function SectionEditor({section, data, tabKey, onUpdate}: {
                                 className="bg-white/50 dark:bg-gray-900/30 backdrop-blur-sm border border-gray-200/40 dark:border-gray-700/30 rounded-2xl p-6">
                                 {sec.fields.map(field => (
                                     <FieldRenderer key={field.key} field={field} value={obj[field.key]} onChange={v => {
-                                        obj[field.key] = v;
-                                        onUpdate()
+                                        onSectionChange({...obj, [field.key]: v})
                                     }}/>
                                 ))}
                             </div>
@@ -179,8 +183,7 @@ function SectionEditor({section, data, tabKey, onUpdate}: {
         )
     }
 
-    if (!data[sec.key]) data[sec.key] = []
-    const arr = data[sec.key] as Record<string, unknown>[]
+    const arr = (data[sec.key] ?? []) as Record<string, unknown>[]
 
     return (
         <div className="mb-6">
@@ -204,7 +207,8 @@ function SectionEditor({section, data, tabKey, onUpdate}: {
                         transition={{duration: 0.2}}
                         className="overflow-hidden"
                     >
-                        <ArrayEditor fields={sec.fields} data={arr} tabKey={tabKey} onStructureChange={onUpdate}/>
+                        <ArrayEditor fields={sec.fields} data={arr} tabKey={tabKey}
+                                     onStructureChange={() => onSectionChange([...arr])}/>
                     </motion.div>
                 )}
             </AnimatePresence>
