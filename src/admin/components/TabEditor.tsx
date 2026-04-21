@@ -340,7 +340,7 @@ function StickyPublishBar({isDirty, publishing, onPublish, onRevert}: {
                     animate={{opacity: 1, y: 0}}
                     exit={{opacity: 0, y: 24}}
                     transition={{duration: 0.2}}
-                    className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:bottom-6 z-40 lg:left-[calc(16rem+1.5rem)]"
+                    className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:bottom-6 z-40 lg:right-auto lg:left-1/2 lg:ml-32 lg:-translate-x-1/2"
                 >
                     <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/60 shadow-2xl shadow-black/10 dark:shadow-black/40 rounded-2xl p-3 flex items-center gap-2 sm:gap-3">
                         <div className="flex items-center gap-2 px-2 min-w-0">
