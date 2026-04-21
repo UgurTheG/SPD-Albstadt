@@ -306,7 +306,7 @@ export function applyRevert(
     if (entry.kind === 'modified') {
         const beforeValue = getAtPath(originalRoot, entry.path)
         setAtPath(next, entry.path, clone(beforeValue))
-        // Also revert companion paths (e.g. captionsKey for imagelist)
+        // Also revert companion paths (e.g. captionsKey for the imagelist)
         if (entry.companionPaths) {
             for (const cp of entry.companionPaths) {
                 setAtPath(next, cp, clone(getAtPath(originalRoot, cp)))
