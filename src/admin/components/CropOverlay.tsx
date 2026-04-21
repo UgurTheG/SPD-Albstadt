@@ -9,23 +9,31 @@ interface Props {
 
 type HitType = 'none' | 'new' | 'move' | 'pan' | 'tl' | 'tr' | 'bl' | 'br' | 't' | 'r' | 'b' | 'l'
 
-const HANDLE_HIT = 24 // px on screen for easier touch targets
-const MIN_CROP = 20 // min crop size in base (fit) pixels
-const EDGE_PADDING = 32 // px padding around image so edge handles are reachable
-const AUTO_ZOOM_SPEED = 0.008 // zoom increment per pointer-move during handle drag
-const AUTO_ZOOM_EDGE = 60 // px from screen edge to trigger auto-zoom
+const HANDLE_HIT = 24
+const MIN_CROP = 20
+const EDGE_PADDING = 32
+
+// Loupe settings
+const LOUPE_SIZE = 120       // px diameter of the magnifier circle
+const LOUPE_ZOOM = 3         // magnification factor inside loupe
+const LOUPE_OFFSET_Y = -80   // px offset above the finger
 
 export default function CropOverlay({file, onComplete}: Props) {
     const containerRef = useRef<HTMLDivElement>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null)
+    const loupeCanvasRef = useRef<HTMLCanvasElement>(null)
     const imgRef = useRef<HTMLImageElement | null>(null)
 
     const [ready, setReady] = useState(false)
     const [zoom, setZoom] = useState(1)
     const [pan, setPan] = useState({x: 0, y: 0})
-    // Crop is in "base canvas pixel" space (canvas is drawn at fit-scale).
     const [crop, setCrop] = useState({x: 0, y: 0, w: 0, h: 0})
     const [baseSize, setBaseSize] = useState({w: 0, h: 0})
+
+    // Loupe state: visible + screen position
+    const [loupe, setLoupe] = useState<{ visible: boolean; screenX: number; screenY: number; baseX: number; baseY: number }>({
+        visible: false, screenX: 0, screenY: 0, baseX: 0, baseY: 0
+    })
 
     const zoomRef = useRef(1)
     useEffect(() => { zoomRef.current = zoom }, [zoom])
@@ -34,18 +42,77 @@ export default function CropOverlay({file, onComplete}: Props) {
     const baseSizeRef = useRef({w: 0, h: 0})
     useEffect(() => { baseSizeRef.current = baseSize }, [baseSize])
 
-    // Interaction refs (avoid re-rendering on every move)
     const dragType = useRef<HitType>('none')
-    const dragStart = useRef({x: 0, y: 0}) // canvas-pixel coords
+    const dragStart = useRef({x: 0, y: 0})
     const cropStart = useRef({x: 0, y: 0, w: 0, h: 0})
     const panStart = useRef({x: 0, y: 0})
     const screenStart = useRef({clientX: 0, clientY: 0})
 
-    // Pinch
     const pinchRef = useRef<{
         dist: number; zoom: number; pan: { x: number; y: number }; midClient: { x: number; y: number }
     } | null>(null)
     const pointers = useRef(new Map<number, { clientX: number; clientY: number }>())
+
+    // Draw loupe content whenever it's visible
+    useEffect(() => {
+        if (!loupe.visible) return
+        const loupeCanvas = loupeCanvasRef.current
+        const img = imgRef.current
+        if (!loupeCanvas || !img || baseSize.w === 0) return
+        const ctx = loupeCanvas.getContext('2d')!
+        const size = LOUPE_SIZE * (window.devicePixelRatio || 1)
+        loupeCanvas.width = size
+        loupeCanvas.height = size
+        ctx.clearRect(0, 0, size, size)
+
+        // Draw circular clip
+        ctx.save()
+        ctx.beginPath()
+        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2)
+        ctx.clip()
+
+        // Map base coords to source image coords
+        const scale = img.width / baseSize.w
+        const srcX = loupe.baseX * scale
+        const srcY = loupe.baseY * scale
+        // How many source pixels fit in the loupe
+        const srcRadius = (LOUPE_SIZE / 2) / LOUPE_ZOOM * scale
+        ctx.drawImage(
+            img,
+            srcX - srcRadius, srcY - srcRadius, srcRadius * 2, srcRadius * 2,
+            0, 0, size, size
+        )
+
+        // Draw crosshair
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)'
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.moveTo(size / 2, 0)
+        ctx.lineTo(size / 2, size)
+        ctx.moveTo(0, size / 2)
+        ctx.lineTo(size, size / 2)
+        ctx.stroke()
+
+        // Draw crop edge line based on drag type
+        ctx.strokeStyle = 'rgba(227,6,19,0.9)'
+        ctx.lineWidth = 2
+        ctx.setLineDash([4, 3])
+        const dt = dragType.current
+        if (dt === 't' || dt === 'b' || dt === 'tl' || dt === 'tr' || dt === 'bl' || dt === 'br') {
+            ctx.beginPath()
+            ctx.moveTo(0, size / 2)
+            ctx.lineTo(size, size / 2)
+            ctx.stroke()
+        }
+        if (dt === 'l' || dt === 'r' || dt === 'tl' || dt === 'tr' || dt === 'bl' || dt === 'br') {
+            ctx.beginPath()
+            ctx.moveTo(size / 2, 0)
+            ctx.lineTo(size / 2, size)
+            ctx.stroke()
+        }
+
+        ctx.restore()
+    }, [loupe, baseSize])
 
     // Lock body scroll
     useEffect(() => {
@@ -89,7 +156,6 @@ export default function CropOverlay({file, onComplete}: Props) {
         if (!container) return
         const cw = container.clientWidth
         const ch = container.clientHeight
-        // Reserve padding so edge handles are always reachable
         const availW = cw - EDGE_PADDING * 2
         const availH = ch - EDGE_PADDING * 2
         const s = Math.min(availW / img.width, availH / img.height, 1)
@@ -107,7 +173,6 @@ export default function CropOverlay({file, onComplete}: Props) {
         setCrop({x: 0, y: 0, w: bw, h: bh})
     }
 
-    // Convert client (screen) coords to base canvas coords
     const clientToBase = useCallback((clientX: number, clientY: number) => {
         const canvas = canvasRef.current!
         const rect = canvas.getBoundingClientRect()
@@ -117,26 +182,22 @@ export default function CropOverlay({file, onComplete}: Props) {
     }, [zoom])
 
     const hitTest = useCallback((bx: number, by: number): HitType => {
-        const hs = HANDLE_HIT / zoom // in base px
+        const hs = HANDLE_HIT / zoom
         const {x, y, w, h} = crop
         const near = (ax: number, ay: number, px: number, py: number) =>
             Math.abs(ax - px) < hs && Math.abs(ay - py) < hs
-        // Corners first (priority)
         if (near(bx, by, x, y)) return 'tl'
         if (near(bx, by, x + w, y)) return 'tr'
         if (near(bx, by, x, y + h)) return 'bl'
         if (near(bx, by, x + w, y + h)) return 'br'
-        // Edge midpoints
         if (near(bx, by, x + w / 2, y)) return 't'
         if (near(bx, by, x + w / 2, y + h)) return 'b'
         if (near(bx, by, x, y + h / 2)) return 'l'
         if (near(bx, by, x + w, y + h / 2)) return 'r'
-        // Inside crop area
         if (bx > x && bx < x + w && by > y && by < y + h) return 'move'
         return 'none'
     }, [crop, zoom])
 
-    // Zoom centered at a client point
     const zoomAtClient = (clientX: number, clientY: number, newZoom: number) => {
         const container = containerRef.current!
         const cRect = container.getBoundingClientRect()
@@ -149,42 +210,6 @@ export default function CropOverlay({file, onComplete}: Props) {
         })
     }
 
-    // Auto-zoom toward handle when dragging near screen edge
-    const autoZoomForHandle = useCallback((clientX: number, clientY: number) => {
-        const container = containerRef.current
-        if (!container) return
-        const cRect = container.getBoundingClientRect()
-        const distLeft = clientX - cRect.left
-        const distRight = cRect.right - clientX
-        const distTop = clientY - cRect.top
-        const distBottom = cRect.bottom - clientY
-        const minDist = Math.min(distLeft, distRight, distTop, distBottom)
-        if (minDist > AUTO_ZOOM_EDGE) return // not near edge
-        const currentZoom = zoomRef.current
-        if (currentZoom >= 8) return
-        const factor = 1 + AUTO_ZOOM_SPEED * (1 - minDist / AUTO_ZOOM_EDGE)
-        const nz = Math.min(8, currentZoom * factor)
-        // Zoom centered on the pointer so the handle stays under the finger
-        const currentPan = panRef.current
-        const bs = baseSizeRef.current
-        const baseX = (clientX - cRect.left - currentPan.x) / currentZoom
-        const baseY = (clientY - cRect.top - currentPan.y) / currentZoom
-        const newPanX = clientX - cRect.left - baseX * nz
-        const newPanY = clientY - cRect.top - baseY * nz
-        // Clamp pan
-        const cw = container.clientWidth
-        const ch = container.clientHeight
-        const iw = bs.w * nz
-        const ih = bs.h * nz
-        const margin = 64
-        setZoom(nz)
-        setPan({
-            x: Math.max(-iw + margin, Math.min(cw - margin, newPanX)),
-            y: Math.max(-ih + margin, Math.min(ch - margin, newPanY)),
-        })
-    }, [])
-
-    // Prevent pan going too far offscreen
     const clampPan = useCallback((p: { x: number; y: number }, z = zoom) => {
         const container = containerRef.current
         if (!container) return p
@@ -199,25 +224,29 @@ export default function CropOverlay({file, onComplete}: Props) {
         }
     }, [baseSize, zoom])
 
-    // Clamp crop rect to valid bounds (no negatives, within image)
     const clampCrop = useCallback((c: {x: number, y: number, w: number, h: number}) => {
         let {x, y, w, h} = c
-        // Ensure minimum size
         w = Math.max(MIN_CROP, w)
         h = Math.max(MIN_CROP, h)
-        // Clamp position
         x = Math.max(0, x)
         y = Math.max(0, y)
-        // Clamp size to not exceed image bounds
         w = Math.min(w, baseSize.w - x)
         h = Math.min(h, baseSize.h - y)
-        // If clamping size pushed it below min, adjust position
         if (w < MIN_CROP) { x = Math.max(0, baseSize.w - MIN_CROP); w = Math.min(MIN_CROP, baseSize.w - x) }
         if (h < MIN_CROP) { y = Math.max(0, baseSize.h - MIN_CROP); h = Math.min(MIN_CROP, baseSize.h - y) }
         return {x, y, w, h}
     }, [baseSize])
 
-    // Unified pointer handlers
+    // Compute the base-pixel coordinate of the active handle edge
+    const getHandleBasePos = useCallback((type: HitType, c: {x: number, y: number, w: number, h: number}) => {
+        let bx = c.x, by = c.y
+        if (type.includes('r')) bx = c.x + c.w
+        else if (!type.includes('l')) bx = c.x + c.w / 2
+        if (type.includes('b')) by = c.y + c.h
+        else if (!type.includes('t')) by = c.y + c.h / 2
+        return {bx, by}
+    }, [])
+
     const onPointerDown = (e: React.PointerEvent) => {
         ;(e.target as Element).setPointerCapture?.(e.pointerId)
         pointers.current.set(e.pointerId, {clientX: e.clientX, clientY: e.clientY})
@@ -228,6 +257,7 @@ export default function CropOverlay({file, onComplete}: Props) {
             const midClient = {x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2}
             pinchRef.current = {dist, zoom, pan: {...pan}, midClient}
             dragType.current = 'none'
+            setLoupe(prev => ({...prev, visible: false}))
             return
         }
 
@@ -245,8 +275,22 @@ export default function CropOverlay({file, onComplete}: Props) {
                 dragType.current = 'br'
                 setCrop({x: base.x, y: base.y, w: 0, h: 0})
             }
-        } else {
+        } else if (hit === 'move') {
             dragType.current = hit
+        } else {
+            // It's a handle drag — show loupe
+            dragType.current = hit
+            const container = containerRef.current
+            if (container) {
+                const cRect = container.getBoundingClientRect()
+                const {bx, by} = getHandleBasePos(hit, crop)
+                setLoupe({
+                    visible: true,
+                    screenX: e.clientX - cRect.left,
+                    screenY: e.clientY - cRect.top,
+                    baseX: bx, baseY: by,
+                })
+            }
         }
     }
 
@@ -254,7 +298,6 @@ export default function CropOverlay({file, onComplete}: Props) {
         if (!pointers.current.has(e.pointerId)) return
         pointers.current.set(e.pointerId, {clientX: e.clientX, clientY: e.clientY})
 
-        // Pinch-zoom handling
         if (pointers.current.size === 2 && pinchRef.current) {
             const [a, b] = [...pointers.current.values()]
             const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
@@ -285,43 +328,47 @@ export default function CropOverlay({file, onComplete}: Props) {
             return
         }
 
-        // Handle or move drag — auto-zoom when near edge
-        const isHandleDrag = dragType.current !== 'move'
-        if (isHandleDrag) {
-            autoZoomForHandle(e.clientX, e.clientY)
-        }
-
         const base = clientToBase(e.clientX, e.clientY)
         const dx = base.x - dragStart.current.x
         const dy = base.y - dragStart.current.y
         const cs = cropStart.current
 
+        let newCrop: {x: number, y: number, w: number, h: number}
         if (dragType.current === 'move') {
-            setCrop(clampCrop({
-                x: cs.x + dx,
-                y: cs.y + dy,
-                w: cs.w, h: cs.h,
-            }))
+            newCrop = clampCrop({x: cs.x + dx, y: cs.y + dy, w: cs.w, h: cs.h})
         } else {
             let nx = cs.x, ny = cs.y, nw = cs.w, nh = cs.h
             if (dragType.current.includes('r')) nw = cs.w + dx
-            if (dragType.current.includes('l')) {
-                nx = cs.x + dx
-                nw = cs.w - dx
-            }
+            if (dragType.current.includes('l')) { nx = cs.x + dx; nw = cs.w - dx }
             if (dragType.current.includes('b')) nh = cs.h + dy
-            if (dragType.current.includes('t')) {
-                ny = cs.y + dy
-                nh = cs.h - dy
+            if (dragType.current.includes('t')) { ny = cs.y + dy; nh = cs.h - dy }
+            newCrop = clampCrop({x: nx, y: ny, w: nw, h: nh})
+        }
+        setCrop(newCrop)
+
+        // Update loupe for handle drags (not move)
+        if (dragType.current !== 'move') {
+            const container = containerRef.current
+            if (container) {
+                const cRect = container.getBoundingClientRect()
+                const {bx, by} = getHandleBasePos(dragType.current, newCrop)
+                setLoupe({
+                    visible: true,
+                    screenX: e.clientX - cRect.left,
+                    screenY: e.clientY - cRect.top,
+                    baseX: bx, baseY: by,
+                })
             }
-            setCrop(clampCrop({x: nx, y: ny, w: nw, h: nh}))
         }
     }
 
     const onPointerUp = (e: React.PointerEvent) => {
         pointers.current.delete(e.pointerId)
         if (pointers.current.size < 2) pinchRef.current = null
-        if (pointers.current.size === 0) dragType.current = 'none'
+        if (pointers.current.size === 0) {
+            dragType.current = 'none'
+            setLoupe(prev => ({...prev, visible: false}))
+        }
     }
 
     // Non-passive wheel listener
@@ -387,13 +434,32 @@ export default function CropOverlay({file, onComplete}: Props) {
         {key: 'r', right: -8, top: '50%', cursor: 'ew-resize'},
     ]
 
+    // Compute loupe position (offset above finger, clamped to stage)
+    const loupeStyle = (() => {
+        if (!loupe.visible) return {display: 'none'} as React.CSSProperties
+        const container = containerRef.current
+        if (!container) return {display: 'none'} as React.CSSProperties
+        const cw = container.clientWidth
+        const ch = container.clientHeight
+        let lx = loupe.screenX - LOUPE_SIZE / 2
+        let ly = loupe.screenY + LOUPE_OFFSET_Y - LOUPE_SIZE / 2
+        // If loupe would go above the stage, show it below the finger instead
+        if (ly < 4) ly = loupe.screenY + 60 - LOUPE_SIZE / 2
+        // Clamp horizontally
+        lx = Math.max(4, Math.min(cw - LOUPE_SIZE - 4, lx))
+        ly = Math.max(4, Math.min(ch - LOUPE_SIZE - 4, ly))
+        return {
+            left: lx,
+            top: ly,
+            width: LOUPE_SIZE,
+            height: LOUPE_SIZE,
+        } as React.CSSProperties
+    })()
+
     return createPortal(
-        <div
-            className="fixed inset-0 z-[9999] bg-black/95 flex flex-col touch-none select-none"
-        >
+        <div className="fixed inset-0 z-[9999] bg-black/95 flex flex-col touch-none select-none">
             {/* Header */}
-            <div
-                className="shrink-0 flex items-center justify-between px-3 py-2.5 sm:px-6 sm:py-3 border-b border-white/10">
+            <div className="shrink-0 flex items-center justify-between px-3 py-2.5 sm:px-6 sm:py-3 border-b border-white/10">
                 <div className="flex items-center gap-2 text-white">
                     <ImageIcon size={16} className="opacity-70 hidden sm:block"/>
                     <span className="text-xs sm:text-sm font-semibold">Bildausschnitt wählen</span>
@@ -435,31 +501,17 @@ export default function CropOverlay({file, onComplete}: Props) {
                             <div className="absolute bg-black/60"
                                  style={{left: 0, top: screenCrop.y + screenCrop.h, right: 0, bottom: 0}}/>
                             <div className="absolute bg-black/60"
-                                 style={{
-                                     left: 0,
-                                     top: screenCrop.y,
-                                     width: Math.max(0, screenCrop.x),
-                                     height: Math.max(0, screenCrop.h)
-                                 }}/>
+                                 style={{left: 0, top: screenCrop.y, width: Math.max(0, screenCrop.x), height: Math.max(0, screenCrop.h)}}/>
                             <div className="absolute bg-black/60"
-                                 style={{
-                                     left: screenCrop.x + screenCrop.w,
-                                     top: screenCrop.y,
-                                     right: 0,
-                                     height: Math.max(0, screenCrop.h)
-                                 }}/>
+                                 style={{left: screenCrop.x + screenCrop.w, top: screenCrop.y, right: 0, height: Math.max(0, screenCrop.h)}}/>
                         </div>
                         {/* Crop frame */}
                         <div
                             className="absolute border-2 border-spd-red pointer-events-none"
-                            style={{
-                                left: screenCrop.x, top: screenCrop.y,
-                                width: Math.max(0, screenCrop.w), height: Math.max(0, screenCrop.h),
-                            }}
+                            style={{left: screenCrop.x, top: screenCrop.y, width: Math.max(0, screenCrop.w), height: Math.max(0, screenCrop.h)}}
                         >
                             {/* Rule-of-thirds guides */}
-                            <div className="absolute inset-0 pointer-events-none"
-                                 style={{opacity: 0.35}}>
+                            <div className="absolute inset-0 pointer-events-none" style={{opacity: 0.35}}>
                                 <div className="absolute top-1/3 left-0 right-0 h-px bg-white"/>
                                 <div className="absolute top-2/3 left-0 right-0 h-px bg-white"/>
                                 <div className="absolute left-1/3 top-0 bottom-0 w-px bg-white"/>
@@ -468,13 +520,12 @@ export default function CropOverlay({file, onComplete}: Props) {
                             {/* All 8 handles */}
                             {handles.map(h => (
                                 <span key={h.key}
-                                      className="absolute w-4 h-4 bg-spd-red rounded-sm shadow ring-2 ring-white -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                                      className="absolute w-4 h-4 bg-spd-red rounded-sm shadow ring-2 ring-white pointer-events-none"
                                       style={{
                                           left: h.left !== undefined ? h.left : undefined,
                                           right: h.right !== undefined ? h.right : undefined,
                                           top: h.top !== undefined ? h.top : undefined,
                                           bottom: h.bottom !== undefined ? h.bottom : undefined,
-                                          // For edge midpoints using 50%, center with transform
                                           transform: (typeof h.left === 'string' || typeof h.top === 'string')
                                               ? `translate(${typeof h.left === 'string' ? '-50%' : '0'}, ${typeof h.top === 'string' ? '-50%' : '0'})`
                                               : undefined,
@@ -485,9 +536,24 @@ export default function CropOverlay({file, onComplete}: Props) {
                     </>
                 )}
 
-                {/* Zoom controls (floating) */}
+                {/* Magnifier loupe */}
                 <div
-                    className="absolute right-2 top-2 sm:right-3 sm:top-3 flex flex-col gap-1 rounded-2xl bg-black/60 backdrop-blur border border-white/10 p-1">
+                    className="absolute pointer-events-none rounded-full border-2 border-white shadow-2xl shadow-black/60 overflow-hidden"
+                    style={{
+                        ...loupeStyle,
+                        opacity: loupe.visible ? 1 : 0,
+                        transition: 'opacity 0.15s ease',
+                    }}
+                >
+                    <canvas
+                        ref={loupeCanvasRef}
+                        className="w-full h-full"
+                        style={{imageRendering: 'auto'}}
+                    />
+                </div>
+
+                {/* Zoom controls (floating) */}
+                <div className="absolute right-2 top-2 sm:right-3 sm:top-3 flex flex-col gap-1 rounded-2xl bg-black/60 backdrop-blur border border-white/10 p-1">
                     <button type="button" aria-label="Vergrößern"
                             onClick={() => {
                                 const c = containerRef.current!
@@ -524,33 +590,25 @@ export default function CropOverlay({file, onComplete}: Props) {
 
                 {/* Hint */}
                 {ready && zoom <= 1.02 && (
-                    <div
-                        className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 text-white/70 text-[10px] sm:text-[11px] bg-black/50 backdrop-blur px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full pointer-events-none whitespace-nowrap max-w-[calc(100%-1rem)] truncate">
+                    <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 text-white/70 text-[10px] sm:text-[11px] bg-black/50 backdrop-blur px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full pointer-events-none whitespace-nowrap max-w-[calc(100%-1rem)] truncate">
                         Ecken ziehen · zum Zoomen pinch / Mausrad · Doppelklick zoomt
                     </div>
                 )}
             </div>
 
             {/* Toolbar */}
-            <div
-                className="shrink-0 flex items-center justify-between gap-2 px-3 py-2.5 sm:px-6 sm:py-4 border-t border-white/10 bg-black/50">
+            <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2.5 sm:px-6 sm:py-4 border-t border-white/10 bg-black/50">
                 <div className="text-[10px] sm:text-[11px] text-white/60 tabular-nums">
                     {Math.round(crop.w * (imgRef.current?.width ?? 0) / (baseSize.w || 1))} × {Math.round(crop.h * (imgRef.current?.height ?? 0) / (baseSize.h || 1))} px
                     · {Math.round(zoom * 100)}%
                 </div>
                 <div className="flex gap-2">
-                    <button
-                        type="button"
-                        onClick={() => onComplete(null)}
-                        className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs sm:text-sm transition-colors"
-                    >
+                    <button type="button" onClick={() => onComplete(null)}
+                            className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs sm:text-sm transition-colors">
                         Abbrechen
                     </button>
-                    <button
-                        type="button"
-                        onClick={() => exportCrop()}
-                        className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-spd-red to-spd-red-dark text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-lg shadow-spd-red/25"
-                    >
+                    <button type="button" onClick={() => exportCrop()}
+                            className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-spd-red to-spd-red-dark text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-lg shadow-spd-red/25">
                         <Check size={14}/> Zuschneiden
                     </button>
                 </div>
