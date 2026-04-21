@@ -89,9 +89,12 @@ function renderCodeWithIcon(code: number, Icon: typeof Home) {
     return (
         <>
             {str.slice(0, idx)}
-            <span
-                className="inline-flex items-center justify-center w-[0.75em] h-[0.75em] rounded-full bg-spd-red/10 dark:bg-spd-red/15 mx-[0.01em]">
-                <Icon className="text-spd-red w-[0.4em] h-[0.4em]" strokeWidth={1.5}/>
+            <span className="relative inline-flex items-center justify-center w-[0.75em] h-[0.75em] mx-[0.01em]">
+                <span className="absolute inset-0 rounded-full bg-spd-red/20 blur-md animate-pulse"/>
+                <span
+                    className="relative w-full h-full rounded-full bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center shadow-[0_0_20px_rgba(227,6,19,0.15)]">
+                    <Icon className="text-spd-red w-[0.4em] h-[0.4em]" strokeWidth={1.5}/>
+                </span>
             </span>
             {str.slice(idx + 1)}
         </>
@@ -113,9 +116,12 @@ export default function ErrorPage({code, navigateTo}: ErrorPageProps) {
                 {/* Status code with icon */}
                 <div className="flex flex-col items-center mb-8 select-none">
                     {!hasIconInCode(code) && (
-                        <div
-                            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center mb-4">
-                            <Icon size={40} strokeWidth={1.5} className="text-spd-red sm:w-12 sm:h-12"/>
+                        <div className="relative w-20 h-20 sm:w-24 sm:h-24 mb-4">
+                            <div className="absolute inset-0 rounded-full bg-spd-red/20 blur-xl animate-pulse"/>
+                            <div
+                                className="relative w-full h-full rounded-full bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center shadow-[0_0_30px_rgba(227,6,19,0.15)]">
+                                <Icon size={40} strokeWidth={1.5} className="text-spd-red sm:w-12 sm:h-12"/>
+                            </div>
                         </div>
                     )}
                     <span
