@@ -90,14 +90,24 @@ export async function deleteFile(token: string, filePath: string, message: strin
 }
 
 export async function listDirectory(token: string, dirPath: string) {
-    const res = await fetch(`${apiBase()}/contents/${dirPath}?ref=${BRANCH}`, {headers: headers(token)})
+    const res = await fetch(`${apiBase()}/contents/${dirPath}?ref=${BRANCH}&t=${Date.now()}`, {
+        headers: {
+            ...headers(token),
+            'If-None-Match': ''
+        }
+    })
     if (!res.ok) return []
     const data = await res.json()
     return Array.isArray(data) ? data as { name: string; sha: string }[] : []
 }
 
 export async function getFileContent(token: string, filePath: string) {
-    const res = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}`, {headers: headers(token)})
+    const res = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`, {
+        headers: {
+            ...headers(token),
+            'If-None-Match': ''
+        }
+    })
     if (!res.ok) return null
     const data = await res.json()
     return JSON.parse(atob(data.content.replace(/\n/g, '')))
