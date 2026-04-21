@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {Eye, EyeOff, FileUp, RefreshCw, Trash2} from 'lucide-react'
 import {motion} from 'framer-motion'
 import {useAdminStore} from '../store'
@@ -12,6 +12,9 @@ export default function HaushaltsredenEditor() {
     const [disabledYears, setDisabledYears] = useState<Set<number>>(new Set())
     const [loading, setLoading] = useState(true)
     const [busy, setBusy] = useState<number | null>(null)
+    const toggleQueue = useRef(Promise.resolve())
+    const latestDisabled = useRef(disabledYears)
+    latestDisabled.current = disabledYears
 
     const load = async (silent = false) => {
         if (!silent) setLoading(true)
@@ -42,21 +45,25 @@ export default function HaushaltsredenEditor() {
         await commitFile(token, 'public/data/haushaltsreden.json', JSON.stringify(body, null, 2) + '\n', 'admin: Haushaltsreden-Konfiguration aktualisiert')
     }
 
-    const toggleYear = async (year: number) => {
-        const prev = disabledYears
-        const next = new Set(disabledYears)
-        if (next.has(year)) next.delete(year); else next.add(year)
-        setDisabledYears(next)
-        setBusy(year)
-        try {
-            await saveConfig(next)
-            setStatus(`${year} ${next.has(year) ? 'ausgeblendet' : 'eingeblendet'} & gespeichert`, 'success')
-        } catch (e) {
-            setDisabledYears(prev)
-            setStatus('Fehler: ' + (e as Error).message, 'error')
-        } finally {
-            setBusy(null)
-        }
+    const toggleYear = (year: number) => {
+        toggleQueue.current = toggleQueue.current.then(async () => {
+            const prev = latestDisabled.current
+            const next = new Set(prev)
+            if (next.has(year)) next.delete(year); else next.add(year)
+            setDisabledYears(next)
+            latestDisabled.current = next
+            setBusy(year)
+            try {
+                await saveConfig(next)
+                setStatus(`${year} ${next.has(year) ? 'ausgeblendet' : 'eingeblendet'} & gespeichert`, 'success')
+            } catch (e) {
+                setDisabledYears(prev)
+                latestDisabled.current = prev
+                setStatus('Fehler: ' + (e as Error).message, 'error')
+            } finally {
+                setBusy(null)
+            }
+        })
     }
 
     const uploadPdf = async (year: number, file: File) => {
