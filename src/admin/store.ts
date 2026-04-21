@@ -3,7 +3,7 @@ import type {GHUser, PendingUpload, TabConfig} from './types'
 import {TABS} from './config/tabs'
 import {collectImagePaths} from './lib/images'
 import {applyRevert, type ChangeEntry} from './lib/diff'
-import {commitTree, validateToken, type TreeFileChange} from './lib/github'
+import {commitTree, type TreeFileChange, validateToken} from './lib/github'
 
 const TOKEN_KEY = 'spd-admin-token'
 const DARK_KEY = 'spd-admin-dark'
@@ -388,9 +388,12 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 }
             }
             const keptUploads = prev.pendingUploads.filter(u => allPaths.has(u.ghPath.replace(/^public/, '')))
+            persistDirtyState(nextState, prev.originalState)
             return {
                 state: nextState,
                 pendingUploads: keptUploads,
+                undoStacks: {...prev.undoStacks, [tabKey]: []},
+                redoStacks: {...prev.redoStacks, [tabKey]: []},
                 statusMessage: 'Änderung zurückgesetzt.',
                 statusType: 'info' as const,
                 statusCounter: prev.statusCounter + 1,
