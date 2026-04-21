@@ -2,7 +2,7 @@ import type {FieldConfig, TabConfig} from '../types'
 
 export type ChangePath = (string | number)[]
 
-export type ChangeKind = 'modified' | 'added' | 'removed'
+export type ChangeKind = 'modified' | 'added' | 'removed' | 'moved'
 
 export interface ChangeEntry {
     id: string
@@ -19,6 +19,9 @@ export interface ChangeEntry {
     after?: unknown
     // For removed items, the original array index we'd re-insert at
     originalIndex?: number
+    // For moved items
+    movedFrom?: number
+    movedTo?: number
 }
 
 const eq = (a: unknown, b: unknown): boolean => {
@@ -90,15 +93,105 @@ function diffArray(
 ) {
     const orig = Array.isArray(original) ? original : []
     const curr = Array.isArray(current) ? current : []
+
+    // Build a mapping: for each current index, find matching original index by content
+    const origUsed = new Set<number>()
+    const currToOrig = new Map<number, number>() // currIdx -> origIdx
+
+    // First pass: find exact matches by content
+    for (let ci = 0; ci < curr.length; ci++) {
+        for (let oi = 0; oi < orig.length; oi++) {
+            if (origUsed.has(oi)) continue
+            if (eq(orig[oi], curr[ci])) {
+                currToOrig.set(ci, oi)
+                origUsed.add(oi)
+                break
+            }
+        }
+    }
+
+    // Emit moved entries for items that exist in both but changed position
+    // Detect swaps (A↔B) and merge into a single entry
+    const movedEmitted = new Set<number>() // current indices already handled as moves
+    const movedPairs = new Map<number, number>() // ci -> oi for moved items
+    for (const [ci, oi] of currToOrig) {
+        if (ci !== oi) movedPairs.set(ci, oi)
+    }
+    const swapEmitted = new Set<number>()
+    for (const [ci, oi] of movedPairs) {
+        if (swapEmitted.has(ci)) continue
+        // Check if this is a swap: ci came from oi, and oi's position now has ci's original
+        const partner = movedPairs.get(oi)
+        if (partner === ci) {
+            // It's a swap: emit one entry for the pair, skip the other
+            const cA = curr[ci] as Record<string, unknown> | undefined
+            const cB = curr[oi] as Record<string, unknown> | undefined
+            const labelA = itemLabel(fields, cA, ci)
+            const labelB = itemLabel(fields, cB, oi)
+            const path: ChangePath = [...basePath, Math.min(ci, oi)]
+            out.push({
+                id: path.join('.') + ':moved:' + oi + '<->' + ci,
+                path,
+                kind: 'moved',
+                group,
+                groupKey,
+                itemIndex: Math.min(ci, oi),
+                itemLabel: `${labelA} ↔ ${labelB}`,
+                movedFrom: oi,
+                movedTo: ci,
+                before: oi,
+                after: ci,
+            })
+            swapEmitted.add(ci)
+            swapEmitted.add(oi)
+            movedEmitted.add(ci)
+            movedEmitted.add(oi)
+        }
+    }
+    // Emit remaining (non-swap) moves as a single "reordered" entry
+    const remainingMoves: Array<[number, number]> = [] // [ci, oi]
+    for (const [ci, oi] of movedPairs) {
+        if (swapEmitted.has(ci)) continue
+        remainingMoves.push([ci, oi])
+        movedEmitted.add(ci)
+    }
+    if (remainingMoves.length > 0) {
+        // Collect labels for all involved items
+        const labels = remainingMoves.map(([ci]) => {
+            const c = curr[ci] as Record<string, unknown> | undefined
+            return itemLabel(fields, c, ci)
+        })
+        const path: ChangePath = [...basePath, remainingMoves[0][0]]
+        out.push({
+            id: path.join('.') + ':moved:reorder',
+            path,
+            kind: 'moved',
+            group,
+            groupKey,
+            itemIndex: remainingMoves[0][0],
+            itemLabel: labels.join(', '),
+            movedFrom: remainingMoves[0][1],
+            movedTo: remainingMoves[0][0],
+            before: remainingMoves.map(([, oi]) => oi),
+            after: remainingMoves.map(([ci]) => ci),
+        })
+    }
+
+    // For items at the same index that are not exact matches and not moves, diff fields
     const common = Math.min(orig.length, curr.length)
     for (let i = 0; i < common; i++) {
+        if (movedEmitted.has(i)) continue
+        if (currToOrig.has(i) && currToOrig.get(i) === i) continue // unchanged
         const o = orig[i] as Record<string, unknown> | undefined
         const c = curr[i] as Record<string, unknown> | undefined
         if (eq(o, c)) continue
         diffFields(fields, o, c, [...basePath, i], group, groupKey, i, itemLabel(fields, c, i), out)
     }
     // added
-    for (let i = common; i < curr.length; i++) {
+    for (let i = 0; i < curr.length; i++) {
+        if (movedEmitted.has(i)) continue
+        if (currToOrig.has(i)) continue // matched to an original
+        if (i < common) continue // handled above as modified
         const c = curr[i] as Record<string, unknown> | undefined
         const path: ChangePath = [...basePath, i]
         out.push({
@@ -113,7 +206,9 @@ function diffArray(
         })
     }
     // removed
-    for (let i = common; i < orig.length; i++) {
+    for (let i = 0; i < orig.length; i++) {
+        if (origUsed.has(i)) continue
+        if (i < common) continue // handled above as modified
         const o = orig[i] as Record<string, unknown> | undefined
         const path: ChangePath = [...basePath, i]
         out.push({
@@ -201,6 +296,15 @@ export function applyRevert(
         setAtPath(next, entry.path, clone(beforeValue))
         return next
     }
+    if (entry.kind === 'moved') {
+        // Restore the original array order
+        const parentPath = entry.path.slice(0, -1)
+        const origArr = getAtPath(originalRoot, parentPath) as unknown[]
+        if (Array.isArray(origArr)) {
+            setAtPath(next, parentPath, clone(origArr))
+        }
+        return next
+    }
     if (entry.kind === 'added') {
         // remove the element at the array path
         const parentPath = entry.path.slice(0, -1)
@@ -257,16 +361,16 @@ function setAtPath(root: unknown, path: ChangePath, value: unknown): void {
     ;(cur as Record<string | number, unknown>)[last as never] = value as never
 }
 
-export function summarizeValue(v: unknown, type?: FieldConfig['type']): string {
+export function summarizeValue(v: unknown, type?: FieldConfig['type'], truncate = true): string {
     if (v == null || v === '') return '—'
     if (type === 'image' && typeof v === 'string') return v.split('/').pop() || String(v)
     if (type === 'imagelist' && Array.isArray(v)) return `${v.length} Bild(er)`
     if (type === 'stringlist' && Array.isArray(v)) return v.length ? v.join(', ') : '—'
     if (type === 'textarea' && typeof v === 'string') {
         const t = v.trim().replace(/\s+/g, ' ')
-        return t.length > 80 ? t.slice(0, 80) + '…' : t
+        return truncate && t.length > 80 ? t.slice(0, 80) + '…' : t
     }
-    if (typeof v === 'string') return v.length > 80 ? v.slice(0, 80) + '…' : v
+    if (typeof v === 'string') return truncate && v.length > 80 ? v.slice(0, 80) + '…' : v
     if (typeof v === 'number' || typeof v === 'boolean') return String(v)
     if (Array.isArray(v)) return `[${v.length}]`
     if (typeof v === 'object') return '{…}'

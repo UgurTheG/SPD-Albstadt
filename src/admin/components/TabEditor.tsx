@@ -453,6 +453,12 @@ function ChangeGroupBlock({group, onRevert}: {
                             <Trash2 size={10}/> Entfernt
                         </span>
                     )}
+                    {group.itemKind === 'moved' && (
+                        <span
+                            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                            Verschoben
+                        </span>
+                    )}
                     <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 truncate">
                         {group.group}
                     </span>
@@ -467,14 +473,19 @@ function ChangeGroupBlock({group, onRevert}: {
                     <button
                         onClick={() => onRevert(structural)}
                         className="shrink-0 text-[11px] font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2.5 py-1 rounded-lg border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1.5"
-                        title={group.itemKind === 'added' ? 'Diesen neuen Eintrag verwerfen' : 'Entfernten Eintrag wiederherstellen'}
+                        title={group.itemKind === 'added' ? 'Diesen neuen Eintrag verwerfen' : group.itemKind === 'moved' ? 'Position zurücksetzen' : 'Entfernten Eintrag wiederherstellen'}
                     >
                         <Undo2 size={11}/>
-                        {group.itemKind === 'added' ? 'Verwerfen' : 'Wiederherstellen'}
+                        {group.itemKind === 'added' ? 'Verwerfen' : group.itemKind === 'moved' ? 'Zurücksetzen' : 'Wiederherstellen'}
                     </button>
                 )}
             </div>
 
+            {group.itemKind === 'moved' && (
+                <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                    Reihenfolge geändert
+                </div>
+            )}
             {!isStructural && (
                 <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                     {group.entries.map(e => (

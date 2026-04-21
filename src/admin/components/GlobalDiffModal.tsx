@@ -202,13 +202,17 @@ function GlobalChangeGroup({group, tabKey, onRevert}: {
                         <span
                             className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300">Entfernt</span>
                     )}
+                    {group.itemKind === 'moved' && (
+                        <span
+                            className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">Verschoben</span>
+                    )}
                     <span
                         className="font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 truncate text-[9px]">{group.group}</span>
                     {group.itemLabel && (
                         <>
                             <span className="text-gray-300 dark:text-gray-600">·</span>
                             <span
-                                className="font-semibold text-gray-700 dark:text-gray-200 truncate">{group.itemLabel}</span>
+                                className="font-semibold text-gray-700 dark:text-gray-200">{group.itemLabel}</span>
                         </>
                     )}
                 </div>
@@ -218,10 +222,15 @@ function GlobalChangeGroup({group, tabKey, onRevert}: {
                         className="shrink-0 font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2 py-0.5 rounded-md border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1"
                     >
                         <Undo2 size={9}/>
-                        {group.itemKind === 'added' ? 'Verwerfen' : 'Wiederherstellen'}
+                        {group.itemKind === 'added' ? 'Verwerfen' : group.itemKind === 'moved' ? 'Zurücksetzen' : 'Wiederherstellen'}
                     </button>
                 )}
             </div>
+            {group.itemKind === 'moved' && (
+                <div className="px-2.5 py-1.5 text-gray-500 dark:text-gray-400">
+                    Reihenfolge geändert
+                </div>
+            )}
             {!isStructural && (
                 <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                     {group.entries.map(e => (
@@ -229,10 +238,10 @@ function GlobalChangeGroup({group, tabKey, onRevert}: {
                             <div className="min-w-0 flex-1">
                                 <span className="font-semibold text-gray-700 dark:text-gray-200">{e.fieldLabel}: </span>
                                 <span
-                                    className="text-gray-400 line-through mr-1">{summarizeValue(e.before, e.fieldType)}</span>
+                                    className="text-gray-400 line-through mr-1">{summarizeValue(e.before, e.fieldType, false)}</span>
                                 <span className="text-gray-300">→</span>
                                 <span
-                                    className="text-gray-700 dark:text-gray-300 ml-1">{summarizeValue(e.after, e.fieldType)}</span>
+                                    className="text-gray-700 dark:text-gray-300 ml-1">{summarizeValue(e.after, e.fieldType, false)}</span>
                             </div>
                             <button
                                 onClick={() => onRevert(tabKey, e)}
