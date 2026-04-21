@@ -422,6 +422,80 @@ function ConfirmRevertModal({label, onConfirm, onCancel}: {
     )
 }
 
+function InlineDiff({oldVal, newVal}: { oldVal?: unknown; newVal?: unknown }) {
+    const a = typeof oldVal === 'string' ? oldVal : JSON.stringify(oldVal ?? '')
+    const b = typeof newVal === 'string' ? newVal : JSON.stringify(newVal ?? '')
+
+    // If both are short non-text (booleans, numbers, URLs), show simple before→after
+    if (a.length < 80 && b.length < 80 && !a.includes(' ') && !b.includes(' ')) {
+        return (
+            <div className="flex items-center gap-2 flex-wrap">
+                <span
+                    className="text-red-500 line-through bg-red-50 dark:bg-red-900/20 px-1.5 py-0.5 rounded">{a}</span>
+                <span className="text-gray-400">→</span>
+                <span
+                    className="text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-1.5 py-0.5 rounded">{b}</span>
+            </div>
+        )
+    }
+
+    // Word-level diff using LCS
+    const wordsA = a.split(/(\s+)/)
+    const wordsB = b.split(/(\s+)/)
+    const segments = wordDiff(wordsA, wordsB)
+
+    return (
+        <div className="whitespace-pre-wrap break-words leading-relaxed">
+            {segments.map((seg, i) => {
+                if (seg.type === 'equal') return <span key={i}
+                                                       className="text-gray-500 dark:text-gray-400">{seg.text}</span>
+                if (seg.type === 'removed') return <span key={i}
+                                                         className="text-red-500 line-through bg-red-50 dark:bg-red-900/20 rounded px-0.5">{seg.text}</span>
+                return <span key={i}
+                             className="text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded px-0.5">{seg.text}</span>
+            })}
+        </div>
+    )
+}
+
+function wordDiff(a: string[], b: string[]): { type: 'equal' | 'removed' | 'added'; text: string }[] {
+    // LCS table
+    const m = a.length, n = b.length
+    const dp: number[][] = Array.from({length: m + 1}, () => Array(n + 1).fill(0))
+    for (let i = 1; i <= m; i++)
+        for (let j = 1; j <= n; j++)
+            dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1])
+
+    // Backtrack
+    const result: { type: 'equal' | 'removed' | 'added'; text: string }[] = []
+    let i = m, j = n
+    const stack: typeof result = []
+    while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) {
+            stack.push({type: 'equal', text: a[i - 1]})
+            i--;
+            j--
+        } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+            stack.push({type: 'added', text: b[j - 1]})
+            j--
+        } else {
+            stack.push({type: 'removed', text: a[i - 1]})
+            i--
+        }
+    }
+    stack.reverse()
+
+    // Merge consecutive segments of same type
+    for (const seg of stack) {
+        if (result.length > 0 && result[result.length - 1].type === seg.type) {
+            result[result.length - 1].text += seg.text
+        } else {
+            result.push({...seg})
+        }
+    }
+    return result
+}
+
 function DiffModal({original, current, label, onClose}: {
     original: unknown; current: unknown; label: string; onClose: () => void
 }) {
@@ -462,15 +536,7 @@ function DiffModal({original, current, label, onClose}: {
                                 {c.type === 'added' && <span className="text-green-600 dark:text-green-400">+ Hinzugefügt</span>}
                                 {c.type === 'removed' && <span className="text-red-500">− Entfernt</span>}
                                 {c.type === 'changed' && (
-                                    <div className="space-y-1">
-                                        <div className="text-red-500 line-through break-all whitespace-pre-wrap">
-                                            {typeof c.oldVal === 'string' ? c.oldVal : JSON.stringify(c.oldVal)}
-                                        </div>
-                                        <div
-                                            className="text-green-600 dark:text-green-400 break-all whitespace-pre-wrap">
-                                            {typeof c.newVal === 'string' ? c.newVal : JSON.stringify(c.newVal)}
-                                        </div>
-                                    </div>
+                                    <InlineDiff oldVal={c.oldVal} newVal={c.newVal}/>
                                 )}
                             </div>
                         ))}
