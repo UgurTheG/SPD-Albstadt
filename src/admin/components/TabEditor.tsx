@@ -535,7 +535,10 @@ function DiffModal({original, current, label, onClose}: {
                                 <div className="font-semibold text-gray-600 dark:text-gray-300 mb-1">{c.path}</div>
                                 {c.type === 'added' && <span className="text-green-600 dark:text-green-400">+ Hinzugefügt</span>}
                                 {c.type === 'removed' && <span className="text-red-500">− Entfernt</span>}
-                                {c.type === 'changed' && (
+                                {c.type === 'changed' && c.newVal === undefined && (
+                                    <pre className="text-xs text-blue-600 dark:text-blue-400 whitespace-pre-wrap">↕ Verschoben{'\n'}{String(c.oldVal)}</pre>
+                                )}
+                                {c.type === 'changed' && c.newVal !== undefined && (
                                     <InlineDiff oldVal={c.oldVal} newVal={c.newVal}/>
                                 )}
                             </div>
@@ -558,21 +561,116 @@ interface DiffEntry {
     newVal?: unknown
 }
 
+/** Get a human-readable label for an array item */
+function itemLabel(item: unknown, index: number): string {
+    if (item && typeof item === 'object') {
+        const obj = item as Record<string, unknown>
+        return String(obj.name || obj.titel || obj.title || `#${index + 1}`)
+    }
+    return `#${index + 1}`
+}
+
+/** Get a stable identity key for an array item (used to match items across reorder) */
+function itemIdentity(item: unknown): string {
+    if (item && typeof item === 'object') {
+        const obj = item as Record<string, unknown>
+        // Try common unique-ish fields first
+        for (const key of ['id', 'name', 'titel', 'title', 'slug']) {
+            if (obj[key] && typeof obj[key] === 'string') return `__key__${key}:${obj[key]}`
+        }
+    }
+    // Fall back to full content hash
+    return JSON.stringify(item)
+}
+
 function computeDiff(original: unknown, current: unknown, prefix = ''): DiffEntry[] {
     const changes: DiffEntry[] = []
     if (Array.isArray(original) && Array.isArray(current)) {
-        const maxLen = Math.max(original.length, current.length)
-        for (let i = 0; i < maxLen; i++) {
-            const label = (original[i] as Record<string, unknown>)?.name || (original[i] as Record<string, unknown>)?.titel || (current[i] as Record<string, unknown>)?.name || (current[i] as Record<string, unknown>)?.titel || `#${i + 1}`
+        // Build identity maps to detect moves vs real adds/removes/edits
+        const origIds = original.map(itemIdentity)
+        const currIds = current.map(itemIdentity)
+
+        // Check if this is purely a reorder (same set of identities)
+        const origIdSet = new Map<string, number[]>()
+        const currIdSet = new Map<string, number[]>()
+        origIds.forEach((id, i) => {
+            if (!origIdSet.has(id)) origIdSet.set(id, []);
+            origIdSet.get(id)!.push(i)
+        })
+        currIds.forEach((id, i) => {
+            if (!currIdSet.has(id)) currIdSet.set(id, []);
+            currIdSet.get(id)!.push(i)
+        })
+
+        // Match items: for each current item, find its original counterpart
+        const origUsed = new Set<number>()
+        const matched: { origIdx: number; currIdx: number }[] = []
+        const added: number[] = []
+
+        for (let ci = 0; ci < current.length; ci++) {
+            const id = currIds[ci]
+            const candidates = origIdSet.get(id)
+            if (candidates) {
+                const oi = candidates.find(i => !origUsed.has(i))
+                if (oi !== undefined) {
+                    origUsed.add(oi)
+                    matched.push({origIdx: oi, currIdx: ci})
+                    continue
+                }
+            }
+            added.push(ci)
+        }
+
+        const removed: number[] = []
+        for (let oi = 0; oi < original.length; oi++) {
+            if (!origUsed.has(oi)) removed.push(oi)
+        }
+
+        // Detect position changes (moved items)
+        const moved: { origIdx: number; currIdx: number; label: string }[] = []
+        for (const {origIdx, currIdx} of matched) {
+            if (origIdx !== currIdx) {
+                moved.push({origIdx, currIdx, label: itemLabel(current[currIdx], currIdx)})
+            }
+        }
+
+        // Report moves as a single summary entry
+        if (moved.length > 0) {
+            const movedLabels = moved.map(m => `${m.label} (${m.origIdx + 1} → ${m.currIdx + 1})`)
+            const path = prefix ? `${prefix} › Reihenfolge` : 'Reihenfolge'
+            changes.push({
+                path,
+                type: 'changed',
+                oldVal: movedLabels.map(l => `• ${l}`).join('\n'),
+                newVal: undefined,
+            })
+        }
+
+        // Report added items
+        for (const ci of added) {
+            const label = itemLabel(current[ci], ci)
             const path = prefix ? `${prefix} › ${label}` : String(label)
-            if (i >= original.length) { changes.push({path, type: 'added'}); continue }
-            if (i >= current.length) { changes.push({path, type: 'removed'}); continue }
-            if (JSON.stringify(original[i]) !== JSON.stringify(current[i])) {
-                // Recurse into object items
-                if (typeof original[i] === 'object' && typeof current[i] === 'object' && original[i] && current[i]) {
-                    changes.push(...computeDiff(original[i], current[i], path))
+            changes.push({path, type: 'added'})
+        }
+
+        // Report removed items
+        for (const oi of removed) {
+            const label = itemLabel(original[oi], oi)
+            const path = prefix ? `${prefix} › ${label}` : String(label)
+            changes.push({path, type: 'removed'})
+        }
+
+        // Report field-level edits within matched items (content changed, not just moved)
+        for (const {origIdx, currIdx} of matched) {
+            const origJson = JSON.stringify(original[origIdx])
+            const currJson = JSON.stringify(current[currIdx])
+            if (origJson !== currJson) {
+                const label = itemLabel(current[currIdx], currIdx)
+                const path = prefix ? `${prefix} › ${label}` : String(label)
+                if (typeof original[origIdx] === 'object' && typeof current[currIdx] === 'object' && original[origIdx] && current[currIdx]) {
+                    changes.push(...computeDiff(original[origIdx], current[currIdx], path))
                 } else {
-                    changes.push({path, type: 'changed', oldVal: original[i], newVal: current[i]})
+                    changes.push({path, type: 'changed', oldVal: original[origIdx], newVal: current[currIdx]})
                 }
             }
         }
