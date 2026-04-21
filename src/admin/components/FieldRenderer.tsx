@@ -440,7 +440,7 @@ function SortableImageListItem(props: {
     const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({id: props.id})
     const style = {
         transform: CSS.Transform.toString(transform),
-        transition,
+        transition: isDragging ? 'none' : transition,
         zIndex: isDragging ? 50 : undefined,
         opacity: isDragging ? 0.85 : undefined,
     }
