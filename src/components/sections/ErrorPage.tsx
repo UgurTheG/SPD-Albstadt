@@ -77,6 +77,27 @@ const ERROR_CONFIG: Record<number, { icon: typeof Home; title: string; descripti
     },
 }
 
+function hasIconInCode(code: number): boolean {
+    return (String(code).match(/0/g) || []).length === 1
+}
+
+function renderCodeWithIcon(code: number, Icon: typeof Home) {
+    const str = String(code)
+    const zeroCount = (str.match(/0/g) || []).length
+    if (zeroCount !== 1) return <>{str}</>
+    const idx = str.indexOf('0')
+    return (
+        <>
+            {str.slice(0, idx)}
+            <span
+                className="inline-flex items-center justify-center w-[0.75em] h-[0.75em] rounded-full bg-spd-red/10 dark:bg-spd-red/15 mx-[0.01em]">
+                <Icon className="text-spd-red w-[0.4em] h-[0.4em]" strokeWidth={1.5}/>
+            </span>
+            {str.slice(idx + 1)}
+        </>
+    )
+}
+
 export default function ErrorPage({code, navigateTo}: ErrorPageProps) {
     const config = ERROR_CONFIG[code] ?? ERROR_CONFIG[404]!
     const Icon = config.icon
@@ -91,13 +112,15 @@ export default function ErrorPage({code, navigateTo}: ErrorPageProps) {
             >
                 {/* Status code with icon */}
                 <div className="flex flex-col items-center mb-8 select-none">
-                    <div
-                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center mb-4">
-                        <Icon size={40} strokeWidth={1.5} className="text-spd-red sm:w-12 sm:h-12"/>
-                    </div>
+                    {!hasIconInCode(code) && (
+                        <div
+                            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center mb-4">
+                            <Icon size={40} strokeWidth={1.5} className="text-spd-red sm:w-12 sm:h-12"/>
+                        </div>
+                    )}
                     <span
-                        className="text-[7rem] sm:text-[10rem] font-black leading-none text-gray-200 dark:text-gray-800">
-                        {code}
+                        className="text-[7rem] sm:text-[10rem] font-black leading-none text-gray-200 dark:text-gray-800 flex items-center">
+                        {renderCodeWithIcon(code, Icon)}
                     </span>
                 </div>
 
