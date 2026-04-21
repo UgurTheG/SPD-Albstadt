@@ -1,5 +1,5 @@
 import {useState} from 'react'
-import {Plus} from 'lucide-react'
+import {Plus, Search} from 'lucide-react'
 import {
     closestCenter,
     DndContext,
@@ -30,6 +30,7 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
     const updateState = useAdminStore(s => s.updateState)
     const state = useAdminStore(s => s.state)
     const [activeId, setActiveId] = useState<string | null>(null)
+    const [filter, setFilter] = useState('')
 
     const sensors = useSensors(
         useSensor(PointerSensor, {activationConstraint: {distance: 8}}),
@@ -93,6 +94,16 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
 
     const activeIndex = activeId ? ids.indexOf(activeId) : -1
 
+    // Filter: match against text fields
+    const filterLower = filter.toLowerCase()
+    const matchesFilter = (item: Record<string, unknown>) => {
+        if (!filterLower) return true
+        for (const val of Object.values(item)) {
+            if (typeof val === 'string' && val.toLowerCase().includes(filterLower)) return true
+        }
+        return false
+    }
+
     return (
         <DndContext
             sensors={sensors}
@@ -102,19 +113,33 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
             modifiers={[restrictToVerticalAxis]}
         >
             <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+                {/* Search filter */}
+                {data.length > 3 && (
+                    <div className="relative mb-4">
+                        <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"/>
+                        <input
+                            type="text"
+                            placeholder="Einträge durchsuchen…"
+                            value={filter}
+                            onChange={e => setFilter(e.target.value)}
+                            className="w-full bg-white/60 dark:bg-gray-800/40 border border-gray-200/80 dark:border-gray-700/60 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-spd-red/20 focus:border-spd-red/40 dark:text-white dark:placeholder-gray-500 transition-all"
+                        />
+                    </div>
+                )}
                 <div className="space-y-4">
                     {data.map((item, i) => (
-                        <SortableItemCard
-                            key={ids[i]}
-                            id={ids[i]}
-                            fields={fields}
-                            item={item}
-                            index={i}
-                            total={data.length}
-                            onUpdate={triggerUpdate}
-                            onRemove={() => handleRemove(i)}
-                            onMove={handleMove}
-                        />
+                        <div key={ids[i]} style={{display: matchesFilter(item) ? undefined : 'none'}}>
+                            <SortableItemCard
+                                id={ids[i]}
+                                fields={fields}
+                                item={item}
+                                index={i}
+                                total={data.length}
+                                onUpdate={triggerUpdate}
+                                onRemove={() => handleRemove(i)}
+                                onMove={handleMove}
+                            />
+                        </div>
                     ))}
                     <button
                         type="button"

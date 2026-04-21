@@ -123,13 +123,32 @@ export default function CropOverlay({file, onComplete}: Props) {
         }
     }, [])
 
-    // Load image & set initial fit
+    // Load image & set initial fit (resize if too large)
     useEffect(() => {
+        const MAX_PX = 1920
         const img = new Image()
         img.onload = () => {
-            imgRef.current = img
-            layoutToFit(img)
-            setReady(true)
+            // Downscale large images before cropping
+            if (img.width > MAX_PX || img.height > MAX_PX) {
+                const scale = Math.min(MAX_PX / img.width, MAX_PX / img.height)
+                const w = Math.round(img.width * scale)
+                const h = Math.round(img.height * scale)
+                const offscreen = document.createElement('canvas')
+                offscreen.width = w
+                offscreen.height = h
+                offscreen.getContext('2d')!.drawImage(img, 0, 0, w, h)
+                const resized = new Image()
+                resized.onload = () => {
+                    imgRef.current = resized
+                    layoutToFit(resized)
+                    setReady(true)
+                }
+                resized.src = offscreen.toDataURL('image/png')
+            } else {
+                imgRef.current = img
+                layoutToFit(img)
+                setReady(true)
+            }
         }
         const url = URL.createObjectURL(file)
         img.src = url

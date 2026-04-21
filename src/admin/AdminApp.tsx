@@ -159,6 +159,7 @@ export default function AdminApp() {
                                     key={tab.key}
                                     type="button"
                                     onClick={() => {
+                                        if (activeTab !== tab.key && dirty.has(activeTab) && !window.confirm('Ungespeicherte Änderungen — trotzdem wechseln?')) return
                                         setActiveTab(tab.key);
                                         setSidebarOpen(false)
                                     }}

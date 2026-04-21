@@ -6,6 +6,58 @@ import {commitBinaryFile, commitFile, deleteFile, validateToken} from './lib/git
 
 const TOKEN_KEY = 'spd-admin-token'
 const DARK_KEY = 'spd-admin-dark'
+const DRAFT_KEY = 'spd-admin-drafts'
+const UNDO_LIMIT = 50
+
+// Debounced localStorage persistence
+let saveTimer: ReturnType<typeof setTimeout> | null = null
+function persistDirtyState(state: Record<string, unknown>, originalState: Record<string, unknown>) {
+    if (saveTimer) clearTimeout(saveTimer)
+    saveTimer = setTimeout(() => {
+        try {
+            const drafts: Record<string, { data: unknown; originalHash: string }> = {}
+            for (const tab of TABS) {
+                if (!tab.file) continue
+                const cur = JSON.stringify(state[tab.key])
+                const orig = JSON.stringify(originalState[tab.key])
+                if (cur !== orig) {
+                    drafts[tab.key] = { data: state[tab.key], originalHash: simpleHash(orig) }
+                }
+            }
+            if (Object.keys(drafts).length > 0) {
+                localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts))
+            } else {
+                localStorage.removeItem(DRAFT_KEY)
+            }
+        } catch { /* quota exceeded — ignore */ }
+    }, 1000)
+}
+
+function simpleHash(str: string): string {
+    let h = 0
+    for (let i = 0; i < str.length; i++) {
+        h = ((h << 5) - h + str.charCodeAt(i)) | 0
+    }
+    return h.toString(36)
+}
+
+function restoreDrafts(state: Record<string, unknown>, originalState: Record<string, unknown>): Record<string, unknown> {
+    try {
+        const raw = localStorage.getItem(DRAFT_KEY)
+        if (!raw) return state
+        const drafts = JSON.parse(raw) as Record<string, { data: unknown; originalHash: string }>
+        const merged = { ...state }
+        for (const [key, draft] of Object.entries(drafts)) {
+            const origStr = JSON.stringify(originalState[key])
+            if (simpleHash(origStr) === draft.originalHash) {
+                merged[key] = draft.data
+            }
+        }
+        return merged
+    } catch {
+        return state
+    }
+}
 
 interface AdminState {
     // Auth
@@ -20,6 +72,10 @@ interface AdminState {
     originalState: Record<string, unknown>
     pendingUploads: PendingUpload[]
     dataLoaded: boolean
+
+    // Undo/Redo
+    undoStacks: Record<string, unknown[]>
+    redoStacks: Record<string, unknown[]>
 
     // Dark mode
     darkMode: boolean
@@ -40,6 +96,8 @@ interface AdminState {
     loadData: () => Promise<void>
     setActiveTab: (key: string) => void
     updateState: (tabKey: string, data: unknown) => void
+    undo: (tabKey: string) => void
+    redo: (tabKey: string) => void
     addPendingUpload: (upload: PendingUpload) => void
     publishTab: (tabKey: string, orphansToDelete?: string[]) => Promise<void>
     publishAll: (orphansToDelete?: string[]) => Promise<void>
@@ -50,6 +108,10 @@ interface AdminState {
     findOrphanImages: () => string[]
     findOrphanImagesForTab: (tabKey: string) => string[]
 }
+
+// Debounce undo snapshots — don't push on every keystroke
+let lastUndoPush: Record<string, number> = {}
+const UNDO_DEBOUNCE = 600 // ms
 
 export const useAdminStore = create<AdminState>((set, get) => ({
     token: localStorage.getItem(TOKEN_KEY) || '',
@@ -64,6 +126,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     originalState: {},
     pendingUploads: [],
     dataLoaded: false,
+    undoStacks: {},
+    redoStacks: {},
     darkMode: (() => {
         const pref = localStorage.getItem(DARK_KEY)
         if (pref === 'true') return true
@@ -114,7 +178,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
 
     logout: () => {
         localStorage.removeItem(TOKEN_KEY)
-        set({token: '', user: null, state: {}, originalState: {}, dataLoaded: false, pendingUploads: []})
+        localStorage.removeItem(DRAFT_KEY)
+        set({token: '', user: null, state: {}, originalState: {}, dataLoaded: false, pendingUploads: [], undoStacks: {}, redoStacks: {}})
     },
 
     loadData: async () => {
@@ -135,17 +200,72 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 newState[tab.key] = tab.type === 'array' ? [] : {}
             }
         }))
+        const original = JSON.parse(JSON.stringify(newState))
+        // Restore any saved drafts from localStorage
+        const merged = restoreDrafts(newState, original)
         set({
-            state: newState,
-            originalState: JSON.parse(JSON.stringify(newState)),
+            state: merged,
+            originalState: original,
             dataLoaded: true,
+            undoStacks: {},
+            redoStacks: {},
         })
     },
 
     setActiveTab: (key) => set({activeTab: key}),
 
     updateState: (tabKey, data) => {
-        set(prev => ({state: {...prev.state, [tabKey]: data}}))
+        const now = Date.now()
+        const prev = get()
+        // Debounced undo snapshot
+        const lastPush = lastUndoPush[tabKey] || 0
+        let newUndoStacks = prev.undoStacks
+        if (now - lastPush > UNDO_DEBOUNCE) {
+            const stack = [...(prev.undoStacks[tabKey] || [])]
+            stack.push(JSON.parse(JSON.stringify(prev.state[tabKey])))
+            if (stack.length > UNDO_LIMIT) stack.shift()
+            newUndoStacks = {...prev.undoStacks, [tabKey]: stack}
+            lastUndoPush[tabKey] = now
+        }
+        const newState = {...prev.state, [tabKey]: data}
+        set({
+            state: newState,
+            undoStacks: newUndoStacks,
+            redoStacks: {...prev.redoStacks, [tabKey]: []}, // clear redo on new edit
+        })
+        persistDirtyState(newState, prev.originalState)
+    },
+
+    undo: (tabKey) => {
+        const prev = get()
+        const stack = [...(prev.undoStacks[tabKey] || [])]
+        if (stack.length === 0) return
+        const snapshot = stack.pop()!
+        const redoStack = [...(prev.redoStacks[tabKey] || [])]
+        redoStack.push(JSON.parse(JSON.stringify(prev.state[tabKey])))
+        const newState = {...prev.state, [tabKey]: snapshot}
+        set({
+            state: newState,
+            undoStacks: {...prev.undoStacks, [tabKey]: stack},
+            redoStacks: {...prev.redoStacks, [tabKey]: redoStack},
+        })
+        persistDirtyState(newState, prev.originalState)
+    },
+
+    redo: (tabKey) => {
+        const prev = get()
+        const stack = [...(prev.redoStacks[tabKey] || [])]
+        if (stack.length === 0) return
+        const snapshot = stack.pop()!
+        const undoStack = [...(prev.undoStacks[tabKey] || [])]
+        undoStack.push(JSON.parse(JSON.stringify(prev.state[tabKey])))
+        const newState = {...prev.state, [tabKey]: snapshot}
+        set({
+            state: newState,
+            undoStacks: {...prev.undoStacks, [tabKey]: undoStack},
+            redoStacks: {...prev.redoStacks, [tabKey]: stack},
+        })
+        persistDirtyState(newState, prev.originalState)
     },
 
     addPendingUpload: (upload) => {
@@ -155,7 +275,19 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     resetOriginal: (tabKey) => {
         set(prev => ({
             originalState: {...prev.originalState, [tabKey]: JSON.parse(JSON.stringify(prev.state[tabKey]))},
+            undoStacks: {...prev.undoStacks, [tabKey]: []},
+            redoStacks: {...prev.redoStacks, [tabKey]: []},
         }))
+        // Remove from localStorage drafts
+        try {
+            const raw = localStorage.getItem(DRAFT_KEY)
+            if (raw) {
+                const drafts = JSON.parse(raw)
+                delete drafts[tabKey]
+                if (Object.keys(drafts).length > 0) localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts))
+                else localStorage.removeItem(DRAFT_KEY)
+            }
+        } catch { /* ignore */ }
     },
 
     publishTab: async (tabKey, orphansToDelete) => {
@@ -165,14 +297,10 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         if (!tab?.ghPath) return
         set({publishing: true})
         try {
-            // Figure out which image paths the tab currently references
-            // so we only flush uploads that belong to this tab.
             const currentPaths = collectImagePaths(tab as TabConfig, s[tabKey] as Record<string, unknown>)
             const tabUploads: PendingUpload[] = []
             const otherUploads: PendingUpload[] = []
             for (const upload of pendingUploads) {
-                // The upload targets "public/images/<dir>/<name>.webp",
-                // the referenced public URL is "/images/<dir>/<name>.webp".
                 const publicUrl = upload.ghPath.replace(/^public/, '')
                 if (currentPaths.has(publicUrl)) {
                     tabUploads.push(upload)
@@ -188,7 +316,6 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                     failedUploads.push(upload)
                 }
             }
-            // Delete orphans for this tab only
             if (orphansToDelete) {
                 for (const imgPath of orphansToDelete) {
                     try {
@@ -226,7 +353,6 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 ...prev.state,
                 [tabKey]: orig === undefined ? prev.state[tabKey] : JSON.parse(JSON.stringify(orig)),
             }
-            // Drop pending uploads whose target path is no longer referenced by any tab
             const allPaths = new Set<string>()
             for (const tab of TABS) {
                 if (!tab.file || !nextState[tab.key]) continue
@@ -235,9 +361,12 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 }
             }
             const keptUploads = prev.pendingUploads.filter(u => allPaths.has(u.ghPath.replace(/^public/, '')))
+            persistDirtyState(nextState, prev.originalState)
             return {
                 state: nextState,
                 pendingUploads: keptUploads,
+                undoStacks: {...prev.undoStacks, [tabKey]: []},
+                redoStacks: {...prev.redoStacks, [tabKey]: []},
                 statusMessage: 'Änderungen verworfen.',
                 statusType: 'info' as const,
                 statusCounter: prev.statusCounter + 1,
@@ -250,7 +379,6 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         if (publishing) return
         set({publishing: true})
         try {
-            // Delete orphans
             if (orphansToDelete) {
                 for (const imgPath of orphansToDelete) {
                     try {
@@ -260,7 +388,6 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                     }
                 }
             }
-            // Flush uploads
             const remaining: PendingUpload[] = []
             for (const upload of pendingUploads) {
                 try {
@@ -270,7 +397,6 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 }
             }
             set({pendingUploads: remaining})
-            // Publish all dirty tabs
             const dirty = get().dirtyTabs()
             let success = 0, fail = 0
             for (const tabKey of dirty) {
@@ -286,22 +412,10 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                     fail++
                 }
             }
-            if (fail === 0) set(prev => ({
-                statusMessage: `${success} Datei(en) veröffentlicht!`,
-                statusType: 'success',
-                statusCounter: prev.statusCounter + 1
-            }))
-            else set(prev => ({
-                statusMessage: `${success} OK, ${fail} Fehler`,
-                statusType: 'error',
-                statusCounter: prev.statusCounter + 1
-            }))
+            if (fail === 0) set(prev => ({statusMessage: `${success} Datei(en) veröffentlicht!`, statusType: 'success', statusCounter: prev.statusCounter + 1}))
+            else set(prev => ({statusMessage: `${success} OK, ${fail} Fehler`, statusType: 'error', statusCounter: prev.statusCounter + 1}))
         } catch (e) {
-            set(prev => ({
-                statusMessage: 'Fehler: ' + (e as Error).message,
-                statusType: 'error',
-                statusCounter: prev.statusCounter + 1
-            }))
+            set(prev => ({statusMessage: 'Fehler: ' + (e as Error).message, statusType: 'error', statusCounter: prev.statusCounter + 1}))
         } finally {
             set({publishing: false})
         }
@@ -316,16 +430,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         })
     },
 
-    setStatus: (msg, type) => set(prev => ({
-        statusMessage: msg,
-        statusType: type,
-        statusCounter: prev.statusCounter + 1
-    })),
+    setStatus: (msg, type) => set(prev => ({statusMessage: msg, statusType: type, statusCounter: prev.statusCounter + 1})),
 
     findOrphanImages: () => {
         const {state: s, originalState: os} = get()
         const dirty = get().dirtyTabs()
-        // All current paths across all tabs
         const allCurrent = new Set<string>()
         for (const tab of TABS) {
             if (!tab.file || !s[tab.key]) continue
@@ -350,8 +459,6 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         const tab = TABS.find(t => t.key === tabKey)
         if (!tab?.file || !os[tabKey] || !s[tabKey]) return []
         const oldPaths = collectImagePaths(tab as TabConfig, os[tabKey] as Record<string, unknown>)
-        // Consider all *other* tabs' currently-referenced paths as "in use"
-        // so we don't delete images that were moved to another tab.
         const allCurrent = new Set<string>()
         for (const t of TABS) {
             if (!t.file || !s[t.key]) continue

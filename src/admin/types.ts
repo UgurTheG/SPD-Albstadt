@@ -26,6 +26,7 @@ export interface TabConfig {
     fields?: FieldConfig[]
     topFields?: FieldConfig[]
     sections?: SectionConfig[]
+    previewPath?: string
 }
 
 export interface PendingUpload {

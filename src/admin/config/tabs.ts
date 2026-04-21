@@ -3,7 +3,7 @@ import type {TabConfig} from '../types'
 
 export const TABS: TabConfig[] = [
     {
-        key: 'news', label: 'Aktuelles', file: '/data/news.json', ghPath: 'public/data/news.json', type: 'array',
+        key: 'news', label: 'Aktuelles', file: '/data/news.json', ghPath: 'public/data/news.json', type: 'array', previewPath: '/#aktuelles',
         fields: [
             {key: 'datum', label: 'Datum', type: 'date', required: true},
             {key: 'titel', label: 'Titel', type: 'text', required: true},
@@ -27,7 +27,7 @@ export const TABS: TabConfig[] = [
         ]
     },
     {
-        key: 'party', label: 'Partei', file: '/data/party.json', ghPath: 'public/data/party.json', type: 'object',
+        key: 'party', label: 'Partei', file: '/data/party.json', ghPath: 'public/data/party.json', type: 'object', previewPath: '/#partei',
         topFields: [{key: 'beschreibung', label: 'Beschreibung', type: 'textarea'}],
         sections: [
             {
@@ -73,6 +73,7 @@ export const TABS: TabConfig[] = [
         file: '/data/fraktion.json',
         ghPath: 'public/data/fraktion.json',
         type: 'object',
+        previewPath: '/#fraktion',
         topFields: [{key: 'beschreibung', label: 'Beschreibung', type: 'textarea'}],
         sections: [
             {
@@ -124,6 +125,7 @@ export const TABS: TabConfig[] = [
         file: '/data/history.json',
         ghPath: 'public/data/history.json',
         type: 'object',
+        previewPath: '/#historie',
         topFields: [{key: 'einleitung', label: 'Einleitung', type: 'textarea'}],
         sections: [
             {
