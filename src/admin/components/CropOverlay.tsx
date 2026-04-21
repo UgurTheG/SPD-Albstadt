@@ -1,4 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from 'react'
+import {createPortal} from 'react-dom'
 import {Check, Image as ImageIcon, Maximize2, Minus, Plus, RotateCcw, X} from 'lucide-react'
 
 interface Props {
@@ -317,7 +318,7 @@ export default function CropOverlay({file, onComplete}: Props) {
         h: crop.h * zoom,
     }
 
-    return (
+    return createPortal(
         <div
             className="fixed inset-0 z-[9999] bg-black/95 flex flex-col touch-none select-none"
         >
@@ -485,7 +486,8 @@ export default function CropOverlay({file, onComplete}: Props) {
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     )
 }
 
