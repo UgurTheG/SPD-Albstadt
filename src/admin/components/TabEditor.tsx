@@ -3,7 +3,7 @@ import {ChevronRight, Download, Eye, FileSearch, Plus, Redo2, Rocket, Trash2, Un
 import {AnimatePresence, motion} from 'framer-motion'
 import type {SectionConfig, TabConfig} from '../types'
 import {useAdminStore} from '../store'
-import {type ChangeEntry, type ChangeKind, diffTab, summarizeValue} from '../lib/diff'
+import {type ChangeEntry, type ChangeKind, diffTab} from '../lib/diff'
 import {FieldChangeDiff} from './DiffDisplay'
 import FieldRenderer from './FieldRenderer'
 import ArrayEditor from './ArrayEditor'
@@ -162,7 +162,7 @@ export default function TabEditor({tab}: Props) {
                     disabled={!isDirty || publishing}
                     className={`text-[10px] sm:text-xs font-bold px-3 sm:px-5 py-2 rounded-xl flex items-center gap-1.5 sm:gap-2 transition-all duration-200 ${
                         isDirty
-                            ? 'bg-gradient-to-r from-spd-red to-spd-red-dark text-white hover:shadow-lg hover:shadow-spd-red/25 hover:scale-[1.02] active:scale-[0.98]'
+                            ? 'bg-linear-to-r from-spd-red to-spd-red-dark text-white hover:shadow-lg hover:shadow-spd-red/25 hover:scale-[1.02] active:scale-[0.98]'
                             : 'bg-gray-200/60 dark:bg-gray-700/40 text-gray-400 dark:text-gray-500 cursor-not-allowed backdrop-blur-sm'
                     }`}
                 >
@@ -252,7 +252,7 @@ function SectionEditor({section, data, tabKey, onSectionChange}: {
                     <ChevronRight size={14}
                                   className={`text-gray-400 transition-transform duration-200 ${open ? 'rotate-90' : ''}`}/>
                     <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">{sec.label}</h3>
-                    <div className="flex-1 h-px bg-gradient-to-r from-gray-200 dark:from-gray-700 to-transparent ml-2"/>
+                    <div className="flex-1 h-px bg-linear-to-r from-gray-200 dark:from-gray-700 to-transparent ml-2"/>
                 </button>
                 <AnimatePresence>
                     {open && (
@@ -291,7 +291,7 @@ function SectionEditor({section, data, tabKey, onSectionChange}: {
                 </h3>
                 <span
                     className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">{arr.length}</span>
-                <div className="flex-1 h-px bg-gradient-to-r from-gray-200 dark:from-gray-700 to-transparent ml-2"/>
+                <div className="flex-1 h-px bg-linear-to-r from-gray-200 dark:from-gray-700 to-transparent ml-2"/>
             </button>
             <AnimatePresence>
                 {open && (
@@ -351,7 +351,7 @@ function StickyPublishBar({isDirty, publishing, onPublish, onShowDiff}: {
                             type="button"
                             onClick={onPublish}
                             disabled={publishing}
-                            className="text-xs font-bold px-4 py-2 rounded-xl bg-gradient-to-r from-spd-red to-spd-red-dark text-white hover:shadow-lg hover:shadow-spd-red/25 transition-all flex items-center gap-1.5 disabled:opacity-60"
+                            className="text-xs font-bold px-4 py-2 rounded-xl bg-linear-to-r from-spd-red to-spd-red-dark text-white hover:shadow-lg hover:shadow-spd-red/25 transition-all flex items-center gap-1.5 disabled:opacity-60"
                         >
                             {publishing ? (
                                 <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"/>

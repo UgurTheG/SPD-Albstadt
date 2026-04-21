@@ -69,9 +69,11 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
     }
 
     const triggerUpdate = () => {
-        // Called by child ItemCard when a field value changes (in-place mutation)
+        // Called by child ItemCard when a field value changes (in-place mutation).
+        // Only update the store directly — do NOT call onStructureChange here,
+        // as that's only for structural changes (add/remove/move) and would
+        // cause a double-update that can lose in-place field mutations.
         updateState(tabKey, JSON.parse(JSON.stringify(state[tabKey])))
-        onStructureChange?.(data)
     }
 
     // Generate stable IDs for sortable
@@ -144,7 +146,7 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
                     <button
                         type="button"
                         onClick={handleAdd}
-                        className="w-full border-2 border-dashed border-gray-300/60 dark:border-gray-700/40 text-gray-400 hover:border-spd-red/60 hover:text-spd-red rounded-2xl py-5 text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 hover:bg-spd-red/[0.03] dark:hover:bg-spd-red/[0.05]"
+                        className="w-full border-2 border-dashed border-gray-300/60 dark:border-gray-700/40 text-gray-400 hover:border-spd-red/60 hover:text-spd-red rounded-2xl py-5 text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 hover:bg-spd-red/3 dark:hover:bg-spd-red/5"
                     >
                         <Plus size={16}/> Neuen Eintrag hinzufügen
                     </button>
