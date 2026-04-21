@@ -29,7 +29,12 @@ export async function validateToken(token: string) {
 
 export async function commitFile(token: string, filePath: string, content: string, message: string) {
     const h = headers(token)
-    const existing = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}`, {headers: h})
+    const existing = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`, {
+        headers: {
+            ...h,
+            'If-None-Match': ''
+        }
+    })
     let sha: string | undefined
     if (existing.ok) sha = (await existing.json()).sha
     const body: Record<string, unknown> = {
