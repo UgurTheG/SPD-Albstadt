@@ -1,5 +1,5 @@
 {
-  "icsUrl": "webcal://p122-caldav.icloud.com/published/2/MjAwNjQzOTY4MjEyMDA2NMLddxkvT8tcvLgVQ6dehz9MjxtnrIu92Njn-UIJMnCsZGmJiYheC8PfQYwRBU5bm1kz0SaQASNZwa3q6BbwXjg",
+  "icsUrl": "https://p122-caldav.icloud.com/published/2/MjAwNjQzOTY4MjEyMDA2NMLddxkvT8tcvLgVQ6dehz9MjxtnrIu92Njn-UIJMnCsZGmJiYheC8PfQYwRBU5bm1kz0SaQASNZwa3q6BbwXjg",
   "features": {
     "instagramFeed": false,
     "fraktionNews": false
@@ -7,7 +7,7 @@
   "kontakt": {
     "adresse": "SPD Albstadt\nStadtgarten 1\n72458 Albstadt-Ebingen",
     "email": "info@spd-albstadt.de",
-    "telefon": "07431 / 000 001",
+    "telefon": "07431 / 000 000",
     "formspreeUrl": "https://formspree.io/f/xqegbkyl"
   },
   "buerozeiten": [
