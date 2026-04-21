@@ -22,6 +22,8 @@ export interface ChangeEntry {
     // For moved items
     movedFrom?: number
     movedTo?: number
+    // Companion keys that should be reverted together (e.g. captionsKey for imagelist)
+    companionPaths?: ChangePath[]
 }
 
 const eq = (a: unknown, b: unknown): boolean => {
@@ -66,6 +68,15 @@ function diffFields(
         const after = curr[f.key]
         if (eq(before, after)) continue
         const fieldPath: ChangePath = [...basePath, f.key]
+        // Track companion keys (e.g. captionsKey for imagelist) so revert handles both
+        const companionPaths: ChangePath[] = []
+        if (f.captionsKey) {
+            const capBefore = orig[f.captionsKey]
+            const capAfter = curr[f.captionsKey]
+            if (!eq(capBefore, capAfter)) {
+                companionPaths.push([...basePath, f.captionsKey])
+            }
+        }
         out.push({
             id: fieldPath.join('.') + ':modified',
             path: fieldPath,
@@ -78,6 +89,7 @@ function diffFields(
             fieldLabel: f.label,
             fieldType: f.type,
             before, after,
+            ...(companionPaths.length > 0 ? {companionPaths} : {}),
         })
     }
 }
@@ -294,11 +306,21 @@ export function applyRevert(
     if (entry.kind === 'modified') {
         const beforeValue = getAtPath(originalRoot, entry.path)
         setAtPath(next, entry.path, clone(beforeValue))
+        // Also revert companion paths (e.g. captionsKey for imagelist)
+        if (entry.companionPaths) {
+            for (const cp of entry.companionPaths) {
+                setAtPath(next, cp, clone(getAtPath(originalRoot, cp)))
+            }
+        }
         return next
     }
     if (entry.kind === 'moved') {
         // Restore the original array order
         const parentPath = entry.path.slice(0, -1)
+        if (parentPath.length === 0) {
+            // Top-level array tab — return the original root directly
+            return clone(originalRoot)
+        }
         const origArr = getAtPath(originalRoot, parentPath) as unknown[]
         if (Array.isArray(origArr)) {
             setAtPath(next, parentPath, clone(origArr))
@@ -308,6 +330,14 @@ export function applyRevert(
     if (entry.kind === 'added') {
         // remove the element at the array path
         const parentPath = entry.path.slice(0, -1)
+        if (parentPath.length === 0) {
+            // Top-level array — splice directly on next
+            if (Array.isArray(next)) {
+                const idx = entry.path[entry.path.length - 1] as number
+                next.splice(idx, 1)
+            }
+            return next
+        }
         const idx = entry.path[entry.path.length - 1] as number
         const arr = getAtPath(next, parentPath) as unknown
         if (Array.isArray(arr)) arr.splice(idx, 1)
@@ -317,9 +347,15 @@ export function applyRevert(
         // reinsert at the original index (clamped)
         const parentPath = entry.path.slice(0, -1)
         const idx = entry.originalIndex ?? (entry.path[entry.path.length - 1] as number)
+        if (parentPath.length === 0) {
+            // Top-level array — splice directly on next
+            if (Array.isArray(next)) {
+                next.splice(Math.min(idx, next.length), 0, clone(entry.before))
+            }
+            return next
+        }
         let arr = getAtPath(next, parentPath) as unknown
         if (!Array.isArray(arr)) {
-            // initialize empty array at that path
             arr = []
             setAtPath(next, parentPath, arr)
         }

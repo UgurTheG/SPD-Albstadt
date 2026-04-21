@@ -1,10 +1,19 @@
 import {defineConfig, loadEnv, type Plugin} from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import {readFileSync} from 'fs'
+import {join} from 'path'
 import {loadInstagramFeedFromUrl} from './server/instagram'
 import {INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME} from './src/shared/instagram.ts'
 
-const ICS_CALENDAR_URL = 'https://p122-caldav.icloud.com/published/2/MjAwNjQzOTY4MjEyMDA2NMLddxkvT8tcvLgVQ6dehz9MjxtnrIu92Njn-UIJMnCsZGmJiYheC8PfQYwRBU5bm1kz0SaQASNZwa3q6BbwXjg'
+function getIcsUrl(): string {
+  try {
+    const raw = readFileSync(join(process.cwd(), 'public', 'data', 'config.json'), 'utf-8')
+    const config = JSON.parse(raw) as { icsUrl?: string }
+    if (config.icsUrl) return config.icsUrl.replace(/^[a-zA-Z]+:\/\//, 'https://')
+  } catch { /* */ }
+  throw new Error('No ICS URL configured in config.json')
+}
 
 function serveIcsProxy(): Plugin {
   return {
@@ -13,7 +22,7 @@ function serveIcsProxy(): Plugin {
       server.middlewares.use((req, res, next) => {
         if (req.url !== '/api/ics') { next(); return }
 
-        void fetch(ICS_CALENDAR_URL, {
+        void fetch(getIcsUrl(), {
           headers: { 'User-Agent': 'SPD-Albstadt-Website/1.0', Accept: 'text/calendar, text/plain, */*' },
         })
           .then(async upstream => {

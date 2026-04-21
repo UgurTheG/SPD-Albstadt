@@ -1,13 +1,15 @@
 import {useEffect, useMemo, useState} from 'react'
-import {ArrowRight, ChevronRight, Download, Eye, FileSearch, Plus, Redo2, Rocket, Trash2, Undo2, X} from 'lucide-react'
+import {ChevronRight, Download, Eye, FileSearch, Plus, Redo2, Rocket, Trash2, Undo2, X} from 'lucide-react'
 import {AnimatePresence, motion} from 'framer-motion'
 import type {SectionConfig, TabConfig} from '../types'
 import {useAdminStore} from '../store'
 import {type ChangeEntry, type ChangeKind, diffTab, summarizeValue} from '../lib/diff'
+import {FieldChangeDiff} from './DiffDisplay'
 import FieldRenderer from './FieldRenderer'
 import ArrayEditor from './ArrayEditor'
 import OrphanModal from './OrphanModal'
 import PreviewModal from './PreviewModal'
+import PublishConfirmModal from './PublishConfirmModal'
 
 interface Props {
     tab: TabConfig
@@ -27,6 +29,7 @@ export default function TabEditor({tab}: Props) {
     const [orphans, setOrphans] = useState<string[] | null>(null)
     const [showDiff, setShowDiff] = useState(false)
     const [showPreview, setShowPreview] = useState(false)
+    const [showPublishConfirm, setShowPublishConfirm] = useState(false)
 
     const canUndo = (undoStacks[tab.key]?.length ?? 0) > 0
     const canRedo = (redoStacks[tab.key]?.length ?? 0) > 0
@@ -54,6 +57,11 @@ export default function TabEditor({tab}: Props) {
     const isDirty = dirtyTabs().has(tab.key)
 
     const handlePublish = () => {
+        setShowPublishConfirm(true)
+    }
+
+    const handlePublishConfirmed = () => {
+        setShowPublishConfirm(false)
         const o = findOrphanImagesForTab(tab.key)
         if (o.length > 0) {
             setOrphans(o);
@@ -88,6 +96,14 @@ export default function TabEditor({tab}: Props) {
                         publishTab(tab.key)
                     }}
                     onCancel={() => setOrphans(null)}
+                />
+            )}
+
+            {showPublishConfirm && (
+                <PublishConfirmModal
+                    tabKey={tab.key}
+                    onConfirm={handlePublishConfirmed}
+                    onCancel={() => setShowPublishConfirm(false)}
                 />
             )}
 
@@ -509,98 +525,6 @@ function ChangeGroupBlock({group, onRevert}: {
     )
 }
 
-function FieldChangeDiff({entry}: { entry: ChangeEntry }) {
-    const t = entry.fieldType
-    const isTextish = t === 'textarea' || t === 'text' || t === 'email' || t === 'url'
-    if (isTextish && typeof entry.before === 'string' && typeof entry.after === 'string') {
-        return <div className="text-[11px]"><InlineDiff oldVal={entry.before} newVal={entry.after}/></div>
-    }
-    return (
-        <div className="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400 min-w-0">
-            <span className="line-through text-gray-400 dark:text-gray-500 truncate max-w-[40%]">
-                {summarizeValue(entry.before, t)}
-            </span>
-            <ArrowRight size={10} className="shrink-0 text-gray-400"/>
-            <span className="font-medium text-gray-700 dark:text-gray-300 truncate max-w-[55%]">
-                {summarizeValue(entry.after, t)}
-            </span>
-        </div>
-    )
-}
-
-function InlineDiff({oldVal, newVal}: { oldVal?: unknown; newVal?: unknown }) {
-    const a = typeof oldVal === 'string' ? oldVal : JSON.stringify(oldVal ?? '')
-    const b = typeof newVal === 'string' ? newVal : JSON.stringify(newVal ?? '')
-
-    // If both are short non-text (booleans, numbers, URLs), show simple before→after
-    if (a.length < 80 && b.length < 80 && !a.includes(' ') && !b.includes(' ')) {
-        return (
-            <div className="flex items-center gap-2 flex-wrap">
-                <span
-                    className="text-red-500 line-through bg-red-50 dark:bg-red-900/20 px-1.5 py-0.5 rounded">{a}</span>
-                <span className="text-gray-400">→</span>
-                <span
-                    className="text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-1.5 py-0.5 rounded">{b}</span>
-            </div>
-        )
-    }
-
-    // Word-level diff using LCS
-    const wordsA = a.split(/(\s+)/)
-    const wordsB = b.split(/(\s+)/)
-    const segments = wordDiff(wordsA, wordsB)
-
-    return (
-        <div className="whitespace-pre-wrap break-words leading-relaxed">
-            {segments.map((seg, i) => {
-                if (seg.type === 'equal') return <span key={i}
-                                                       className="text-gray-500 dark:text-gray-400">{seg.text}</span>
-                if (seg.type === 'removed') return <span key={i}
-                                                         className="text-red-500 line-through bg-red-50 dark:bg-red-900/20 rounded px-0.5">{seg.text}</span>
-                return <span key={i}
-                             className="text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded px-0.5">{seg.text}</span>
-            })}
-        </div>
-    )
-}
-
-function wordDiff(a: string[], b: string[]): { type: 'equal' | 'removed' | 'added'; text: string }[] {
-    // LCS table
-    const m = a.length, n = b.length
-    const dp: number[][] = Array.from({length: m + 1}, () => Array(n + 1).fill(0))
-    for (let i = 1; i <= m; i++)
-        for (let j = 1; j <= n; j++)
-            dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1])
-
-    // Backtrack
-    const result: { type: 'equal' | 'removed' | 'added'; text: string }[] = []
-    let i = m, j = n
-    const stack: typeof result = []
-    while (i > 0 || j > 0) {
-        if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) {
-            stack.push({type: 'equal', text: a[i - 1]})
-            i--;
-            j--
-        } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-            stack.push({type: 'added', text: b[j - 1]})
-            j--
-        } else {
-            stack.push({type: 'removed', text: a[i - 1]})
-            i--
-        }
-    }
-    stack.reverse()
-
-    // Merge consecutive segments of same type
-    for (const seg of stack) {
-        if (result.length > 0 && result[result.length - 1].type === seg.type) {
-            result[result.length - 1].text += seg.text
-        } else {
-            result.push({...seg})
-        }
-    }
-    return result
-}
 
 interface ChangeGroup {
     key: string

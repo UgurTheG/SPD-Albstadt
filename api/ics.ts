@@ -1,16 +1,21 @@
 import {readFileSync} from 'fs'
 import {join} from 'path'
 
-const DEFAULT_ICS_URL = 'https://p122-caldav.icloud.com/published/2/MjAwNjQzOTY4MjEyMDA2NMLddxkvT8tcvLgVQ6dehz9MjxtnrIu92Njn-UIJMnCsZGmJiYheC8PfQYwRBU5bm1kz0SaQASNZwa3q6BbwXjg'
+const DEFAULT_ICS_URL = ''
+
+function normalizeUrl(url: string): string {
+  return url.replace(/^[a-zA-Z]+:\/\//, 'https://')
+}
 
 function getIcsUrl(): string {
   try {
     const configPath = join(process.cwd(), 'public', 'data', 'config.json')
     const raw = readFileSync(configPath, 'utf-8')
     const config = JSON.parse(raw) as { icsUrl?: string }
-    if (config.icsUrl) return config.icsUrl
+    if (config.icsUrl) return normalizeUrl(config.icsUrl)
   } catch { /* use default */
   }
+  if (!DEFAULT_ICS_URL) throw new Error('No ICS URL configured in config.json')
   return DEFAULT_ICS_URL
 }
 

@@ -4,7 +4,8 @@ import {motion} from 'framer-motion'
 import type {TabConfig} from '../types'
 import {useAdminStore} from '../store'
 import {TABS} from '../config/tabs'
-import {type ChangeEntry, type ChangeKind, diffTab, summarizeValue} from '../lib/diff'
+import {type ChangeEntry, type ChangeKind, diffTab} from '../lib/diff'
+import {FieldChangeDiff} from './DiffDisplay'
 
 interface Props {
     onClose: () => void
@@ -236,12 +237,8 @@ function GlobalChangeGroup({group, tabKey, onRevert}: {
                     {group.entries.map(e => (
                         <li key={e.id} className="flex items-center justify-between gap-2 px-2.5 py-1.5">
                             <div className="min-w-0 flex-1">
-                                <span className="font-semibold text-gray-700 dark:text-gray-200">{e.fieldLabel}: </span>
-                                <span
-                                    className="text-gray-400 line-through mr-1">{summarizeValue(e.before, e.fieldType, false)}</span>
-                                <span className="text-gray-300">→</span>
-                                <span
-                                    className="text-gray-700 dark:text-gray-300 ml-1">{summarizeValue(e.after, e.fieldType, false)}</span>
+                                <div className="text-[10px] font-semibold text-gray-700 dark:text-gray-200 mb-0.5">{e.fieldLabel}</div>
+                                <FieldChangeDiff entry={e}/>
                             </div>
                             <button
                                 onClick={() => onRevert(tabKey, e)}

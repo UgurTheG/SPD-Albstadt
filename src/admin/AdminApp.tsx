@@ -22,6 +22,7 @@ import LoginScreen from './components/LoginScreen'
 import TabEditor from './components/TabEditor'
 import HaushaltsredenEditor from './components/HaushaltsredenEditor'
 import GlobalDiffModal from './components/GlobalDiffModal'
+import PublishConfirmModal from './components/PublishConfirmModal'
 
 const TAB_ICON_MAP: Record<string, React.ReactNode> = {
     news: <Newspaper size={18}/>,
@@ -52,6 +53,7 @@ export default function AdminApp() {
     } = useAdminStore()
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [showGlobalDiff, setShowGlobalDiff] = useState(false)
+    const [showPublishConfirm, setShowPublishConfirm] = useState(false)
 
     // Swipe-left to close sidebar on mobile
     const touchStartX = useRef<number | null>(null)
@@ -108,6 +110,11 @@ export default function AdminApp() {
     const currentTab = TABS.find(t => t.key === activeTab) ?? TABS[0]
 
     const handlePublishAll = () => {
+        setShowPublishConfirm(true)
+    }
+
+    const handlePublishAllConfirmed = () => {
+        setShowPublishConfirm(false)
         const orphans = useAdminStore.getState().findOrphanImages()
         publishAll(orphans.length > 0 ? orphans : undefined)
     }
@@ -119,8 +126,12 @@ export default function AdminApp() {
 
             {showGlobalDiff && <GlobalDiffModal onClose={() => setShowGlobalDiff(false)}/>}
 
-
-            {/* Mobile sidebar overlay */}
+            {showPublishConfirm && (
+                <PublishConfirmModal
+                    onConfirm={handlePublishAllConfirmed}
+                    onCancel={() => setShowPublishConfirm(false)}
+                />
+            )}            {/* Mobile sidebar overlay */}
             <AnimatePresence>
                 {sidebarOpen && (
                     <motion.div
