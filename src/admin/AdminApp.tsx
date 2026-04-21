@@ -1,6 +1,7 @@
-import {useEffect, useState} from 'react'
+import {useCallback, useEffect, useRef, useState} from 'react'
 import {
     Building2,
+    FileSearch,
     FileText,
     Landmark,
     LogOut,
@@ -20,6 +21,7 @@ import {TABS} from './config/tabs'
 import LoginScreen from './components/LoginScreen'
 import TabEditor from './components/TabEditor'
 import HaushaltsredenEditor from './components/HaushaltsredenEditor'
+import GlobalDiffModal from './components/GlobalDiffModal'
 
 const TAB_ICON_MAP: Record<string, React.ReactNode> = {
     news: <Newspaper size={18}/>,
@@ -49,6 +51,20 @@ export default function AdminApp() {
         statusCounter,
     } = useAdminStore()
     const [sidebarOpen, setSidebarOpen] = useState(false)
+    const [showGlobalDiff, setShowGlobalDiff] = useState(false)
+
+    // Swipe-left to close sidebar on mobile
+    const touchStartX = useRef<number | null>(null)
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX
+    }, [])
+    const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+        if (touchStartX.current !== null) {
+            const delta = e.changedTouches[0].clientX - touchStartX.current
+            if (delta < -50) setSidebarOpen(false)
+            touchStartX.current = null
+        }
+    }, [])
 
     useEffect(() => {
         tryAutoLogin()
@@ -101,6 +117,8 @@ export default function AdminApp() {
             className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
             <Toaster position="top-right" richColors closeButton theme={darkMode ? 'dark' : 'light'}/>
 
+            {showGlobalDiff && <GlobalDiffModal onClose={() => setShowGlobalDiff(false)}/>}
+
 
             {/* Mobile sidebar overlay */}
             <AnimatePresence>
@@ -117,6 +135,8 @@ export default function AdminApp() {
 
             {/* Sidebar */}
             <aside
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
                 className={`fixed top-0 left-0 h-full w-64 z-50 flex flex-col transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div
                     className="flex flex-col h-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/60 dark:border-gray-800/60">
@@ -179,13 +199,25 @@ export default function AdminApp() {
 
                     {/* Bottom section */}
                     <div className="p-4 border-t border-gray-200/60 dark:border-gray-800/60 space-y-3">
-                        {/* Publish all button */}
+                        {/* Global changes + Publish all */}
                         <AnimatePresence>
                             {dirty.size > 0 && (
-                                <motion.button
-                                    initial={{opacity: 0, y: 10}}
-                                    animate={{opacity: 1, y: 0}}
-                                    exit={{opacity: 0, y: 10}}
+                                <>
+                                    <motion.button
+                                        initial={{opacity: 0, y: 10}}
+                                        animate={{opacity: 1, y: 0}}
+                                        exit={{opacity: 0, y: 10}}
+                                        type="button"
+                                        onClick={() => setShowGlobalDiff(true)}
+                                        className="w-full text-xs font-medium px-4 py-2.5 rounded-xl border border-amber-300/60 dark:border-amber-700/40 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <FileSearch size={13}/>
+                                        Alle Änderungen ({dirty.size})
+                                    </motion.button>
+                                    <motion.button
+                                        initial={{opacity: 0, y: 10}}
+                                        animate={{opacity: 1, y: 0}}
+                                        exit={{opacity: 0, y: 10}}
                                     type="button"
                                     onClick={handlePublishAll}
                                     disabled={publishing}
@@ -199,6 +231,7 @@ export default function AdminApp() {
                                     )}
                                     Alle veröffentlichen ({dirty.size})
                                 </motion.button>
+                                </>
                             )}
                         </AnimatePresence>
 

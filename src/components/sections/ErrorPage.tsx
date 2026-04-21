@@ -89,19 +89,16 @@ export default function ErrorPage({code, navigateTo}: ErrorPageProps) {
                 transition={{duration: 0.6, ease: 'easeOut'}}
                 className="text-center max-w-md"
             >
-                {/* Status code with icon as middle digit */}
-                <div className="flex items-center justify-center gap-1 sm:gap-2 mb-8 select-none">
-          <span className="text-[7rem] sm:text-[10rem] font-black leading-none text-gray-200 dark:text-gray-800">
-            {String(code)[0]}
-          </span>
+                {/* Status code with icon */}
+                <div className="flex flex-col items-center mb-8 select-none">
                     <div
-                        className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center shrink-0">
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center mb-4">
                         <Icon size={40} strokeWidth={1.5} className="text-spd-red sm:w-12 sm:h-12"/>
                     </div>
                     <span
                         className="text-[7rem] sm:text-[10rem] font-black leading-none text-gray-200 dark:text-gray-800">
-            {String(code)[2]}
-          </span>
+                        {code}
+                    </span>
                 </div>
 
                 <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mb-3">
