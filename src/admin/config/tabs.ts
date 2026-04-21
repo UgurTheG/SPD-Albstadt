@@ -1,13 +1,5 @@
 import type {TabConfig} from '../types'
 
-export const TAB_ICONS: Record<string, string> = {
-    news: 'Newspaper',
-    party: 'Users',
-    fraktion: 'Building2',
-    haushaltsreden: 'FileText',
-    history: 'Clock',
-    config: 'Settings',
-}
 
 export const TABS: TabConfig[] = [
     {

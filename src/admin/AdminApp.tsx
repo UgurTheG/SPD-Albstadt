@@ -78,6 +78,17 @@ export default function AdminApp() {
         document.documentElement.classList.toggle('dark', darkMode)
     }, [darkMode])
 
+    // Warn before closing with unsaved changes
+    useEffect(() => {
+        const handler = (e: BeforeUnloadEvent) => {
+            if (dirtyTabs().size > 0) {
+                e.preventDefault()
+            }
+        }
+        window.addEventListener('beforeunload', handler)
+        return () => window.removeEventListener('beforeunload', handler)
+    }, [dirtyTabs])
+
     useEffect(() => {
         if (!statusMessage) return
         if (statusType === 'success') toast.success(statusMessage)
@@ -91,7 +102,8 @@ export default function AdminApp() {
     const currentTab = TABS.find(t => t.key === activeTab) ?? TABS[0]
 
     const handlePublishAll = () => {
-        publishAll()
+        const orphans = useAdminStore.getState().findOrphanImages()
+        publishAll(orphans.length > 0 ? orphans : undefined)
     }
 
     return (
