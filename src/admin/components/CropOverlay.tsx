@@ -478,7 +478,8 @@ export default function CropOverlay({file, onComplete}: Props) {
                                           transform: (typeof h.left === 'string' || typeof h.top === 'string')
                                               ? `translate(${typeof h.left === 'string' ? '-50%' : '0'}, ${typeof h.top === 'string' ? '-50%' : '0'})`
                                               : undefined,
-                                      }/>
+                                      }}
+                                />
                             ))}
                         </div>
                     </>
