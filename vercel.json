@@ -1,8 +1,17 @@
 {
   "rewrites": [
-    { "source": "/admin", "destination": "/admin/index.html" },
-    { "source": "/admin/", "destination": "/admin/index.html" },
-    { "source": "/((?!api|data|images|documents|icons|favicon|admin).*)", "destination": "/index.html" }
+    {
+      "source": "/admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/((?!api|data|images|documents|icons|favicon).*)",
+      "destination": "/index.html"
+    }
   ]
 }
 

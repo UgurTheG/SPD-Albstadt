@@ -1,33 +1,8 @@
-import { defineConfig, loadEnv, type Plugin } from 'vite'
+import {defineConfig, loadEnv, type Plugin} from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import { loadInstagramFeedFromUrl } from './server/instagram'
-import { INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME } from './src/shared/instagram.ts'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-// Serve /admin/ from public/admin/index.html instead of falling through to the SPA
-function serveAdmin(): Plugin {
-  return {
-    name: 'serve-admin',
-    configureServer(server) {
-      server.middlewares.use((req: { url?: string }, res: { setHeader: (k: string, v: string) => void; end: (s: string) => void }, next: () => void) => {
-        if (req.url === '/admin' || req.url === '/admin/') {
-          const file = path.resolve(__dirname, 'public/admin/index.html')
-          if (fs.existsSync(file)) {
-            res.setHeader('Content-Type', 'text/html')
-            res.end(fs.readFileSync(file, 'utf-8'))
-            return
-          }
-        }
-        next()
-      })
-    },
-  }
-}
+import {loadInstagramFeedFromUrl} from './server/instagram'
+import {INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME} from './src/shared/instagram.ts'
 
 const ICS_CALENDAR_URL = 'https://p122-caldav.icloud.com/published/2/MjAwNjQzOTY4MjEyMDA2NMLddxkvT8tcvLgVQ6dehz9MjxtnrIu92Njn-UIJMnCsZGmJiYheC8PfQYwRBU5bm1kz0SaQASNZwa3q6BbwXjg'
 
@@ -103,6 +78,6 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
-    plugins: [serveAdmin(), serveIcsProxy(), serveInstagramApi(env), react(), tailwindcss()],
+    plugins: [serveIcsProxy(), serveInstagramApi(env), react(), tailwindcss()],
   }
 })

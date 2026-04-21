@@ -1,0 +1,41 @@
+export interface FieldConfig {
+    key: string
+    label: string
+    type: 'text' | 'email' | 'url' | 'textarea' | 'date' | 'time' | 'select' | 'toggle' | 'image' | 'imagelist' | 'stringlist' | 'icon-picker'
+    required?: boolean
+    options?: string[]
+    imageDir?: string
+    captionsKey?: string
+}
+
+export interface SectionConfig {
+    key: string
+    label: string
+    fields: FieldConfig[]
+    isSingleObject?: boolean
+}
+
+export interface TabConfig {
+    key: string
+    label: string
+    file: string | null
+    ghPath: string | null
+    type: 'array' | 'object' | 'haushaltsreden'
+    fields?: FieldConfig[]
+    topFields?: FieldConfig[]
+    sections?: SectionConfig[]
+}
+
+export interface PendingUpload {
+    ghPath: string
+    base64: string
+    message: string
+}
+
+export interface GHUser {
+    login: string
+    avatar_url: string
+
+    [key: string]: unknown
+}
+

@@ -1,0 +1,138 @@
+import {useState} from 'react'
+import {Plus} from 'lucide-react'
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy,} from '@dnd-kit/sortable'
+import {restrictToVerticalAxis} from '@dnd-kit/modifiers'
+import type {FieldConfig} from '../types'
+import SortableItemCard from './SortableItemCard'
+import ItemCard from './ItemCard'
+import {useAdminStore} from '../store'
+
+
+interface Props {
+    fields: FieldConfig[]
+    data: Record<string, unknown>[]
+    tabKey: string
+    onStructureChange?: () => void
+}
+
+export default function ArrayEditor({fields, data, tabKey, onStructureChange}: Props) {
+    const updateState = useAdminStore(s => s.updateState)
+    const state = useAdminStore(s => s.state)
+    const [activeId, setActiveId] = useState<string | null>(null)
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {activationConstraint: {distance: 8}}),
+        useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates}),
+    )
+
+    const triggerUpdate = () => {
+        updateState(tabKey, JSON.parse(JSON.stringify(state[tabKey])))
+        onStructureChange?.()
+    }
+
+    const handleMove = (from: number, to: number) => {
+        const [moved] = data.splice(from, 1)
+        data.splice(to, 0, moved)
+        triggerUpdate()
+    }
+
+    const handleRemove = (index: number) => {
+        data.splice(index, 1)
+        triggerUpdate()
+    }
+
+    const handleAdd = () => {
+        const newItem: Record<string, unknown> = {}
+        for (const f of fields) newItem[f.key] = f.type === 'stringlist' || f.type === 'imagelist' ? [] : ''
+        if (data.length > 0 && data[0] && 'id' in data[0]) {
+            newItem.id = crypto.randomUUID?.() ?? String(Date.now())
+        }
+        data.push(newItem)
+        triggerUpdate()
+    }
+
+    // Generate stable IDs for sortable
+    const ids = data.map((item, i) => (item.id as string) || `item-${i}`)
+
+    const handleDragStart = (event: DragStartEvent) => {
+        setActiveId(event.active.id as string)
+    }
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        setActiveId(null)
+        const {active, over} = event
+        if (!over || active.id === over.id) return
+        const oldIndex = ids.indexOf(active.id as string)
+        const newIndex = ids.indexOf(over.id as string)
+        if (oldIndex !== -1 && newIndex !== -1) {
+            handleMove(oldIndex, newIndex)
+        }
+    }
+
+    const activeIndex = activeId ? ids.indexOf(activeId) : -1
+
+    return (
+        <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis]}
+        >
+            <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+                <div className="space-y-4">
+                    {data.map((item, i) => (
+                        <SortableItemCard
+                            key={ids[i]}
+                            id={ids[i]}
+                            fields={fields}
+                            item={item}
+                            index={i}
+                            total={data.length}
+                            onUpdate={triggerUpdate}
+                            onRemove={() => handleRemove(i)}
+                            onMove={handleMove}
+                        />
+                    ))}
+                    <button
+                        type="button"
+                        onClick={handleAdd}
+                        className="w-full border-2 border-dashed border-gray-300/60 dark:border-gray-700/40 text-gray-400 hover:border-spd-red/60 hover:text-spd-red rounded-2xl py-5 text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 hover:bg-spd-red/[0.03] dark:hover:bg-spd-red/[0.05]"
+                    >
+                        <Plus size={16}/> Neuen Eintrag hinzufügen
+                    </button>
+                </div>
+            </SortableContext>
+
+            <DragOverlay>
+                {activeIndex >= 0 ? (
+                    <div className="opacity-90 rotate-1 scale-[1.02]">
+                        <ItemCard
+                            fields={fields}
+                            item={data[activeIndex]}
+                            index={activeIndex}
+                            total={data.length}
+                            onUpdate={() => {
+                            }}
+                            onRemove={() => {
+                            }}
+                            onMove={() => {
+                            }}
+                        />
+                    </div>
+                ) : null}
+            </DragOverlay>
+        </DndContext>
+    )
+}

@@ -6,6 +6,7 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Footer from './components/Footer'
 
+const AdminApp = lazy(() => import('./admin/AdminApp'))
 const Aktuelles   = lazy(() => import('./components/sections/Aktuelles'))
 const Partei      = lazy(() => import('./components/sections/Partei'))
 const Fraktion    = lazy(() => import('./components/sections/Fraktion'))
@@ -73,6 +74,19 @@ export default function App() {
 
   const navigateTo = (id: string) => navigate(id === 'home' ? '/' : `/${id}`)
   const isHome = location.pathname === '/'
+  const isAdmin = location.pathname.startsWith('/admin')
+
+  if (isAdmin) {
+    return (
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
+            <div className="w-10 h-10 border-4 border-spd-red/30 border-t-spd-red rounded-full animate-spin"/>
+          </div>
+        }>
+          <AdminApp/>
+        </Suspense>
+    )
+  }
 
   return (
     <div className="relative min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
