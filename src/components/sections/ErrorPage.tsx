@@ -1,5 +1,18 @@
 import {motion} from 'framer-motion'
-import {AlertTriangle, ArrowLeft, Ban, Clock, Home, Search, ServerCrash, ShieldOff} from 'lucide-react'
+import {
+    AlertTriangle,
+    ArrowLeft,
+    Ban,
+    Clock,
+    Home,
+    KeyRound,
+    Repeat,
+    Search,
+    ServerCrash,
+    ShieldAlert,
+    ShieldOff,
+    Slash
+} from 'lucide-react'
 
 interface ErrorPageProps {
     code: number
@@ -12,6 +25,11 @@ const ERROR_CONFIG: Record<number, { icon: typeof Home; title: string; descripti
         title: 'Ungültige Anfrage',
         description: 'Die Anfrage konnte nicht verarbeitet werden. Bitte überprüfen Sie die URL und versuchen Sie es erneut.',
     },
+    401: {
+        icon: KeyRound,
+        title: 'Nicht autorisiert',
+        description: 'Sie müssen sich anmelden, um auf diese Seite zugreifen zu können.',
+    },
     403: {
         icon: ShieldOff,
         title: 'Zugriff verweigert',
@@ -22,20 +40,40 @@ const ERROR_CONFIG: Record<number, { icon: typeof Home; title: string; descripti
         title: 'Seite nicht gefunden',
         description: 'Die angeforderte Seite existiert leider nicht. Möglicherweise wurde sie verschoben oder entfernt.',
     },
+    405: {
+        icon: Slash,
+        title: 'Methode nicht erlaubt',
+        description: 'Diese Anfragemethode wird für die angeforderte Ressource nicht unterstützt.',
+    },
     408: {
         icon: Clock,
         title: 'Zeitüberschreitung',
         description: 'Die Anfrage hat zu lange gedauert. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.',
+    },
+    429: {
+        icon: ShieldAlert,
+        title: 'Zu viele Anfragen',
+        description: 'Sie haben zu viele Anfragen gesendet. Bitte warten Sie einen Moment und versuchen Sie es dann erneut.',
     },
     500: {
         icon: ServerCrash,
         title: 'Serverfehler',
         description: 'Auf dem Server ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
     },
+    502: {
+        icon: Repeat,
+        title: 'Ungültige Antwort',
+        description: 'Der Server hat eine ungültige Antwort von einem vorgelagerten Server erhalten. Bitte versuchen Sie es später erneut.',
+    },
     503: {
         icon: Ban,
         title: 'Vorübergehend nicht verfügbar',
         description: 'Die Seite wird gerade gewartet und ist vorübergehend nicht erreichbar. Bitte versuchen Sie es in Kürze erneut.',
+    },
+    504: {
+        icon: Clock,
+        title: 'Gateway-Zeitüberschreitung',
+        description: 'Der Server hat nicht rechtzeitig geantwortet. Bitte versuchen Sie es später erneut.',
     },
 }
 

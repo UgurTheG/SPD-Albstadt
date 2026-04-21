@@ -132,14 +132,24 @@ export default function App() {
               {/* Error pages */}
               <Route path="/400"
                      element={<><ErrorPage code={400} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
+              <Route path="/401"
+                     element={<><ErrorPage code={401} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
               <Route path="/403"
                      element={<><ErrorPage code={403} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
+              <Route path="/405"
+                     element={<><ErrorPage code={405} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
               <Route path="/408"
                      element={<><ErrorPage code={408} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
+              <Route path="/429"
+                     element={<><ErrorPage code={429} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
               <Route path="/500"
                      element={<><ErrorPage code={500} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
+              <Route path="/502"
+                     element={<><ErrorPage code={502} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
               <Route path="/503"
                      element={<><ErrorPage code={503} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
+              <Route path="/504"
+                     element={<><ErrorPage code={504} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
               {/* Catch-all → 404 */}
               <Route path="*"
                      element={<><ErrorPage code={404} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
