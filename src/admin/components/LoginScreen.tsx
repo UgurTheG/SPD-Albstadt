@@ -35,8 +35,8 @@ export default function LoginScreen() {
                     <div className="relative mx-auto mb-8 w-fit">
                         <div className="absolute inset-0 bg-spd-red/20 rounded-3xl blur-xl scale-150"/>
                         <div
-                            className="relative w-16 h-16 bg-gradient-to-br from-spd-red to-spd-red-dark rounded-2xl flex items-center justify-center shadow-xl shadow-spd-red/30">
-                            <span className="text-white font-black text-sm tracking-tight">SPD</span>
+                            className="relative w-16 h-16 rounded-2xl shadow-xl shadow-spd-red/30 overflow-hidden">
+                            <img src="/spd-logo.svg" alt="SPD" className="w-full h-full"/>
                         </div>
                     </div>
 

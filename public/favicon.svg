@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="12" fill="#E3000F"/>
-  <text x="32" y="40" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="22" fill="#fff">SPD</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 340 340">
+  <path fill="#E2001A" d="M0 0h340v340H0z"/>
+  <path fill="#fff" d="m87 239 13-20c-72-40-106 47-41 58 32 5 4 32-26 6l-13 22c74 49 122-49 46-56-16-1-17-26 21-10z"/>
+  <path fill="#fff" fill-rule="evenodd"
+        d="M110 210v105h30v-35h23c37 0 38-71 0-70h-53zm30 23h12c13 0 13 25 0 25h-12v-25z"/>
+  <path fill="#fff" fill-rule="evenodd" d="M198 210v105h46c59 1 59-105 1-105h-47zm29 25h5c37 0 37 56 0 56h-5v-56z"/>
 </svg>

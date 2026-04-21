@@ -124,8 +124,8 @@ export default function AdminApp() {
                     <div className="p-5 pb-4">
                         <div className="flex items-center gap-3">
                             <div
-                                className="w-10 h-10 bg-gradient-to-br from-spd-red to-spd-red-dark rounded-2xl flex items-center justify-center shadow-lg shadow-spd-red/25">
-                                <span className="text-white font-black text-xs">SPD</span>
+                                className="w-10 h-10 rounded-2xl shadow-lg shadow-spd-red/25 overflow-hidden">
+                                <img src="/spd-logo.svg" alt="SPD" className="w-full h-full"/>
                             </div>
                             <div>
                                 <h1 className="font-extrabold text-sm dark:text-white tracking-tight">Daten-Editor</h1>
@@ -237,8 +237,8 @@ export default function AdminApp() {
                         </button>
                         <div className="flex items-center gap-2">
                             <div
-                                className="w-8 h-8 bg-gradient-to-br from-spd-red to-spd-red-dark rounded-xl flex items-center justify-center">
-                                <span className="text-white font-black text-[9px]">SPD</span>
+                                className="w-8 h-8 rounded-xl overflow-hidden">
+                                <img src="/spd-logo.svg" alt="SPD" className="w-full h-full"/>
                             </div>
                             <span className="font-bold text-sm dark:text-white">Editor</span>
                         </div>
