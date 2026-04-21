@@ -4,10 +4,41 @@ import type {FieldConfig} from '../types'
 import {slugify} from '../lib/images'
 import {useAdminStore} from '../store'
 import {ICON_LIST, loadIconSvg} from '../lib/icons'
-import {ImagePlus, Plus, Search, Upload, X} from 'lucide-react'
+import {Calendar, ImagePlus, Link as LinkIcon, Mail, Phone, Plus, Search, Upload, X} from 'lucide-react'
 import CropOverlay from './CropOverlay'
 
 const inputCls = 'w-full bg-white/60 dark:bg-gray-800/40 border border-gray-200/80 dark:border-gray-700/60 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-spd-red/20 focus:border-spd-red/40 focus:bg-white dark:focus:bg-gray-800/80 dark:text-white dark:placeholder-gray-500 transition-all duration-200 backdrop-blur-sm'
+
+const FacebookSvg = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879v-6.988h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12z"/>
+    </svg>
+)
+const InstagramSvg = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+         strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="2" y="2" width="20" height="20" rx="5"/>
+        <circle cx="12" cy="12" r="5"/>
+        <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/>
+    </svg>
+)
+
+function FieldIcon({iconKey}: { iconKey: NonNullable<FieldConfig['iconKey']> }) {
+    switch (iconKey) {
+        case 'facebook':
+            return <span className="text-[#1877F2]"><FacebookSvg/></span>
+        case 'instagram':
+            return <span className="text-[#E4405F]"><InstagramSvg/></span>
+        case 'calendar':
+            return <Calendar size={15}/>
+        case 'link':
+            return <LinkIcon size={15}/>
+        case 'mail':
+            return <Mail size={15}/>
+        case 'phone':
+            return <Phone size={15}/>
+    }
+}
 
 interface Props {
     field: FieldConfig
@@ -54,12 +85,24 @@ function FieldInput({field, value, onChange, contextItem}: Props) {
             return <ToggleField value={value as boolean} onChange={v => onChange(v)}/>
         default:
             return (
-                <input
-                    type={field.type || 'text'}
-                    className={inputCls}
-                    value={(value as string) || ''}
-                    onChange={e => onChange(e.target.value)}
-                />
+                <div className="relative">
+                    {field.iconKey && (
+                        <span
+                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none flex items-center">
+                            <FieldIcon iconKey={field.iconKey}/>
+                        </span>
+                    )}
+                    <input
+                        type={field.type || 'text'}
+                        className={`${inputCls} ${field.iconKey ? 'pl-10' : ''} truncate`}
+                        value={(value as string) || ''}
+                        placeholder={field.placeholder}
+                        onChange={e => onChange(e.target.value)}
+                        spellCheck={field.type === 'email' || field.type === 'url' ? false : undefined}
+                        autoCapitalize={field.type === 'email' || field.type === 'url' ? 'off' : undefined}
+                        autoCorrect={field.type === 'email' || field.type === 'url' ? 'off' : undefined}
+                    />
+                </div>
             )
     }
 }
@@ -192,43 +235,59 @@ function ImageField({field, value, onChange, contextItem}: {
         setStatus('Bild vorbereitet — wird beim Veröffentlichen hochgeladen', 'success')
     }
 
+    const [showUrl, setShowUrl] = useState(!value)
+
     return (
         <>
             {cropFile && <CropOverlay file={cropFile} onComplete={handleCrop}/>}
             <div className="space-y-3">
-                {preview ? (
-                    <div className="relative group w-fit">
-                        <img
-                            src={preview}
-                            alt=""
-                            className="w-24 h-24 rounded-2xl object-cover border-2 border-gray-200/60 dark:border-gray-700/60 shadow-sm"
-                            onError={() => setPreview('')}
-                        />
-                        <div
-                            className="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-2xl transition-all duration-200 flex items-center justify-center">
+                <div className="flex gap-3 items-start flex-wrap">
+                    {preview ? (
+                        <div className="relative group shrink-0">
+                            <img
+                                src={preview}
+                                alt=""
+                                className="w-24 h-24 rounded-2xl object-cover border-2 border-gray-200/60 dark:border-gray-700/60 shadow-sm"
+                                onError={() => setPreview('')}
+                            />
                             <button type="button" onClick={() => fileRef.current?.click()}
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 bg-white/90 rounded-xl flex items-center justify-center text-gray-700">
-                                <Upload size={14}/>
+                                    className="absolute inset-0 bg-black/0 group-hover:bg-black/40 rounded-2xl transition-all flex items-center justify-center text-transparent group-hover:text-white">
+                                <Upload size={18}/>
                             </button>
                         </div>
+                    ) : (
+                        <button type="button" onClick={() => fileRef.current?.click()}
+                                className="w-24 h-24 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-spd-red hover:text-spd-red transition-colors shrink-0">
+                            <ImagePlus size={18}/>
+                            <span className="text-[9px] font-medium">Hochladen</span>
+                        </button>
+                    )}
+                    <div className="flex flex-col gap-2 flex-1 min-w-[12rem]">
+                        <button type="button" onClick={() => fileRef.current?.click()}
+                                className="text-xs font-medium px-3 py-2 rounded-xl bg-spd-red/10 text-spd-red hover:bg-spd-red/15 transition-colors flex items-center gap-1.5 w-fit">
+                            <Upload size={12}/> {preview ? 'Ersetzen' : 'Bild hochladen'}
+                        </button>
+                        <button type="button" onClick={() => setShowUrl(v => !v)}
+                                className="text-[11px] font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex items-center gap-1 w-fit">
+                            <LinkIcon size={10}/> {showUrl ? 'URL ausblenden' : 'URL manuell eingeben'}
+                        </button>
                     </div>
-                ) : (
-                    <button type="button" onClick={() => fileRef.current?.click()}
-                            className="w-24 h-24 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-spd-red hover:text-spd-red transition-colors">
-                        <ImagePlus size={18}/>
-                        <span className="text-[9px] font-medium">Hochladen</span>
-                    </button>
+                </div>
+                {showUrl && (
+                    <input
+                        type="text"
+                        className={inputCls + ' font-mono text-xs'}
+                        placeholder="/images/... oder https://..."
+                        value={value || ''}
+                        spellCheck={false}
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        onChange={e => {
+                            onChange(e.target.value);
+                            setPreview(e.target.value)
+                        }}
+                    />
                 )}
-                <input
-                    type="text"
-                    className={inputCls}
-                    placeholder="/images/... oder https://..."
-                    value={value || ''}
-                    onChange={e => {
-                        onChange(e.target.value);
-                        setPreview(e.target.value)
-                    }}
-                />
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => {
                     if (e.target.files?.[0]) setCropFile(e.target.files[0]);
                     e.target.value = ''
@@ -307,11 +366,11 @@ function ImageListField({field, value, onChange, contextItem}: {
                     type="button"
                     className="text-xs text-spd-red font-semibold hover:underline flex items-center gap-1"
                     onClick={() => {
-                        onChange([...list, ''])
                         if (captionsKey) {
                             captions.push('');
                             syncCaptions(captions)
                         }
+                        onChange([...list, ''])
                     }}
                 >
                     <Plus size={12}/> Bild hinzufügen
@@ -327,26 +386,35 @@ function ImageListItem({url, caption, hasCaption, onUrlChange, onCaptionChange, 
     onUpload: (f: File) => void; onRemove: () => void
 }) {
     const fileRef = useRef<HTMLInputElement>(null)
+    const [showUrl, setShowUrl] = useState(!url)
     return (
         <div
-            className="bg-white/50 dark:bg-gray-800/30 backdrop-blur-sm rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+            className="bg-white/50 dark:bg-gray-800/30 backdrop-blur-sm rounded-2xl p-3 sm:p-4 border border-gray-200/50 dark:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
             <div className="flex gap-3 items-start">
-                {url && (
+                {url ? (
                     <img src={url} alt=""
                          className="w-16 h-16 rounded-xl object-cover border border-gray-200/60 dark:border-gray-700/60 shrink-0 shadow-sm"
                          onError={e => (e.target as HTMLImageElement).style.display = 'none'}/>
+                ) : (
+                    <button type="button" onClick={() => fileRef.current?.click()}
+                            className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-400 hover:border-spd-red hover:text-spd-red transition-colors shrink-0">
+                        <ImagePlus size={16}/>
+                    </button>
                 )}
                 <div className="flex-1 min-w-0 space-y-2">
-                    <input type="text" className={inputCls} placeholder="/images/..." value={url}
-                           onChange={e => onUrlChange(e.target.value)}/>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                         <button type="button"
-                                className="shrink-0 bg-gray-100/80 dark:bg-gray-700/40 hover:bg-spd-red hover:text-white text-gray-600 dark:text-gray-300 text-[11px] font-semibold px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-gray-600/40 transition-all duration-200 flex items-center gap-1.5"
+                                className="bg-spd-red/10 text-spd-red hover:bg-spd-red/15 text-[11px] font-semibold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5"
                                 onClick={() => fileRef.current?.click()}>
-                            <Upload size={10}/> Hochladen
+                            <Upload size={10}/> {url ? 'Ersetzen' : 'Hochladen'}
                         </button>
                         <button type="button"
-                                className="text-[11px] text-red-400 hover:text-red-600 flex items-center gap-1 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded-lg transition-colors"
+                                className="text-[11px] font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex items-center gap-1 px-2 py-1.5 rounded-lg"
+                                onClick={() => setShowUrl(v => !v)}>
+                            <LinkIcon size={10}/> URL
+                        </button>
+                        <button type="button"
+                                className="ml-auto text-[11px] text-red-400 hover:text-red-600 flex items-center gap-1 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1.5 rounded-lg transition-colors"
                                 onClick={onRemove}>
                             <X size={10}/> Entfernen
                         </button>
@@ -355,6 +423,11 @@ function ImageListItem({url, caption, hasCaption, onUrlChange, onCaptionChange, 
                             e.target.value = ''
                         }}/>
                     </div>
+                    {showUrl && (
+                        <input type="text" className={inputCls + ' font-mono text-xs'} placeholder="/images/..."
+                               value={url} spellCheck={false} autoCapitalize="off" autoCorrect="off"
+                               onChange={e => onUrlChange(e.target.value)}/>
+                    )}
                 </div>
             </div>
             {hasCaption && (

@@ -83,6 +83,7 @@ export default function AdminApp() {
         const handler = (e: BeforeUnloadEvent) => {
             if (dirtyTabs().size > 0) {
                 e.preventDefault()
+                e.returnValue = ''
             }
         }
         window.addEventListener('beforeunload', handler)

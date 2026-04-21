@@ -22,7 +22,7 @@ export default function ItemCard({fields, item, index, total, onUpdate, onRemove
             <div className="flex items-center justify-between mb-5 gap-2">
                 <div className="flex items-center gap-2.5 min-w-0">
                     <GripVertical size={16}
-                                  className="text-gray-300 dark:text-gray-600 shrink-0 cursor-grab active:cursor-grabbing opacity-0 group-hover/card:opacity-100 transition-opacity"/>
+                                  className="text-gray-400 dark:text-gray-500 shrink-0 cursor-grab active:cursor-grabbing"/>
                     <div
                         className="w-7 h-7 rounded-lg bg-gradient-to-br from-spd-red/10 to-spd-red/5 dark:from-spd-red/20 dark:to-spd-red/10 flex items-center justify-center shrink-0">
                         <span className="text-[10px] font-black text-spd-red">{index + 1}</span>
@@ -32,7 +32,7 @@ export default function ItemCard({fields, item, index, total, onUpdate, onRemove
           </span>
                 </div>
                 <div
-                    className="flex items-center gap-1.5 shrink-0 opacity-60 group-hover/card:opacity-100 transition-opacity">
+                    className="flex items-center gap-1.5 shrink-0 opacity-100 sm:opacity-60 group-hover/card:opacity-100 transition-opacity">
                     {index > 0 && (
                         <button type="button" onClick={() => onMove(index, index - 1)}
                                 className="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-100/80 dark:bg-gray-800/60 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700 transition-all">

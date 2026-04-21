@@ -160,15 +160,21 @@ export const TABS: TabConfig[] = [
         file: '/data/config.json',
         ghPath: 'public/data/config.json',
         type: 'object',
-        topFields: [{key: 'icsUrl', label: 'Kalender-URL (ICS)', type: 'text'}],
+        topFields: [{
+            key: 'icsUrl',
+            label: 'Kalender-URL (ICS)',
+            type: 'url',
+            iconKey: 'calendar',
+            placeholder: 'https://…/kalender.ics'
+        }],
         sections: [
             {
                 key: 'kontakt', label: 'Kontaktdaten', isSingleObject: true,
                 fields: [
                     {key: 'adresse', label: 'Anschrift (Zeilenumbrüche mit Enter)', type: 'textarea'},
-                    {key: 'email', label: 'E-Mail-Adresse', type: 'email'},
-                    {key: 'telefon', label: 'Telefon', type: 'text'},
-                    {key: 'formspreeUrl', label: 'Formspree-URL (Kontaktformular)', type: 'url'},
+                    {key: 'email', label: 'E-Mail-Adresse', type: 'email', iconKey: 'mail'},
+                    {key: 'telefon', label: 'Telefon', type: 'text', iconKey: 'phone'},
+                    {key: 'formspreeUrl', label: 'Formspree-URL (Kontaktformular)', type: 'url', iconKey: 'link'},
                 ]
             },
             {
@@ -181,8 +187,20 @@ export const TABS: TabConfig[] = [
             {
                 key: 'social', label: 'Social Media', isSingleObject: true,
                 fields: [
-                    {key: 'facebookUrl', label: 'Facebook-URL', type: 'url'},
-                    {key: 'instagramUrl', label: 'Instagram-URL', type: 'url'},
+                    {
+                        key: 'facebookUrl',
+                        label: 'Facebook-URL',
+                        type: 'url',
+                        iconKey: 'facebook',
+                        placeholder: 'https://facebook.com/…'
+                    },
+                    {
+                        key: 'instagramUrl',
+                        label: 'Instagram-URL',
+                        type: 'url',
+                        iconKey: 'instagram',
+                        placeholder: 'https://instagram.com/…'
+                    },
                 ]
             },
         ]

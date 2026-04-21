@@ -15,7 +15,7 @@ export default function OrphanModal({orphans, onConfirm, onKeep, onCancel}: Prop
     )
 
     return (
-        <div className="fixed inset-0 z-9998 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+        <div className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
              onClick={onCancel}>
             <motion.div
                 initial={{opacity: 0, scale: 0.95, y: 10}}

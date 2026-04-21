@@ -1,21 +1,45 @@
 import {useCallback, useEffect, useRef, useState} from 'react'
+import {Check, Image as ImageIcon, Maximize2, Minus, Plus, RotateCcw, X} from 'lucide-react'
 
 interface Props {
     file: File
     onComplete: (base64: string | null) => void
 }
 
+type HitType = 'none' | 'new' | 'move' | 'pan' | 'tl' | 'tr' | 'bl' | 'br' | 't' | 'r' | 'b' | 'l'
+
+const HANDLE_HIT = 20 // px on screen for easier touch targets
+const MIN_CROP = 20 // min crop size in base (fit) pixels
+
 export default function CropOverlay({file, onComplete}: Props) {
+    const containerRef = useRef<HTMLDivElement>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const imgRef = useRef<HTMLImageElement | null>(null)
-    const scaleRef = useRef(1)
-    const [crop, setCrop] = useState({x: 0, y: 0, w: 0, h: 0})
-    const dragging = useRef(false)
-    const dragType = useRef<string>('new')
-    const dragStart = useRef({x: 0, y: 0})
-    const cropStart = useRef({x: 0, y: 0, w: 0, h: 0})
 
-    // Lock body scroll while crop overlay is open
+    const [ready, setReady] = useState(false)
+    const [zoom, setZoom] = useState(1)
+    const [pan, setPan] = useState({x: 0, y: 0})
+    // Crop is in "base canvas pixel" space (canvas is drawn at fit-scale).
+    const [crop, setCrop] = useState({x: 0, y: 0, w: 0, h: 0})
+    const [baseSize, setBaseSize] = useState({w: 0, h: 0})
+
+    const zoomRef = useRef(1)
+    useEffect(() => { zoomRef.current = zoom }, [zoom])
+
+    // Interaction refs (avoid re-rendering on every move)
+    const dragType = useRef<HitType>('none')
+    const dragStart = useRef({x: 0, y: 0}) // canvas-pixel coords
+    const cropStart = useRef({x: 0, y: 0, w: 0, h: 0})
+    const panStart = useRef({x: 0, y: 0})
+    const screenStart = useRef({clientX: 0, clientY: 0})
+
+    // Pinch
+    const pinchRef = useRef<{
+        dist: number; zoom: number; pan: { x: number; y: number }; midClient: { x: number; y: number }
+    } | null>(null)
+    const pointers = useRef(new Map<number, { clientX: number; clientY: number }>())
+
+    // Lock body scroll
     useEffect(() => {
         const orig = document.body.style.overflow
         document.body.style.overflow = 'hidden'
@@ -24,172 +48,453 @@ export default function CropOverlay({file, onComplete}: Props) {
         }
     }, [])
 
+    // Load image & set initial fit
     useEffect(() => {
         const img = new Image()
         img.onload = () => {
             imgRef.current = img
-            const maxW = window.innerWidth * 0.88
-            const maxH = window.innerHeight * 0.65
-            const s = Math.min(maxW / img.width, maxH / img.height, 1)
-            scaleRef.current = s
-            const canvas = canvasRef.current!
-            canvas.width = Math.round(img.width * s)
-            canvas.height = Math.round(img.height * s)
-            const c = {x: 0, y: 0, w: canvas.width, h: canvas.height}
-            setCrop(c)
-            draw(c)
+            layoutToFit(img)
+            setReady(true)
         }
-        img.src = URL.createObjectURL(file)
-        return () => URL.revokeObjectURL(img.src)
+        const url = URL.createObjectURL(file)
+        img.src = url
+        return () => URL.revokeObjectURL(url)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [file])
 
-    const draw = useCallback((c: typeof crop) => {
-        const canvas = canvasRef.current
-        const img = imgRef.current
-        if (!canvas || !img) return
-        const ctx = canvas.getContext('2d')!
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        ctx.fillStyle = 'rgba(0,0,0,0.5)'
-        ctx.fillRect(0, 0, canvas.width, c.y)
-        ctx.fillRect(0, c.y + c.h, canvas.width, canvas.height - c.y - c.h)
-        ctx.fillRect(0, c.y, c.x, c.h)
-        ctx.fillRect(c.x + c.w, c.y, canvas.width - c.x - c.w, c.h)
-        ctx.strokeStyle = '#E3000F';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([6, 3])
-        ctx.strokeRect(c.x, c.y, c.w, c.h)
-        ctx.setLineDash([])
-        ctx.fillStyle = '#E3000F'
-        for (const [hx, hy] of [[c.x, c.y], [c.x + c.w, c.y], [c.x, c.y + c.h], [c.x + c.w, c.y + c.h]]) {
-            ctx.fillRect(hx - 4, hy - 4, 8, 8)
+    // Re-fit on resize
+    useEffect(() => {
+        const onResize = () => {
+            if (imgRef.current) layoutToFit(imgRef.current)
         }
+        window.addEventListener('resize', onResize)
+        window.addEventListener('orientationchange', onResize)
+        return () => {
+            window.removeEventListener('resize', onResize)
+            window.removeEventListener('orientationchange', onResize)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    useEffect(() => {
-        draw(crop)
-    }, [crop, draw])
-
-    const getPos = (e: React.MouseEvent | React.TouchEvent) => {
-        const r = canvasRef.current!.getBoundingClientRect()
-        const t = 'touches' in e ? e.touches[0] : e
-        return {x: t.clientX - r.left, y: t.clientY - r.top}
+    const layoutToFit = (img: HTMLImageElement) => {
+        const container = containerRef.current
+        if (!container) return
+        const cw = container.clientWidth
+        const ch = container.clientHeight
+        const s = Math.min(cw / img.width, ch / img.height, 1)
+        const bw = Math.round(img.width * s)
+        const bh = Math.round(img.height * s)
+        setBaseSize({w: bw, h: bh})
+        const canvas = canvasRef.current!
+        canvas.width = bw
+        canvas.height = bh
+        const ctx = canvas.getContext('2d')!
+        ctx.clearRect(0, 0, bw, bh)
+        ctx.drawImage(img, 0, 0, bw, bh)
+        setZoom(1)
+        setPan({x: Math.round((cw - bw) / 2), y: Math.round((ch - bh) / 2)})
+        setCrop({x: 0, y: 0, w: bw, h: bh})
     }
 
-    const getHitType = (mx: number, my: number) => {
-        const hs = 12
-        const corners = [
-            {type: 'tl', x: crop.x, y: crop.y},
-            {type: 'tr', x: crop.x + crop.w, y: crop.y},
-            {type: 'bl', x: crop.x, y: crop.y + crop.h},
-            {type: 'br', x: crop.x + crop.w, y: crop.y + crop.h},
-        ]
-        for (const c of corners) if (Math.abs(mx - c.x) < hs && Math.abs(my - c.y) < hs) return c.type
-        if (mx > crop.x && mx < crop.x + crop.w && my > crop.y && my < crop.y + crop.h) return 'move'
-        return 'new'
+    // Convert client (screen) coords to base canvas coords
+    const clientToBase = useCallback((clientX: number, clientY: number) => {
+        const canvas = canvasRef.current!
+        const rect = canvas.getBoundingClientRect()
+        // rect.width = baseSize.w * zoom
+        const x = (clientX - rect.left) / zoom
+        const y = (clientY - rect.top) / zoom
+        return {x, y}
+    }, [zoom])
+
+    const hitTest = useCallback((bx: number, by: number): HitType => {
+        const hs = HANDLE_HIT / zoom // in base px
+        const {x, y, w, h} = crop
+        const near = (ax: number, ay: number, px: number, py: number) =>
+            Math.abs(ax - px) < hs && Math.abs(ay - py) < hs
+        if (near(bx, by, x, y)) return 'tl'
+        if (near(bx, by, x + w, y)) return 'tr'
+        if (near(bx, by, x, y + h)) return 'bl'
+        if (near(bx, by, x + w, y + h)) return 'br'
+        if (bx > x && bx < x + w && by > y && by < y + h) return 'move'
+        return 'none'
+    }, [crop, zoom])
+
+    // Zoom centered at a client point
+    const zoomAtClient = (clientX: number, clientY: number, newZoom: number) => {
+        const container = containerRef.current!
+        const cRect = container.getBoundingClientRect()
+        const base = clientToBase(clientX, clientY)
+        const nz = Math.max(1, Math.min(8, newZoom))
+        setZoom(nz)
+        setPan({
+            x: clientX - cRect.left - base.x * nz,
+            y: clientY - cRect.top - base.y * nz,
+        })
     }
 
-    const onDown = (e: React.MouseEvent | React.TouchEvent) => {
-        e.preventDefault()
-        const p = getPos(e)
-        dragType.current = getHitType(p.x, p.y)
-        dragging.current = true
-        dragStart.current = p
+    // Prevent pan going too far offscreen (keep canvas at least partially visible)
+    const clampPan = useCallback((p: { x: number; y: number }, z = zoom) => {
+        const container = containerRef.current
+        if (!container) return p
+        const cw = container.clientWidth
+        const ch = container.clientHeight
+        const iw = baseSize.w * z
+        const ih = baseSize.h * z
+        // Allow some overshoot to make edges reachable; keep at least 64px on-screen.
+        const margin = 64
+        return {
+            x: Math.max(-iw + margin, Math.min(cw - margin, p.x)),
+            y: Math.max(-ih + margin, Math.min(ch - margin, p.y)),
+        }
+    }, [baseSize, zoom])
+
+    // Unified pointer handlers
+    const onPointerDown = (e: React.PointerEvent) => {
+        ;(e.target as Element).setPointerCapture?.(e.pointerId)
+        pointers.current.set(e.pointerId, {clientX: e.clientX, clientY: e.clientY})
+
+        if (pointers.current.size === 2) {
+            // Start pinch
+            const [a, b] = [...pointers.current.values()]
+            const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
+            const midClient = {x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2}
+            pinchRef.current = {dist, zoom, pan: {...pan}, midClient}
+            dragType.current = 'none'
+            return
+        }
+
+        const base = clientToBase(e.clientX, e.clientY)
+        const hit = hitTest(base.x, base.y)
+        dragStart.current = base
+        screenStart.current = {clientX: e.clientX, clientY: e.clientY}
         cropStart.current = {...crop}
-        if (dragType.current === 'new') {
-            setCrop({x: p.x, y: p.y, w: 0, h: 0})
-            dragType.current = 'br'
+        panStart.current = {...pan}
+
+        if (hit === 'none') {
+            // Touch: pan when zoomed; drag-new crop when at base zoom
+            if (e.pointerType !== 'mouse' || zoom > 1.02) {
+                dragType.current = 'pan'
+            } else {
+                dragType.current = 'br'
+                setCrop({x: base.x, y: base.y, w: 0, h: 0})
+            }
+        } else {
+            dragType.current = hit
         }
     }
 
-    const onMove = (e: React.MouseEvent | React.TouchEvent) => {
-        if (!dragging.current) return
-        e.preventDefault()
-        const canvas = canvasRef.current!
-        const p = getPos(e)
-        const dx = p.x - dragStart.current.x, dy = p.y - dragStart.current.y
+    const onPointerMove = (e: React.PointerEvent) => {
+        if (!pointers.current.has(e.pointerId)) return
+        pointers.current.set(e.pointerId, {clientX: e.clientX, clientY: e.clientY})
+
+        // Pinch-zoom handling
+        if (pointers.current.size === 2 && pinchRef.current) {
+            const [a, b] = [...pointers.current.values()]
+            const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
+            const ratio = dist / pinchRef.current.dist
+            const nz = Math.max(1, Math.min(8, pinchRef.current.zoom * ratio))
+            // Keep the initial midpoint stable under the fingers.
+            const container = containerRef.current!
+            const cRect = container.getBoundingClientRect()
+            const midClient = {x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2}
+            // Translate so the image point under the original midpoint follows the current midpoint.
+            const startBase = {
+                x: (pinchRef.current.midClient.x - cRect.left - pinchRef.current.pan.x) / pinchRef.current.zoom,
+                y: (pinchRef.current.midClient.y - cRect.top - pinchRef.current.pan.y) / pinchRef.current.zoom,
+            }
+            setZoom(nz)
+            setPan(clampPan({
+                x: midClient.x - cRect.left - startBase.x * nz,
+                y: midClient.y - cRect.top - startBase.y * nz,
+            }, nz))
+            return
+        }
+
+        if (dragType.current === 'none') return
+
+        if (dragType.current === 'pan') {
+            setPan(clampPan({
+                x: panStart.current.x + (e.clientX - screenStart.current.clientX),
+                y: panStart.current.y + (e.clientY - screenStart.current.clientY),
+            }))
+            return
+        }
+
+        const base = clientToBase(e.clientX, e.clientY)
+        const dx = base.x - dragStart.current.x
+        const dy = base.y - dragStart.current.y
         const cs = cropStart.current
 
         if (dragType.current === 'move') {
             setCrop({
-                x: Math.max(0, Math.min(canvas.width - cs.w, cs.x + dx)),
-                y: Math.max(0, Math.min(canvas.height - cs.h, cs.y + dy)),
+                x: clamp(cs.x + dx, 0, baseSize.w - cs.w),
+                y: clamp(cs.y + dy, 0, baseSize.h - cs.h),
                 w: cs.w, h: cs.h,
             })
         } else {
             let nx = cs.x, ny = cs.y, nw = cs.w, nh = cs.h
-            if (dragType.current.includes('r')) nw = Math.max(20, cs.w + dx)
+            if (dragType.current.includes('r')) nw = Math.max(MIN_CROP, cs.w + dx)
             if (dragType.current.includes('l')) {
-                nx = cs.x + dx;
-                nw = Math.max(20, cs.w - dx)
+                nx = cs.x + dx
+                nw = Math.max(MIN_CROP, cs.w - dx)
             }
-            if (dragType.current.includes('b')) nh = Math.max(20, cs.h + dy)
+            if (dragType.current.includes('b')) nh = Math.max(MIN_CROP, cs.h + dy)
             if (dragType.current.includes('t')) {
-                ny = cs.y + dy;
-                nh = Math.max(20, cs.h - dy)
+                ny = cs.y + dy
+                nh = Math.max(MIN_CROP, cs.h - dy)
             }
+            const x = Math.max(0, nx)
+            const y = Math.max(0, ny)
             setCrop({
-                x: Math.max(0, nx), y: Math.max(0, ny),
-                w: Math.min(nw, canvas.width - Math.max(0, nx)),
-                h: Math.min(nh, canvas.height - Math.max(0, ny)),
+                x, y,
+                w: Math.min(nw, baseSize.w - x),
+                h: Math.min(nh, baseSize.h - y),
             })
         }
     }
 
+    const onPointerUp = (e: React.PointerEvent) => {
+        pointers.current.delete(e.pointerId)
+        if (pointers.current.size < 2) pinchRef.current = null
+        if (pointers.current.size === 0) dragType.current = 'none'
+    }
+
+    // Non-passive wheel listener so preventDefault actually works (React's onWheel is passive).
+    useEffect(() => {
+        const el = containerRef.current
+        if (!el) return
+        const handler = (e: WheelEvent) => {
+            e.preventDefault()
+            const canvas = canvasRef.current
+            if (!canvas) return
+            const currentZoom = zoomRef.current
+            const factor = Math.exp(-e.deltaY / 300)
+            const newZoom = Math.max(1, Math.min(8, currentZoom * factor))
+            const canvasRect = canvas.getBoundingClientRect()
+            const baseX = (e.clientX - canvasRect.left) / currentZoom
+            const baseY = (e.clientY - canvasRect.top) / currentZoom
+            const cRect = el.getBoundingClientRect()
+            setZoom(newZoom)
+            setPan({
+                x: e.clientX - cRect.left - baseX * newZoom,
+                y: e.clientY - cRect.top - baseY * newZoom,
+            })
+        }
+        el.addEventListener('wheel', handler, {passive: false})
+        return () => el.removeEventListener('wheel', handler)
+    }, [])
+
+    const onDoubleClick = (e: React.MouseEvent) => {
+        zoomAtClient(e.clientX, e.clientY, zoom > 1.5 ? 1 : 2.5)
+    }
+
     const exportCrop = (fullImage: boolean) => {
         const img = imgRef.current!
-        const s = scaleRef.current
         const out = document.createElement('canvas')
         if (fullImage) {
-            out.width = img.width;
+            out.width = img.width
             out.height = img.height
             out.getContext('2d')!.drawImage(img, 0, 0)
         } else {
-            const rx = crop.x / s, ry = crop.y / s, rw = crop.w / s, rh = crop.h / s
-            out.width = Math.round(rw);
-            out.height = Math.round(rh)
+            // Crop is in base-canvas px (baseSize); translate to source pixels.
+            const scale = img.width / baseSize.w
+            const rx = crop.x * scale
+            const ry = crop.y * scale
+            const rw = crop.w * scale
+            const rh = crop.h * scale
+            out.width = Math.max(1, Math.round(rw))
+            out.height = Math.max(1, Math.round(rh))
             out.getContext('2d')!.drawImage(img, rx, ry, rw, rh, 0, 0, out.width, out.height)
         }
-        onComplete(out.toDataURL('image/webp', 0.85).split(',')[1])
+        onComplete(out.toDataURL('image/webp', 0.9).split(',')[1])
+    }
+
+    // Derived screen geometry for overlay (crop in container-space)
+    const screenCrop = {
+        x: pan.x + crop.x * zoom,
+        y: pan.y + crop.y * zoom,
+        w: crop.w * zoom,
+        h: crop.h * zoom,
     }
 
     return (
         <div
-            className="fixed inset-0 z-9999 bg-black/85 flex flex-col items-center justify-center overflow-hidden touch-none"
-            onTouchMove={e => e.preventDefault()}>
-            <p className="text-white text-sm mb-3 opacity-70">Bildausschnitt wählen — ziehen Sie die Ecken oder zeichnen
-                Sie einen neuen Bereich</p>
-            <canvas
-                ref={canvasRef}
-                className="max-w-[90vw] max-h-[70vh] cursor-crosshair rounded-lg touch-none select-none"
-                style={{touchAction: 'none'}}
-                onMouseDown={onDown}
-                onMouseMove={onMove}
-                onMouseUp={() => dragging.current = false}
-                onMouseLeave={() => dragging.current = false}
-                onTouchStart={onDown}
-                onTouchMove={onMove}
-                onTouchEnd={() => dragging.current = false}
-                onTouchCancel={() => dragging.current = false}
-            />
-            <div className="mt-4 flex gap-2">
-                <button
-                    className="px-5 py-2.5 rounded-xl bg-white text-gray-800 font-semibold text-sm hover:bg-gray-100 transition-colors"
-                    onClick={() => onComplete(null)}>
-                    Abbrechen
+            className="fixed inset-0 z-[9999] bg-black/95 flex flex-col touch-none select-none"
+        >
+            {/* Header */}
+            <div className="shrink-0 flex items-center justify-between px-4 py-3 sm:px-6 border-b border-white/10">
+                <div className="flex items-center gap-2 text-white">
+                    <ImageIcon size={16} className="opacity-70"/>
+                    <span className="text-sm font-semibold">Bildausschnitt wählen</span>
+                </div>
+                <button type="button"
+                        onClick={() => onComplete(null)}
+                        aria-label="Schließen"
+                        className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+                    <X size={16}/>
                 </button>
-                <button
-                    className="px-5 py-2.5 rounded-xl bg-gray-700 text-white font-semibold text-sm hover:bg-gray-600 transition-colors"
-                    onClick={() => exportCrop(true)}>
-                    Ganzes Bild
-                </button>
-                <button
-                    className="px-5 py-2.5 rounded-xl bg-spd-red text-white font-bold text-sm hover:bg-spd-red-dark transition-colors"
-                    onClick={() => exportCrop(false)}>
-                    ✓ Zuschneiden & Hochladen
-                </button>
+            </div>
+
+            {/* Stage */}
+            <div
+                ref={containerRef}
+                className="relative flex-1 overflow-hidden bg-[#111]"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                onPointerCancel={onPointerUp}
+                onDoubleClick={onDoubleClick}
+                style={{touchAction: 'none', cursor: dragType.current === 'pan' ? 'grabbing' : zoom > 1 ? 'grab' : 'crosshair'}}
+            >
+                {/* Image / canvas */}
+                <canvas
+                    ref={canvasRef}
+                    className="absolute top-0 left-0 origin-top-left will-change-transform"
+                    style={{
+                        transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                        imageRendering: zoom > 2 ? 'pixelated' : 'auto',
+                    }}
+                />
+                {/* Dim overlay — four rectangles around the crop in screen space */}
+                {ready && baseSize.w > 0 && (
+                    <>
+                        <div className="absolute inset-0 pointer-events-none">
+                            {/* top */}
+                            <div className="absolute bg-black/60"
+                                 style={{left: 0, top: 0, right: 0, height: Math.max(0, screenCrop.y)}}/>
+                            {/* bottom */}
+                            <div className="absolute bg-black/60"
+                                 style={{left: 0, top: screenCrop.y + screenCrop.h, right: 0, bottom: 0}}/>
+                            {/* left */}
+                            <div className="absolute bg-black/60"
+                                 style={{
+                                     left: 0,
+                                     top: screenCrop.y,
+                                     width: Math.max(0, screenCrop.x),
+                                     height: screenCrop.h
+                                 }}/>
+                            {/* right */}
+                            <div className="absolute bg-black/60"
+                                 style={{
+                                     left: screenCrop.x + screenCrop.w,
+                                     top: screenCrop.y,
+                                     right: 0,
+                                     height: screenCrop.h
+                                 }}/>
+                        </div>
+                        {/* Crop frame */}
+                        <div
+                            className="absolute border-2 border-spd-red pointer-events-none"
+                            style={{
+                                left: screenCrop.x, top: screenCrop.y,
+                                width: screenCrop.w, height: screenCrop.h,
+                                boxShadow: '0 0 0 9999px rgba(0,0,0,0)'
+                            }}
+                        >
+                            {/* Rule-of-thirds guides */}
+                            <div className="absolute inset-0 pointer-events-none"
+                                 style={{opacity: 0.35}}>
+                                <div className="absolute top-1/3 left-0 right-0 h-px bg-white"/>
+                                <div className="absolute top-2/3 left-0 right-0 h-px bg-white"/>
+                                <div className="absolute left-1/3 top-0 bottom-0 w-px bg-white"/>
+                                <div className="absolute left-2/3 top-0 bottom-0 w-px bg-white"/>
+                            </div>
+                            {/* Corner handles */}
+                            {(['tl', 'tr', 'bl', 'br'] as const).map(corner => (
+                                <span key={corner}
+                                      className="absolute w-4 h-4 bg-spd-red rounded-sm shadow ring-2 ring-white"
+                                      style={{
+                                          left: corner.includes('l') ? -8 : undefined,
+                                          right: corner.includes('r') ? -8 : undefined,
+                                          top: corner.includes('t') ? -8 : undefined,
+                                          bottom: corner.includes('b') ? -8 : undefined,
+                                      }}/>
+                            ))}
+                        </div>
+                    </>
+                )}
+
+                {/* Zoom controls (floating) */}
+                <div
+                    className="absolute right-3 top-3 flex flex-col gap-1 rounded-2xl bg-black/60 backdrop-blur border border-white/10 p-1">
+                    <button type="button" aria-label="Vergrößern"
+                            onClick={() => {
+                                const c = containerRef.current!
+                                const r = c.getBoundingClientRect()
+                                zoomAtClient(r.left + r.width / 2, r.top + r.height / 2, zoom * 1.25)
+                            }}
+                            className="w-9 h-9 rounded-xl text-white hover:bg-white/15 flex items-center justify-center">
+                        <Plus size={16}/>
+                    </button>
+                    <button type="button" aria-label="Verkleinern"
+                            onClick={() => {
+                                const c = containerRef.current!
+                                const r = c.getBoundingClientRect()
+                                zoomAtClient(r.left + r.width / 2, r.top + r.height / 2, zoom / 1.25)
+                            }}
+                            className="w-9 h-9 rounded-xl text-white hover:bg-white/15 flex items-center justify-center">
+                        <Minus size={16}/>
+                    </button>
+                    <button type="button" aria-label="Zoom zurücksetzen"
+                            onClick={() => imgRef.current && layoutToFit(imgRef.current)}
+                            className="w-9 h-9 rounded-xl text-white hover:bg-white/15 flex items-center justify-center">
+                        <Maximize2 size={14}/>
+                    </button>
+                </div>
+
+                {/* Reset crop */}
+                <div className="absolute left-3 top-3">
+                    <button type="button"
+                            onClick={() => setCrop({x: 0, y: 0, w: baseSize.w, h: baseSize.h})}
+                            className="px-3 h-9 rounded-xl bg-black/60 backdrop-blur border border-white/10 text-white text-xs font-medium hover:bg-white/15 flex items-center gap-1.5">
+                        <RotateCcw size={12}/> Alles auswählen
+                    </button>
+                </div>
+
+                {/* Hint */}
+                {ready && zoom <= 1.02 && (
+                    <div
+                        className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/70 text-[11px] bg-black/50 backdrop-blur px-3 py-1.5 rounded-full pointer-events-none">
+                        Ecken ziehen · zum Zoomen pinch / Mausrad · Doppelklick zoomt
+                    </div>
+                )}
+            </div>
+
+            {/* Toolbar */}
+            <div
+                className="shrink-0 flex items-center justify-between gap-2 px-3 py-3 sm:px-6 sm:py-4 border-t border-white/10 bg-black/50">
+                <div className="text-[11px] text-white/60 tabular-nums hidden sm:block">
+                    {Math.round(crop.w * (imgRef.current?.width ?? 0) / (baseSize.w || 1))} × {Math.round(crop.h * (imgRef.current?.height ?? 0) / (baseSize.h || 1))} px
+                    · {Math.round(zoom * 100)}%
+                </div>
+                <div className="flex-1 sm:flex-none flex gap-2 justify-end">
+                    <button
+                        type="button"
+                        onClick={() => onComplete(null)}
+                        className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-sm transition-colors"
+                    >
+                        Abbrechen
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => exportCrop(true)}
+                        className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium text-sm transition-colors hidden sm:block"
+                    >
+                        Ganzes Bild
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => exportCrop(false)}
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-spd-red to-spd-red-dark text-white font-bold text-sm flex items-center gap-2 shadow-lg shadow-spd-red/25"
+                    >
+                        <Check size={14}/> Zuschneiden
+                    </button>
+                </div>
             </div>
         </div>
     )
 }
 
+function clamp(v: number, min: number, max: number) {
+    return Math.max(min, Math.min(max, v))
+}

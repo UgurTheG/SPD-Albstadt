@@ -6,6 +6,8 @@ export interface FieldConfig {
     options?: string[]
     imageDir?: string
     captionsKey?: string
+    iconKey?: 'facebook' | 'instagram' | 'calendar' | 'link' | 'mail' | 'phone'
+    placeholder?: string
 }
 
 export interface SectionConfig {

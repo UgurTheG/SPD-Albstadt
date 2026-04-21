@@ -37,7 +37,8 @@ export function slugify(str: string): string {
 export function collectImagePaths(tabConfig: {
     type: string;
     fields?: { key: string; type: string }[];
-    sections?: { key: string; fields: { key: string; type: string }[] }[]
+    topFields?: { key: string; type: string }[];
+    sections?: { key: string; fields: { key: string; type: string }[]; isSingleObject?: boolean }[]
 }, data: Record<string, unknown>): Set<string> {
     const paths = new Set<string>()
 
@@ -57,10 +58,21 @@ export function collectImagePaths(tabConfig: {
 
     if (tabConfig.type === 'array' && tabConfig.fields) {
         scanFields(tabConfig.fields, data as unknown as Record<string, unknown>[])
-    } else if (tabConfig.sections) {
-        for (const sec of tabConfig.sections) {
-            const arr = (data as Record<string, unknown>)[sec.key]
-            if (Array.isArray(arr)) scanFields(sec.fields, arr as Record<string, unknown>[])
+    } else {
+        if (tabConfig.topFields) {
+            scanFields(tabConfig.topFields, [data])
+        }
+        if (tabConfig.sections) {
+            for (const sec of tabConfig.sections) {
+                const val = (data as Record<string, unknown>)[sec.key]
+                if (sec.isSingleObject) {
+                    if (val && typeof val === 'object') {
+                        scanFields(sec.fields, [val as Record<string, unknown>])
+                    }
+                } else if (Array.isArray(val)) {
+                    scanFields(sec.fields, val as Record<string, unknown>[])
+                }
+            }
         }
     }
     return paths

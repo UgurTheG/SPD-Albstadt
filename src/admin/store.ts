@@ -41,12 +41,14 @@ interface AdminState {
     setActiveTab: (key: string) => void
     updateState: (tabKey: string, data: unknown) => void
     addPendingUpload: (upload: PendingUpload) => void
-    publishTab: (tabKey: string) => Promise<void>
+    publishTab: (tabKey: string, orphansToDelete?: string[]) => Promise<void>
     publishAll: (orphansToDelete?: string[]) => Promise<void>
     resetOriginal: (tabKey: string) => void
+    revertTab: (tabKey: string) => void
     toggleDark: () => void
     setStatus: (msg: string, type: 'info' | 'success' | 'error') => void
     findOrphanImages: () => string[]
+    findOrphanImagesForTab: (tabKey: string) => string[]
 }
 
 export const useAdminStore = create<AdminState>((set, get) => ({
@@ -156,19 +158,23 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         }))
     },
 
-    publishTab: async (tabKey) => {
+    publishTab: async (tabKey, orphansToDelete) => {
         const {token, state: s, pendingUploads, publishing} = get()
         if (publishing) return
         const tab = TABS.find(t => t.key === tabKey)
         if (!tab?.ghPath) return
         set({publishing: true})
         try {
-            // Flush only pending uploads related to this tab
+            // Figure out which image paths the tab currently references
+            // so we only flush uploads that belong to this tab.
+            const currentPaths = collectImagePaths(tab as TabConfig, s[tabKey] as Record<string, unknown>)
             const tabUploads: PendingUpload[] = []
             const otherUploads: PendingUpload[] = []
-            const tabGhDir = tab.ghPath ? tab.ghPath.replace(/\/[^/]+$/, '') : ''
             for (const upload of pendingUploads) {
-                if (tabGhDir && upload.ghPath.startsWith(tabGhDir.replace('/data/', '/images/'))) {
+                // The upload targets "public/images/<dir>/<name>.webp",
+                // the referenced public URL is "/images/<dir>/<name>.webp".
+                const publicUrl = upload.ghPath.replace(/^public/, '')
+                if (currentPaths.has(publicUrl)) {
                     tabUploads.push(upload)
                 } else {
                     otherUploads.push(upload)
@@ -180,6 +186,16 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                     await commitBinaryFile(token, upload.ghPath, upload.base64, upload.message)
                 } catch {
                     failedUploads.push(upload)
+                }
+            }
+            // Delete orphans for this tab only
+            if (orphansToDelete) {
+                for (const imgPath of orphansToDelete) {
+                    try {
+                        await deleteFile(token, 'public' + imgPath, `admin: Bild ${imgPath.split('/').pop()} entfernt`)
+                    } catch (e) {
+                        console.error('Fehler beim Löschen:', imgPath, e)
+                    }
                 }
             }
             const json = JSON.stringify(s[tabKey], null, 2) + '\n'
@@ -201,6 +217,32 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         } finally {
             set({publishing: false})
         }
+    },
+
+    revertTab: (tabKey) => {
+        set(prev => {
+            const orig = prev.originalState[tabKey]
+            const nextState = {
+                ...prev.state,
+                [tabKey]: orig === undefined ? prev.state[tabKey] : JSON.parse(JSON.stringify(orig)),
+            }
+            // Drop pending uploads whose target path is no longer referenced by any tab
+            const allPaths = new Set<string>()
+            for (const tab of TABS) {
+                if (!tab.file || !nextState[tab.key]) continue
+                for (const p of collectImagePaths(tab as TabConfig, nextState[tab.key] as Record<string, unknown>)) {
+                    allPaths.add(p)
+                }
+            }
+            const keptUploads = prev.pendingUploads.filter(u => allPaths.has(u.ghPath.replace(/^public/, '')))
+            return {
+                state: nextState,
+                pendingUploads: keptUploads,
+                statusMessage: 'Änderungen verworfen.',
+                statusType: 'info' as const,
+                statusCounter: prev.statusCounter + 1,
+            }
+        })
     },
 
     publishAll: async (orphansToDelete) => {
@@ -299,6 +341,27 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             for (const p of oldPaths) {
                 if (!allCurrent.has(p)) orphans.push(p)
             }
+        }
+        return [...new Set(orphans)]
+    },
+
+    findOrphanImagesForTab: (tabKey) => {
+        const {state: s, originalState: os} = get()
+        const tab = TABS.find(t => t.key === tabKey)
+        if (!tab?.file || !os[tabKey] || !s[tabKey]) return []
+        const oldPaths = collectImagePaths(tab as TabConfig, os[tabKey] as Record<string, unknown>)
+        // Consider all *other* tabs' currently-referenced paths as "in use"
+        // so we don't delete images that were moved to another tab.
+        const allCurrent = new Set<string>()
+        for (const t of TABS) {
+            if (!t.file || !s[t.key]) continue
+            for (const p of collectImagePaths(t as TabConfig, s[t.key] as Record<string, unknown>)) {
+                allCurrent.add(p)
+            }
+        }
+        const orphans: string[] = []
+        for (const p of oldPaths) {
+            if (!allCurrent.has(p)) orphans.push(p)
         }
         return [...new Set(orphans)]
     },

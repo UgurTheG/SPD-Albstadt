@@ -48,7 +48,8 @@ export default function SortableItemCard({id, fields, item, index, total, onUpda
                 <div className="flex items-center gap-2.5 min-w-0">
                     <button
                         type="button"
-                        className="text-gray-300 dark:text-gray-600 shrink-0 cursor-grab active:cursor-grabbing opacity-0 group-hover/card:opacity-100 transition-opacity touch-none"
+                        aria-label="Verschieben"
+                        className="text-gray-400 dark:text-gray-500 shrink-0 cursor-grab active:cursor-grabbing touch-none p-1 -ml-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                         {...attributes}
                         {...listeners}
                     >
@@ -63,7 +64,7 @@ export default function SortableItemCard({id, fields, item, index, total, onUpda
           </span>
                 </div>
                 <div
-                    className="flex items-center gap-1.5 shrink-0 opacity-60 group-hover/card:opacity-100 transition-opacity">
+                    className="flex items-center gap-1.5 shrink-0 opacity-100 sm:opacity-60 group-hover/card:opacity-100 transition-opacity">
                     {index > 0 && (
                         <button type="button" onClick={() => onMove(index, index - 1)}
                                 className="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-100/80 dark:bg-gray-800/60 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700 transition-all">
