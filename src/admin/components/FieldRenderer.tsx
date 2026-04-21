@@ -4,8 +4,12 @@ import type {FieldConfig} from '../types'
 import {slugify} from '../lib/images'
 import {useAdminStore} from '../store'
 import {ICON_LIST, loadIconSvg} from '../lib/icons'
-import {ArrowDown, ArrowUp, Calendar, ImagePlus, Link as LinkIcon, Mail, Phone, Plus, Search, Upload, X} from 'lucide-react'
+import {ArrowDown, ArrowUp, Calendar, GripVertical, ImagePlus, Link as LinkIcon, Mail, Phone, Plus, Search, Upload, X} from 'lucide-react'
 import CropOverlay from './CropOverlay'
+import {DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent} from '@dnd-kit/core'
+import {SortableContext, verticalListSortingStrategy, useSortable, arrayMove} from '@dnd-kit/sortable'
+import {restrictToVerticalAxis, restrictToParentElement} from '@dnd-kit/modifiers'
+import {CSS} from '@dnd-kit/utilities'
 
 const inputCls = 'w-full bg-white/60 dark:bg-gray-800/40 border border-gray-200/80 dark:border-gray-700/60 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-spd-red/20 focus:border-spd-red/40 focus:bg-white dark:focus:bg-gray-800/80 dark:text-white dark:placeholder-gray-500 transition-all duration-200 backdrop-blur-sm'
 
@@ -317,8 +321,27 @@ function ImageListField({field, value, onChange, contextItem}: {
     const captions: string[] = captionsKey && contextItem ? (Array.isArray(contextItem[captionsKey]) ? [...(contextItem[captionsKey] as string[])] : []) : []
     const [cropData, setCropData] = useState<{ file: File; index: number } | null>(null)
 
+    // Stable ids for sortable (index-based since URLs can repeat)
+    const ids = list.map((_, i) => `img-${i}`)
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {activationConstraint: {distance: 8}}),
+        useSensor(KeyboardSensor),
+    )
+
     const syncCaptions = (caps: string[]) => {
         if (captionsKey && contextItem) contextItem[captionsKey] = caps
+    }
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const {active, over} = event
+        if (!over || active.id === over.id) return
+        const oldIndex = ids.indexOf(active.id as string)
+        const newIndex = ids.indexOf(over.id as string)
+        const newList = arrayMove(list, oldIndex, newIndex)
+        const newCaptions = arrayMove(captions, oldIndex, newIndex)
+        syncCaptions(newCaptions)
+        onChange(newList)
     }
 
     const handleCrop = (base64: string | null) => {
@@ -340,83 +363,114 @@ function ImageListField({field, value, onChange, contextItem}: {
     return (
         <>
             {cropData && <CropOverlay file={cropData.file} onComplete={handleCrop}/>}
-            <div className="space-y-3">
-                {list.map((item, i) => (
-                    <ImageListItem
-                        key={i}
-                        url={item}
-                        caption={captions[i] || ''}
-                        hasCaption={!!captionsKey}
-                        index={i}
-                        total={list.length}
-                        onUrlChange={v => {
-                            const n = [...list];
-                            n[i] = v;
-                            onChange(n)
-                        }}
-                        onCaptionChange={v => {
-                            const c = [...captions];
-                            c[i] = v;
-                            syncCaptions(c);
-                            onChange([...list])
-                        }}
-                        onUpload={file => setCropData({file, index: i})}
-                        onRemove={() => {
-                            const n = [...list];
-                            n.splice(i, 1)
-                            const c = [...captions];
-                            c.splice(i, 1)
-                            syncCaptions(c)
-                            onChange(n)
-                        }}
-                        onMoveUp={() => {
-                            if (i === 0) return
-                            const n = [...list]; [n[i - 1], n[i]] = [n[i], n[i - 1]]
-                            const c = [...captions]; [c[i - 1], c[i]] = [c[i], c[i - 1]]
-                            syncCaptions(c)
-                            onChange(n)
-                        }}
-                        onMoveDown={() => {
-                            if (i >= list.length - 1) return
-                            const n = [...list]; [n[i], n[i + 1]] = [n[i + 1], n[i]]
-                            const c = [...captions]; [c[i], c[i + 1]] = [c[i + 1], c[i]]
-                            syncCaptions(c)
-                            onChange(n)
-                        }}
-                    />
-                ))}
-                <button
-                    type="button"
-                    className="text-xs text-spd-red font-semibold hover:underline flex items-center gap-1"
-                    onClick={() => {
-                        if (captionsKey) {
-                            captions.push('');
-                            syncCaptions(captions)
-                        }
-                        onChange([...list, ''])
-                    }}
-                >
-                    <Plus size={12}/> Bild hinzufügen
-                </button>
-            </div>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}
+                        modifiers={[restrictToVerticalAxis, restrictToParentElement]}>
+                <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-3">
+                        {list.map((item, i) => (
+                            <SortableImageListItem
+                                key={ids[i]}
+                                id={ids[i]}
+                                url={item}
+                                caption={captions[i] || ''}
+                                hasCaption={!!captionsKey}
+                                index={i}
+                                total={list.length}
+                                onUrlChange={v => {
+                                    const n = [...list];
+                                    n[i] = v;
+                                    onChange(n)
+                                }}
+                                onCaptionChange={v => {
+                                    const c = [...captions];
+                                    c[i] = v;
+                                    syncCaptions(c);
+                                    onChange([...list])
+                                }}
+                                onUpload={file => setCropData({file, index: i})}
+                                onRemove={() => {
+                                    const n = [...list];
+                                    n.splice(i, 1)
+                                    const c = [...captions];
+                                    c.splice(i, 1)
+                                    syncCaptions(c)
+                                    onChange(n)
+                                }}
+                                onMoveUp={() => {
+                                    if (i === 0) return
+                                    const n = [...list]; [n[i - 1], n[i]] = [n[i], n[i - 1]]
+                                    const c = [...captions]; [c[i - 1], c[i]] = [c[i], c[i - 1]]
+                                    syncCaptions(c)
+                                    onChange(n)
+                                }}
+                                onMoveDown={() => {
+                                    if (i >= list.length - 1) return
+                                    const n = [...list]; [n[i], n[i + 1]] = [n[i + 1], n[i]]
+                                    const c = [...captions]; [c[i], c[i + 1]] = [c[i + 1], c[i]]
+                                    syncCaptions(c)
+                                    onChange(n)
+                                }}
+                            />
+                        ))}
+                        <button
+                            type="button"
+                            className="text-xs text-spd-red font-semibold hover:underline flex items-center gap-1"
+                            onClick={() => {
+                                if (captionsKey) {
+                                    captions.push('');
+                                    syncCaptions(captions)
+                                }
+                                onChange([...list, ''])
+                            }}
+                        >
+                            <Plus size={12}/> Bild hinzufügen
+                        </button>
+                    </div>
+                </SortableContext>
+            </DndContext>
         </>
     )
 }
 
-function ImageListItem({url, caption, hasCaption, index, total, onUrlChange, onCaptionChange, onUpload, onRemove, onMoveUp, onMoveDown}: {
+function SortableImageListItem(props: {
+    id: string; url: string; caption: string; hasCaption: boolean; index: number; total: number
+    onUrlChange: (v: string) => void; onCaptionChange: (v: string) => void
+    onUpload: (f: File) => void; onRemove: () => void; onMoveUp: () => void; onMoveDown: () => void
+}) {
+    const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({id: props.id})
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 50 : undefined,
+        opacity: isDragging ? 0.85 : undefined,
+    }
+    return (
+        <div ref={setNodeRef} style={style} {...attributes}>
+            <ImageListItem {...props} dragListeners={listeners} isDragging={isDragging}/>
+        </div>
+    )
+}
+
+function ImageListItem({url, caption, hasCaption, index, total, onUrlChange, onCaptionChange, onUpload, onRemove, onMoveUp, onMoveDown, dragListeners, isDragging}: {
     url: string; caption: string; hasCaption: boolean; index: number; total: number
     onUrlChange: (v: string) => void; onCaptionChange: (v: string) => void
     onUpload: (f: File) => void; onRemove: () => void; onMoveUp: () => void; onMoveDown: () => void
+    dragListeners?: Record<string, unknown>; isDragging?: boolean
 }) {
     const fileRef = useRef<HTMLInputElement>(null)
     const [showUrl, setShowUrl] = useState(!url)
     return (
         <div
-            className="bg-white/50 dark:bg-gray-800/30 backdrop-blur-sm rounded-2xl p-3 sm:p-4 border border-gray-200/50 dark:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+            className={`bg-white/50 dark:bg-gray-800/30 backdrop-blur-sm rounded-2xl p-3 sm:p-4 border border-gray-200/50 dark:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 transition-colors ${isDragging ? 'shadow-xl ring-2 ring-spd-red/30' : ''}`}>
             <div className="flex gap-3 items-start">
-                {/* Reorder buttons */}
+                {/* Drag handle + reorder buttons */}
                 {total > 1 && (
-                    <div className="flex flex-col gap-1 shrink-0 pt-1">
+                    <div className="flex flex-col items-center gap-0.5 shrink-0 pt-1">
+                        <button type="button" {...dragListeners}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-400 cursor-grab active:cursor-grabbing transition-colors touch-none"
+                                title="Ziehen zum Sortieren">
+                            <GripVertical size={14}/>
+                        </button>
                         <button type="button" disabled={index === 0} onClick={onMoveUp}
                                 className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-spd-red hover:bg-spd-red/10 disabled:opacity-25 disabled:hover:text-gray-400 disabled:hover:bg-transparent transition-all">
                             <ArrowUp size={13}/>
