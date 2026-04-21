@@ -2,6 +2,7 @@ import {create} from 'zustand'
 import type {GHUser, PendingUpload, TabConfig} from './types'
 import {TABS} from './config/tabs'
 import {collectImagePaths} from './lib/images'
+import {applyRevert, type ChangeEntry} from './lib/diff'
 import {commitTree, validateToken, type TreeFileChange} from './lib/github'
 
 const TOKEN_KEY = 'spd-admin-token'
@@ -103,6 +104,7 @@ interface AdminState {
     publishAll: (orphansToDelete?: string[]) => Promise<void>
     resetOriginal: (tabKey: string) => void
     revertTab: (tabKey: string) => void
+    revertChange: (tabKey: string, entry: ChangeEntry) => void
     toggleDark: () => void
     setStatus: (msg: string, type: 'info' | 'success' | 'error') => void
     findOrphanImages: () => string[]
@@ -365,6 +367,31 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 undoStacks: {...prev.undoStacks, [tabKey]: []},
                 redoStacks: {...prev.redoStacks, [tabKey]: []},
                 statusMessage: 'Änderungen verworfen.',
+                statusType: 'info' as const,
+                statusCounter: prev.statusCounter + 1,
+            }
+        })
+    },
+
+    revertChange: (tabKey, entry) => {
+        set(prev => {
+            const tab = TABS.find(t => t.key === tabKey)
+            if (!tab) return prev
+            const nextTabValue = applyRevert(tab as TabConfig, prev.originalState[tabKey], prev.state[tabKey], entry)
+            const nextState = {...prev.state, [tabKey]: nextTabValue}
+            // Drop pending uploads whose target path is no longer referenced by any tab
+            const allPaths = new Set<string>()
+            for (const t of TABS) {
+                if (!t.file || !nextState[t.key]) continue
+                for (const p of collectImagePaths(t as TabConfig, nextState[t.key] as Record<string, unknown>)) {
+                    allPaths.add(p)
+                }
+            }
+            const keptUploads = prev.pendingUploads.filter(u => allPaths.has(u.ghPath.replace(/^public/, '')))
+            return {
+                state: nextState,
+                pendingUploads: keptUploads,
+                statusMessage: 'Änderung zurückgesetzt.',
                 statusType: 'info' as const,
                 statusCounter: prev.statusCounter + 1,
             }
