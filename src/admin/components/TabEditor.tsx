@@ -7,6 +7,7 @@ import FieldRenderer from './FieldRenderer'
 import ArrayEditor from './ArrayEditor'
 import OrphanModal from './OrphanModal'
 import PreviewModal from './PreviewModal'
+import ChangeList from './ChangeList'
 
 interface Props {
     tab: TabConfig
@@ -187,6 +188,9 @@ export default function TabEditor({tab}: Props) {
                 onPublish={handlePublish}
                 onRevert={() => setConfirmRevert(true)}
             />
+
+            {/* Per-change revert panel */}
+            <ChangeList tab={tab}/>
 
             {/* Content */}
             {tab.type === 'array' && tab.fields && (
