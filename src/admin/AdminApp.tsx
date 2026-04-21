@@ -78,17 +78,6 @@ export default function AdminApp() {
         document.documentElement.classList.toggle('dark', darkMode)
     }, [darkMode])
 
-    // Warn before closing with unsaved changes
-    useEffect(() => {
-        const handler = (e: BeforeUnloadEvent) => {
-            if (dirtyTabs().size > 0) {
-                e.preventDefault()
-                e.returnValue = ''
-            }
-        }
-        window.addEventListener('beforeunload', handler)
-        return () => window.removeEventListener('beforeunload', handler)
-    }, [dirtyTabs])
 
     useEffect(() => {
         if (!statusMessage) return
@@ -159,7 +148,6 @@ export default function AdminApp() {
                                     key={tab.key}
                                     type="button"
                                     onClick={() => {
-                                        if (activeTab !== tab.key && dirty.has(activeTab) && !window.confirm('Ungespeicherte Änderungen — trotzdem wechseln?')) return
                                         setActiveTab(tab.key);
                                         setSidebarOpen(false)
                                     }}
@@ -308,6 +296,7 @@ export default function AdminApp() {
                     </AnimatePresence>
                 </main>
             </div>
+
         </div>
     )
 }
