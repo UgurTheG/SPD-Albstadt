@@ -1,6 +1,6 @@
-import {lazy, Suspense, useEffect, useMemo, useState} from 'react'
+import {lazy, Suspense, useEffect, useMemo} from 'react'
 import {motion} from 'framer-motion'
-import {Monitor, Smartphone, Tablet, X} from 'lucide-react'
+import {Monitor, X} from 'lucide-react'
 import {SWRConfig} from 'swr'
 import {useAdminStore} from '../store'
 import {TABS} from '../config/tabs'
@@ -23,20 +23,12 @@ const TAB_PREVIEW_MAP: Record<string, {
     config: {Component: Kontakt as any, label: 'Kontakt'},
 }
 
-type ViewportSize = 'desktop' | 'tablet' | 'mobile'
-const VIEWPORT_WIDTHS: Record<ViewportSize, string> = {
-    desktop: '100%',
-    tablet: '768px',
-    mobile: '375px',
-}
-
 interface Props {
     tabKey: string
     onClose: () => void
 }
 
 export default function PreviewModal({tabKey, onClose}: Props) {
-    const [viewport, setViewport] = useState<ViewportSize>('desktop')
     const state = useAdminStore(s => s.state)
     const pendingUploads = useAdminStore(s => s.pendingUploads)
 
@@ -116,27 +108,6 @@ export default function PreviewModal({tabKey, onClose}: Props) {
                         </div>
                     </div>
 
-                    {/* Viewport switcher */}
-                    <div className="flex items-center gap-1 bg-gray-800/80 rounded-xl p-1">
-                        {([
-                            {key: 'desktop' as const, icon: Monitor, tip: 'Desktop'},
-                            {key: 'tablet' as const, icon: Tablet, tip: 'Tablet'},
-                            {key: 'mobile' as const, icon: Smartphone, tip: 'Mobil'},
-                        ]).map(({key, icon: Icon, tip}) => (
-                            <button
-                                key={key}
-                                onClick={() => setViewport(key)}
-                                title={tip}
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                                    viewport === key
-                                        ? 'bg-spd-red text-white shadow-sm'
-                                        : 'text-gray-400 hover:text-white hover:bg-gray-700/60'
-                                }`}
-                            >
-                                <Icon size={14}/>
-                            </button>
-                        ))}
-                    </div>
 
                     <button
                         onClick={onClose}
@@ -151,7 +122,7 @@ export default function PreviewModal({tabKey, onClose}: Props) {
                     <div
                         className="bg-white dark:bg-gray-950 shadow-2xl transition-all duration-300 overflow-auto"
                         style={{
-                            width: VIEWPORT_WIDTHS[viewport],
+                            width: '100%',
                             maxWidth: '100%',
                             minHeight: '100%',
                         }}
