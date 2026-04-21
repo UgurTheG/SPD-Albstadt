@@ -1,4 +1,4 @@
-import {lazy, Suspense, useMemo, useState} from 'react'
+import {lazy, Suspense, useEffect, useMemo, useState} from 'react'
 import {motion} from 'framer-motion'
 import {Monitor, Smartphone, Tablet, X} from 'lucide-react'
 import {SWRConfig} from 'swr'
@@ -77,6 +77,16 @@ export default function PreviewModal({tabKey, onClose}: Props) {
         }
         return fallback
     }, [state, uploadUrlMap])
+
+    // Lock body scroll while preview is open
+    useEffect(() => {
+        document.body.style.overflow = 'hidden'
+        document.documentElement.style.overflow = 'hidden'
+        return () => {
+            document.body.style.overflow = ''
+            document.documentElement.style.overflow = ''
+        }
+    }, [])
 
     const entry = TAB_PREVIEW_MAP[tabKey]
     if (!entry) return null
