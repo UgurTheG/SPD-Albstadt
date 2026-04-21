@@ -163,7 +163,7 @@ function DateField({value, onChange}: { value: string; onChange: (v: string) => 
     }) : ''
 
     return (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
             <input
                 type="text"
                 className={`${inputCls} max-w-[160px] ${!valid ? 'text-spd-red' : ''}`}

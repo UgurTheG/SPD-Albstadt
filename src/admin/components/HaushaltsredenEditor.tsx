@@ -103,7 +103,7 @@ export default function HaushaltsredenEditor() {
                 </div>
             ) : (
                 <>
-                    <div className="flex items-center justify-between mb-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
                         <div className="flex items-center gap-2">
                             <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Alle
                                 Jahre</h3>
@@ -121,7 +121,7 @@ export default function HaushaltsredenEditor() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
                         {allYears.map((year, idx) => {
                             const exists = year in existingMap
                             const isDisabled = disabledYears.has(year)
@@ -133,7 +133,7 @@ export default function HaushaltsredenEditor() {
                                     initial={{opacity: 0, y: 10}}
                                     animate={{opacity: 1, y: 0}}
                                     transition={{delay: idx * 0.02, duration: 0.2}}
-                                    className={`relative rounded-2xl p-4 border transition-all duration-200 group ${
+                                    className={`relative rounded-2xl p-3 sm:p-4 border transition-all duration-200 group ${
                                         exists
                                             ? 'bg-white/60 dark:bg-gray-900/40 border-gray-200/50 dark:border-gray-700/40 shadow-sm hover:shadow-md backdrop-blur-sm'
                                             : isDisabled
