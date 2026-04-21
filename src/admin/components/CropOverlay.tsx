@@ -15,6 +15,15 @@ export default function CropOverlay({file, onComplete}: Props) {
     const dragStart = useRef({x: 0, y: 0})
     const cropStart = useRef({x: 0, y: 0, w: 0, h: 0})
 
+    // Lock body scroll while crop overlay is open
+    useEffect(() => {
+        const orig = document.body.style.overflow
+        document.body.style.overflow = 'hidden'
+        return () => {
+            document.body.style.overflow = orig
+        }
+    }, [])
+
     useEffect(() => {
         const img = new Image()
         img.onload = () => {
@@ -145,18 +154,23 @@ export default function CropOverlay({file, onComplete}: Props) {
     }
 
     return (
-        <div className="fixed inset-0 z-[9999] bg-black/85 flex flex-col items-center justify-center">
+        <div
+            className="fixed inset-0 z-9999 bg-black/85 flex flex-col items-center justify-center overflow-hidden touch-none"
+            onTouchMove={e => e.preventDefault()}>
             <p className="text-white text-sm mb-3 opacity-70">Bildausschnitt wählen — ziehen Sie die Ecken oder zeichnen
                 Sie einen neuen Bereich</p>
             <canvas
                 ref={canvasRef}
-                className="max-w-[90vw] max-h-[70vh] cursor-crosshair rounded-lg"
+                className="max-w-[90vw] max-h-[70vh] cursor-crosshair rounded-lg touch-none select-none"
+                style={{touchAction: 'none'}}
                 onMouseDown={onDown}
                 onMouseMove={onMove}
                 onMouseUp={() => dragging.current = false}
+                onMouseLeave={() => dragging.current = false}
                 onTouchStart={onDown}
                 onTouchMove={onMove}
                 onTouchEnd={() => dragging.current = false}
+                onTouchCancel={() => dragging.current = false}
             />
             <div className="mt-4 flex gap-2">
                 <button
