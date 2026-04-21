@@ -2,6 +2,7 @@ import {memo, useCallback, useMemo, useRef, useState} from 'react'
 import {motion, useInView} from 'framer-motion'
 import {ChevronRight, Images} from 'lucide-react'
 import {useData} from '../../hooks/useData'
+import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
 
@@ -180,7 +181,8 @@ const TimelineRow = memo(function TimelineRow({ item, index, onOpenEvent, onOpen
 export default function Historie() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
-  const { data } = useData<HistoryData>('/data/history.json')
+  const {data, error} = useData<HistoryData>('/data/history.json')
+  useHttpErrorRedirect(error)
 
   const [selectedEntry, setSelectedEntry] = useState<TimelineEntry | null>(null)
   const [selectedPerson, setSelectedPerson] = useState<Persoenlichkeit | null>(null)

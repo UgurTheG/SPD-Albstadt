@@ -1,14 +1,23 @@
 import useSWR from 'swr'
 
+export class HttpError extends Error {
+  status: number
+
+  constructor(status: number, message: string) {
+    super(message)
+    this.status = status
+  }
+}
+
 interface UseDataResult<T> {
   data: T | null
   loading: boolean
-  error: string | null
+  error: HttpError | null
 }
 
 const fetcher = async (url: string) => {
   const res = await fetch(url)
-  if (!res.ok) throw new Error(`Fehler beim Laden: ${res.status}`)
+  if (!res.ok) throw new HttpError(res.status, `Fehler beim Laden: ${res.status}`)
   return res.json()
 }
 
@@ -22,6 +31,6 @@ export function useData<T>(url: string): UseDataResult<T> {
   return {
     data: data ?? null,
     loading: isLoading,
-    error: error ? (error as Error).message : null,
+    error: error instanceof HttpError ? error : error ? new HttpError(0, (error as Error).message) : null,
   }
 }

@@ -2,6 +2,7 @@ import {useEffect, useMemo, useRef, useState} from 'react'
 import {motion, useInView, type Variants} from 'framer-motion'
 import {Building2, ExternalLink, FileDown, Mail, MapPin} from 'lucide-react'
 import {useData} from '../../hooks/useData'
+import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
 import {useFeatures} from '../../hooks/useFeatures'
@@ -110,7 +111,8 @@ export default function Fraktion() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
   const features = useFeatures()
-  const { data } = useData<FraktionData>('/data/fraktion.json')
+  const {data, error} = useData<FraktionData>('/data/fraktion.json')
+  useHttpErrorRedirect(error)
   const [selectedMember, setSelectedMember] = useState<Gemeinderat | null>(null)
   const [selectedFraktionNews, setSelectedFraktionNews] = useState<FraktionNews | null>(null)
   const [showAllReden, setShowAllReden] = useState(false)

@@ -14,6 +14,7 @@ import {
   Users
 } from 'lucide-react'
 import {useData} from '../../hooks/useData'
+import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import Sheet from '../Sheet'
 
 interface Schwerpunkt {
@@ -93,7 +94,8 @@ const itemVariants: Variants = {
 export default function Partei() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
-  const { data } = useData<PartyData>('/data/party.json')
+  const {data, error} = useData<PartyData>('/data/party.json')
+  useHttpErrorRedirect(error)
   const [selectedPerson, setSelectedPerson] = useState<Mitglied | Abgeordneter | null>(null)
 
   return (

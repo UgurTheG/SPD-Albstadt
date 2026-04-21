@@ -1,7 +1,20 @@
 import {memo, type MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef, useState} from 'react'
 import {motion, useInView} from 'framer-motion'
-import {Calendar, CalendarPlus, Camera, ChevronLeft, ChevronRight, Clock, ExternalLink, MapPin, Search, Tag, X} from 'lucide-react'
+import {
+  Calendar,
+  CalendarPlus,
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  ExternalLink,
+  MapPin,
+  Search,
+  Tag,
+  X
+} from 'lucide-react'
 import {useData} from '../../hooks/useData'
+import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import {INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME} from '../../shared/instagram.ts'
 import {useFeatures} from '../../hooks/useFeatures'
 import Sheet from '../Sheet'
@@ -426,11 +439,13 @@ export default function Aktuelles() {
   }, [])
 
 
-  const { data: newsItems } = useData<NewsItem[]>('/data/news.json')
+  const {data: newsItems, error: newsError} = useData<NewsItem[]>('/data/news.json')
   const instagramScrollRef = useRef<HTMLDivElement>(null)
   const { data: instagramFeed, loading: instagramLoading, error: instagramError } = useData<InstagramFeedResponse>(
       features.INSTAGRAM_FEED ? '/api/instagram' : ''
   )
+
+  useHttpErrorRedirect(newsError, instagramError)
 
   const allTags = newsItems
     ? ['Alle', ...Array.from(new Set(newsItems.map(n => n.kategorie)))]
