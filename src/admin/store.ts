@@ -91,7 +91,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             const user = await validateToken(token)
             localStorage.setItem(TOKEN_KEY, token)
             set({token, user: user as GHUser, loginLoading: false})
-            get().loadData()
+            await get().loadData()
         } catch (e) {
             set({loginError: (e as Error).message, loginLoading: false})
         }
@@ -103,7 +103,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         try {
             const user = await validateToken(token)
             set({user: user as GHUser})
-            get().loadData()
+            await get().loadData()
         } catch {
             localStorage.removeItem(TOKEN_KEY)
             set({token: ''})
@@ -124,8 +124,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             }
             try {
                 const res = await fetch(tab.file)
-                if (!res.ok) throw new Error(String(res.status))
-                newState[tab.key] = await res.json()
+                if (res.ok) {
+                    newState[tab.key] = await res.json()
+                } else {
+                    newState[tab.key] = tab.type === 'array' ? [] : {}
+                }
             } catch {
                 newState[tab.key] = tab.type === 'array' ? [] : {}
             }
@@ -154,7 +157,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     },
 
     publishTab: async (tabKey) => {
-        const {token, state: s, pendingUploads} = get()
+        const {token, state: s, pendingUploads, publishing} = get()
+        if (publishing) return
         const tab = TABS.find(t => t.key === tabKey)
         if (!tab?.ghPath) return
         set({publishing: true})
@@ -199,7 +203,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     },
 
     publishAll: async (orphansToDelete) => {
-        const {token, pendingUploads} = get()
+        const {token, pendingUploads, publishing} = get()
+        if (publishing) return
         set({publishing: true})
         try {
             // Delete orphans

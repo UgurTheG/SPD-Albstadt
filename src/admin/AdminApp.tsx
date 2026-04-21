@@ -263,7 +263,7 @@ export default function AdminApp() {
                                 <div>
                                     <h2 className="text-xl sm:text-2xl font-extrabold dark:text-white tracking-tight">{currentTab.label}</h2>
                                     <p className="text-xs text-gray-400 font-medium flex items-center gap-1">
-                                        Direkt-Bearbeitung — Änderungen werden sofort gespeichert
+                                        Direkt-Bearbeitung — Veröffentlichung per Klick
                                     </p>
                                 </div>
                             </div>

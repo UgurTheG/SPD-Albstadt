@@ -208,7 +208,7 @@ function SectionEditor({section, data, tabKey, onSectionChange}: {
                         className="overflow-hidden"
                     >
                         <ArrayEditor fields={sec.fields} data={arr} tabKey={tabKey}
-                                     onStructureChange={() => onSectionChange([...arr])}/>
+                                     onStructureChange={(newArr) => onSectionChange(newArr)}/>
                     </motion.div>
                 )}
             </AnimatePresence>

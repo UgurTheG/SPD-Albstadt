@@ -9,7 +9,7 @@ export default function LoginScreen() {
 
     const isValidTokenFormat = (t: string) => {
         const trimmed = t.trim()
-        return trimmed.startsWith('ghp_') || trimmed.startsWith('github_pat_') || trimmed.startsWith('gho_')
+        return trimmed.startsWith('ghp_') || trimmed.startsWith('github_pat_')
     }
 
     return (
@@ -95,7 +95,7 @@ export default function LoginScreen() {
 
                     <div className="mt-6 flex items-center gap-2 justify-center text-[10px] text-gray-400">
                         <Shield size={10}/>
-                        <span>Verschlüsselt · Nur GitHub API · Lokal gespeichert</span>
+                        <span>Nur GitHub API · Lokal gespeichert</span>
                     </div>
 
                     <details className="mt-8 text-left group">

@@ -1,15 +1,15 @@
 import {useState} from 'react'
 import {Plus} from 'lucide-react'
 import {
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  DragOverlay,
-  type DragStartEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
+    closestCenter,
+    DndContext,
+    type DragEndEvent,
+    DragOverlay,
+    type DragStartEvent,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
 } from '@dnd-kit/core'
 import {SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy,} from '@dnd-kit/sortable'
 import {restrictToVerticalAxis} from '@dnd-kit/modifiers'
@@ -23,7 +23,7 @@ interface Props {
     fields: FieldConfig[]
     data: Record<string, unknown>[]
     tabKey: string
-    onStructureChange?: () => void
+    onStructureChange?: (newArr: Record<string, unknown>[]) => void
 }
 
 export default function ArrayEditor({fields, data, tabKey, onStructureChange}: Props) {
@@ -36,20 +36,26 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
         useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates}),
     )
 
-    const triggerUpdate = () => {
-        updateState(tabKey, JSON.parse(JSON.stringify(state[tabKey])))
-        onStructureChange?.()
+    const commitArray = (newArr: Record<string, unknown>[]) => {
+        if (onStructureChange) {
+            // Section-level array: let parent handle the store update
+            onStructureChange(newArr)
+        } else {
+            // Top-level array tab: update store directly
+            updateState(tabKey, newArr)
+        }
     }
 
     const handleMove = (from: number, to: number) => {
-        const [moved] = data.splice(from, 1)
-        data.splice(to, 0, moved)
-        triggerUpdate()
+        const newArr = [...data]
+        const [moved] = newArr.splice(from, 1)
+        newArr.splice(to, 0, moved)
+        commitArray(newArr)
     }
 
     const handleRemove = (index: number) => {
-        data.splice(index, 1)
-        triggerUpdate()
+        const newArr = data.filter((_, i) => i !== index)
+        commitArray(newArr)
     }
 
     const handleAdd = () => {
@@ -58,8 +64,13 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
         if (data.length > 0 && data[0] && 'id' in data[0]) {
             newItem.id = crypto.randomUUID?.() ?? String(Date.now())
         }
-        data.push(newItem)
-        triggerUpdate()
+        commitArray([...data, newItem])
+    }
+
+    const triggerUpdate = () => {
+        // Called by child ItemCard when a field value changes (in-place mutation)
+        updateState(tabKey, JSON.parse(JSON.stringify(state[tabKey])))
+        onStructureChange?.(data)
     }
 
     // Generate stable IDs for sortable
