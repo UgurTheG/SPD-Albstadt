@@ -1,13 +1,13 @@
-import {useEffect, useState} from 'react'
-import {ChevronRight, Download, Eye, FileSearch, Redo2, Rocket, Undo2, X} from 'lucide-react'
+import {useEffect, useMemo, useState} from 'react'
+import {ArrowRight, ChevronRight, Download, Eye, FileSearch, Plus, Redo2, Rocket, Trash2, Undo2, X} from 'lucide-react'
 import {AnimatePresence, motion} from 'framer-motion'
 import type {SectionConfig, TabConfig} from '../types'
 import {useAdminStore} from '../store'
+import {diffTab, summarizeValue, type ChangeEntry, type ChangeKind} from '../lib/diff'
 import FieldRenderer from './FieldRenderer'
 import ArrayEditor from './ArrayEditor'
 import OrphanModal from './OrphanModal'
 import PreviewModal from './PreviewModal'
-import ChangeList from './ChangeList'
 
 interface Props {
     tab: TabConfig
@@ -15,7 +15,6 @@ interface Props {
 
 export default function TabEditor({tab}: Props) {
     const state = useAdminStore(s => s.state)
-    const originalState = useAdminStore(s => s.originalState)
     const publishTab = useAdminStore(s => s.publishTab)
     const publishing = useAdminStore(s => s.publishing)
     const dirtyTabs = useAdminStore(s => s.dirtyTabs)
@@ -107,9 +106,7 @@ export default function TabEditor({tab}: Props) {
             {/* Diff modal */}
             {showDiff && (
                 <DiffModal
-                    original={originalState[tab.key]}
-                    current={state[tab.key]}
-                    label={tab.label}
+                    tab={tab}
                     onClose={() => setShowDiff(false)}
                 />
             )}
@@ -188,9 +185,6 @@ export default function TabEditor({tab}: Props) {
                 onPublish={handlePublish}
                 onRevert={() => setConfirmRevert(true)}
             />
-
-            {/* Per-change revert panel */}
-            <ChangeList tab={tab}/>
 
             {/* Content */}
             {tab.type === 'array' && tab.fields && (
@@ -500,10 +494,42 @@ function wordDiff(a: string[], b: string[]): { type: 'equal' | 'removed' | 'adde
     return result
 }
 
-function DiffModal({original, current, label, onClose}: {
-    original: unknown; current: unknown; label: string; onClose: () => void
-}) {
-    const changes = computeDiff(original, current)
+interface ChangeGroup {
+    key: string
+    group: string
+    itemLabel?: string
+    itemKind: ChangeKind
+    entries: ChangeEntry[]
+}
+
+function groupChangeEntries(entries: ChangeEntry[]): ChangeGroup[] {
+    const map = new Map<string, ChangeGroup>()
+    for (const e of entries) {
+        const gkey = [e.group, e.groupKey ?? '-', e.itemIndex ?? '-', e.kind === 'modified' ? 'm' : e.kind].join('|')
+        let g = map.get(gkey)
+        if (!g) {
+            g = {
+                key: gkey,
+                group: e.group,
+                itemLabel: e.itemLabel,
+                itemKind: e.kind,
+                entries: [],
+            }
+            map.set(gkey, g)
+        }
+        g.entries.push(e)
+    }
+    return [...map.values()]
+}
+
+function DiffModal({tab, onClose}: { tab: TabConfig; onClose: () => void }) {
+    const current = useAdminStore(s => s.state[tab.key])
+    const original = useAdminStore(s => s.originalState[tab.key])
+    const revertChange = useAdminStore(s => s.revertChange)
+
+    const entries = useMemo(() => diffTab(tab, original, current), [tab, original, current])
+    const groups = useMemo(() => groupChangeEntries(entries), [entries])
+
     return (
         <div className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
              onClick={onClose}>
@@ -512,17 +538,20 @@ function DiffModal({original, current, label, onClose}: {
                 animate={{opacity: 1, scale: 1, y: 0}}
                 exit={{opacity: 0, scale: 0.95, y: 10}}
                 transition={{duration: 0.2}}
-                className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-3xl p-5 sm:p-7 max-w-lg w-full max-h-[80vh] overflow-y-auto border border-white/50 dark:border-gray-700/50 shadow-2xl"
+                className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-3xl p-5 sm:p-7 max-w-lg w-full max-h-[85vh] overflow-y-auto border border-white/50 dark:border-gray-700/50 shadow-2xl"
                 onClick={e => e.stopPropagation()}
             >
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start justify-between mb-5">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
                             <FileSearch size={18} className="text-blue-500"/>
                         </div>
                         <div>
-                            <h3 className="text-base font-bold dark:text-white">Änderungen — {label}</h3>
-                            <p className="text-xs text-gray-400">{changes.length} Änderung{changes.length !== 1 ? 'en' : ''}</p>
+                            <h3 className="text-base font-bold dark:text-white">Änderungen — {tab.label}</h3>
+                            <p className="text-xs text-gray-400">
+                                {entries.length} Änderung{entries.length !== 1 ? 'en' : ''}
+                                {entries.length > 0 && ' · Jede einzeln zurücksetzbar'}
+                            </p>
                         </div>
                     </div>
                     <button onClick={onClose}
@@ -530,22 +559,13 @@ function DiffModal({original, current, label, onClose}: {
                         <X size={16}/>
                     </button>
                 </div>
-                {changes.length === 0 ? (
+                {groups.length === 0 ? (
                     <p className="text-sm text-gray-400 text-center py-8">Keine Änderungen gefunden.</p>
                 ) : (
-                    <div className="space-y-2">
-                        {changes.map((c, i) => (
-                            <div key={i} className="text-xs rounded-xl bg-gray-50/80 dark:bg-gray-800/40 p-3 border border-gray-100/80 dark:border-gray-700/40">
-                                <div className="font-semibold text-gray-600 dark:text-gray-300 mb-1">{c.path}</div>
-                                {c.type === 'added' && <span className="text-green-600 dark:text-green-400">+ Hinzugefügt</span>}
-                                {c.type === 'removed' && <span className="text-red-500">− Entfernt</span>}
-                                {c.type === 'changed' && c.newVal === undefined && (
-                                    <pre className="text-xs text-blue-600 dark:text-blue-400 whitespace-pre-wrap">↕ Verschoben{'\n'}{String(c.oldVal)}</pre>
-                                )}
-                                {c.type === 'changed' && c.newVal !== undefined && (
-                                    <InlineDiff oldVal={c.oldVal} newVal={c.newVal}/>
-                                )}
-                            </div>
+                    <div className="space-y-3">
+                        {groups.map(g => (
+                            <ChangeGroupBlock key={g.key} group={g}
+                                              onRevert={e => revertChange(tab.key, e)}/>
                         ))}
                     </div>
                 )}
@@ -558,142 +578,87 @@ function DiffModal({original, current, label, onClose}: {
     )
 }
 
-interface DiffEntry {
-    path: string
-    type: 'added' | 'removed' | 'changed'
-    oldVal?: unknown
-    newVal?: unknown
+function ChangeGroupBlock({group, onRevert}: {
+    group: ChangeGroup
+    onRevert: (entry: ChangeEntry) => void
+}) {
+    const isStructural = group.itemKind !== 'modified'
+    const structural = isStructural ? group.entries[0] : undefined
+
+    return (
+        <div className="rounded-2xl border border-gray-200/60 dark:border-gray-700/40 overflow-hidden bg-white/50 dark:bg-gray-800/30">
+            <div className="flex items-center justify-between gap-2 px-3 py-2 bg-gray-50/80 dark:bg-gray-800/40 border-b border-gray-100 dark:border-gray-700/30">
+                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                    {group.itemKind === 'added' && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
+                            <Plus size={10}/> Neu
+                        </span>
+                    )}
+                    {group.itemKind === 'removed' && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300">
+                            <Trash2 size={10}/> Entfernt
+                        </span>
+                    )}
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 truncate">
+                        {group.group}
+                    </span>
+                    {group.itemLabel && (
+                        <>
+                            <span className="text-gray-300 dark:text-gray-600">·</span>
+                            <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 truncate">{group.itemLabel}</span>
+                        </>
+                    )}
+                </div>
+                {structural && (
+                    <button
+                        onClick={() => onRevert(structural)}
+                        className="shrink-0 text-[11px] font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2.5 py-1 rounded-lg border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1.5"
+                        title={group.itemKind === 'added' ? 'Diesen neuen Eintrag verwerfen' : 'Entfernten Eintrag wiederherstellen'}
+                    >
+                        <Undo2 size={11}/>
+                        {group.itemKind === 'added' ? 'Verwerfen' : 'Wiederherstellen'}
+                    </button>
+                )}
+            </div>
+
+            {!isStructural && (
+                <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {group.entries.map(e => (
+                        <li key={e.id}
+                            className="flex items-start justify-between gap-3 px-3 py-2.5">
+                            <div className="min-w-0 flex-1">
+                                <div className="text-xs font-semibold text-gray-700 dark:text-gray-200 mb-1">{e.fieldLabel}</div>
+                                <FieldChangeDiff entry={e}/>
+                            </div>
+                            <button
+                                onClick={() => onRevert(e)}
+                                className="shrink-0 text-[11px] font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2.5 py-1 rounded-lg border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1.5"
+                            >
+                                <Undo2 size={11}/> Zurücksetzen
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    )
 }
 
-/** Get a human-readable label for an array item */
-function itemLabel(item: unknown, index: number): string {
-    if (item && typeof item === 'object') {
-        const obj = item as Record<string, unknown>
-        return String(obj.name || obj.titel || obj.title || `#${index + 1}`)
+function FieldChangeDiff({entry}: { entry: ChangeEntry }) {
+    const t = entry.fieldType
+    const isTextish = t === 'textarea' || t === 'text' || t === 'email' || t === 'url'
+    if (isTextish && typeof entry.before === 'string' && typeof entry.after === 'string') {
+        return <div className="text-[11px]"><InlineDiff oldVal={entry.before} newVal={entry.after}/></div>
     }
-    return `#${index + 1}`
-}
-
-/** Get a stable identity key for an array item (used to match items across reorder) */
-function itemIdentity(item: unknown): string {
-    if (item && typeof item === 'object') {
-        const obj = item as Record<string, unknown>
-        // Try common unique-ish fields first
-        for (const key of ['id', 'name', 'titel', 'title', 'slug']) {
-            if (obj[key] && typeof obj[key] === 'string') return `__key__${key}:${obj[key]}`
-        }
-    }
-    // Fall back to full content hash
-    return JSON.stringify(item)
-}
-
-function computeDiff(original: unknown, current: unknown, prefix = ''): DiffEntry[] {
-    const changes: DiffEntry[] = []
-    if (Array.isArray(original) && Array.isArray(current)) {
-        // Build identity maps to detect moves vs real adds/removes/edits
-        const origIds = original.map(itemIdentity)
-        const currIds = current.map(itemIdentity)
-
-        // Check if this is purely a reorder (same set of identities)
-        const origIdSet = new Map<string, number[]>()
-        const currIdSet = new Map<string, number[]>()
-        origIds.forEach((id, i) => {
-            if (!origIdSet.has(id)) origIdSet.set(id, []);
-            origIdSet.get(id)!.push(i)
-        })
-        currIds.forEach((id, i) => {
-            if (!currIdSet.has(id)) currIdSet.set(id, []);
-            currIdSet.get(id)!.push(i)
-        })
-
-        // Match items: for each current item, find its original counterpart
-        const origUsed = new Set<number>()
-        const matched: { origIdx: number; currIdx: number }[] = []
-        const added: number[] = []
-
-        for (let ci = 0; ci < current.length; ci++) {
-            const id = currIds[ci]
-            const candidates = origIdSet.get(id)
-            if (candidates) {
-                const oi = candidates.find(i => !origUsed.has(i))
-                if (oi !== undefined) {
-                    origUsed.add(oi)
-                    matched.push({origIdx: oi, currIdx: ci})
-                    continue
-                }
-            }
-            added.push(ci)
-        }
-
-        const removed: number[] = []
-        for (let oi = 0; oi < original.length; oi++) {
-            if (!origUsed.has(oi)) removed.push(oi)
-        }
-
-        // Detect position changes (moved items)
-        const moved: { origIdx: number; currIdx: number; label: string }[] = []
-        for (const {origIdx, currIdx} of matched) {
-            if (origIdx !== currIdx) {
-                moved.push({origIdx, currIdx, label: itemLabel(current[currIdx], currIdx)})
-            }
-        }
-
-        // Report moves as a single summary entry
-        if (moved.length > 0) {
-            const movedLabels = moved.map(m => `${m.label} (${m.origIdx + 1} → ${m.currIdx + 1})`)
-            const path = prefix ? `${prefix} › Reihenfolge` : 'Reihenfolge'
-            changes.push({
-                path,
-                type: 'changed',
-                oldVal: movedLabels.map(l => `• ${l}`).join('\n'),
-                newVal: undefined,
-            })
-        }
-
-        // Report added items
-        for (const ci of added) {
-            const label = itemLabel(current[ci], ci)
-            const path = prefix ? `${prefix} › ${label}` : String(label)
-            changes.push({path, type: 'added'})
-        }
-
-        // Report removed items
-        for (const oi of removed) {
-            const label = itemLabel(original[oi], oi)
-            const path = prefix ? `${prefix} › ${label}` : String(label)
-            changes.push({path, type: 'removed'})
-        }
-
-        // Report field-level edits within matched items (content changed, not just moved)
-        for (const {origIdx, currIdx} of matched) {
-            const origJson = JSON.stringify(original[origIdx])
-            const currJson = JSON.stringify(current[currIdx])
-            if (origJson !== currJson) {
-                const label = itemLabel(current[currIdx], currIdx)
-                const path = prefix ? `${prefix} › ${label}` : String(label)
-                if (typeof original[origIdx] === 'object' && typeof current[currIdx] === 'object' && original[origIdx] && current[currIdx]) {
-                    changes.push(...computeDiff(original[origIdx], current[currIdx], path))
-                } else {
-                    changes.push({path, type: 'changed', oldVal: original[origIdx], newVal: current[currIdx]})
-                }
-            }
-        }
-    } else if (typeof original === 'object' && typeof current === 'object' && original && current) {
-        const allKeys = new Set([...Object.keys(original as Record<string, unknown>), ...Object.keys(current as Record<string, unknown>)])
-        for (const key of allKeys) {
-            const o = (original as Record<string, unknown>)[key]
-            const c = (current as Record<string, unknown>)[key]
-            const path = prefix ? `${prefix} › ${key}` : key
-            if (o === undefined) { changes.push({path, type: 'added', newVal: c}); continue }
-            if (c === undefined) { changes.push({path, type: 'removed', oldVal: o}); continue }
-            if (JSON.stringify(o) !== JSON.stringify(c)) {
-                if (typeof o === 'object' && typeof c === 'object' && o && c) {
-                    changes.push(...computeDiff(o, c, path))
-                } else {
-                    changes.push({path, type: 'changed', oldVal: o, newVal: c})
-                }
-            }
-        }
-    }
-    return changes
+    return (
+        <div className="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400 min-w-0">
+            <span className="line-through text-gray-400 dark:text-gray-500 truncate max-w-[40%]">
+                {summarizeValue(entry.before, t)}
+            </span>
+            <ArrowRight size={10} className="shrink-0 text-gray-400"/>
+            <span className="font-medium text-gray-700 dark:text-gray-300 truncate max-w-[55%]">
+                {summarizeValue(entry.after, t)}
+            </span>
+        </div>
+    )
 }
