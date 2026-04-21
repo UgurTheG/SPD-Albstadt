@@ -437,7 +437,7 @@ function SortableImageListItem(props: {
     onUrlChange: (v: string) => void; onCaptionChange: (v: string) => void
     onUpload: (f: File) => void; onRemove: () => void; onMoveUp: () => void; onMoveDown: () => void
 }) {
-    const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({id: props.id})
+    const {attributes, listeners, setNodeRef, transform, isDragging} = useSortable({id: props.id})
     const style = {
         transform: CSS.Transform.toString(transform),
         transition: 'none',
