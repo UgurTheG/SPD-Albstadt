@@ -51,7 +51,6 @@ export default function HaushaltsredenEditor() {
         try {
             await saveConfig(next)
             setStatus(`${year} ${next.has(year) ? 'ausgeblendet' : 'eingeblendet'} & gespeichert`, 'success')
-            await load(true)
         } catch (e) {
             setDisabledYears(prev)
             setStatus('Fehler: ' + (e as Error).message, 'error')

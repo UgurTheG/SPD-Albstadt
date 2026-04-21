@@ -18,6 +18,9 @@ function utf8ToBase64(str: string): string {
     return btoa(binary)
 }
 
+// Cache of known SHAs from recent commits, avoids stale GitHub API cache
+const shaCache = new Map<string, string>()
+
 export async function validateToken(token: string) {
     const res = await fetch('https://api.github.com/user', {headers: headers(token)})
     if (!res.ok) throw new Error('Token ungültig')
@@ -29,14 +32,13 @@ export async function validateToken(token: string) {
 
 export async function commitFile(token: string, filePath: string, content: string, message: string) {
     const h = headers(token)
-    const existing = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`, {
-        headers: {
-            ...h,
-            'If-None-Match': ''
-        }
-    })
-    let sha: string | undefined
-    if (existing.ok) sha = (await existing.json()).sha
+    let sha: string | undefined = shaCache.get(filePath)
+    if (!sha) {
+        const existing = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`, {
+            headers: {...h, 'If-None-Match': ''}
+        })
+        if (existing.ok) sha = (await existing.json()).sha
+    }
     const body: Record<string, unknown> = {
         message,
         content: utf8ToBase64(content),
@@ -52,7 +54,9 @@ export async function commitFile(token: string, filePath: string, content: strin
         const err = await res.json()
         throw new Error(err.message || 'Fehler beim Speichern')
     }
-    return res.json()
+    const result = await res.json()
+    if (result?.content?.sha) shaCache.set(filePath, result.content.sha)
+    return result
 }
 
 export async function commitBinaryFile(token: string, filePath: string, base64Content: string, message: string) {
