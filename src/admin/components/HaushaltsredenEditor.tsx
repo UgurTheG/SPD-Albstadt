@@ -13,8 +13,8 @@ export default function HaushaltsredenEditor() {
     const [loading, setLoading] = useState(true)
     const [busy, setBusy] = useState<number | null>(null)
 
-    const load = async () => {
-        setLoading(true)
+    const load = async (silent = false) => {
+        if (!silent) setLoading(true)
         try {
             const [files, config] = await Promise.all([
                 listDirectory(token, 'public/documents/fraktion/haushaltsreden'),
@@ -51,7 +51,7 @@ export default function HaushaltsredenEditor() {
         try {
             await saveConfig(next)
             setStatus(`${year} ${next.has(year) ? 'ausgeblendet' : 'eingeblendet'} & gespeichert`, 'success')
-            await load()
+            await load(true)
         } catch (e) {
             setDisabledYears(prev)
             setStatus('Fehler: ' + (e as Error).message, 'error')
