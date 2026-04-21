@@ -222,6 +222,10 @@ function ImageField({field, value, onChange, contextItem}: {
     const [cropFile, setCropFile] = useState<File | null>(null)
     const fileRef = useRef<HTMLInputElement>(null)
 
+    useEffect(() => {
+        setPreview(value || '')
+    }, [value])
+
     const handleCrop = (base64: string | null) => {
         setCropFile(null)
         if (!base64) return
@@ -236,6 +240,9 @@ function ImageField({field, value, onChange, contextItem}: {
     }
 
     const [showUrl, setShowUrl] = useState(!value)
+    useEffect(() => {
+        setShowUrl(!value)
+    }, [value])
 
     return (
         <>

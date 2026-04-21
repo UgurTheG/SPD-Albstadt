@@ -1,11 +1,12 @@
 import {useEffect, useState} from 'react'
-import {ChevronRight, Download, ExternalLink, FileSearch, Redo2, Rocket, Undo2, X} from 'lucide-react'
+import {ChevronRight, Download, Eye, FileSearch, Redo2, Rocket, Undo2, X} from 'lucide-react'
 import {AnimatePresence, motion} from 'framer-motion'
 import type {SectionConfig, TabConfig} from '../types'
 import {useAdminStore} from '../store'
 import FieldRenderer from './FieldRenderer'
 import ArrayEditor from './ArrayEditor'
 import OrphanModal from './OrphanModal'
+import PreviewModal from './PreviewModal'
 
 interface Props {
     tab: TabConfig
@@ -26,6 +27,7 @@ export default function TabEditor({tab}: Props) {
     const [orphans, setOrphans] = useState<string[] | null>(null)
     const [confirmRevert, setConfirmRevert] = useState(false)
     const [showDiff, setShowDiff] = useState(false)
+    const [showPreview, setShowPreview] = useState(false)
 
     const canUndo = (undoStacks[tab.key]?.length ?? 0) > 0
     const canRedo = (redoStacks[tab.key]?.length ?? 0) > 0
@@ -111,6 +113,10 @@ export default function TabEditor({tab}: Props) {
                 />
             )}
 
+            {showPreview && (
+                <PreviewModal tabKey={tab.key} onClose={() => setShowPreview(false)}/>
+            )}
+
             {/* Action bar */}
             <div className="flex items-center justify-end gap-1.5 sm:gap-2 mb-6 flex-wrap">
                 {/* Undo / Redo */}
@@ -128,16 +134,16 @@ export default function TabEditor({tab}: Props) {
                 </div>
                 {/* Preview */}
                 {tab.previewPath && (
-                    <button type="button" onClick={() => window.open(tab.previewPath!, '_blank')}
+                    <button type="button" onClick={() => setShowPreview(true)}
                             className="text-[10px] sm:text-xs font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-2.5 sm:px-3.5 py-2 rounded-xl border border-gray-200/60 dark:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 transition-all flex items-center gap-1.5 sm:gap-2 backdrop-blur-sm bg-white/40 dark:bg-gray-800/30">
-                        <ExternalLink size={13}/> <span className="hidden sm:inline">Vorschau</span>
+                        <Eye size={13}/> <span className="hidden sm:inline">Vorschau</span>
                     </button>
                 )}
                 {/* Diff */}
                 {isDirty && (
                     <button type="button" onClick={() => setShowDiff(true)}
                             className="text-[10px] sm:text-xs font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-2.5 sm:px-3.5 py-2 rounded-xl border border-gray-200/60 dark:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 transition-all flex items-center gap-1.5 sm:gap-2 backdrop-blur-sm bg-white/40 dark:bg-gray-800/30">
-                        <FileSearch size={13}/> <span className="hidden sm:inline">Änderungen</span>
+                        <FileSearch size={13}/> <span>Änderungen</span>
                     </button>
                 )}
                 <button type="button" onClick={handleDownload}
@@ -457,10 +463,11 @@ function DiffModal({original, current, label, onClose}: {
                                 {c.type === 'removed' && <span className="text-red-500">− Entfernt</span>}
                                 {c.type === 'changed' && (
                                     <div className="space-y-1">
-                                        <div className="text-red-500 line-through truncate">
+                                        <div className="text-red-500 line-through break-all whitespace-pre-wrap">
                                             {typeof c.oldVal === 'string' ? c.oldVal : JSON.stringify(c.oldVal)}
                                         </div>
-                                        <div className="text-green-600 dark:text-green-400 truncate">
+                                        <div
+                                            className="text-green-600 dark:text-green-400 break-all whitespace-pre-wrap">
                                             {typeof c.newVal === 'string' ? c.newVal : JSON.stringify(c.newVal)}
                                         </div>
                                     </div>
