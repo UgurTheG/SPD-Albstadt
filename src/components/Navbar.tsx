@@ -64,7 +64,7 @@ export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePag
 
             {/* Breadcrumb separator when on a section */}
             <AnimatePresence>
-              {!isHome && (
+              {!isHome && SECTION_LABELS[activePage] && (
                 <motion.div
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
