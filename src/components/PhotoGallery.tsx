@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef, useState} from 'react'
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {AnimatePresence, motion} from 'framer-motion'
 import {ChevronLeft, ChevronRight} from 'lucide-react'
 import Lightbox from 'yet-another-react-lightbox'
@@ -11,6 +11,8 @@ import 'yet-another-react-lightbox/plugins/captions.css'
 
 
 // ── PhotoGallery ─────────────────────────────────────────────────────────────
+
+const MAX_VISIBLE_DOTS = 7
 
 interface PhotoGalleryProps {
   images: string[]
@@ -25,6 +27,7 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
   const [direction, setDirection] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const lastNavTime = useRef(0)
+  const tappedRef = useRef(false)
   const THROTTLE_MS = 300
   const total = images.length
 
@@ -75,6 +78,7 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
     if ((e.target as HTMLElement).closest('button, a, [role="button"]')) return
     isDragging.current = true
     isHorizontalDrag.current = null
+    tappedRef.current = false
     dragStartX.current = e.touches[0].clientX
     dragStartY.current = e.touches[0].clientY
   }
@@ -104,20 +108,47 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
     if (total > 1 && isHorizontalDrag.current && Math.abs(dx) > 50) {
       go(active + (dx > 0 ? -1 : 1))
     } else if (!isHorizontalDrag.current && Math.abs(dy) < 10 && Math.abs(dx) < 10) {
-      // It was a tap — open lightbox
+      // It was a tap — open lightbox, and suppress the subsequent click
       if (!(e.target as HTMLElement).closest('button, a, [role="button"]')) {
+        tappedRef.current = true
         setLightboxOpen(true)
       }
     }
     isHorizontalDrag.current = null
   }
 
+  const handleClick = () => {
+    // On touch devices the tap is already handled in handleTouchEnd
+    if (tappedRef.current) {
+      tappedRef.current = false
+      return
+    }
+    setLightboxOpen(true)
+  }
+
+  // Compute visible dot window for large galleries
+  const dotRange = useMemo(() => {
+    if (total <= MAX_VISIBLE_DOTS) return {start: 0, end: total}
+    const half = Math.floor(MAX_VISIBLE_DOTS / 2)
+    let start = active - half
+    let end = active + half + 1
+    if (start < 0) {
+      start = 0;
+      end = MAX_VISIBLE_DOTS
+    }
+    if (end > total) {
+      end = total;
+      start = total - MAX_VISIBLE_DOTS
+    }
+    return {start, end}
+  }, [active, total])
+
   return (
     <div className={className}>
       {/* Inline slideshow */}
       <div
         className="relative rounded-2xl overflow-hidden bg-gray-900 select-none cursor-zoom-in touch-pan-y"
-        onClick={() => setLightboxOpen(true)}
+        onClick={handleClick}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -128,8 +159,8 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
               key={active}
               src={images[active]}
               alt={`${alt} – Foto ${active + 1}`}
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover"
+              loading={active === 0 ? 'eager' : 'lazy'}
+              className="absolute inset-0 w-full h-full object-contain"
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -187,22 +218,28 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
 
       {/* Dot indicators */}
       {total > 1 && (
-        <div className="flex justify-center gap-1.5 mt-3">
-          {images.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setDirection(i > active ? 1 : -1)
-                setActive(i)
-              }}
-              className={`rounded-full transition-all duration-300 ${
-                i === active
-                  ? 'w-6 h-2 bg-spd-red'
-                  : 'w-2 h-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
-              }`}
-              aria-label={`Bild ${i + 1}`}
-            />
-          ))}
+          <div className="flex justify-center items-center gap-1.5 mt-3">
+            {dotRange.start > 0 && (
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600"/>
+            )}
+            {images.slice(dotRange.start, dotRange.end).map((_, idx) => {
+              const i = dotRange.start + idx
+              return (
+                  <button
+                      key={i}
+                      onClick={() => go(i)}
+                      className={`rounded-full transition-all duration-300 ${
+                          i === active
+                              ? 'w-6 h-2 bg-spd-red'
+                              : 'w-2 h-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
+                      }`}
+                      aria-label={`Bild ${i + 1}`}
+                  />
+              )
+            })}
+            {dotRange.end < total && (
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600"/>
+            )}
         </div>
       )}
 
