@@ -85,16 +85,16 @@ function FieldInput({field, value, onChange, contextItem}: Props) {
             return <ToggleField value={value as boolean} onChange={v => onChange(v)}/>
         default:
             return (
-                <div className="relative">
+                <div
+                    className="flex items-center gap-2.5 bg-white/60 dark:bg-gray-800/40 border border-gray-200/80 dark:border-gray-700/60 rounded-2xl px-4 py-3 focus-within:ring-2 focus-within:ring-spd-red/20 focus-within:border-spd-red/40 focus-within:bg-white dark:focus-within:bg-gray-800/80 transition-all duration-200 backdrop-blur-sm">
                     {field.iconKey && (
-                        <span
-                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none flex items-center">
+                        <span className="text-gray-400 dark:text-gray-500 shrink-0 flex items-center">
                             <FieldIcon iconKey={field.iconKey}/>
                         </span>
                     )}
                     <input
                         type={field.type || 'text'}
-                        className={`${inputCls} ${field.iconKey ? 'pl-10' : ''} truncate`}
+                        className="w-full min-w-0 bg-transparent text-sm focus:outline-none dark:text-white dark:placeholder-gray-500"
                         value={(value as string) || ''}
                         placeholder={field.placeholder}
                         onChange={e => onChange(e.target.value)}
