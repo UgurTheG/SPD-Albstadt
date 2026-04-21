@@ -183,7 +183,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 }
             }
             const json = JSON.stringify(s[tabKey], null, 2) + '\n'
-            await commitFile(token, tab.ghPath, json, `admin: ${tab.file!.split('/').pop()} aktualisiert`)
+            const fileName = tab.file?.split('/').pop() ?? tab.key
+            await commitFile(token, tab.ghPath, json, `admin: ${fileName} aktualisiert`)
             get().resetOriginal(tabKey)
             set(prev => ({
                 pendingUploads: [...otherUploads, ...failedUploads],
@@ -235,7 +236,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 if (!tab?.ghPath) continue
                 try {
                     const json = JSON.stringify(get().state[tabKey], null, 2) + '\n'
-                    await commitFile(token, tab.ghPath, json, `admin: ${tab.file!.split('/').pop()} aktualisiert`)
+                    const fileName = tab.file?.split('/').pop() ?? tab.key
+                    await commitFile(token, tab.ghPath, json, `admin: ${fileName} aktualisiert`)
                     get().resetOriginal(tabKey)
                     success++
                 } catch {

@@ -104,8 +104,7 @@ export default function LoginScreen() {
                             <ChevronDown size={12} className="transition-transform duration-200 group-open:rotate-180"/>
                             Was ist ein Token?
                         </summary>
-                        <motion.div
-                            initial={false}
+                        <div
                             className="mt-3 text-xs text-gray-500 dark:text-gray-400 space-y-2 bg-gray-50/80 dark:bg-gray-800/40 rounded-2xl p-4 border border-gray-100/80 dark:border-gray-700/40"
                         >
                             <p>Ein <strong className="text-gray-700 dark:text-gray-300">GitHub Personal Access
@@ -126,7 +125,7 @@ export default function LoginScreen() {
                             </ol>
                             <p className="pt-1 text-gray-600 dark:text-gray-300"><strong>Wichtig:</strong> Das Token
                                 wird nur einmal angezeigt — sofort kopieren!</p>
-                        </motion.div>
+                        </div>
                     </details>
                 </div>
             </motion.div>
