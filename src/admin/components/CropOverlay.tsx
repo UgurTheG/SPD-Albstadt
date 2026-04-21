@@ -322,15 +322,16 @@ export default function CropOverlay({file, onComplete}: Props) {
             className="fixed inset-0 z-[9999] bg-black/95 flex flex-col touch-none select-none"
         >
             {/* Header */}
-            <div className="shrink-0 flex items-center justify-between px-4 py-3 sm:px-6 border-b border-white/10">
+            <div
+                className="shrink-0 flex items-center justify-between px-3 py-2.5 sm:px-6 sm:py-3 border-b border-white/10">
                 <div className="flex items-center gap-2 text-white">
-                    <ImageIcon size={16} className="opacity-70"/>
-                    <span className="text-sm font-semibold">Bildausschnitt wählen</span>
+                    <ImageIcon size={16} className="opacity-70 hidden sm:block"/>
+                    <span className="text-xs sm:text-sm font-semibold">Bildausschnitt wählen</span>
                 </div>
                 <button type="button"
                         onClick={() => onComplete(null)}
                         aria-label="Schließen"
-                        className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+                        className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
                     <X size={16}/>
                 </button>
             </div>
@@ -416,14 +417,14 @@ export default function CropOverlay({file, onComplete}: Props) {
 
                 {/* Zoom controls (floating) */}
                 <div
-                    className="absolute right-3 top-3 flex flex-col gap-1 rounded-2xl bg-black/60 backdrop-blur border border-white/10 p-1">
+                    className="absolute right-2 top-2 sm:right-3 sm:top-3 flex flex-col gap-1 rounded-2xl bg-black/60 backdrop-blur border border-white/10 p-1">
                     <button type="button" aria-label="Vergrößern"
                             onClick={() => {
                                 const c = containerRef.current!
                                 const r = c.getBoundingClientRect()
                                 zoomAtClient(r.left + r.width / 2, r.top + r.height / 2, zoom * 1.25)
                             }}
-                            className="w-9 h-9 rounded-xl text-white hover:bg-white/15 flex items-center justify-center">
+                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl text-white hover:bg-white/15 flex items-center justify-center">
                         <Plus size={16}/>
                     </button>
                     <button type="button" aria-label="Verkleinern"
@@ -432,29 +433,29 @@ export default function CropOverlay({file, onComplete}: Props) {
                                 const r = c.getBoundingClientRect()
                                 zoomAtClient(r.left + r.width / 2, r.top + r.height / 2, zoom / 1.25)
                             }}
-                            className="w-9 h-9 rounded-xl text-white hover:bg-white/15 flex items-center justify-center">
+                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl text-white hover:bg-white/15 flex items-center justify-center">
                         <Minus size={16}/>
                     </button>
                     <button type="button" aria-label="Zoom zurücksetzen"
                             onClick={() => imgRef.current && layoutToFit(imgRef.current)}
-                            className="w-9 h-9 rounded-xl text-white hover:bg-white/15 flex items-center justify-center">
+                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl text-white hover:bg-white/15 flex items-center justify-center">
                         <Maximize2 size={14}/>
                     </button>
                 </div>
 
                 {/* Reset crop */}
-                <div className="absolute left-3 top-3">
+                <div className="absolute left-2 top-2 sm:left-3 sm:top-3">
                     <button type="button"
                             onClick={() => setCrop({x: 0, y: 0, w: baseSize.w, h: baseSize.h})}
-                            className="px-3 h-9 rounded-xl bg-black/60 backdrop-blur border border-white/10 text-white text-xs font-medium hover:bg-white/15 flex items-center gap-1.5">
-                        <RotateCcw size={12}/> Alles auswählen
+                            className="px-2.5 sm:px-3 h-8 sm:h-9 rounded-xl bg-black/60 backdrop-blur border border-white/10 text-white text-[10px] sm:text-xs font-medium hover:bg-white/15 flex items-center gap-1.5">
+                        <RotateCcw size={12}/> <span className="hidden sm:inline">Alles</span> auswählen
                     </button>
                 </div>
 
                 {/* Hint */}
                 {ready && zoom <= 1.02 && (
                     <div
-                        className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/70 text-[11px] bg-black/50 backdrop-blur px-3 py-1.5 rounded-full pointer-events-none">
+                        className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 text-white/70 text-[10px] sm:text-[11px] bg-black/50 backdrop-blur px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full pointer-events-none whitespace-nowrap max-w-[calc(100%-1rem)] truncate">
                         Ecken ziehen · zum Zoomen pinch / Mausrad · Doppelklick zoomt
                     </div>
                 )}
@@ -462,30 +463,30 @@ export default function CropOverlay({file, onComplete}: Props) {
 
             {/* Toolbar */}
             <div
-                className="shrink-0 flex items-center justify-between gap-2 px-3 py-3 sm:px-6 sm:py-4 border-t border-white/10 bg-black/50">
-                <div className="text-[11px] text-white/60 tabular-nums hidden sm:block">
+                className="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-3 py-2.5 sm:px-6 sm:py-4 border-t border-white/10 bg-black/50">
+                <div className="text-[10px] sm:text-[11px] text-white/60 tabular-nums text-center sm:text-left">
                     {Math.round(crop.w * (imgRef.current?.width ?? 0) / (baseSize.w || 1))} × {Math.round(crop.h * (imgRef.current?.height ?? 0) / (baseSize.h || 1))} px
                     · {Math.round(zoom * 100)}%
                 </div>
-                <div className="flex-1 sm:flex-none flex gap-2 justify-end">
+                <div className="flex gap-2 justify-end">
                     <button
                         type="button"
                         onClick={() => onComplete(null)}
-                        className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-sm transition-colors"
+                        className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs sm:text-sm transition-colors"
                     >
                         Abbrechen
                     </button>
                     <button
                         type="button"
                         onClick={() => exportCrop(true)}
-                        className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium text-sm transition-colors hidden sm:block"
+                        className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium text-xs sm:text-sm transition-colors"
                     >
                         Ganzes Bild
                     </button>
                     <button
                         type="button"
                         onClick={() => exportCrop(false)}
-                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-spd-red to-spd-red-dark text-white font-bold text-sm flex items-center gap-2 shadow-lg shadow-spd-red/25"
+                        className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-spd-red to-spd-red-dark text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-lg shadow-spd-red/25"
                     >
                         <Check size={14}/> Zuschneiden
                     </button>
