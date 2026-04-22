@@ -9,7 +9,7 @@
       "destination": "/index.html"
     },
     {
-      "source": "/((?!api|data|images|documents|icons|favicon).*)",
+      "source": "/((?!api|data|images|documents|icons|favicon|manifest\\.json|robots\\.txt|sitemap\\.xml|.*\\.webp|.*\\.svg|.*\\.ico|.*\\.pdf).*)",
       "destination": "/index.html"
     }
   ],
