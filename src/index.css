@@ -26,6 +26,15 @@ body {
   hyphenate-limit-chars: 6 3 3;
   background-color: #030712;
 }
+
+/* Form controls should never inherit body's justify/hyphenation — it
+   causes button labels like "Veröffentlichen" to break into "Veröffent-
+   lichen" in narrow containers. */
+button, input, select, textarea, label, [role="button"] {
+  text-align: start;
+  hyphens: manual;
+  -webkit-hyphens: manual;
+}
 html.dark body {
   background-color: #000000;
 }

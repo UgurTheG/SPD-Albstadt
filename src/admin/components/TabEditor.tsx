@@ -160,13 +160,13 @@ export default function TabEditor({tab}: Props) {
                     type="button"
                     onClick={handlePublish}
                     disabled={!isDirty || publishing}
-                    className={`shrink-0 text-[10px] sm:text-xs font-bold px-3 sm:px-5 py-2 rounded-xl flex items-center gap-1.5 sm:gap-2 transition-all duration-200 whitespace-nowrap [hyphens:none] ${
+                    className={`shrink-0 text-[10px] sm:text-xs font-bold px-3.5 sm:px-5 py-2 rounded-xl flex items-center gap-2 transition-colors whitespace-nowrap [hyphens:none] ${
                         isDirty
-                            ? 'bg-linear-to-r from-spd-red to-spd-red-dark text-white shadow-sm shadow-spd-red/20 hover:shadow-lg hover:shadow-spd-red/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:hover:scale-100'
+                            ? 'bg-spd-red hover:bg-spd-red-dark text-white shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] disabled:cursor-wait disabled:hover:bg-spd-red disabled:active:scale-100'
                             : 'bg-gray-200/60 dark:bg-gray-700/40 text-gray-400 dark:text-gray-500 cursor-not-allowed backdrop-blur-sm'
                     }`}
                 >
-                    {publishing ? <Loader2 size={13} className="animate-spin shrink-0"/> : <Rocket size={13} className="shrink-0"/>}
+                    {publishing ? <Loader2 size={14} strokeWidth={2.5} className="animate-spin shrink-0"/> : <Rocket size={14} strokeWidth={2.5} className="shrink-0"/>}
                     <span className="whitespace-nowrap">{publishing ? 'Veröffentliche…' : 'Veröffentlichen'}</span>
                 </button>
             </div>
@@ -351,12 +351,12 @@ function StickyPublishBar({isDirty, publishing, onPublish, onShowDiff}: {
                             type="button"
                             onClick={onPublish}
                             disabled={publishing}
-                            className="shrink-0 text-xs font-bold px-3 sm:px-4 py-2 rounded-xl bg-linear-to-r from-spd-red to-spd-red-dark text-white shadow-sm shadow-spd-red/20 hover:shadow-lg hover:shadow-spd-red/30 active:scale-[0.98] transition-all flex items-center gap-1.5 disabled:opacity-70 disabled:active:scale-100 whitespace-nowrap [hyphens:none]"
+                            className="shrink-0 text-xs font-bold px-3.5 sm:px-4 py-2 rounded-xl bg-spd-red hover:bg-spd-red-dark text-white shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] transition-colors transition-shadow flex items-center gap-2 disabled:cursor-wait disabled:active:scale-100 whitespace-nowrap [hyphens:none]"
                         >
                             {publishing ? (
-                                <Loader2 size={12} className="animate-spin shrink-0"/>
+                                <Loader2 size={14} strokeWidth={2.5} className="animate-spin shrink-0"/>
                             ) : (
-                                <Rocket size={12} className="shrink-0"/>
+                                <Rocket size={14} strokeWidth={2.5} className="shrink-0"/>
                             )}
                             <span className="whitespace-nowrap">{publishing ? 'Veröffentliche…' : 'Veröffentlichen'}</span>
                         </button>

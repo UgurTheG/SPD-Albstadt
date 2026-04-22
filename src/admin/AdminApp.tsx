@@ -233,12 +233,12 @@ export default function AdminApp() {
                                     type="button"
                                     onClick={handlePublishAll}
                                     disabled={publishing}
-                                    className="w-full bg-linear-to-r from-spd-red to-spd-red-dark text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm shadow-spd-red/20 hover:shadow-lg hover:shadow-spd-red/30 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100 whitespace-nowrap [hyphens:none]"
+                                    className="w-full bg-spd-red hover:bg-spd-red-dark text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] transition-colors flex items-center justify-center gap-2 disabled:cursor-wait disabled:hover:bg-spd-red disabled:active:scale-100 whitespace-nowrap [hyphens:none]"
                                 >
                                     {publishing ? (
-                                        <Loader2 size={13} className="animate-spin shrink-0"/>
+                                        <Loader2 size={14} strokeWidth={2.5} className="animate-spin shrink-0"/>
                                     ) : (
-                                        <Rocket size={13} className="shrink-0"/>
+                                        <Rocket size={14} strokeWidth={2.5} className="shrink-0"/>
                                     )}
                                     <span className="whitespace-nowrap">{publishing ? 'Veröffentliche…' : `Alle veröffentlichen (${dirty.size})`}</span>
                                 </motion.button>
