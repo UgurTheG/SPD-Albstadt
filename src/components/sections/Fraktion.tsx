@@ -115,7 +115,7 @@ export default function Fraktion() {
   useHttpErrorRedirect(error)
   const [selectedMember, setSelectedMember] = useState<Gemeinderat | null>(null)
   const [selectedFraktionNews, setSelectedFraktionNews] = useState<FraktionNews | null>(null)
-  const [showAllReden, setShowAllReden] = useState(false)
+  const [visibleRedenCount, setVisibleRedenCount] = useState(5)
   const [availableYears, setAvailableYears] = useState<Set<number> | null>(null)
   const [disabledYears, setDisabledYears] = useState<Set<number>>(new Set([2013, 2015]))
 
@@ -158,7 +158,8 @@ export default function Fraktion() {
   const visibleReden = alleReden.filter(year =>
     availableYears === null || availableYears.has(year) || !disabledYears.has(year)
   )
-  const sichtbareReden = showAllReden ? visibleReden : visibleReden.slice(0, 5)
+  const sichtbareReden = visibleReden.slice(0, visibleRedenCount)
+  const hasMoreReden = visibleRedenCount < visibleReden.length
 
   return (
     <section id="fraktion" className="py-24 bg-white dark:bg-gray-950">
@@ -363,13 +364,28 @@ export default function Fraktion() {
             })}
           </div>
           {visibleReden.length > 5 && (
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => setShowAllReden(v => !v)}
-                className="text-xs font-semibold text-spd-red border border-spd-red/30 hover:bg-spd-red hover:text-white transition-all px-3 py-1.5 rounded-lg"
-              >
-                {showAllReden ? '↑ Weniger' : 'Alle anzeigen ↓'}
-              </button>
+            <div className="flex items-center justify-between pt-4">
+              <span className="text-xs text-gray-400 dark:text-gray-500">
+                {Math.min(visibleRedenCount, visibleReden.length)} von {visibleReden.length} Haushaltsreden
+              </span>
+              <div className="flex gap-2">
+                {visibleRedenCount > 5 && (
+                  <button
+                    onClick={() => setVisibleRedenCount(v => Math.max(5, v - 5))}
+                    className="text-xs font-semibold text-gray-400 hover:text-spd-red transition-colors px-3 py-1.5 rounded-lg hover:bg-spd-red/5"
+                  >
+                    ↑ Weniger
+                  </button>
+                )}
+                {hasMoreReden && (
+                  <button
+                    onClick={() => setVisibleRedenCount(v => v + 5)}
+                    className="text-xs font-semibold text-spd-red border border-spd-red/30 hover:bg-spd-red hover:text-white transition-all px-3 py-1.5 rounded-lg"
+                  >
+                    Mehr laden ↓
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </motion.div>
@@ -444,26 +460,38 @@ export default function Fraktion() {
       {/* Member detail sheet */}
       <Sheet open={!!selectedMember} onClose={() => setSelectedMember(null)}>
         {selectedMember && (
-          <div>
-            {/* Hero header with full portrait */}
-            <div className="relative overflow-hidden bg-gray-900">
+          /* Portrait: stacked. Short landscape: image left, info right */
+          <div className="[@media(orientation:landscape)_and_(max-height:600px)]:flex
+                          [@media(orientation:landscape)_and_(max-height:600px)]:flex-row
+                          [@media(orientation:landscape)_and_(max-height:600px)]:min-h-0
+                          [@media(orientation:landscape)_and_(max-height:600px)]:h-full">
+
+            {/* Hero image */}
+            <div className="relative overflow-hidden bg-gray-900
+                            [@media(orientation:landscape)_and_(max-height:600px)]:w-1/2
+                            [@media(orientation:landscape)_and_(max-height:600px)]:shrink-0">
               {selectedMember.bildUrl ? (
                 <img
                   src={selectedMember.bildUrl}
                   alt={selectedMember.name}
-                  className="w-full block"
+                  className="w-full block object-cover object-top
+                             max-h-[58dvh] sm:max-h-[70dvh]
+                             [@media(orientation:landscape)_and_(max-height:600px)]:max-h-none
+                             [@media(orientation:landscape)_and_(max-height:600px)]:h-full"
                 />
               ) : (
-                <div className="w-full aspect-square bg-linear-to-br from-spd-red to-spd-red-dark flex items-center justify-center">
+                <div className="w-full aspect-square [@media(orientation:landscape)_and_(max-height:600px)]:aspect-auto [@media(orientation:landscape)_and_(max-height:600px)]:h-full bg-linear-to-br from-spd-red to-spd-red-dark flex items-center justify-center">
                   <span className="text-6xl font-bold text-white/90">
                     {selectedMember.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                   </span>
                 </div>
               )}
               {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-linear-to-t from-gray-900 via-gray-900/50 to-gray-900/10" />
-              {/* Info on overlay */}
-              <div className="absolute bottom-0 inset-x-0 px-6 pb-7">
+              <div className="absolute inset-0 bg-linear-to-t from-gray-900 via-gray-900/50 to-gray-900/10
+                              [@media(orientation:landscape)_and_(max-height:600px)]:bg-none" />
+              {/* Name overlay — portrait only */}
+              <div className="absolute bottom-0 inset-x-0 px-6 pb-7
+                              [@media(orientation:landscape)_and_(max-height:600px)]:hidden">
                 <h3 className="font-black text-white text-2xl leading-snug">{selectedMember.name}</h3>
                 {selectedMember.beruf && (
                   <p className="text-sm text-white/60 mt-1">{selectedMember.beruf}</p>
@@ -472,7 +500,19 @@ export default function Fraktion() {
             </div>
 
             {/* Body */}
-            <div className="px-6 pt-6 pb-8 space-y-6">
+            <div className="px-6 pt-6 pb-8 space-y-6
+                            [@media(orientation:landscape)_and_(max-height:600px)]:flex-1
+                            [@media(orientation:landscape)_and_(max-height:600px)]:overflow-y-auto
+                            [@media(orientation:landscape)_and_(max-height:600px)]:px-5
+                            [@media(orientation:landscape)_and_(max-height:600px)]:py-5">
+              {/* Name shown only in landscape */}
+              <div className="hidden [@media(orientation:landscape)_and_(max-height:600px)]:block">
+                <h3 className="font-black text-white text-xl leading-snug">{selectedMember.name}</h3>
+                {selectedMember.beruf && (
+                  <p className="text-sm text-white/60 mt-0.5">{selectedMember.beruf}</p>
+                )}
+              </div>
+
               {selectedMember.bio && (
                 <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">
                   {selectedMember.bio}

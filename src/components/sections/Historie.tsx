@@ -259,21 +259,42 @@ export default function Historie() {
       {/* Event detail sheet */}
       <Sheet open={!!selectedEntry} onClose={() => setSelectedEntry(null)} size="lg">
         {selectedEntry && (
-          <div>
-            <div className="sticky top-0 z-20 px-6 pt-8 pb-8 overflow-hidden bg-gray-950">
+          /* Portrait: stacked. Short landscape: two columns — header left, gallery/body right */
+          <div className="[@media(orientation:landscape)_and_(max-height:600px)]:flex
+                          [@media(orientation:landscape)_and_(max-height:600px)]:flex-row
+                          [@media(orientation:landscape)_and_(max-height:600px)]:min-h-0
+                          [@media(orientation:landscape)_and_(max-height:600px)]:h-full">
+
+            {/* Header */}
+            <div className="relative overflow-hidden bg-gray-950
+                            px-6 pt-8 pb-8
+                            [@media(orientation:landscape)_and_(max-height:600px)]:px-5
+                            [@media(orientation:landscape)_and_(max-height:600px)]:pt-6
+                            [@media(orientation:landscape)_and_(max-height:600px)]:pb-6
+                            [@media(orientation:landscape)_and_(max-height:600px)]:w-2/5
+                            [@media(orientation:landscape)_and_(max-height:600px)]:shrink-0
+                            [@media(orientation:landscape)_and_(max-height:600px)]:flex
+                            [@media(orientation:landscape)_and_(max-height:600px)]:flex-col
+                            [@media(orientation:landscape)_and_(max-height:600px)]:justify-center">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(227,0,15,0.08),transparent_50%)]" />
-              <span className="absolute -right-4 top-0 text-[120px] font-black text-white/4 leading-none select-none pointer-events-none">
+              <span className="absolute -right-4 top-0 text-[120px] [@media(orientation:landscape)_and_(max-height:600px)]:text-[72px] font-black text-white/4 leading-none select-none pointer-events-none">
                 {selectedEntry.jahr.split('–')[0]}
               </span>
               <div className="relative">
-                <div className="w-10 h-0.5 bg-spd-red rounded-full mb-5" />
+                <div className="w-10 h-0.5 bg-spd-red rounded-full mb-4" />
                 <p className="text-spd-red/70 text-xs font-bold uppercase tracking-widest mb-1.5">{selectedEntry.jahr}</p>
-                <h3 className="text-xl sm:text-2xl font-black text-white leading-snug">{selectedEntry.titel}</h3>
+                <h3 className="text-xl sm:text-2xl [@media(orientation:landscape)_and_(max-height:600px)]:text-lg font-black text-white leading-snug">{selectedEntry.titel}</h3>
               </div>
             </div>
-            <div className="px-6 pt-6 pb-8">
+
+            {/* Body / gallery */}
+            <div className="px-6 pt-6 pb-8
+                            [@media(orientation:landscape)_and_(max-height:600px)]:px-4
+                            [@media(orientation:landscape)_and_(max-height:600px)]:py-4
+                            [@media(orientation:landscape)_and_(max-height:600px)]:flex-1
+                            [@media(orientation:landscape)_and_(max-height:600px)]:overflow-y-auto">
               {selectedEntry.bilder && selectedEntry.bilder.length > 0 && (
-                <div className="mb-8">
+                <div className="mb-6">
                   <PhotoGallery
                     images={selectedEntry.bilder}
                     captions={selectedEntry.bilderBeschreibungen}
@@ -290,27 +311,39 @@ export default function Historie() {
       {/* Person detail sheet */}
       <Sheet open={!!selectedPerson} onClose={() => setSelectedPerson(null)}>
         {selectedPerson && (
-          <div>
-            {/* Hero header with full portrait */}
-            <div className="relative overflow-hidden bg-gray-900">
+          /* Portrait: stacked hero+body. Short landscape: image left column, info right */
+          <div className="[@media(orientation:landscape)_and_(max-height:600px)]:flex
+                          [@media(orientation:landscape)_and_(max-height:600px)]:flex-row
+                          [@media(orientation:landscape)_and_(max-height:600px)]:min-h-0
+                          [@media(orientation:landscape)_and_(max-height:600px)]:h-full">
+
+            {/* Hero image */}
+            <div className="relative overflow-hidden bg-gray-900
+                            [@media(orientation:landscape)_and_(max-height:600px)]:w-1/2
+                            [@media(orientation:landscape)_and_(max-height:600px)]:shrink-0">
               {selectedPerson.bildUrl ? (
                 <img
                   src={selectedPerson.bildUrl}
                   alt={selectedPerson.name}
                   loading="lazy"
-                  className="w-full block max-h-[60vh] object-cover object-top"
+                  className="w-full block object-cover object-top
+                             max-h-[58dvh] sm:max-h-[70dvh]
+                             [@media(orientation:landscape)_and_(max-height:600px)]:max-h-none
+                             [@media(orientation:landscape)_and_(max-height:600px)]:h-full"
                 />
               ) : (
-                <div className="w-full aspect-square bg-linear-to-br from-spd-red to-spd-red-dark flex items-center justify-center">
+                <div className="w-full aspect-square [@media(orientation:landscape)_and_(max-height:600px)]:aspect-auto [@media(orientation:landscape)_and_(max-height:600px)]:h-full bg-linear-to-br from-spd-red to-spd-red-dark flex items-center justify-center">
                   <span className="text-6xl font-bold text-white/90">
                     {selectedPerson.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                   </span>
                 </div>
               )}
               {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-linear-to-t from-gray-900 via-gray-900/50 to-gray-900/10" />
-              {/* Info on overlay */}
-              <div className="absolute bottom-0 inset-x-0 px-6 pb-7">
+              <div className="absolute inset-0 bg-linear-to-t from-gray-900 via-gray-900/50 to-gray-900/10
+                              [@media(orientation:landscape)_and_(max-height:600px)]:bg-none" />
+              {/* Name overlay — portrait only */}
+              <div className="absolute bottom-0 inset-x-0 px-6 pb-7
+                              [@media(orientation:landscape)_and_(max-height:600px)]:hidden">
                 <p className="text-[11px] font-medium text-gray-400 mb-1">{selectedPerson.rolle}</p>
                 <h3 className="font-black text-white text-2xl leading-snug">{selectedPerson.name}</h3>
                 <p className="text-sm text-white/60 mt-1">{selectedPerson.jahre}</p>
@@ -318,7 +351,17 @@ export default function Historie() {
             </div>
 
             {/* Body */}
-            <div className="px-6 pt-6 pb-8">
+            <div className="px-6 pt-6 pb-8
+                            [@media(orientation:landscape)_and_(max-height:600px)]:px-5
+                            [@media(orientation:landscape)_and_(max-height:600px)]:py-5
+                            [@media(orientation:landscape)_and_(max-height:600px)]:flex-1
+                            [@media(orientation:landscape)_and_(max-height:600px)]:overflow-y-auto">
+              {/* Name shown only in landscape */}
+              <div className="hidden [@media(orientation:landscape)_and_(max-height:600px)]:block mb-4">
+                <p className="text-[11px] font-medium text-gray-400 mb-0.5">{selectedPerson.rolle}</p>
+                <h3 className="font-black text-white text-xl leading-snug">{selectedPerson.name}</h3>
+                <p className="text-sm text-white/60 mt-0.5">{selectedPerson.jahre}</p>
+              </div>
               <div className="w-8 h-0.5 bg-spd-red/40 rounded-full mb-5" />
               {selectedPerson.bildUrls && selectedPerson.bildUrls.length > 0 && (
                   <div className="mb-6">

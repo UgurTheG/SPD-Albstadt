@@ -153,7 +153,10 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="relative aspect-video overflow-hidden max-h-[55vh]">
+        <div className="relative aspect-video overflow-hidden max-h-[55vh]
+                        [@media(orientation:landscape)_and_(max-height:600px)]:aspect-auto
+                        [@media(orientation:landscape)_and_(max-height:600px)]:h-[62vh]
+                        [@media(orientation:landscape)_and_(max-height:600px)]:max-h-[62vh]">
           <AnimatePresence initial={false} custom={direction} mode="wait">
             <motion.img
               key={active}

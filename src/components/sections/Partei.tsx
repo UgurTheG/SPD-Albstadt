@@ -257,22 +257,22 @@ export default function Partei() {
                 >
 
                   {/* Image column — fully visible, dark-framed */}
-                  <div className="relative w-32 sm:w-60 shrink-0 overflow-hidden bg-gray-950 self-stretch">
+                  <div className="relative w-32 sm:w-60 [@media(orientation:landscape)_and_(max-height:600px)]:w-32 shrink-0 overflow-hidden bg-gray-950 self-stretch">
                     <img
                       src={a.bildUrl}
                       alt={a.name}
                       loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                      className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.04]"
                     />
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 min-w-0 flex flex-col justify-between p-4 sm:p-7 min-h-45 sm:min-h-65">
+                  <div className="flex-1 min-w-0 flex flex-col justify-between p-4 sm:p-7 [@media(orientation:landscape)_and_(max-height:600px)]:p-4 min-h-45 sm:min-h-65 [@media(orientation:landscape)_and_(max-height:600px)]:min-h-0">
                     <div>
                       <p className="text-[11px] font-medium tracking-wide text-gray-400 dark:text-gray-500 mb-0.5">{a.rolle}</p>
                       <h4 className="font-extrabold text-gray-900 dark:text-white text-lg sm:text-2xl leading-tight">{a.name}</h4>
                       <p className="text-[11px] sm:text-xs text-gray-400 dark:text-gray-500 mt-1 sm:mt-1.5">{a.wahlkreis}</p>
-                      <p className="hidden sm:block text-sm text-gray-500 dark:text-gray-400 leading-relaxed mt-4 line-clamp-4 whitespace-pre-line">{a.bio}</p>
+                      <p className="hidden sm:block [@media(orientation:landscape)_and_(max-height:600px)]:hidden text-sm text-gray-500 dark:text-gray-400 leading-relaxed mt-4 line-clamp-4 whitespace-pre-line">{a.bio}</p>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
                       {a.website && (
@@ -301,26 +301,38 @@ export default function Partei() {
       {/* Person detail sheet */}
       <Sheet open={!!selectedPerson} onClose={() => setSelectedPerson(null)}>
         {selectedPerson && (
-          <div>
-            {/* Hero header with full portrait */}
-            <div className="relative overflow-hidden bg-gray-900">
+          /* Portrait: stacked. Short landscape: image left, info right */
+          <div className="[@media(orientation:landscape)_and_(max-height:600px)]:flex
+                          [@media(orientation:landscape)_and_(max-height:600px)]:flex-row
+                          [@media(orientation:landscape)_and_(max-height:600px)]:min-h-0
+                          [@media(orientation:landscape)_and_(max-height:600px)]:h-full">
+
+            {/* Hero image */}
+            <div className="relative overflow-hidden bg-gray-900
+                            [@media(orientation:landscape)_and_(max-height:600px)]:w-1/2
+                            [@media(orientation:landscape)_and_(max-height:600px)]:shrink-0">
               {selectedPerson.bildUrl ? (
                 <img
                   src={selectedPerson.bildUrl}
                   alt={selectedPerson.name}
-                  className="w-full block max-h-[60vh] object-cover object-top sm:max-h-[80vh]"
+                  className="w-full block object-cover object-top
+                             max-h-[58dvh] sm:max-h-[70dvh]
+                             [@media(orientation:landscape)_and_(max-height:600px)]:max-h-none
+                             [@media(orientation:landscape)_and_(max-height:600px)]:h-full"
                 />
               ) : (
-                <div className="w-full aspect-square bg-linear-to-br from-spd-red to-spd-red-dark flex items-center justify-center">
+                <div className="w-full aspect-square [@media(orientation:landscape)_and_(max-height:600px)]:aspect-auto [@media(orientation:landscape)_and_(max-height:600px)]:h-full bg-linear-to-br from-spd-red to-spd-red-dark flex items-center justify-center">
                   <span className="text-6xl font-bold text-white/90">
                     {selectedPerson.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                   </span>
                 </div>
               )}
               {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-linear-to-t from-gray-900 via-gray-900/50 to-gray-900/10" />
-              {/* Info on overlay */}
-              <div className="absolute bottom-0 inset-x-0 px-6 pb-7">
+              <div className="absolute inset-0 bg-linear-to-t from-gray-900 via-gray-900/50 to-gray-900/10
+                              [@media(orientation:landscape)_and_(max-height:600px)]:bg-none" />
+              {/* Info overlay — portrait only */}
+              <div className="absolute bottom-0 inset-x-0 px-6 pb-7
+                              [@media(orientation:landscape)_and_(max-height:600px)]:hidden">
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <h3 className="font-black text-white text-2xl leading-snug">{selectedPerson.name}</h3>
                 </div>
@@ -332,7 +344,19 @@ export default function Partei() {
             </div>
 
             {/* Body */}
-            <div className="px-6 pt-6 pb-8 space-y-6">
+            <div className="px-6 pt-6 pb-8 space-y-6
+                            [@media(orientation:landscape)_and_(max-height:600px)]:flex-1
+                            [@media(orientation:landscape)_and_(max-height:600px)]:overflow-y-auto
+                            [@media(orientation:landscape)_and_(max-height:600px)]:px-5
+                            [@media(orientation:landscape)_and_(max-height:600px)]:py-5">
+              {/* Name shown only in landscape */}
+              <div className="hidden [@media(orientation:landscape)_and_(max-height:600px)]:block">
+                <h3 className="font-black text-white text-xl leading-snug">{selectedPerson.name}</h3>
+                <p className="text-sm font-medium tracking-wide text-white/50 mt-0.5">{selectedPerson.rolle}</p>
+                {'wahlkreis' in selectedPerson && (
+                  <p className="text-sm text-white/60 mt-0.5">{(selectedPerson as { wahlkreis: string }).wahlkreis}</p>
+                )}
+              </div>
               <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">
                 {selectedPerson.bio}
               </p>

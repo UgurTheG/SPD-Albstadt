@@ -138,7 +138,8 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
             onClick={e => e.stopPropagation()}
             className={`relative bg-white dark:bg-gray-900 w-full ${maxW}
                         rounded-t-[28px] sm:rounded-3xl
-                        max-h-[92vh] overflow-y-auto overscroll-contain no-scrollbar
+                        max-h-[92vh] [@media(orientation:landscape)_and_(max-height:600px)]:h-[92vh]
+                        overflow-y-auto overscroll-contain no-scrollbar
                         shadow-[0_0_50px_rgba(0,0,0,0.25)]`}
           >
             {/* Mobile drag handle — large touch target to initiate swipe-down-to-dismiss */}
