@@ -42,22 +42,24 @@ function groupChangeEntries(entries: ChangeEntry[]): ChangeGroup[] {
 export default function GlobalDiffModal({onClose}: Props) {
     const state = useAdminStore(s => s.state)
     const originalState = useAdminStore(s => s.originalState)
+    const pendingUploads = useAdminStore(s => s.pendingUploads)
     const revertChange = useAdminStore(s => s.revertChange)
     const revertTab = useAdminStore(s => s.revertTab)
     const [confirmRevertTab, setConfirmRevertTab] = useState<string | null>(null)
     const [confirmRevertAll, setConfirmRevertAll] = useState(false)
 
     const tabChanges = useMemo<TabChanges[]>(() => {
+        const pendingImagePaths = new Set(pendingUploads.map(u => u.ghPath.replace(/^public/, '')))
         const result: TabChanges[] = []
         for (const tab of TABS) {
             if (!tab.file || tab.type === 'haushaltsreden') continue
-            const entries = diffTab(tab as TabConfig, originalState[tab.key], state[tab.key])
+            const entries = diffTab(tab as TabConfig, originalState[tab.key], state[tab.key], pendingImagePaths)
             if (entries.length > 0) {
                 result.push({tab: tab as TabConfig, entries, groups: groupChangeEntries(entries)})
             }
         }
         return result
-    }, [state, originalState])
+    }, [state, originalState, pendingUploads])
 
     const totalChanges = tabChanges.reduce((sum, tc) => sum + tc.entries.length, 0)
 

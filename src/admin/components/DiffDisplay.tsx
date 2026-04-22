@@ -3,6 +3,14 @@ import {type ChangeEntry, summarizeValue} from '../lib/diff'
 
 export function FieldChangeDiff({entry}: { entry: ChangeEntry }) {
     const t = entry.fieldType
+    if (entry.pendingImagePath) {
+        const filename = entry.pendingImagePath.split('/').pop() || entry.pendingImagePath
+        return (
+            <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                Neues Bild hochgeladen · <span className="font-mono text-gray-700 dark:text-gray-300">{filename}</span>
+            </div>
+        )
+    }
     const isTextish = t === 'textarea' || t === 'text' || t === 'email' || t === 'url'
     if (isTextish && typeof entry.before === 'string' && typeof entry.after === 'string') {
         return <div className="text-[11px]"><InlineDiff oldVal={entry.before} newVal={entry.after}/></div>

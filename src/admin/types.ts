@@ -33,6 +33,7 @@ export interface PendingUpload {
     ghPath: string
     base64: string
     message: string
+    tabKey?: string
 }
 
 export interface GHUser {

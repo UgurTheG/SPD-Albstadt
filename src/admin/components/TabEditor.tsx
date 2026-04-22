@@ -370,10 +370,14 @@ function StickyPublishBar({isDirty, publishing, onPublish, onShowDiff}: {
 function DiffModal({tab, onClose, onRevertAll}: { tab: TabConfig; onClose: () => void; onRevertAll: () => void }) {
     const current = useAdminStore(s => s.state[tab.key])
     const original = useAdminStore(s => s.originalState[tab.key])
+    const pendingUploads = useAdminStore(s => s.pendingUploads)
     const revertChange = useAdminStore(s => s.revertChange)
     const [confirmRevertAll, setConfirmRevertAll] = useState(false)
 
-    const entries = useMemo(() => diffTab(tab, original, current), [tab, original, current])
+    const entries = useMemo(() => {
+        const pendingImagePaths = new Set(pendingUploads.map(u => u.ghPath.replace(/^public/, '')))
+        return diffTab(tab, original, current, pendingImagePaths)
+    }, [tab, original, current, pendingUploads])
     const groups = useMemo(() => groupChangeEntries(entries), [entries])
 
     return (

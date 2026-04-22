@@ -24,6 +24,9 @@ export interface ChangeEntry {
     movedTo?: number
     // Companion keys that should be reverted together (e.g. captionsKey for imagelist)
     companionPaths?: ChangePath[]
+    // Set when the change is only a pending image upload for the same URL
+    // (e.g. replacing a photo where the filename slug stays the same).
+    pendingImagePath?: string
 }
 
 const eq = (a: unknown, b: unknown): boolean => {
@@ -241,6 +244,7 @@ export function diffTab(
     tab: TabConfig,
     original: unknown,
     current: unknown,
+    pendingImagePaths?: Set<string>,
 ): ChangeEntry[] {
     const out: ChangeEntry[] = []
     if (tab.type === 'haushaltsreden') return out
@@ -255,43 +259,115 @@ export function diffTab(
             undefined,
             out,
         )
-        return out
+    } else {
+        const orig = (original ?? {}) as Record<string, unknown>
+        const curr = (current ?? {}) as Record<string, unknown>
+
+        if (tab.topFields) {
+            diffFields(tab.topFields, orig, curr, [], 'Allgemein', undefined, undefined, undefined, out)
+        }
+        if (tab.sections) {
+            for (const sec of tab.sections) {
+                if (sec.isSingleObject) {
+                    diffFields(
+                        sec.fields,
+                        orig[sec.key] as Record<string, unknown> | undefined,
+                        curr[sec.key] as Record<string, unknown> | undefined,
+                        [sec.key],
+                        sec.label,
+                        sec.key,
+                        undefined,
+                        undefined,
+                        out,
+                    )
+                } else {
+                    diffArray(
+                        sec.fields,
+                        orig[sec.key] as Record<string, unknown>[] | undefined,
+                        curr[sec.key] as Record<string, unknown>[] | undefined,
+                        [sec.key],
+                        sec.label,
+                        sec.key,
+                        out,
+                    )
+                }
+            }
+        }
     }
 
-    const orig = (original ?? {}) as Record<string, unknown>
-    const curr = (current ?? {}) as Record<string, unknown>
+    if (pendingImagePaths && pendingImagePaths.size > 0) {
+        addPendingImageEntries(tab, current, pendingImagePaths, out)
+    }
+    return out
+}
 
+function addPendingImageEntries(
+    tab: TabConfig,
+    current: unknown,
+    pendingImagePaths: Set<string>,
+    out: ChangeEntry[],
+) {
+    const covered = new Set(out.map(e => e.path.join(' ')))
+
+    const emit = (
+        fields: FieldConfig[],
+        item: Record<string, unknown> | undefined,
+        basePath: ChangePath,
+        group: string,
+        groupKey: string | undefined,
+        itemIdx: number | undefined,
+        itemLbl: string | undefined,
+    ) => {
+        if (!item) return
+        for (const f of fields) {
+            if (f.type !== 'image') continue
+            const v = item[f.key]
+            if (typeof v !== 'string' || !pendingImagePaths.has(v)) continue
+            const fieldPath: ChangePath = [...basePath, f.key]
+            if (covered.has(fieldPath.join(' '))) continue
+            out.push({
+                id: fieldPath.join('.') + ':image-replaced',
+                path: fieldPath,
+                kind: 'modified',
+                group,
+                groupKey,
+                itemIndex: itemIdx,
+                itemLabel: itemLbl,
+                fieldKey: f.key,
+                fieldLabel: f.label,
+                fieldType: f.type,
+                before: v,
+                after: v,
+                pendingImagePath: v,
+            })
+        }
+    }
+
+    if (tab.type === 'array' && tab.fields) {
+        const arr = Array.isArray(current) ? current as Record<string, unknown>[] : []
+        for (let i = 0; i < arr.length; i++) {
+            emit(tab.fields, arr[i], [i], tab.label, undefined, i, itemLabel(tab.fields, arr[i], i))
+        }
+        return
+    }
+
+    const curr = (current ?? {}) as Record<string, unknown>
     if (tab.topFields) {
-        diffFields(tab.topFields, orig, curr, [], 'Allgemein', undefined, undefined, undefined, out)
+        emit(tab.topFields, curr, [], 'Allgemein', undefined, undefined, undefined)
     }
     if (tab.sections) {
         for (const sec of tab.sections) {
             if (sec.isSingleObject) {
-                diffFields(
-                    sec.fields,
-                    orig[sec.key] as Record<string, unknown> | undefined,
-                    curr[sec.key] as Record<string, unknown> | undefined,
-                    [sec.key],
-                    sec.label,
-                    sec.key,
-                    undefined,
-                    undefined,
-                    out,
-                )
+                const obj = curr[sec.key] as Record<string, unknown> | undefined
+                emit(sec.fields, obj, [sec.key], sec.label, sec.key, undefined, undefined)
             } else {
-                diffArray(
-                    sec.fields,
-                    orig[sec.key] as Record<string, unknown>[] | undefined,
-                    curr[sec.key] as Record<string, unknown>[] | undefined,
-                    [sec.key],
-                    sec.label,
-                    sec.key,
-                    out,
-                )
+                const arr = Array.isArray(curr[sec.key]) ? curr[sec.key] as Record<string, unknown>[] : []
+                for (let i = 0; i < arr.length; i++) {
+                    emit(sec.fields, arr[i], [sec.key, i], sec.label, sec.key, i, itemLabel(sec.fields, arr[i], i))
+                }
             }
         }
     }
-    return out
 }
 
 // Apply a single revert: given the current value at tab root, produce a new

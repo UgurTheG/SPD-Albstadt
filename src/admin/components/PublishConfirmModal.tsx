@@ -38,21 +38,23 @@ function groupChangeEntries(entries: ChangeEntry[]): ChangeGroup[] {
 export default function PublishConfirmModal({tabKey, onConfirm, onCancel}: Props) {
     const state = useAdminStore(s => s.state)
     const originalState = useAdminStore(s => s.originalState)
+    const pendingUploads = useAdminStore(s => s.pendingUploads)
     const publishing = useAdminStore(s => s.publishing)
     const revertChange = useAdminStore(s => s.revertChange)
 
     const tabChanges = useMemo(() => {
+        const pendingImagePaths = new Set(pendingUploads.map(u => u.ghPath.replace(/^public/, '')))
         const result: { tab: TabConfig; entries: ChangeEntry[]; groups: ChangeGroup[] }[] = []
         const tabs = tabKey ? TABS.filter(t => t.key === tabKey) : TABS
         for (const tab of tabs) {
             if (!tab.file || tab.type === 'haushaltsreden') continue
-            const entries = diffTab(tab as TabConfig, originalState[tab.key], state[tab.key])
+            const entries = diffTab(tab as TabConfig, originalState[tab.key], state[tab.key], pendingImagePaths)
             if (entries.length > 0) {
                 result.push({tab: tab as TabConfig, entries, groups: groupChangeEntries(entries)})
             }
         }
         return result
-    }, [state, originalState, tabKey])
+    }, [state, originalState, tabKey, pendingUploads])
 
     const totalChanges = tabChanges.reduce((sum, tc) => sum + tc.entries.length, 0)
 

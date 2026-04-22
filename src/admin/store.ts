@@ -292,7 +292,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     },
 
     addPendingUpload: (upload) => {
-        set(prev => ({pendingUploads: [...prev.pendingUploads, upload]}))
+        set(prev => ({pendingUploads: [...prev.pendingUploads, {...upload, tabKey: upload.tabKey ?? prev.activeTab}]}))
     },
 
     resetOriginal: (tabKey) => {
@@ -380,7 +380,12 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                     allPaths.add(p)
                 }
             }
-            const keptUploads = prev.pendingUploads.filter(u => allPaths.has(u.ghPath.replace(/^public/, '')))
+            // Drop uploads that were tagged to this tab (covers same-URL replacements
+            // that wouldn't be dropped by path-reference filtering alone), plus any
+            // whose target path is no longer referenced by any tab.
+            const keptUploads = prev.pendingUploads.filter(u =>
+                u.tabKey !== tabKey && allPaths.has(u.ghPath.replace(/^public/, ''))
+            )
             persistDirtyState(nextState, prev.originalState)
             return {
                 state: nextState,
@@ -408,7 +413,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                     allPaths.add(p)
                 }
             }
-            const keptUploads = prev.pendingUploads.filter(u => allPaths.has(u.ghPath.replace(/^public/, '')))
+            let keptUploads = prev.pendingUploads.filter(u => allPaths.has(u.ghPath.replace(/^public/, '')))
+            // Reverting a same-URL image replacement: explicitly drop that upload
+            if (entry.pendingImagePath) {
+                keptUploads = keptUploads.filter(u => u.ghPath.replace(/^public/, '') !== entry.pendingImagePath)
+            }
             persistDirtyState(nextState, prev.originalState)
             return {
                 state: nextState,
