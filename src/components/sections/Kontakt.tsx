@@ -270,12 +270,13 @@ export default function Kontakt() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="lg:col-span-2 flex flex-col gap-6"
           >
-            {/* Group photo */}
-            <div className="rounded-2xl overflow-hidden ring-1 ring-gray-200 dark:ring-white/10 shadow-sm">
+            {/* Group photo — hidden on small landscape screens where height is very limited */}
+            <div className="rounded-2xl overflow-hidden ring-1 ring-gray-200 dark:ring-white/10 shadow-sm
+                            [@media(orientation:landscape)_and_(max-height:600px)]:hidden">
               <img
                 src={kontakt?.gruppenbild || '/images/kontakt/gruppenbild.webp'}
                 alt="SPD Albstadt – Gruppenbild"
-                className="w-full h-auto block"
+                className="w-full h-auto block max-h-56 object-cover object-center"
               />
             </div>
 
