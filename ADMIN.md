@@ -66,7 +66,7 @@ The admin page is served via Vercel rewrites defined in `vercel.json`:
 ```javascript
 const REPO_OWNER = 'UgurTheG'
 const REPO_NAME = 'SPD-Albstadt'
-const BRANCH = 'master'
+const BRANCH = 'main'
 ```
 
 ### How Publishing Works

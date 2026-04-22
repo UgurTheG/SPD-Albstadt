@@ -1,6 +1,6 @@
 const REPO_OWNER = 'UgurTheG'
 const REPO_NAME = 'SPD-Albstadt'
-const BRANCH = 'master'
+const BRANCH = 'main'
 
 function headers(token: string) {
     return {Authorization: `Bearer ${token}`, 'Content-Type': 'application/json'}

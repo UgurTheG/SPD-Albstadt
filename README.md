@@ -139,7 +139,7 @@ Zusätzlich existieren Fehlerseiten (`/400`, `/401`, `/403`, `/404`, `/500` usw.
 
 ### Datenquelle der Homepage
 
-Für Dateien unter `/data/*` wird zuerst GitHub Raw genutzt (`master`-Branch, Verzeichnis `public`), damit Änderungen sofort sichtbar sind. Falls GitHub temporär nicht erreichbar ist, wird auf die lokal ausgelieferte Kopie (`/data/*.json`) zurückgefallen.
+Für Dateien unter `/data/*` wird zuerst GitHub Raw genutzt (`main`-Branch, Verzeichnis `public`), damit Änderungen sofort sichtbar sind. Falls GitHub temporär nicht erreichbar ist, wird auf die lokal ausgelieferte Kopie (`/data/*.json`) zurückgefallen.
 
 ## 7. Admin-Seite nutzen
 
@@ -174,7 +174,7 @@ Ohne gültigen Token ist keine Veröffentlichung möglich.
 
 ### Veröffentlichungslogik
 
-Beim Veröffentlichen werden folgende Änderungen als Git-Commit auf den Branch `master` geschrieben:
+Beim Veröffentlichen werden folgende Änderungen als Git-Commit auf den Branch `main` geschrieben:
 
 - geänderte JSON-Dateien aus `public/data/`
 - hochgeladene Bilder (zuerst in Upload-Warteschlange, dann Commit)

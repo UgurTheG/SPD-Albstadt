@@ -4,7 +4,7 @@ import useSWR from 'swr'
 // lets data changes go live immediately, without waiting for Vercel to rebuild.
 // If GitHub is unreachable we fall back to the bundled /data/*.json from the
 // last successful deploy, so the site never goes blank.
-const GITHUB_RAW = 'https://raw.githubusercontent.com/UgurTheG/SPD-Albstadt/master/public'
+const GITHUB_RAW = 'https://raw.githubusercontent.com/UgurTheG/SPD-Albstadt/main/public'
 
 export class HttpError extends Error {
   status: number
