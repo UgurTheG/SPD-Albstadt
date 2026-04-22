@@ -357,6 +357,7 @@ export default function Partei() {
                   <p className="text-sm text-gray-500 dark:text-white/60 mt-0.5">{(selectedPerson as { wahlkreis: string }).wahlkreis}</p>
                 )}
               </div>
+              <div className="w-8 h-0.5 bg-spd-red rounded-full" />
               <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">
                 {selectedPerson.bio}
               </p>

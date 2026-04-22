@@ -513,6 +513,8 @@ export default function Fraktion() {
                 )}
               </div>
 
+              <div className="w-8 h-0.5 bg-spd-red rounded-full" />
+
               {selectedMember.bio && (
                 <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">
                   {selectedMember.bio}
