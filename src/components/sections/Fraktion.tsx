@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {motion, useInView, type Variants} from 'framer-motion'
 import {Building2, ExternalLink, FileDown, Mail, MapPin} from 'lucide-react'
-import {useData} from '../../hooks/useData'
+import {fetchData, useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
@@ -148,8 +148,7 @@ export default function Fraktion() {
     }
     check()
     // Fetch disabled years config
-    fetch('/data/haushaltsreden.json')
-      .then(r => r.ok ? r.json() : null)
+    fetchData<{disabledYears?: number[]}>('/data/haushaltsreden.json')
       .then(data => { if (!cancelled && data?.disabledYears) setDisabledYears(new Set(data.disabledYears)) })
       .catch(() => {})
     return () => { cancelled = true }
