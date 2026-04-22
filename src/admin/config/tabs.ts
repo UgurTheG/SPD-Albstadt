@@ -177,6 +177,7 @@ export const TABS: TabConfig[] = [
                     {key: 'email', label: 'E-Mail-Adresse', type: 'email', iconKey: 'mail'},
                     {key: 'telefon', label: 'Telefon', type: 'text', iconKey: 'phone'},
                     {key: 'formspreeUrl', label: 'Formspree-URL (Kontaktformular)', type: 'url', iconKey: 'link'},
+                    {key: 'gruppenbild', label: 'Gruppenbild', type: 'image', imageDir: 'kontakt'},
                 ]
             },
             {

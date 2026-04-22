@@ -11,6 +11,7 @@ export interface SiteConfig {
         email?: string
         telefon?: string
         formspreeUrl?: string
+        gruppenbild?: string
     }
     buerozeiten?: { tage: string; zeit: string }[]
     social?: {

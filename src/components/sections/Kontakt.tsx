@@ -273,7 +273,7 @@ export default function Kontakt() {
             {/* Group photo */}
             <div className="rounded-2xl overflow-hidden ring-1 ring-gray-200 dark:ring-white/10 shadow-sm">
               <img
-                src="/images/kontakt/gruppenbild.webp"
+                src={kontakt?.gruppenbild || '/images/kontakt/gruppenbild.webp'}
                 alt="SPD Albstadt – Gruppenbild"
                 className="w-full h-auto block"
               />
