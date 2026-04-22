@@ -160,14 +160,14 @@ export default function TabEditor({tab}: Props) {
                     type="button"
                     onClick={handlePublish}
                     disabled={!isDirty || publishing}
-                    className={`text-[10px] sm:text-xs font-bold px-3 sm:px-5 py-2 rounded-xl flex items-center gap-1.5 sm:gap-2 transition-all duration-200 ${
+                    className={`shrink-0 text-[10px] sm:text-xs font-bold px-3 sm:px-5 py-2 rounded-xl flex items-center gap-1.5 sm:gap-2 transition-all duration-200 whitespace-nowrap [hyphens:none] ${
                         isDirty
                             ? 'bg-linear-to-r from-spd-red to-spd-red-dark text-white shadow-sm shadow-spd-red/20 hover:shadow-lg hover:shadow-spd-red/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:hover:scale-100'
                             : 'bg-gray-200/60 dark:bg-gray-700/40 text-gray-400 dark:text-gray-500 cursor-not-allowed backdrop-blur-sm'
                     }`}
                 >
-                    {publishing ? <Loader2 size={13} className="animate-spin"/> : <Rocket size={13}/>}
-                    <span>{publishing ? 'Veröffentliche…' : 'Veröffentlichen'}</span>
+                    {publishing ? <Loader2 size={13} className="animate-spin shrink-0"/> : <Rocket size={13} className="shrink-0"/>}
+                    <span className="whitespace-nowrap">{publishing ? 'Veröffentliche…' : 'Veröffentlichen'}</span>
                 </button>
             </div>
 
@@ -333,30 +333,32 @@ function StickyPublishBar({isDirty, publishing, onPublish, onShowDiff}: {
                     transition={{duration: 0.2}}
                     className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:bottom-6 z-40 lg:right-auto lg:left-1/2 lg:ml-32 lg:-translate-x-1/2"
                 >
-                    <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/60 shadow-2xl shadow-black/10 dark:shadow-black/40 rounded-2xl p-3 flex items-center gap-2 sm:gap-3">
-                        <div className="flex items-center gap-2 px-2 min-w-0">
+                    <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/60 shadow-2xl shadow-black/10 dark:shadow-black/40 rounded-2xl p-3 flex items-center gap-2 sm:gap-3 [hyphens:none] [text-align:left]">
+                        <div className="flex items-center gap-2 px-1 sm:px-2 min-w-0 flex-1 sm:flex-initial">
                             <span className="w-2 h-2 rounded-full bg-spd-red animate-pulse shrink-0"/>
-                            <span className="text-xs font-semibold dark:text-gray-200 truncate">Ungespeicherte Änderungen</span>
+                            <span className="text-xs font-semibold dark:text-gray-200 truncate [hyphens:none]">Ungespeicherte Änderungen</span>
                         </div>
                         <button
                             type="button"
                             onClick={onShowDiff}
-                            className="text-xs font-medium px-3 py-2 rounded-xl border border-amber-300/60 dark:border-amber-700/40 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors flex items-center gap-1.5"
+                            aria-label="Änderungen anzeigen"
+                            className="shrink-0 text-xs font-medium px-2.5 sm:px-3 py-2 rounded-xl border border-amber-300/60 dark:border-amber-700/40 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors flex items-center gap-1.5 whitespace-nowrap [hyphens:none]"
                         >
-                            <FileSearch size={12}/> Änderungen
+                            <FileSearch size={12}/>
+                            <span className="hidden sm:inline">Änderungen</span>
                         </button>
                         <button
                             type="button"
                             onClick={onPublish}
                             disabled={publishing}
-                            className="text-xs font-bold px-4 py-2 rounded-xl bg-linear-to-r from-spd-red to-spd-red-dark text-white shadow-sm shadow-spd-red/20 hover:shadow-lg hover:shadow-spd-red/30 active:scale-[0.98] transition-all flex items-center gap-1.5 disabled:opacity-70 disabled:active:scale-100"
+                            className="shrink-0 text-xs font-bold px-3 sm:px-4 py-2 rounded-xl bg-linear-to-r from-spd-red to-spd-red-dark text-white shadow-sm shadow-spd-red/20 hover:shadow-lg hover:shadow-spd-red/30 active:scale-[0.98] transition-all flex items-center gap-1.5 disabled:opacity-70 disabled:active:scale-100 whitespace-nowrap [hyphens:none]"
                         >
                             {publishing ? (
-                                <Loader2 size={12} className="animate-spin"/>
+                                <Loader2 size={12} className="animate-spin shrink-0"/>
                             ) : (
-                                <Rocket size={12}/>
+                                <Rocket size={12} className="shrink-0"/>
                             )}
-                            <span>{publishing ? 'Veröffentliche…' : 'Veröffentlichen'}</span>
+                            <span className="whitespace-nowrap">{publishing ? 'Veröffentliche…' : 'Veröffentlichen'}</span>
                         </button>
                     </div>
                 </motion.div>

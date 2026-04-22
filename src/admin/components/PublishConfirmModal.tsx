@@ -115,16 +115,16 @@ export default function PublishConfirmModal({tabKey, onConfirm, onCancel}: Props
                         Abbrechen
                     </button>
                     <button
-                        className="text-xs px-4 py-2.5 rounded-xl bg-linear-to-r from-spd-red to-spd-red-dark text-white font-bold shadow-sm shadow-spd-red/20 hover:shadow-lg hover:shadow-spd-red/30 active:scale-[0.98] transition-all flex items-center gap-1.5 disabled:opacity-70 disabled:active:scale-100 disabled:cursor-not-allowed"
+                        className="text-xs px-4 py-2.5 rounded-xl bg-linear-to-r from-spd-red to-spd-red-dark text-white font-bold shadow-sm shadow-spd-red/20 hover:shadow-lg hover:shadow-spd-red/30 active:scale-[0.98] transition-all flex items-center gap-1.5 disabled:opacity-70 disabled:active:scale-100 disabled:cursor-not-allowed whitespace-nowrap [hyphens:none]"
                         onClick={onConfirm}
                         disabled={publishing || totalChanges === 0}
                     >
                         {publishing ? (
-                            <Loader2 size={13} className="animate-spin"/>
+                            <Loader2 size={13} className="animate-spin shrink-0"/>
                         ) : (
-                            <Rocket size={13}/>
+                            <Rocket size={13} className="shrink-0"/>
                         )}
-                        <span>{publishing ? 'Veröffentliche…' : 'Ja, veröffentlichen'}</span>
+                        <span className="whitespace-nowrap">{publishing ? 'Veröffentliche…' : 'Ja, veröffentlichen'}</span>
                     </button>
                 </div>
             </motion.div>
