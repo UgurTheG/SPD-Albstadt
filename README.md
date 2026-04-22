@@ -1,169 +1,295 @@
-# SPD Albstadt – Website
+# SPD Albstadt – Homepage und Admin-Editor
 
-Moderne One-Pager-Website für den SPD Ortsverein Albstadt.
+Dieses Repository enthält die öffentliche Website des SPD-Ortsvereins Albstadt sowie eine integrierte Admin-Seite unter `/admin`, mit der Inhalte direkt im Browser gepflegt und in das GitHub-Repository veröffentlicht werden können.
 
-## 🚀 Entwicklungsserver starten
+## Inhalt
+
+- [1. Ziel und Funktionsumfang](#1-ziel-und-funktionsumfang)
+- [2. Technologie-Stack](#2-technologie-stack)
+- [3. Projektstruktur](#3-projektstruktur)
+- [4. Lokale Entwicklung](#4-lokale-entwicklung)
+- [5. Konfiguration und Umgebungsvariablen](#5-konfiguration-und-umgebungsvariablen)
+- [6. Homepage nutzen und verstehen](#6-homepage-nutzen-und-verstehen)
+- [7. Admin-Seite nutzen](#7-admin-seite-nutzen)
+- [8. Inhalte und Datenmodell](#8-inhalte-und-datenmodell)
+- [9. Medien und Dokumente](#9-medien-und-dokumente)
+- [10. API-Endpunkte](#10-api-endpunkte)
+- [11. Deployment](#11-deployment)
+- [12. Sicherheit und Betriebshinweise](#12-sicherheit-und-betriebshinweise)
+- [13. Typische Workflows](#13-typische-workflows)
+- [14. Fehlerbehebung](#14-fehlerbehebung)
+
+## 1. Ziel und Funktionsumfang
+
+Die Anwendung besteht aus zwei Teilen:
+
+- Öffentliche Website (One-Pager mit Unterseiten-Charakter über Routen)
+- Admin-Editor unter `/admin` zur redaktionellen Pflege ohne lokalen Build oder direkten Dateizugriff
+
+Umgesetzte Hauptfunktionen:
+
+- Abschnittsseiten für `Aktuelles`, `Partei`, `Fraktion`, `Historie`, `Kontakt`, `Datenschutz`, `Impressum`
+- News mit Kategorien, Suche und Detailansicht
+- Kalenderansicht auf Basis eines ICS-Feeds über `/api/ics`
+- Optionaler Instagram-Feed über `/api/instagram` mit automatischem Fallback
+- Kontaktformular (Formspree-URL über Konfiguration)
+- Admin-Editor mit Login per GitHub Personal Access Token, Drafts, Undo/Redo, Bild-Upload, Sammel-Veröffentlichung und Orphan-Bild-Erkennung
+
+## 2. Technologie-Stack
+
+- Frontend: React 19, TypeScript, Vite
+- Routing: `react-router-dom`
+- Styling: Tailwind CSS v4
+- Animationen: Framer Motion
+- State Management (Admin): Zustand
+- Datenabruf: SWR
+- Icons: Lucide
+- Deployment-Ziel: Vercel
+- Serverless-Endpunkte: `api/ics.ts`, `api/instagram.ts`
+
+## 3. Projektstruktur
+
+Wichtige Verzeichnisse:
+
+- `src/`: React-Anwendung (Homepage und Admin-App)
+- `src/admin/`: Admin-Editor (React-basiert)
+- `public/data/`: redaktionelle Inhalte als JSON
+- `public/images/`: Bilder
+- `public/documents/`: PDFs und andere Dokumente
+- `api/`: serverseitige Endpunkte (Vercel Functions)
+- `server/`: servernahe Logik (z. B. Instagram-Feed-Aufbereitung)
+- `vercel.json`: Rewrites und Cache-Header
+
+## 4. Lokale Entwicklung
+
+### Voraussetzungen
+
+- Node.js (empfohlen: aktuelle LTS-Version)
+- npm
+
+### Installation und Start
 
 ```bash
 npm install
 npm run dev
 ```
 
-Die Website ist dann unter **http://localhost:5173** erreichbar.
+Standardmäßig läuft Vite unter `http://localhost:5173`.
 
-## 📝 Inhalte bearbeiten (ohne Programmierkenntnisse)
-
-Alle Inhalte der Website befinden sich im Ordner **`public/data/`** als einfache JSON-Dateien.
-Diese können mit jedem Texteditor bearbeitet werden (z.B. Notepad, TextEdit, VS Code).
-
-> 💡 **Tipp:** Benutzen Sie https://jsoneditoronline.org/ für einen komfortablen JSON-Editor im Browser.
-
----
-
-### 📰 Neuigkeiten bearbeiten → `public/data/news.json`
-
-**Neuen Artikel hinzufügen:**
-```json
-{
-  "id": "5",
-  "datum": "2026-04-01",
-  "titel": "Titel des Artikels",
-  "zusammenfassung": "Kurze Zusammenfassung (wird in der Übersicht angezeigt)",
-  "inhalt": "Vollständiger Text des Artikels (wird beim Klick angezeigt)",
-  "kategorie": "Gemeinderat",
-  "bildUrl": ""
-}
-```
-
-**Mögliche Kategorien:** `Gemeinderat`, `Veranstaltung`, `Haushalt`, `Ortsverein`
-
-**Artikel löschen:** Einfach den gesamten `{ ... }` Block entfernen.
-
----
-
-### 📅 Veranstaltungen bearbeiten → `public/data/events.json`
-
-**Neue Veranstaltung hinzufügen:**
-```json
-{
-  "id": "7",
-  "datum": "2026-08-15",
-  "uhrzeit": "19:30",
-  "titel": "Name der Veranstaltung",
-  "ort": "Gasthaus Ochsen, Ebingen",
-  "beschreibung": "Kurze Beschreibung der Veranstaltung"
-}
-```
-
-**Datum-Format:** `JJJJ-MM-TT` (z.B. `2026-12-24` für den 24. Dezember 2026)
-
-Vergangene Veranstaltungen werden automatisch ausgeblendet.
-
----
-
-### 🏛️ Partei-Infos bearbeiten → `public/data/party.json`
-
-Diese Datei enthält:
-- **`beschreibung`** – Einleitungstext über den Ortsverein
-- **`schwerpunkte`** – Die 6 politischen Schwerpunkte (mit Icon-Namen aus [lucide.dev](https://lucide.dev))
-- **`vorstand`** – Mitglieder des Vorstands
-- **`abgeordnete`** – Abgeordnete auf höherer Ebene
-
-**Vorstandsmitglied hinzufügen:**
-```json
-{
-  "name": "Vorname Nachname",
-  "rolle": "Beisitzerin",
-  "email": "email@spd-albstadt.de",
-  "bildUrl": "",
-  "bio": "Kurze Biographie..."
-}
-```
-
----
-
-### 🗳️ Fraktion bearbeiten → `public/data/fraktion.json`
-
-Enthält:
-- **`beschreibung`** – Einleitungstext
-- **`gemeinderaete`** – Liste der Gemeinderäte
-- **`kreisraete`** – Liste der Kreisräte
-- **`news`** – Aktuelle Meldungen aus der Fraktion
-
----
-
-### 📖 Historie bearbeiten → `public/data/history.json`
-
-Enthält:
-- **`einleitung`** – Einführungstext
-- **`timeline`** – Chronik-Einträge (nach Jahr sortiert)
-- **`persoenlichkeiten`** – Kommunale Persönlichkeiten
-
----
-
-### 🖼️ Bilder hinzufügen
-
-1. Bild in den Ordner `public/images/` hochladen
-2. Im JSON den `bildUrl` Wert setzen: `"bildUrl": "/images/mein-bild.jpg"`
-
----
-
-## 🔧 Technische Details
-
-- **Framework:** React + TypeScript + Vite
-- **Styling:** Tailwind CSS v4 (kein eigenes CSS)
-- **Animationen:** Framer Motion
-- **Icons:** Lucide React
-
-## 📦 Produktion bauen
+### Wichtige Skripte
 
 ```bash
+npm run dev
 npm run build
+npm run preview
+npm run lint
 ```
 
-Der fertige Build liegt im Ordner `dist/` und kann auf jedem Webserver deployed werden.
+- `dev`: Entwicklungsserver
+- `build`: TypeScript-Build und Produktionsbundle
+- `preview`: Lokale Vorschau des Produktionsbuilds
+- `lint`: ESLint-Prüfung
 
-## 📸 Instagram-Feed aktivieren (Graph API)
+## 5. Konfiguration und Umgebungsvariablen
 
-Der Instagram-Bereich in `Aktuelles` lädt Beiträge serverseitig über die Meta Graph API.
-Aktuell ist der Ziel-Account zentral in `src/shared/instagram.ts` konfiguriert und auf `spdalbstadt` gesetzt.
+### Instagram-Integration
 
-Benötigte Umgebungsvariablen:
+Die Variablen sind in `.env.example` dokumentiert:
 
 ```bash
-INSTAGRAM_USER_ID=...
-INSTAGRAM_ACCESS_TOKEN=...
+INSTAGRAM_USER_ID=
+INSTAGRAM_ACCESS_TOKEN=
 ```
 
-- `INSTAGRAM_USER_ID`: Instagram Graph User ID des **authentifizierten Business-/Creator-Accounts**, der für die Abfrage verwendet wird
-- `INSTAGRAM_ACCESS_TOKEN`: passender Meta Graph API Token für denselben Account
-
-Die App verwendet dafür **Business Discovery** und fragt gezielt den in `src/shared/instagram.ts` hinterlegten öffentlichen Account ab.
-Damit lassen sich öffentliche **Business-/Creator-Profile** per Username abfragen, aber nicht beliebige private Accounts.
-
-### Lokal entwickeln
-
-1. `.env.example` nach `.env.local` kopieren
-2. Die beiden Werte eintragen
-3. Den Entwicklungsserver neu starten
+Lokale Einrichtung:
 
 ```bash
 cp .env.example .env.local
-npm run dev
 ```
 
-### Auf Vercel
+Hinweise:
 
-Die gleichen Variablen in den Projekt-Umgebungsvariablen hinterlegen:
+- Zielprofil ist in `src/shared/instagram.ts` definiert (`spdalbstadt`)
+- Fehlen Variablen oder schlägt die API fehl, wird automatisch ein Fallback ohne Feed-Karten angezeigt (Link zum Profil bleibt sichtbar)
 
-- `INSTAGRAM_USER_ID`
-- `INSTAGRAM_ACCESS_TOKEN`
+### Inhaltskonfiguration
 
-Wenn die Variablen fehlen oder die Graph API vorübergehend nicht erreichbar ist, zeigt die Website automatisch einen Fallback mit Link zum Instagram-Profil statt einer Fehlermeldung.
+Zentrale Laufzeit-Konfiguration erfolgt über `public/data/config.json`, unter anderem:
 
-## 📬 Kontaktformular aktivieren
+- `icsUrl` für Kalenderimport
+- `features.instagramFeed` und `features.fraktionNews`
+- `kontakt.formspreeUrl` für Kontaktformular
 
-Das Kontaktformular ist vorbereitet für [Formspree](https://formspree.io):
-1. Kostenloses Konto auf formspree.io erstellen
-2. Ein neues Formular anlegen
-3. Die Formular-URL in `src/components/sections/Kontakt.tsx` bei `FORMSPREE_URL` eintragen
+## 6. Homepage nutzen und verstehen
+
+### Routing
+
+Die Hauptseiten werden clientseitig geroutet:
+
+- `/`
+- `/aktuelles`
+- `/partei`
+- `/fraktion`
+- `/historie`
+- `/kontakt`
+- `/datenschutz`
+- `/impressum`
+
+Zusätzlich existieren Fehlerseiten (`/400`, `/401`, `/403`, `/404`, `/500` usw.) mit Catch-All auf 404.
+
+### Datenquelle der Homepage
+
+Für Dateien unter `/data/*` wird zuerst GitHub Raw genutzt (`master`-Branch, Verzeichnis `public`), damit Änderungen sofort sichtbar sind. Falls GitHub temporär nicht erreichbar ist, wird auf die lokal ausgelieferte Kopie (`/data/*.json`) zurückgefallen.
+
+## 7. Admin-Seite nutzen
+
+### Aufruf
+
+- Lokal: `http://localhost:5173/admin`
+- Deployment: `https://<deine-domain>/admin`
+
+Die Route `/admin` wird über SPA-Rewrite auf `index.html` geführt; die React-App lädt dann `src/admin/AdminApp.tsx`.
+
+### Login
+
+Der Admin-Editor nutzt einen GitHub Personal Access Token (PAT):
+
+- Format: klassischer PAT (`ghp_...`)
+- Scope: `repo`
+- Validierung über GitHub API (`/user` und Repository-Zugriff)
+- Token-Speicherung im Browser-`localStorage` unter `spd-admin-token`
+
+Ohne gültigen Token ist keine Veröffentlichung möglich.
+
+### Funktionen im Admin-Editor
+
+- Bearbeiten der Tabs `Aktuelles`, `Partei`, `Fraktion`, `Haushaltsreden`, `Historie`, `Einstellungen`
+- Ungespeicherte Änderungen pro Tab (Dirty-State)
+- Entwürfe (Drafts) in `localStorage` (`spd-admin-drafts`)
+- Undo/Redo pro Tab
+- Dark-Mode-Einstellung im Browser (`spd-admin-dark`)
+- Gesamtansicht der Änderungen (Diff)
+- Veröffentlichung einzelner Tabs oder aller Änderungen in einem Commit
+- Erkennung verwaister Bilder mit optionaler Löschung
+
+### Veröffentlichungslogik
+
+Beim Veröffentlichen werden folgende Änderungen als Git-Commit auf den Branch `master` geschrieben:
+
+- geänderte JSON-Dateien aus `public/data/`
+- hochgeladene Bilder (zuerst in Upload-Warteschlange, dann Commit)
+- optional gelöschte verwaiste Bilder
+
+Die Commit-Erstellung ist gebündelt (Git Trees API), damit mehrere Dateiänderungen atomar zusammen veröffentlicht werden.
+
+## 8. Inhalte und Datenmodell
+
+Wichtige Dateien in `public/data/`:
+
+- `config.json`: globale Einstellungen (Features, Kontakt, Bürozeiten, Social, ICS-URL)
+- `news.json`: Beiträge für `Aktuelles`
+- `party.json`: Partei-Bereich, Vorstand, Abgeordnete, Schwerpunkte
+- `fraktion.json`: Fraktionsdaten, Gremienmitglieder, Fraktionsnews
+- `history.json`: Historie, Chronik, Persönlichkeiten
+- `haushaltsreden.json`: Konfiguration deaktivierter Jahre (Haushaltsreden)
+
+Datumsformat in Datenobjekten: `YYYY-MM-DD`.
+
+### Besonderheit Haushaltsreden
+
+- PDF-Ablage in `public/documents/fraktion/haushaltsreden/`
+- Jahre ohne Datei können über `disabledYears` in `public/data/haushaltsreden.json` gezielt ausgeblendet werden
+
+## 9. Medien und Dokumente
+
+Typische Bildziele:
+
+- `public/images/news/`
+- `public/images/vorstand/`
+- `public/images/abgeordnete/`
+- `public/images/gemeinderaete/`
+- `public/images/kreisraete/`
+- `public/images/historie/`
+- `public/images/persoenlichkeiten/`
+
+Der Admin-Editor konvertiert Uploads nach WebP und referenziert sie in den JSON-Dateien als `/images/...`-Pfad.
+
+## 10. API-Endpunkte
+
+### `GET /api/ics`
+
+- Liest `icsUrl` aus `public/data/config.json`
+- Holt den Kalender serverseitig und gibt `text/calendar` zurück
+- Fehlerfall: HTTP 502 mit JSON-Fehlerobjekt
+
+### `GET /api/instagram`
+
+- Lädt Instagram-Feed über Meta Graph API (Business Discovery)
+- Nutzt `INSTAGRAM_USER_ID` und `INSTAGRAM_ACCESS_TOKEN`
+- Liefert normalisierte Feed-Objekte für die Website
+- Bei Fehlern oder fehlender Konfiguration: Fallback-Antwort mit leerer Liste und Profil-Link
+
+## 11. Deployment
+
+Das Repository ist für Vercel konfiguriert.
+
+`vercel.json` enthält:
+
+- Rewrites für `/admin` und SPA-Routen
+- Cache-Header mit `no-store` für `/admin` und `/data/*`
+
+### Produktionsbuild lokal prüfen
+
+```bash
+npm run build
+npm run preview
+```
+
+## 12. Sicherheit und Betriebshinweise
+
+- Der Admin-Token liegt ausschließlich im Browser-`localStorage`
+- API-Aufrufe für Veröffentlichung laufen direkt gegen `api.github.com`
+- `/admin` ist öffentlich erreichbar, aber ohne gültigen Token funktional gesperrt
+- Für den produktiven Betrieb sollte der Token nur auf vertrauenswürdigen Geräten verwendet werden
+
+## 13. Typische Workflows
+
+### A) Redaktion über Admin-Seite
+
+1. `/admin` öffnen
+2. Mit GitHub PAT anmelden
+3. Inhalte in gewünschten Tabs bearbeiten
+4. Optional Änderungen prüfen (Diff)
+5. `Alle veröffentlichen`
+6. Nach kurzer Zeit Website prüfen
+
+### B) Inhalt direkt im Repository pflegen
+
+1. JSON-Dateien in `public/data/` bearbeiten
+2. Bilder in passende Ordner unter `public/images/` legen
+3. Pfade in JSON setzen (z. B. `/images/news/beispiel.webp`)
+4. Commit und Deployment abwarten
+
+### C) Kontaktformular konfigurieren
+
+1. Formspree-Formular erstellen
+2. URL in `public/data/config.json` unter `kontakt.formspreeUrl` eintragen
+3. Über `/kontakt` testen
+
+### D) Instagram-Feed aktivieren
+
+1. `INSTAGRAM_USER_ID` und `INSTAGRAM_ACCESS_TOKEN` setzen
+2. In `public/data/config.json` `features.instagramFeed` auf `true`
+3. Deployment prüfen und Feed unter `/aktuelles` kontrollieren
+
+## 14. Fehlerbehebung
+
+- Admin-Login scheitert: Token-Scope `repo` prüfen, Repo-Zugriff verifizieren
+- Änderungen erscheinen nicht: Veröffentlichung im Admin ausführen und kurz auf Redeploy warten
+- Kalender leer: `icsUrl` in `public/data/config.json` prüfen, Erreichbarkeit des ICS-Feeds testen
+- Instagram leer: Feature-Flag und ENV-Variablen prüfen; Fallback ohne Karten ist vorgesehen
+- Kontaktformular ohne Versand: `kontakt.formspreeUrl` in `public/data/config.json` prüfen
+
+---
+
+Wenn du die Pflegeprozesse für Redaktion oder Deployment teamweit standardisieren möchtest, bietet sich als nächster Schritt eine ergänzende Betriebsdokumentation mit Rollen, Freigabeprozess und Backup-Strategie an.
