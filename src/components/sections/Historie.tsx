@@ -358,9 +358,9 @@ export default function Historie() {
                             [@media(orientation:landscape)_and_(max-height:600px)]:overflow-y-auto">
               {/* Name shown only in landscape */}
               <div className="hidden [@media(orientation:landscape)_and_(max-height:600px)]:block mb-4">
-                <p className="text-[11px] font-medium text-gray-400 mb-0.5">{selectedPerson.rolle}</p>
-                <h3 className="font-black text-white text-xl leading-snug">{selectedPerson.name}</h3>
-                <p className="text-sm text-white/60 mt-0.5">{selectedPerson.jahre}</p>
+                <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-0.5">{selectedPerson.rolle}</p>
+                <h3 className="font-black text-gray-900 dark:text-white text-xl leading-snug">{selectedPerson.name}</h3>
+                <p className="text-sm text-gray-500 dark:text-white/60 mt-0.5">{selectedPerson.jahre}</p>
               </div>
               <div className="w-8 h-0.5 bg-spd-red/40 rounded-full mb-5" />
               {selectedPerson.bildUrls && selectedPerson.bildUrls.length > 0 && (

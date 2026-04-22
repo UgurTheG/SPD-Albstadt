@@ -65,13 +65,24 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
       const currentY = e.touches[0].clientY
       const deltaY = currentY - startY
 
-      // Enter dismiss mode when currently at the top and pulling down.
-      // Check live scrollTop (not the snapshot from touchstart) because
-      // momentum scrolling may still be settling after a fast fling up.
+      // Determine drag axis on first significant movement
       if (!dismissing && el.scrollTop <= 1 && deltaY > 5) {
-        dismissing = true
-        // Re-anchor so the sheet doesn't jump by the pre-dismiss delta
-        startY = currentY
+        // Don't dismiss if the touch originated inside a nested scrollable
+        // element that is scrolled below its own top (user is scrolling that panel up)
+        let node: HTMLElement | null = e.target as HTMLElement
+        let insideNestedScroll = false
+        while (node && node !== el) {
+          const ov = getComputedStyle(node).overflowY
+          if ((ov === 'auto' || ov === 'scroll') && node.scrollTop > 1) {
+            insideNestedScroll = true
+            break
+          }
+          node = node.parentElement
+        }
+        if (!insideNestedScroll) {
+          dismissing = true
+          startY = currentY
+        }
       }
 
       if (dismissing) {

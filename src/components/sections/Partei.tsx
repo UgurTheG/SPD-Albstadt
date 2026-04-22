@@ -351,10 +351,10 @@ export default function Partei() {
                             [@media(orientation:landscape)_and_(max-height:600px)]:py-5">
               {/* Name shown only in landscape */}
               <div className="hidden [@media(orientation:landscape)_and_(max-height:600px)]:block">
-                <h3 className="font-black text-white text-xl leading-snug">{selectedPerson.name}</h3>
-                <p className="text-sm font-medium tracking-wide text-white/50 mt-0.5">{selectedPerson.rolle}</p>
+                <h3 className="font-black text-gray-900 dark:text-white text-xl leading-snug">{selectedPerson.name}</h3>
+                <p className="text-sm font-medium tracking-wide text-gray-500 dark:text-white/50 mt-0.5">{selectedPerson.rolle}</p>
                 {'wahlkreis' in selectedPerson && (
-                  <p className="text-sm text-white/60 mt-0.5">{(selectedPerson as { wahlkreis: string }).wahlkreis}</p>
+                  <p className="text-sm text-gray-500 dark:text-white/60 mt-0.5">{(selectedPerson as { wahlkreis: string }).wahlkreis}</p>
                 )}
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">

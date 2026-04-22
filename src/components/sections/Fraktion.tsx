@@ -507,9 +507,9 @@ export default function Fraktion() {
                             [@media(orientation:landscape)_and_(max-height:600px)]:py-5">
               {/* Name shown only in landscape */}
               <div className="hidden [@media(orientation:landscape)_and_(max-height:600px)]:block">
-                <h3 className="font-black text-white text-xl leading-snug">{selectedMember.name}</h3>
+                <h3 className="font-black text-gray-900 dark:text-white text-xl leading-snug">{selectedMember.name}</h3>
                 {selectedMember.beruf && (
-                  <p className="text-sm text-white/60 mt-0.5">{selectedMember.beruf}</p>
+                  <p className="text-sm text-gray-500 dark:text-white/60 mt-0.5">{selectedMember.beruf}</p>
                 )}
               </div>
 
