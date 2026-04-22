@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useState} from 'react'
-import {ChevronRight, Download, Eye, FileSearch, Plus, Redo2, Rocket, Trash2, Undo2, X} from 'lucide-react'
+import {ChevronRight, Download, Eye, FileSearch, Loader2, Plus, Redo2, Rocket, Trash2, Undo2, X} from 'lucide-react'
 import {AnimatePresence, motion} from 'framer-motion'
 import type {SectionConfig, TabConfig} from '../types'
 import {useAdminStore} from '../store'
@@ -162,14 +162,12 @@ export default function TabEditor({tab}: Props) {
                     disabled={!isDirty || publishing}
                     className={`text-[10px] sm:text-xs font-bold px-3 sm:px-5 py-2 rounded-xl flex items-center gap-1.5 sm:gap-2 transition-all duration-200 ${
                         isDirty
-                            ? 'bg-linear-to-r from-spd-red to-spd-red-dark text-white hover:shadow-lg hover:shadow-spd-red/25 hover:scale-[1.02] active:scale-[0.98]'
+                            ? 'bg-linear-to-r from-spd-red to-spd-red-dark text-white shadow-sm shadow-spd-red/20 hover:shadow-lg hover:shadow-spd-red/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:hover:scale-100'
                             : 'bg-gray-200/60 dark:bg-gray-700/40 text-gray-400 dark:text-gray-500 cursor-not-allowed backdrop-blur-sm'
                     }`}
                 >
-                    {publishing ? <div
-                            className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"/> :
-                        <Rocket size={13}/>}
-                    Veröffentlichen
+                    {publishing ? <Loader2 size={13} className="animate-spin"/> : <Rocket size={13}/>}
+                    <span>{publishing ? 'Veröffentliche…' : 'Veröffentlichen'}</span>
                 </button>
             </div>
 
@@ -351,14 +349,14 @@ function StickyPublishBar({isDirty, publishing, onPublish, onShowDiff}: {
                             type="button"
                             onClick={onPublish}
                             disabled={publishing}
-                            className="text-xs font-bold px-4 py-2 rounded-xl bg-linear-to-r from-spd-red to-spd-red-dark text-white hover:shadow-lg hover:shadow-spd-red/25 transition-all flex items-center gap-1.5 disabled:opacity-60"
+                            className="text-xs font-bold px-4 py-2 rounded-xl bg-linear-to-r from-spd-red to-spd-red-dark text-white shadow-sm shadow-spd-red/20 hover:shadow-lg hover:shadow-spd-red/30 active:scale-[0.98] transition-all flex items-center gap-1.5 disabled:opacity-70 disabled:active:scale-100"
                         >
                             {publishing ? (
-                                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
+                                <Loader2 size={12} className="animate-spin"/>
                             ) : (
                                 <Rocket size={12}/>
                             )}
-                            Veröffentlichen
+                            <span>{publishing ? 'Veröffentliche…' : 'Veröffentlichen'}</span>
                         </button>
                     </div>
                 </motion.div>

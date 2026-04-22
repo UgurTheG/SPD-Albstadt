@@ -186,13 +186,19 @@ export const useAdminStore = create<AdminState>((set, get) => ({
 
     loadData: async () => {
         const newState: Record<string, unknown> = {}
+        // Admin must always see the latest data — bypass browser/CDN caches
+        const bust = `t=${Date.now()}`
         await Promise.all(TABS.map(async (tab) => {
             if (!tab.file) {
                 newState[tab.key] = null;
                 return
             }
             try {
-                const res = await fetch(tab.file)
+                const url = tab.file + (tab.file.includes('?') ? '&' : '?') + bust
+                const res = await fetch(url, {
+                    cache: 'no-store',
+                    headers: {'Cache-Control': 'no-cache', 'Pragma': 'no-cache'},
+                })
                 if (res.ok) {
                     newState[tab.key] = await res.json()
                 } else {

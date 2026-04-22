@@ -1,5 +1,5 @@
 import {useMemo} from 'react'
-import {Rocket, Undo2, X} from 'lucide-react'
+import {Loader2, Rocket, Undo2, X} from 'lucide-react'
 import {motion} from 'framer-motion'
 import type {TabConfig} from '../types'
 import {useAdminStore} from '../store'
@@ -115,16 +115,16 @@ export default function PublishConfirmModal({tabKey, onConfirm, onCancel}: Props
                         Abbrechen
                     </button>
                     <button
-                        className="text-xs px-4 py-2.5 rounded-xl bg-gradient-to-r from-spd-red to-spd-red-dark text-white font-bold hover:shadow-lg hover:shadow-spd-red/25 transition-all flex items-center gap-1.5 disabled:opacity-60"
+                        className="text-xs px-4 py-2.5 rounded-xl bg-linear-to-r from-spd-red to-spd-red-dark text-white font-bold shadow-sm shadow-spd-red/20 hover:shadow-lg hover:shadow-spd-red/30 active:scale-[0.98] transition-all flex items-center gap-1.5 disabled:opacity-70 disabled:active:scale-100 disabled:cursor-not-allowed"
                         onClick={onConfirm}
                         disabled={publishing || totalChanges === 0}
                     >
                         {publishing ? (
-                            <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
+                            <Loader2 size={13} className="animate-spin"/>
                         ) : (
                             <Rocket size={13}/>
                         )}
-                        Ja, veröffentlichen
+                        <span>{publishing ? 'Veröffentliche…' : 'Ja, veröffentlichen'}</span>
                     </button>
                 </div>
             </motion.div>

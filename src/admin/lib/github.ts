@@ -22,10 +22,10 @@ function utf8ToBase64(str: string): string {
 const shaCache = new Map<string, string>()
 
 export async function validateToken(token: string) {
-    const res = await fetch('https://api.github.com/user', {headers: headers(token)})
+    const res = await fetch('https://api.github.com/user', {headers: headers(token), cache: 'no-store'})
     if (!res.ok) throw new Error('Token ungültig')
     const user = await res.json()
-    const repoRes = await fetch(`${apiBase()}`, {headers: headers(token)})
+    const repoRes = await fetch(`${apiBase()}`, {headers: headers(token), cache: 'no-store'})
     if (!repoRes.ok) throw new Error('Kein Zugriff auf das Repository')
     return user as { login: string; avatar_url: string }
 }
@@ -35,7 +35,8 @@ export async function commitFile(token: string, filePath: string, content: strin
     let sha: string | undefined = shaCache.get(filePath)
     if (!sha) {
         const existing = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`, {
-            headers: {...h, 'If-None-Match': ''}
+            headers: {...h, 'If-None-Match': ''},
+            cache: 'no-store',
         })
         if (existing.ok) sha = (await existing.json()).sha
     }
@@ -61,7 +62,10 @@ export async function commitFile(token: string, filePath: string, content: strin
 
 export async function commitBinaryFile(token: string, filePath: string, base64Content: string, message: string) {
     const h = headers(token)
-    const existing = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}`, {headers: h})
+    const existing = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`, {
+        headers: {...h, 'If-None-Match': ''},
+        cache: 'no-store',
+    })
     let sha: string | undefined
     if (existing.ok) sha = (await existing.json()).sha
     const body: Record<string, unknown> = {message, content: base64Content, branch: BRANCH}
@@ -80,7 +84,10 @@ export async function commitBinaryFile(token: string, filePath: string, base64Co
 
 export async function deleteFile(token: string, filePath: string, message: string) {
     const h = headers(token)
-    const existing = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}`, {headers: h})
+    const existing = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`, {
+        headers: {...h, 'If-None-Match': ''},
+        cache: 'no-store',
+    })
     if (!existing.ok) return
     const {sha} = await existing.json()
     await fetch(`${apiBase()}/contents/${filePath}`, {
@@ -106,13 +113,16 @@ export async function commitTree(token: string, message: string, changes: TreeFi
     const base = apiBase()
 
     // 1. Get the latest commit SHA on the branch
-    const refRes = await fetch(`${base}/git/ref/heads/${BRANCH}`, {headers: h})
+    const refRes = await fetch(`${base}/git/ref/heads/${BRANCH}?t=${Date.now()}`, {
+        headers: {...h, 'If-None-Match': ''},
+        cache: 'no-store',
+    })
     if (!refRes.ok) throw new Error('Branch nicht gefunden')
     const refData = await refRes.json()
     const latestCommitSha: string = refData.object.sha
 
     // 2. Get the tree SHA of that commit
-    const commitRes = await fetch(`${base}/git/commits/${latestCommitSha}`, {headers: h})
+    const commitRes = await fetch(`${base}/git/commits/${latestCommitSha}`, {headers: h, cache: 'no-store'})
     if (!commitRes.ok) throw new Error('Commit nicht gefunden')
     const commitData = await commitRes.json()
     const baseTreeSha: string = commitData.tree.sha
@@ -189,7 +199,8 @@ export async function listDirectory(token: string, dirPath: string) {
         headers: {
             ...headers(token),
             'If-None-Match': ''
-        }
+        },
+        cache: 'no-store',
     })
     if (!res.ok) return []
     const data = await res.json()
@@ -201,7 +212,8 @@ export async function getFileContent(token: string, filePath: string) {
         headers: {
             ...headers(token),
             'If-None-Match': ''
-        }
+        },
+        cache: 'no-store',
     })
     if (!res.ok) return null
     const data = await res.json()

@@ -4,6 +4,7 @@ import {
     FileSearch,
     FileText,
     Landmark,
+    Loader2,
     LogOut,
     Menu,
     Moon,
@@ -232,15 +233,14 @@ export default function AdminApp() {
                                     type="button"
                                     onClick={handlePublishAll}
                                     disabled={publishing}
-                                    className="w-full bg-gradient-to-r from-spd-red to-spd-red-dark text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:shadow-lg hover:shadow-spd-red/25 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60"
+                                    className="w-full bg-linear-to-r from-spd-red to-spd-red-dark text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm shadow-spd-red/20 hover:shadow-lg hover:shadow-spd-red/30 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100"
                                 >
                                     {publishing ? (
-                                        <div
-                                            className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
+                                        <Loader2 size={13} className="animate-spin"/>
                                     ) : (
                                         <Rocket size={13}/>
                                     )}
-                                    Alle veröffentlichen ({dirty.size})
+                                    <span>{publishing ? 'Veröffentliche…' : `Alle veröffentlichen (${dirty.size})`}</span>
                                 </motion.button>
                                 </>
                             )}
