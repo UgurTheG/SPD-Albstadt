@@ -142,12 +142,27 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     statusCounter: 0,
 
     dirtyTabs: () => {
-        const {state: s, originalState: os} = get()
+        const {state: s, originalState: os, pendingUploads} = get()
         const dirty = new Set<string>()
         for (const tab of TABS) {
             if (!tab.file) continue
             if (JSON.stringify(s[tab.key]) !== JSON.stringify(os[tab.key])) {
                 dirty.add(tab.key)
+            }
+        }
+        // Also mark a tab dirty if there's a pending image upload targeting a path
+        // referenced by the tab — otherwise replacing an image with the same URL
+        // (e.g. same-named Abgeordneter) would leave the tab undetected as changed.
+        if (pendingUploads.length > 0) {
+            for (const tab of TABS) {
+                if (!tab.file || dirty.has(tab.key) || !s[tab.key]) continue
+                const paths = collectImagePaths(tab as TabConfig, s[tab.key] as Record<string, unknown>)
+                for (const upload of pendingUploads) {
+                    if (paths.has(upload.ghPath.replace(/^public/, ''))) {
+                        dirty.add(tab.key)
+                        break
+                    }
+                }
             }
         }
         return dirty

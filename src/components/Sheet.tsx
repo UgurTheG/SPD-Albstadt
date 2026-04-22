@@ -110,7 +110,7 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
           animate={{ opacity: 1, transition: { duration: 0.35, ease: 'easeOut' } }}
           exit={{ opacity: 0, transition: { duration: 0.25, ease: 'easeIn' } }}
           onClick={onClose}
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 touch-none"
           style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)' }}
         >
           <motion.div
