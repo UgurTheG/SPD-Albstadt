@@ -298,7 +298,7 @@ export default function Historie() {
                   src={selectedPerson.bildUrl}
                   alt={selectedPerson.name}
                   loading="lazy"
-                  className="w-full block"
+                  className="w-full block max-h-[60vh] object-cover object-top"
                 />
               ) : (
                 <div className="w-full aspect-square bg-linear-to-br from-spd-red to-spd-red-dark flex items-center justify-center">
