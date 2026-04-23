@@ -25,6 +25,7 @@ import TabEditor from './components/TabEditor'
 import HaushaltsredenEditor from './components/HaushaltsredenEditor'
 import GlobalDiffModal from './components/GlobalDiffModal'
 import PublishConfirmModal from './components/PublishConfirmModal'
+import OrphanModal from './components/OrphanModal'
 
 const TAB_ICON_MAP: Record<string, React.ReactNode> = {
     news: <Newspaper size={18}/>,
@@ -66,6 +67,7 @@ export default function AdminApp() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [showGlobalDiff, setShowGlobalDiff] = useState(false)
     const [showPublishConfirm, setShowPublishConfirm] = useState(false)
+    const [globalOrphans, setGlobalOrphans] = useState<string[] | null>(null)
 
     // Swipe-left to close sidebar on mobile
     const touchStartX = useRef<number | null>(null)
@@ -139,7 +141,12 @@ export default function AdminApp() {
     const handlePublishAllConfirmed = () => {
         setShowPublishConfirm(false)
         const orphans = useAdminStore.getState().findOrphanImages()
-        publishAll(orphans.length > 0 ? orphans : undefined)
+        if (orphans.length > 0) {
+            // Show the orphan modal so the admin can choose what to delete
+            setGlobalOrphans(orphans)
+            return
+        }
+        publishAll()
     }
 
     return (
@@ -153,6 +160,21 @@ export default function AdminApp() {
                 <PublishConfirmModal
                     onConfirm={handlePublishAllConfirmed}
                     onCancel={() => setShowPublishConfirm(false)}
+                />
+            )}
+
+            {globalOrphans && (
+                <OrphanModal
+                    orphans={globalOrphans}
+                    onConfirm={(toDelete) => {
+                        setGlobalOrphans(null)
+                        publishAll(toDelete.length > 0 ? toDelete : undefined)
+                    }}
+                    onKeep={() => {
+                        setGlobalOrphans(null)
+                        publishAll()
+                    }}
+                    onCancel={() => setGlobalOrphans(null)}
                 />
             )}            {/* Mobile sidebar overlay */}
             <AnimatePresence>

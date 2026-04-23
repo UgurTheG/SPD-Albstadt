@@ -247,7 +247,10 @@ function ImageField({field, value, onChange, contextItem}: {
     const handleCrop = (base64: string | null) => {
         setCropFile(null)
         if (!base64) return
-        const nameSlug = contextItem?.name ? slugify(contextItem.name as string) : slugify('bild-' + Date.now())
+        // Always append a short timestamp to avoid filename collisions between
+        // people with the same name in the same imageDir (e.g. two "Max Müller"s).
+        const baseName = contextItem?.name ? slugify(contextItem.name as string) : 'bild'
+        const nameSlug = `${baseName}-${Date.now()}`
         const imageDir = field.imageDir || 'news'
         const ghFilePath = `public/images/${imageDir}/${nameSlug}.webp`
         const publicUrl = `/images/${imageDir}/${nameSlug}.webp`

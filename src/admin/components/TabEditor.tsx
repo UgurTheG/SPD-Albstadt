@@ -38,12 +38,18 @@ export default function TabEditor({tab}: Props) {
     // Keyboard shortcuts for undo/redo
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
+            // Don't intercept when typing in a text field — let the browser handle native undo
+            const tag = (e.target as HTMLElement).tagName
+            const isTextInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' ||
+                (e.target as HTMLElement).isContentEditable
             if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                if (isTextInput) return
                 e.preventDefault()
                 if (e.shiftKey) redo(tab.key)
                 else undo(tab.key)
             }
             if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+                if (isTextInput) return
                 e.preventDefault()
                 redo(tab.key)
             }
@@ -390,6 +396,12 @@ function DiffModal({tab, onClose, onRevertAll}: { tab: TabConfig; onClose: () =>
     const pendingUploads = useAdminStore(s => s.pendingUploads)
     const revertChange = useAdminStore(s => s.revertChange)
     const [confirmRevertAll, setConfirmRevertAll] = useState(false)
+
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+        window.addEventListener('keydown', handler)
+        return () => window.removeEventListener('keydown', handler)
+    }, [onClose])
 
     const entries = useMemo(() => {
         const pendingImagePaths = new Set(pendingUploads.map(u => u.ghPath.replace(/^public/, '')))

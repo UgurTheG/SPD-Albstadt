@@ -80,6 +80,12 @@ export default function PreviewModal({tabKey, onClose}: Props) {
         }
     }, [])
 
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+        window.addEventListener('keydown', handler)
+        return () => window.removeEventListener('keydown', handler)
+    }, [onClose])
+
     const entry = TAB_PREVIEW_MAP[tabKey]
     if (!entry) return null
 

@@ -246,14 +246,19 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         const original = JSON.parse(JSON.stringify(newState))
         // Restore any saved drafts from localStorage
         const merged = restoreDrafts(newState, original)
-        set({
-            state: merged,
-            originalState: original,
-            dataLoaded: true,
-            dataLoadErrors: failedTabs,
-            undoStacks: {},
-            redoStacks: {},
-        })
+        try {
+            set({
+                state: merged,
+                originalState: original,
+                dataLoaded: true,
+                dataLoadErrors: failedTabs,
+                undoStacks: {},
+                redoStacks: {},
+            })
+        } catch {
+            // Fallback: mark all file-backed tabs as failed rather than hanging forever
+            set({dataLoaded: true, dataLoadErrors: TABS.filter(t => t.file).map(t => t.key)})
+        }
     },
 
     setActiveTab: (key) => set({activeTab: key}),
@@ -335,8 +340,10 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     },
 
     publishTab: async (tabKey, orphansToDelete) => {
-        const {token, state: s, pendingUploads, publishing} = get()
+        const {token, state: s, pendingUploads, publishing, dataLoadErrors} = get()
         if (publishing) return
+        // Internal guard: never publish a tab whose data failed to load
+        if (dataLoadErrors.includes(tabKey)) return
         const tab = TABS.find(t => t.key === tabKey)
         if (!tab?.ghPath) return
         set({publishing: true})
@@ -377,6 +384,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 statusCounter: prev.statusCounter + 1,
             }))
         } catch (e) {
+            if (e instanceof AuthError) {
+                get().logout()
+                set(prev => ({statusMessage: 'Sitzung abgelaufen — bitte neu anmelden.', statusType: 'error', statusCounter: prev.statusCounter + 1}))
+                return
+            }
             set(prev => ({
                 statusMessage: 'Fehler: ' + (e as Error).message,
                 statusType: 'error',
@@ -515,6 +527,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 statusCounter: prev.statusCounter + 1,
             }))
         } catch (e) {
+            if (e instanceof AuthError) {
+                get().logout()
+                set(prev => ({statusMessage: 'Sitzung abgelaufen — bitte neu anmelden.', statusType: 'error', statusCounter: prev.statusCounter + 1}))
+                return
+            }
             set(prev => ({statusMessage: 'Fehler: ' + (e as Error).message, statusType: 'error', statusCounter: prev.statusCounter + 1}))
         } finally {
             set({publishing: false})

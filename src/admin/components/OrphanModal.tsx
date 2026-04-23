@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import {ImageOff, Trash2, X} from 'lucide-react'
 import {motion} from 'framer-motion'
 
@@ -13,6 +13,12 @@ export default function OrphanModal({orphans, onConfirm, onKeep, onCancel}: Prop
     const [checked, setChecked] = useState<Record<string, boolean>>(
         Object.fromEntries(orphans.map(o => [o, true]))
     )
+
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel() }
+        window.addEventListener('keydown', handler)
+        return () => window.removeEventListener('keydown', handler)
+    }, [onCancel])
 
     return (
         <div className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"

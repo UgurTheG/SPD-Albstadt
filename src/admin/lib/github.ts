@@ -221,6 +221,8 @@ export async function getFileContent(token: string, filePath: string) {
     })
     if (!res.ok) return null
     const data = await res.json()
-    return JSON.parse(atob(data.content.replace(/\n/g, '')))
+    // Decode base64 → bytes → UTF-8 string (atob alone breaks on multi-byte chars like ä/ö/ü/ß)
+    const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, '')), c => c.charCodeAt(0))
+    return JSON.parse(new TextDecoder().decode(bytes))
 }
 

@@ -1,4 +1,4 @@
-import {useMemo} from 'react'
+import {useEffect, useMemo} from 'react'
 import {Loader2, Rocket, Undo2, X} from 'lucide-react'
 import {motion} from 'framer-motion'
 import type {TabConfig} from '../types'
@@ -21,6 +21,12 @@ export default function PublishConfirmModal({tabKey, onConfirm, onCancel}: Props
     const pendingUploads = useAdminStore(s => s.pendingUploads)
     const publishing = useAdminStore(s => s.publishing)
     const revertChange = useAdminStore(s => s.revertChange)
+
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel() }
+        window.addEventListener('keydown', handler)
+        return () => window.removeEventListener('keydown', handler)
+    }, [onCancel])
 
     const tabChanges = useMemo(() => {
         const pendingImagePaths = new Set(pendingUploads.map(u => u.ghPath.replace(/^public/, '')))

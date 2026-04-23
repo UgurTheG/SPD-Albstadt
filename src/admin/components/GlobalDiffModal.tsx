@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import {FileSearch, Undo2, X} from 'lucide-react'
 import {motion} from 'framer-motion'
 import type {TabConfig} from '../types'
@@ -27,6 +27,12 @@ export default function GlobalDiffModal({onClose}: Props) {
     const revertTab = useAdminStore(s => s.revertTab)
     const [confirmRevertTab, setConfirmRevertTab] = useState<string | null>(null)
     const [confirmRevertAll, setConfirmRevertAll] = useState(false)
+
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+        window.addEventListener('keydown', handler)
+        return () => window.removeEventListener('keydown', handler)
+    }, [onClose])
 
     const tabChanges = useMemo<TabChanges[]>(() => {
         const pendingImagePaths = new Set(pendingUploads.map(u => u.ghPath.replace(/^public/, '')))
