@@ -6,7 +6,7 @@ import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
 import {useFeatures} from '../../hooks/useFeatures'
-import {useItemsPerPage} from '../../utils/useItemsPerPage'
+import {useItemsPerPageMulti} from '../../utils/useItemsPerPage'
 
 interface Gemeinderat {
   name: string
@@ -116,7 +116,9 @@ export default function Fraktion() {
   useHttpErrorRedirect(error)
   const [selectedMember, setSelectedMember] = useState<Gemeinderat | null>(null)
   const [selectedFraktionNews, setSelectedFraktionNews] = useState<FraktionNews | null>(null)
-  const itemsPerPage = useItemsPerPage(640, 6, 3)
+  // items per page = 2 full rows at every grid breakpoint (always an even number)
+  // grid: 2 cols (xs) → 4 | 3 cols (sm 640) → 6 | 4 cols (md 768) → 8 | 5 cols (lg 1024) → 10
+  const itemsPerPage = useItemsPerPageMulti([[1024, 10], [768, 8], [640, 6]], 4)
   const [visibleRedenCount, setVisibleRedenCount] = useState(itemsPerPage)
   useEffect(() => { setVisibleRedenCount(itemsPerPage) }, [itemsPerPage])
   const [availableYears, setAvailableYears] = useState<Set<number> | null>(null)
