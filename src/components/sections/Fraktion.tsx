@@ -115,7 +115,7 @@ export default function Fraktion() {
   useHttpErrorRedirect(error)
   const [selectedMember, setSelectedMember] = useState<Gemeinderat | null>(null)
   const [selectedFraktionNews, setSelectedFraktionNews] = useState<FraktionNews | null>(null)
-  const [visibleRedenCount, setVisibleRedenCount] = useState(5)
+  const [visibleRedenCount, setVisibleRedenCount] = useState(6)
   const [availableYears, setAvailableYears] = useState<Set<number> | null>(null)
   const [disabledYears, setDisabledYears] = useState<Set<number>>(new Set([2013, 2015]))
 
@@ -363,15 +363,15 @@ export default function Fraktion() {
               )
             })}
           </div>
-          {visibleReden.length > 5 && (
+          {visibleReden.length > 6 && (
             <div className="flex items-center justify-between pt-4">
               <span className="text-xs text-gray-400 dark:text-gray-500">
                 {Math.min(visibleRedenCount, visibleReden.length)} von {visibleReden.length} Haushaltsreden
               </span>
               <div className="flex gap-2">
-                {visibleRedenCount > 5 && (
+                {visibleRedenCount > 6 && (
                   <button
-                    onClick={() => setVisibleRedenCount(v => Math.max(5, v - 5))}
+                    onClick={() => setVisibleRedenCount(v => Math.max(6, v - 6))}
                     className="text-xs font-semibold text-gray-400 hover:text-spd-red transition-colors px-3 py-1.5 rounded-lg hover:bg-spd-red/5"
                   >
                     ↑ Weniger
@@ -379,7 +379,7 @@ export default function Fraktion() {
                 )}
                 {hasMoreReden && (
                   <button
-                    onClick={() => setVisibleRedenCount(v => v + 5)}
+                    onClick={() => setVisibleRedenCount(v => v + 6)}
                     className="text-xs font-semibold text-spd-red border border-spd-red/30 hover:bg-spd-red hover:text-white transition-all px-3 py-1.5 rounded-lg"
                   >
                     Mehr laden ↓
