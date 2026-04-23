@@ -5,6 +5,7 @@ import {useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
+import PersonSheet from '../PersonSheet'
 
 interface TimelineEntry {
   jahr: string
@@ -310,73 +311,7 @@ export default function Historie() {
       </Sheet>
 
       {/* Person detail sheet */}
-      <Sheet open={!!selectedPerson} onClose={() => setSelectedPerson(null)}>
-        {selectedPerson && (
-          /* Portrait: stacked hero+body. Short landscape: image left column, info right */
-          <div className="[@media(orientation:landscape)_and_(max-height:600px)]:flex
-                          [@media(orientation:landscape)_and_(max-height:600px)]:flex-row
-                          [@media(orientation:landscape)_and_(max-height:600px)]:min-h-0
-                          [@media(orientation:landscape)_and_(max-height:600px)]:h-full">
-
-            {/* Hero image */}
-            <div className="relative overflow-hidden bg-gray-900
-                            [@media(orientation:landscape)_and_(max-height:600px)]:w-1/2
-                            [@media(orientation:landscape)_and_(max-height:600px)]:shrink-0">
-              {selectedPerson.bildUrl ? (
-                <img
-                  src={selectedPerson.bildUrl}
-                  alt={selectedPerson.name}
-                  loading="lazy"
-                  className="w-full block object-cover object-top
-                             max-h-[58dvh] sm:max-h-[70dvh]
-                             [@media(orientation:landscape)_and_(max-height:600px)]:max-h-none
-                             [@media(orientation:landscape)_and_(max-height:600px)]:h-full"
-                />
-              ) : (
-                <div className="w-full aspect-square [@media(orientation:landscape)_and_(max-height:600px)]:aspect-auto [@media(orientation:landscape)_and_(max-height:600px)]:h-full bg-linear-to-br from-spd-red to-spd-red-dark flex items-center justify-center">
-                  <span className="text-6xl font-bold text-white/90">
-                    {selectedPerson.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                  </span>
-                </div>
-              )}
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-linear-to-t from-gray-900 via-gray-900/50 to-gray-900/10
-                              [@media(orientation:landscape)_and_(max-height:600px)]:bg-none" />
-              {/* Name overlay — portrait only */}
-              <div className="absolute bottom-0 inset-x-0 px-6 pb-7
-                              [@media(orientation:landscape)_and_(max-height:600px)]:hidden">
-                <p className="text-[11px] font-medium text-gray-400 mb-1">{selectedPerson.rolle}</p>
-                <h3 className="font-black text-white text-2xl leading-snug">{selectedPerson.name}</h3>
-                <p className="text-sm text-white/60 mt-1">{selectedPerson.jahre}</p>
-              </div>
-            </div>
-
-            {/* Body */}
-            <div className="px-6 pt-6 pb-8
-                            [@media(orientation:landscape)_and_(max-height:600px)]:px-5
-                            [@media(orientation:landscape)_and_(max-height:600px)]:py-5
-                            [@media(orientation:landscape)_and_(max-height:600px)]:flex-1
-                            [@media(orientation:landscape)_and_(max-height:600px)]:overflow-y-auto">
-              {/* Name shown only in landscape */}
-              <div className="hidden [@media(orientation:landscape)_and_(max-height:600px)]:block mb-4">
-                <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-0.5">{selectedPerson.rolle}</p>
-                <h3 className="font-black text-gray-900 dark:text-white text-xl leading-snug">{selectedPerson.name}</h3>
-                <p className="text-sm text-gray-500 dark:text-white/60 mt-0.5">{selectedPerson.jahre}</p>
-              </div>
-              <div className="w-8 h-0.5 bg-spd-red/40 rounded-full mb-5" />
-              {selectedPerson.bildUrls && selectedPerson.bildUrls.length > 0 && (
-                  <div className="mb-6">
-                    <PhotoGallery
-                        images={selectedPerson.bildUrls}
-                        alt={selectedPerson.name}
-                    />
-                  </div>
-              )}
-              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">{selectedPerson.beschreibung}</p>
-            </div>
-          </div>
-        )}
-      </Sheet>
+      <PersonSheet open={!!selectedPerson} onClose={() => setSelectedPerson(null)} person={selectedPerson} />
     </section>
   )
 }
