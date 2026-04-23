@@ -97,6 +97,7 @@ export default function PublishConfirmModal({tabKey, onConfirm, onCancel}: Props
                         Abbrechen
                     </button>
                     <button
+                        type="button"
                         className="text-xs px-4 py-2.5 rounded-xl bg-spd-red hover:bg-spd-red-dark text-white font-bold shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] transition-colors flex items-center gap-2 disabled:cursor-wait disabled:hover:bg-spd-red disabled:active:scale-100 whitespace-nowrap [hyphens:none]"
                         onClick={onConfirm}
                         disabled={publishing || totalChanges === 0}

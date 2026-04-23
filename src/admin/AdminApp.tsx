@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef, useState} from 'react'
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {
     AlertTriangle,
     Building2,
@@ -36,24 +36,33 @@ const TAB_ICON_MAP: Record<string, React.ReactNode> = {
 }
 
 export default function AdminApp() {
-    const {
-        user,
-        token,
-        tryAutoLogin,
-        logout,
-        activeTab,
-        setActiveTab,
-        darkMode,
-        toggleDark,
-        dirtyTabs,
-        publishing,
-        publishAll,
-        statusMessage,
-        statusType,
-        dataLoaded,
-        dataLoadErrors,
-        statusCounter,
-    } = useAdminStore()
+    // Actions: Zustand action references are stable — they never change between renders.
+    const tryAutoLogin = useAdminStore(s => s.tryAutoLogin)
+    const logout = useAdminStore(s => s.logout)
+    const setActiveTab = useAdminStore(s => s.setActiveTab)
+    const toggleDark = useAdminStore(s => s.toggleDark)
+    const publishAll = useAdminStore(s => s.publishAll)
+
+    // State slices: each selector only causes a re-render when its own value changes.
+    const user = useAdminStore(s => s.user)
+    const token = useAdminStore(s => s.token)
+    const activeTab = useAdminStore(s => s.activeTab)
+    const darkMode = useAdminStore(s => s.darkMode)
+    const publishing = useAdminStore(s => s.publishing)
+    const statusMessage = useAdminStore(s => s.statusMessage)
+    const statusType = useAdminStore(s => s.statusType)
+    const statusCounter = useAdminStore(s => s.statusCounter)
+    const dataLoaded = useAdminStore(s => s.dataLoaded)
+    const dataLoadErrors = useAdminStore(s => s.dataLoadErrors)
+
+    // Dirty set as a stable string — AdminApp only re-renders when the *set of dirty
+    // tab keys* changes, not on every keystroke inside a tab that is already dirty.
+    const dirtyString = useAdminStore(s => [...s.dirtyTabs()].sort().join(','))
+    const dirty = useMemo(
+        () => new Set(dirtyString ? dirtyString.split(',') : []),
+        [dirtyString],
+    )
+
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [showGlobalDiff, setShowGlobalDiff] = useState(false)
     const [showPublishConfirm, setShowPublishConfirm] = useState(false)
@@ -102,14 +111,14 @@ export default function AdminApp() {
     // Warn before closing/refreshing with unsaved changes
     useEffect(() => {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            if (dirtyTabs().size > 0) {
+            if (useAdminStore.getState().dirtyTabs().size > 0) {
                 e.preventDefault()
                 e.returnValue = ''
             }
         }
         window.addEventListener('beforeunload', handleBeforeUnload)
         return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-    }, [dirtyTabs])
+    }, []) // no deps — uses static getState() which always reads fresh store
 
 
     useEffect(() => {
@@ -121,7 +130,6 @@ export default function AdminApp() {
 
     if (!token || !user) return <LoginScreen/>
 
-    const dirty = dirtyTabs()
     const currentTab = TABS.find(t => t.key === activeTab) ?? TABS[0]
 
     const handlePublishAll = () => {

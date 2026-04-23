@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useState} from 'react'
-import {ChevronRight, Download, Eye, FileSearch, Loader2, Plus, Redo2, Rocket, Trash2, Undo2, X} from 'lucide-react'
+import {AlertTriangle, ChevronRight, Download, Eye, FileSearch, Loader2, Plus, Redo2, Rocket, Trash2, Undo2, X} from 'lucide-react'
 import {AnimatePresence, motion} from 'framer-motion'
 import type {SectionConfig, TabConfig} from '../types'
 import {useAdminStore} from '../store'
@@ -25,6 +25,8 @@ export default function TabEditor({tab}: Props) {
     const redo = useAdminStore(s => s.redo)
     const undoStacks = useAdminStore(s => s.undoStacks)
     const redoStacks = useAdminStore(s => s.redoStacks)
+    // Block publishing for this tab if its data failed to load on startup
+    const hasLoadError = useAdminStore(s => s.dataLoadErrors.includes(tab.key))
     const [orphans, setOrphans] = useState<string[] | null>(null)
     const [showDiff, setShowDiff] = useState(false)
     const [showPreview, setShowPreview] = useState(false)
@@ -126,6 +128,16 @@ export default function TabEditor({tab}: Props) {
                 <PreviewModal tabKey={tab.key} onClose={() => setShowPreview(false)}/>
             )}
 
+            {/* Load-error warning — shown inline so it's visible next to the publish button */}
+            {hasLoadError && (
+                <div className="mb-5 flex items-start gap-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-700/40 rounded-2xl px-4 py-3">
+                    <AlertTriangle size={14} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"/>
+                    <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">
+                        Daten für diesen Tab konnten nicht geladen werden. Veröffentlichen ist gesperrt — bitte die Seite neu laden.
+                    </p>
+                </div>
+            )}
+
             {/* Action bar */}
             <div className="flex items-center justify-end gap-1.5 sm:gap-2 mb-6 flex-wrap">
                 {/* Undo / Redo */}
@@ -162,9 +174,10 @@ export default function TabEditor({tab}: Props) {
                 <button
                     type="button"
                     onClick={handlePublish}
-                    disabled={!isDirty || publishing}
+                    disabled={!isDirty || publishing || hasLoadError}
+                    title={hasLoadError ? 'Daten konnten nicht geladen werden — Seite neu laden' : undefined}
                     className={`shrink-0 text-[10px] sm:text-xs font-bold px-3.5 sm:px-5 py-2 rounded-xl flex items-center gap-2 transition-colors whitespace-nowrap [hyphens:none] ${
-                        isDirty
+                        isDirty && !hasLoadError
                             ? 'bg-spd-red hover:bg-spd-red-dark text-white shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] disabled:cursor-wait disabled:hover:bg-spd-red disabled:active:scale-100'
                             : 'bg-gray-200/60 dark:bg-gray-700/40 text-gray-400 dark:text-gray-500 cursor-not-allowed backdrop-blur-sm'
                     }`}
@@ -174,9 +187,9 @@ export default function TabEditor({tab}: Props) {
                 </button>
             </div>
 
-            {/* Sticky publish bar */}
+            {/* Sticky publish bar — also guarded by hasLoadError */}
             <StickyPublishBar
-                isDirty={isDirty}
+                isDirty={isDirty && !hasLoadError}
                 publishing={publishing}
                 onPublish={handlePublish}
                 onShowDiff={() => setShowDiff(true)}
