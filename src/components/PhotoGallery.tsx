@@ -147,7 +147,7 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
     <div className={className}>
       {/* Inline slideshow */}
       <div
-        className="relative rounded-2xl overflow-hidden bg-gray-900 select-none cursor-zoom-in touch-pan-y"
+        className="relative rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-900 select-none cursor-zoom-in touch-pan-y"
         onClick={handleClick}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}

@@ -49,9 +49,10 @@ interface Props {
     value: unknown
     onChange: (v: unknown) => void
     contextItem?: Record<string, unknown>
+    onExtraChange?: (key: string, value: unknown) => void
 }
 
-export default function FieldRenderer({field, value, onChange, contextItem}: Props) {
+export default function FieldRenderer({field, value, onChange, contextItem, onExtraChange}: Props) {
     const label = field.label + (field.required ? ' *' : '')
 
     return (
@@ -60,12 +61,12 @@ export default function FieldRenderer({field, value, onChange, contextItem}: Pro
                 className="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
                 {label}
             </label>
-            <FieldInput field={field} value={value} onChange={onChange} contextItem={contextItem}/>
+            <FieldInput field={field} value={value} onChange={onChange} contextItem={contextItem} onExtraChange={onExtraChange}/>
         </div>
     )
 }
 
-function FieldInput({field, value, onChange, contextItem}: Props) {
+function FieldInput({field, value, onChange, contextItem, onExtraChange}: Props) {
     switch (field.type) {
         case 'textarea':
             return <TextareaField value={value as string} onChange={v => onChange(v)}/>
@@ -76,7 +77,7 @@ function FieldInput({field, value, onChange, contextItem}: Props) {
                                contextItem={contextItem}/>
         case 'imagelist':
             return <ImageListField field={field} value={value as string[]} onChange={v => onChange(v)}
-                                   contextItem={contextItem}/>
+                                   contextItem={contextItem} onExtraChange={onExtraChange}/>
         case 'stringlist':
             return <StringListField value={value as string[]} onChange={v => onChange(v)}/>
         case 'icon-picker':
@@ -308,11 +309,12 @@ function ImageField({field, value, onChange, contextItem}: {
     )
 }
 
-function ImageListField({field, value, onChange, contextItem}: {
+function ImageListField({field, value, onChange, contextItem, onExtraChange}: {
     field: FieldConfig;
     value: string[];
     onChange: (v: string[]) => void;
     contextItem?: Record<string, unknown>
+    onExtraChange?: (key: string, value: unknown) => void
 }) {
     const addPendingUpload = useAdminStore(s => s.addPendingUpload)
     const setStatus = useAdminStore(s => s.setStatus)
@@ -330,7 +332,9 @@ function ImageListField({field, value, onChange, contextItem}: {
     )
 
     const syncCaptions = (caps: string[]) => {
-        if (captionsKey && contextItem) contextItem[captionsKey] = caps
+        if (!captionsKey) return
+        if (onExtraChange) onExtraChange(captionsKey, caps)
+        else if (contextItem) contextItem[captionsKey] = caps
     }
 
     const handleDragEnd = (event: DragEndEvent) => {

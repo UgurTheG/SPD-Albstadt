@@ -33,9 +33,7 @@ export default function Footer({ navigateTo }: FooterProps) {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-spd-red rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-black text-xs">SPD</span>
-              </div>
+              <img src="/spd-logo.svg" alt="SPD" className="w-10 h-10 rounded-xl shadow-lg" />
               <span className="font-black text-white text-xl tracking-tight">Albstadt</span>
             </div>
             <p className="text-sm leading-relaxed mb-4 max-w-xs">

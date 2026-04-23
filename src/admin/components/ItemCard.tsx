@@ -67,6 +67,10 @@ export default function ItemCard({fields, item, index, total, onUpdate, onRemove
                         onUpdate()
                     }}
                     contextItem={item}
+                    onExtraChange={(key, v) => {
+                        item[key] = v;
+                        onUpdate()
+                    }}
                 />
             ))}
         </div>

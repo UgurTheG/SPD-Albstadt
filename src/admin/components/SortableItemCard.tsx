@@ -99,6 +99,10 @@ export default function SortableItemCard({id, fields, item, index, total, onUpda
                         onUpdate()
                     }}
                     contextItem={item}
+                    onExtraChange={(key, v) => {
+                        item[key] = v;
+                        onUpdate()
+                    }}
                 />
             ))}
         </div>

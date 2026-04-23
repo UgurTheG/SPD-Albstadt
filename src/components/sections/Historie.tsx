@@ -64,12 +64,12 @@ const EventCard = memo(function EventCard({ entry, isLeft, onOpen }: { entry: Ti
                   transition-all duration-500
                   ${isLeft ? 'text-right' : 'text-left'}`}
     >
-      <span className="text-3xl font-black text-spd-red dark:text-red-400 leading-none block mb-2">
+      <span className="text-3xl font-black text-spd-red leading-none block mb-2">
         {entry.jahr}
       </span>
       <h4 className="font-bold text-gray-900 dark:text-white mb-1.5 text-base group-hover:text-spd-red transition-colors duration-300">{entry.titel}</h4>
       <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-3">{entry.beschreibung}</p>
-      <span className={`mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-spd-red/70 dark:text-red-400/70 group-hover:text-spd-red dark:group-hover:text-red-400 transition-colors ${isLeft ? 'flex-row-reverse' : ''}`}>
+      <span className={`mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-spd-red/70 group-hover:text-spd-red transition-colors ${isLeft ? 'flex-row-reverse' : ''}`}>
         Mehr lesen <ChevronRight size={13} className={`transition-transform ${isLeft ? 'rotate-180 group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'}`} />
         {entry.bilder && entry.bilder.length > 0 && (
           <span className="flex items-center gap-0.5 ml-1 text-gray-400"><Images size={12} />{entry.bilder.length}</span>
@@ -128,8 +128,8 @@ const TimelineRow = memo(function TimelineRow({ item, index, onOpenEvent, onOpen
 
   // Dot colour: red for events, white-outlined for persons
   const dot = item.type === 'event'
-    ? 'w-4 h-4 bg-spd-red dark:bg-red-400 border-4 border-white dark:border-gray-900'
-    : 'w-3 h-3 bg-white dark:bg-gray-900 border-2 border-spd-red dark:border-red-400'
+    ? 'w-4 h-4 bg-spd-red border-4 border-white dark:border-gray-900'
+    : 'w-3 h-3 bg-white dark:bg-gray-900 border-2 border-spd-red'
 
   const card = item.type === 'event'
     ? <EventCard entry={item.data} isLeft={isLeft} onOpen={() => onOpenEvent(item.data)} />
@@ -203,8 +203,8 @@ export default function Historie() {
         <motion.div ref={ref} initial={{ opacity: 0, y: 30 }} animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }} className="relative mb-16">
           <div className="flex items-center gap-3 mb-4">
-            <div className="h-1 w-12 bg-spd-red dark:bg-red-400 rounded-full" />
-            <span className="text-spd-red dark:text-red-400 font-semibold text-sm uppercase tracking-wider">Historie</span>
+            <div className="h-1 w-12 bg-spd-red rounded-full" />
+            <span className="text-spd-red font-semibold text-sm uppercase tracking-wider">Historie</span>
           </div>
           <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-6 text-left">
             Geschichte der SPD Albstadt
@@ -218,10 +218,10 @@ export default function Historie() {
             transition={{ delay: 0.3 }}
             className="flex items-center gap-6 mb-12 text-xs text-gray-400 dark:text-gray-500">
             <span className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-spd-red dark:bg-red-400 inline-block" /> Ereignis
+              <span className="w-3 h-3 rounded-full bg-spd-red inline-block" /> Ereignis
             </span>
             <span className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full border-2 border-spd-red dark:border-red-400 bg-white dark:bg-gray-900 inline-block" /> Kommunale Persönlichkeit
+              <span className="w-2.5 h-2.5 rounded-full border-2 border-spd-red bg-white dark:bg-gray-900 inline-block" /> Kommunale Persönlichkeit
             </span>
           </motion.div>
         )}
@@ -232,7 +232,7 @@ export default function Historie() {
             <motion.div initial={{ scaleY: 0 }} animate={isInView ? { scaleY: 1 } : { scaleY: 0 }}
               transition={{ duration: 1.4, ease: 'easeInOut', delay: 0.3 }}
               style={{ originY: 0 }}
-              className="absolute left-2 md:left-1/2 top-0 bottom-0 w-px bg-linear-to-b from-spd-red/60 via-spd-red/50 to-spd-red/30 dark:from-red-400/60 dark:via-red-400/50 dark:to-red-400/30 md:-translate-x-px" />
+              className="absolute left-2 md:left-1/2 top-0 bottom-0 w-px bg-linear-to-b from-spd-red/60 via-spd-red/50 to-spd-red/30 md:-translate-x-px" />
             <div className="space-y-10 relative">
               {merged.map((item, i) => (
                 <TimelineRow
@@ -282,8 +282,8 @@ export default function Historie() {
               </span>
               <div className="relative">
                 <div className="w-10 h-0.5 bg-spd-red rounded-full mb-4" />
-                <p className="text-spd-red/70 text-xs font-bold uppercase tracking-widest mb-1.5">{selectedEntry.jahr}</p>
-                <h3 className="text-xl sm:text-2xl [@media(orientation:landscape)_and_(max-height:600px)]:text-lg font-black text-white leading-snug">{selectedEntry.titel}</h3>
+                <p className="text-spd-red/70 text-xs font-bold uppercase tracking-widest mb-1.5 text-left [hyphens:none]">{selectedEntry.jahr}</p>
+                <h3 className="text-xl sm:text-2xl [@media(orientation:landscape)_and_(max-height:600px)]:text-lg font-black text-white leading-snug text-left [hyphens:none]">{selectedEntry.titel}</h3>
               </div>
             </div>
 
