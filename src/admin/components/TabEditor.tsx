@@ -3,7 +3,7 @@ import {ChevronRight, Download, Eye, FileSearch, Loader2, Plus, Redo2, Rocket, T
 import {AnimatePresence, motion} from 'framer-motion'
 import type {SectionConfig, TabConfig} from '../types'
 import {useAdminStore} from '../store'
-import {type ChangeEntry, type ChangeKind, diffTab} from '../lib/diff'
+import {type ChangeEntry, diffTab, groupChangeEntries, type ChangeGroup} from '../lib/diff'
 import {FieldChangeDiff} from './DiffDisplay'
 import FieldRenderer from './FieldRenderer'
 import ArrayEditor from './ArrayEditor'
@@ -19,7 +19,6 @@ export default function TabEditor({tab}: Props) {
     const state = useAdminStore(s => s.state)
     const publishTab = useAdminStore(s => s.publishTab)
     const publishing = useAdminStore(s => s.publishing)
-    const dirtyTabs = useAdminStore(s => s.dirtyTabs)
     const findOrphanImagesForTab = useAdminStore(s => s.findOrphanImagesForTab)
     const revertTab = useAdminStore(s => s.revertTab)
     const undo = useAdminStore(s => s.undo)
@@ -52,9 +51,13 @@ export default function TabEditor({tab}: Props) {
     }, [tab.key, undo, redo])
 
     const data = state[tab.key]
-    if (!data) return <p className="text-gray-400 text-center py-20">Daten werden geladen…</p>
 
-    const isDirty = dirtyTabs().has(tab.key)
+    // Must be called before any conditional return to satisfy Rules of Hooks.
+    // Zustand compares the boolean result — component only re-renders when the
+    // dirty flag for this specific tab actually changes.
+    const isDirty = useAdminStore(s => s.dirtyTabs().has(tab.key))
+
+    if (!data) return <p className="text-gray-400 text-center py-20">Daten werden geladen…</p>
 
     const handlePublish = () => {
         setShowPublishConfirm(true)
@@ -404,7 +407,7 @@ function DiffModal({tab, onClose, onRevertAll}: { tab: TabConfig; onClose: () =>
                             </p>
                         </div>
                     </div>
-                    <button onClick={onClose}
+                     <button type="button" onClick={onClose}
                             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 w-8 h-8 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition-colors">
                         <X size={16}/>
                     </button>
@@ -425,26 +428,26 @@ function DiffModal({tab, onClose, onRevertAll}: { tab: TabConfig; onClose: () =>
                             <div className="flex items-center gap-2">
                                 <span
                                     className="text-xs text-amber-600 dark:text-amber-400 font-medium">Alle verwerfen?</span>
-                                <button
+                                <button type="button"
                                     className="text-xs px-3 py-2 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors flex items-center gap-1.5"
                                     onClick={onRevertAll}>
                                     <Undo2 size={11}/> Ja, alle verwerfen
                                 </button>
-                                <button
+                                <button type="button"
                                     className="text-xs px-3 py-2 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
                                     onClick={() => setConfirmRevertAll(false)}>
                                     Abbrechen
                                 </button>
                             </div>
                         ) : (
-                            <button
+                            <button type="button"
                                 className="text-xs px-3 py-2 rounded-xl border border-amber-300/60 dark:border-amber-700/40 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors font-medium flex items-center gap-1.5"
                                 onClick={() => setConfirmRevertAll(true)}>
                                 <Undo2 size={11}/> Alle zurücksetzen
                             </button>
                         )
                     ) : <div/>}
-                    <button className="text-xs px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
+                    <button type="button" className="text-xs px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
                             onClick={onClose}>Schließen</button>
                 </div>
             </motion.div>
@@ -489,8 +492,9 @@ function ChangeGroupBlock({group, onRevert}: {
                         </>
                     )}
                 </div>
-                {structural && (
+                 {structural && (
                     <button
+                        type="button"
                         onClick={() => onRevert(structural)}
                         className="shrink-0 text-[11px] font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2.5 py-1 rounded-lg border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1.5"
                         title={group.itemKind === 'added' ? 'Diesen neuen Eintrag verwerfen' : group.itemKind === 'moved' ? 'Position zurücksetzen' : 'Entfernten Eintrag wiederherstellen'}
@@ -516,6 +520,7 @@ function ChangeGroupBlock({group, onRevert}: {
                                 <FieldChangeDiff entry={e}/>
                             </div>
                             <button
+                                type="button"
                                 onClick={() => onRevert(e)}
                                 className="shrink-0 text-[11px] font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2.5 py-1 rounded-lg border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1.5"
                             >
@@ -530,30 +535,4 @@ function ChangeGroupBlock({group, onRevert}: {
 }
 
 
-interface ChangeGroup {
-    key: string
-    group: string
-    itemLabel?: string
-    itemKind: ChangeKind
-    entries: ChangeEntry[]
-}
-
-function groupChangeEntries(entries: ChangeEntry[]): ChangeGroup[] {
-    const map = new Map<string, ChangeGroup>()
-    for (const e of entries) {
-        const gkey = [e.group, e.groupKey ?? '-', e.itemIndex ?? '-', e.kind === 'modified' ? 'm' : e.kind].join('|')
-        let g = map.get(gkey)
-        if (!g) {
-            g = {
-                key: gkey,
-                group: e.group,
-                itemLabel: e.itemLabel,
-                itemKind: e.kind,
-                entries: [],
-            }
-            map.set(gkey, g)
-        }
-        g.entries.push(e)
-    }
-    return [...map.values()]
-}
+// ChangeGroup and groupChangeEntries are imported from lib/diff

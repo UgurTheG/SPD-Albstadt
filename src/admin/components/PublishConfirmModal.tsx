@@ -4,7 +4,7 @@ import {motion} from 'framer-motion'
 import type {TabConfig} from '../types'
 import {useAdminStore} from '../store'
 import {TABS} from '../config/tabs'
-import {diffTab, type ChangeEntry, type ChangeKind} from '../lib/diff'
+import {diffTab, type ChangeEntry, groupChangeEntries, type ChangeGroup} from '../lib/diff'
 import {FieldChangeDiff} from './DiffDisplay'
 
 interface Props {
@@ -13,27 +13,7 @@ interface Props {
     onCancel: () => void
 }
 
-interface ChangeGroup {
-    key: string
-    group: string
-    itemLabel?: string
-    itemKind: ChangeKind
-    entries: ChangeEntry[]
-}
-
-function groupChangeEntries(entries: ChangeEntry[]): ChangeGroup[] {
-    const map = new Map<string, ChangeGroup>()
-    for (const e of entries) {
-        const gkey = [e.group, e.groupKey ?? '-', e.itemIndex ?? '-', e.kind === 'modified' ? 'm' : e.kind].join('|')
-        let g = map.get(gkey)
-        if (!g) {
-            g = {key: gkey, group: e.group, itemLabel: e.itemLabel, itemKind: e.kind, entries: []}
-            map.set(gkey, g)
-        }
-        g.entries.push(e)
-    }
-    return [...map.values()]
-}
+// ChangeGroup and groupChangeEntries are imported from lib/diff
 
 export default function PublishConfirmModal({tabKey, onConfirm, onCancel}: Props) {
     const state = useAdminStore(s => s.state)
@@ -82,7 +62,7 @@ export default function PublishConfirmModal({tabKey, onConfirm, onCancel}: Props
                             </p>
                         </div>
                     </div>
-                    <button onClick={onCancel}
+                    <button type="button" onClick={onCancel}
                             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 w-8 h-8 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition-colors">
                         <X size={16}/>
                     </button>
@@ -111,7 +91,7 @@ export default function PublishConfirmModal({tabKey, onConfirm, onCancel}: Props
 
                 {/* Actions */}
                 <div className="flex items-center justify-end gap-2">
-                    <button
+                    <button type="button"
                         className="text-xs px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
                         onClick={onCancel}>
                         Abbrechen
@@ -163,8 +143,9 @@ function PublishChangeGroup({group, tabKey, onRevert}: {
                         </>
                     )}
                 </div>
-                {structural && (
+                 {structural && (
                     <button
+                        type="button"
                         onClick={() => onRevert(tabKey, structural)}
                         className="shrink-0 font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2 py-0.5 rounded-md border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1"
                     >
@@ -187,6 +168,7 @@ function PublishChangeGroup({group, tabKey, onRevert}: {
                                 <FieldChangeDiff entry={e}/>
                             </div>
                             <button
+                                type="button"
                                 onClick={() => onRevert(tabKey, e)}
                                 className="shrink-0 font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2 py-0.5 rounded-md border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1"
                             >

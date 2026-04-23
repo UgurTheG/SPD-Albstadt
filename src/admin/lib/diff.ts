@@ -473,6 +473,36 @@ function setAtPath(root: unknown, path: ChangePath, value: unknown): void {
     ;(cur as Record<string | number, unknown>)[last as never] = value as never
 }
 
+// ── Shared grouping helper (used by TabEditor, GlobalDiffModal, PublishConfirmModal) ──
+
+export interface ChangeGroup {
+    key: string
+    group: string
+    itemLabel?: string
+    itemKind: ChangeKind
+    entries: ChangeEntry[]
+}
+
+export function groupChangeEntries(entries: ChangeEntry[]): ChangeGroup[] {
+    const map = new Map<string, ChangeGroup>()
+    for (const e of entries) {
+        const gkey = [e.group, e.groupKey ?? '-', e.itemIndex ?? '-', e.kind === 'modified' ? 'm' : e.kind].join('|')
+        let g = map.get(gkey)
+        if (!g) {
+            g = {
+                key: gkey,
+                group: e.group,
+                itemLabel: e.itemLabel,
+                itemKind: e.kind,
+                entries: [],
+            }
+            map.set(gkey, g)
+        }
+        g.entries.push(e)
+    }
+    return [...map.values()]
+}
+
 export function summarizeValue(v: unknown, type?: FieldConfig['type'], truncate = true): string {
     if (v == null || v === '') return '—'
     if (type === 'image' && typeof v === 'string') return v.split('/').pop() || String(v)

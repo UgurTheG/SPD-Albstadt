@@ -110,6 +110,7 @@ export default function PreviewModal({tabKey, onClose}: Props) {
 
 
                     <button
+                        type="button"
                         onClick={onClose}
                         className="w-9 h-9 rounded-xl bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
                     >

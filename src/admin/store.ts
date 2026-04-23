@@ -183,17 +183,28 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     tryAutoLogin: async () => {
         const token = get().token
         if (!token) return
+        let user: GHUser
         try {
-            const user = await validateToken(token)
-            set({user: user as GHUser})
-            await get().loadData()
+            user = await validateToken(token) as GHUser
         } catch {
+            // Token is invalid or revoked — force logout
             localStorage.removeItem(TOKEN_KEY)
             set({token: ''})
+            return
         }
+        set({user})
+        // Data load is best-effort: a transient network failure should not
+        // invalidate a valid session. The editor will show a loading state
+        // and the user can refresh manually.
+        try {
+            await get().loadData()
+        } catch { /* ignore — UI will remain in loading state */ }
     },
 
     logout: () => {
+        // Cancel any pending debounced persistence and reset module-level state
+        if (saveTimer) { clearTimeout(saveTimer); saveTimer = null }
+        lastUndoPush = {}
         localStorage.removeItem(TOKEN_KEY)
         localStorage.removeItem(DRAFT_KEY)
         set({token: '', user: null, state: {}, originalState: {}, dataLoaded: false, pendingUploads: [], undoStacks: {}, redoStacks: {}})
@@ -419,10 +430,15 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 keptUploads = keptUploads.filter(u => u.ghPath.replace(/^public/, '') !== entry.pendingImagePath)
             }
             persistDirtyState(nextState, prev.originalState)
+            // Push current state onto undo stack so the revert itself is undoable,
+            // instead of wiping the entire history.
+            const undoStack = [...(prev.undoStacks[tabKey] || [])]
+            undoStack.push(JSON.parse(JSON.stringify(prev.state[tabKey])))
+            if (undoStack.length > UNDO_LIMIT) undoStack.shift()
             return {
                 state: nextState,
                 pendingUploads: keptUploads,
-                undoStacks: {...prev.undoStacks, [tabKey]: []},
+                undoStacks: {...prev.undoStacks, [tabKey]: undoStack},
                 redoStacks: {...prev.redoStacks, [tabKey]: []},
                 statusMessage: 'Änderung zurückgesetzt.',
                 statusType: 'info' as const,
@@ -434,38 +450,41 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     publishAll: async (orphansToDelete) => {
         const {token, pendingUploads, publishing} = get()
         if (publishing) return
+
+        // Collect all changes BEFORE touching publishing state so an empty
+        // batch never causes a spurious loading flash.
+        const changes: TreeFileChange[] = []
+
+        // Collect image uploads
+        for (const upload of pendingUploads) {
+            changes.push({path: upload.ghPath, base64Content: upload.base64})
+        }
+
+        // Collect orphan deletions
+        if (orphansToDelete) {
+            for (const imgPath of orphansToDelete) {
+                changes.push({path: 'public' + imgPath, delete: true})
+            }
+        }
+
+        // Collect dirty JSON files
+        const dirty = get().dirtyTabs()
+        const dirtyKeys: string[] = []
+        for (const tabKey of dirty) {
+            const tab = TABS.find(t => t.key === tabKey)
+            if (!tab?.ghPath) continue
+            const json = JSON.stringify(get().state[tabKey], null, 2) + '\n'
+            changes.push({path: tab.ghPath, content: json})
+            dirtyKeys.push(tabKey)
+        }
+
+        if (changes.length === 0) {
+            set(prev => ({statusMessage: 'Nichts zu veröffentlichen.', statusType: 'info', statusCounter: prev.statusCounter + 1}))
+            return
+        }
+
         set({publishing: true})
         try {
-            const changes: TreeFileChange[] = []
-
-            // Collect image uploads
-            for (const upload of pendingUploads) {
-                changes.push({path: upload.ghPath, base64Content: upload.base64})
-            }
-
-            // Collect orphan deletions
-            if (orphansToDelete) {
-                for (const imgPath of orphansToDelete) {
-                    changes.push({path: 'public' + imgPath, delete: true})
-                }
-            }
-
-            // Collect dirty JSON files
-            const dirty = get().dirtyTabs()
-            const dirtyKeys: string[] = []
-            for (const tabKey of dirty) {
-                const tab = TABS.find(t => t.key === tabKey)
-                if (!tab?.ghPath) continue
-                const json = JSON.stringify(get().state[tabKey], null, 2) + '\n'
-                changes.push({path: tab.ghPath, content: json})
-                dirtyKeys.push(tabKey)
-            }
-
-            if (changes.length === 0) {
-                set(prev => ({statusMessage: 'Nichts zu veröffentlichen.', statusType: 'info', statusCounter: prev.statusCounter + 1}))
-                return
-            }
-
             // Build commit message
             const fileNames = dirtyKeys.map(k => {
                 const tab = TABS.find(t => t.key === k)

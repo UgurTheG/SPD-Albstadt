@@ -33,7 +33,7 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
     const [filter, setFilter] = useState('')
 
     const sensors = useSensors(
-        useSensor(PointerSensor, {activationConstraint: {distance: 8}}),
+        useSensor(PointerSensor, {activationConstraint: {distance: filter ? Number.MAX_SAFE_INTEGER : 8}}),
         useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates}),
     )
 
@@ -85,6 +85,7 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
 
     const handleDragEnd = (event: DragEndEvent) => {
         setActiveId(null)
+        if (filter) return  // don't reorder while a filter is active — indices would be wrong
         const {active, over} = event
         if (!over || active.id === over.id) return
         const oldIndex = ids.indexOf(active.id as string)
@@ -128,7 +129,7 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
                         />
                     </div>
                 )}
-                <div className="space-y-4">
+                    <div className="space-y-4">
                     {data.map((item, i) => (
                         <div key={ids[i]} style={{display: matchesFilter(item) ? undefined : 'none'}}>
                             <SortableItemCard
@@ -140,6 +141,7 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
                                 onUpdate={triggerUpdate}
                                 onRemove={() => handleRemove(i)}
                                 onMove={handleMove}
+                                dragDisabled={!!filter}
                             />
                         </div>
                     ))}

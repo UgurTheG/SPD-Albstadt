@@ -36,7 +36,7 @@ export default function OrphanModal({orphans, onConfirm, onKeep, onCancel}: Prop
                             <p className="text-xs text-gray-400">{orphans.length} Bild{orphans.length !== 1 ? 'er' : ''} gefunden</p>
                         </div>
                     </div>
-                    <button onClick={onCancel}
+                    <button type="button" onClick={onCancel}
                             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 w-8 h-8 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition-colors">
                         <X size={16}/>
                     </button>
@@ -62,17 +62,17 @@ export default function OrphanModal({orphans, onConfirm, onKeep, onCancel}: Prop
                 </div>
 
                 <div className="flex gap-2 justify-end flex-wrap">
-                    <button
+                    <button type="button"
                         className="text-xs px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all hover:bg-gray-50 dark:hover:bg-gray-800/40"
                         onClick={onKeep}>
                         Behalten
                     </button>
-                    <button
+                    <button type="button"
                         className="text-xs px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:shadow-lg hover:shadow-red-500/25 transition-all flex items-center gap-1.5"
                         onClick={() => onConfirm(orphans.filter(p => checked[p]))}>
                         <Trash2 size={12}/> Löschen
                     </button>
-                    <button
+                    <button type="button"
                         className="text-xs px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-all"
                         onClick={onCancel}>
                         Abbrechen

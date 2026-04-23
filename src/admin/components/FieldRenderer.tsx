@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef, useState} from 'react'
+import {useCallback, useEffect, useId, useRef, useState} from 'react'
 import {createPortal} from 'react-dom'
 import type {FieldConfig} from '../types'
 import {slugify} from '../lib/images'
@@ -50,28 +50,31 @@ interface Props {
     onChange: (v: unknown) => void
     contextItem?: Record<string, unknown>
     onExtraChange?: (key: string, value: unknown) => void
+    inputId?: string
 }
 
 export default function FieldRenderer({field, value, onChange, contextItem, onExtraChange}: Props) {
+    const inputId = useId()
     const label = field.label + (field.required ? ' *' : '')
 
     return (
         <div className="mb-4">
             <label
+                htmlFor={inputId}
                 className="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
                 {label}
             </label>
-            <FieldInput field={field} value={value} onChange={onChange} contextItem={contextItem} onExtraChange={onExtraChange}/>
+            <FieldInput inputId={inputId} field={field} value={value} onChange={onChange} contextItem={contextItem} onExtraChange={onExtraChange}/>
         </div>
     )
 }
 
-function FieldInput({field, value, onChange, contextItem, onExtraChange}: Props) {
+function FieldInput({field, value, onChange, contextItem, onExtraChange, inputId}: Props) {
     switch (field.type) {
         case 'textarea':
-            return <TextareaField value={value as string} onChange={v => onChange(v)}/>
+            return <TextareaField id={inputId} value={value as string} onChange={v => onChange(v)}/>
         case 'select':
-            return <SelectField value={value as string} options={field.options || []} onChange={v => onChange(v)}/>
+            return <SelectField id={inputId} value={value as string} options={field.options || []} onChange={v => onChange(v)}/>
         case 'image':
             return <ImageField field={field} value={value as string} onChange={v => onChange(v)}
                                contextItem={contextItem}/>
@@ -81,13 +84,13 @@ function FieldInput({field, value, onChange, contextItem, onExtraChange}: Props)
         case 'stringlist':
             return <StringListField value={value as string[]} onChange={v => onChange(v)}/>
         case 'icon-picker':
-            return <IconPickerField value={value as string} onChange={v => onChange(v)}/>
+            return <IconPickerField id={inputId} value={value as string} onChange={v => onChange(v)}/>
         case 'date':
-            return <DateField value={value as string} onChange={v => onChange(v)}/>
+            return <DateField id={inputId} value={value as string} onChange={v => onChange(v)}/>
         case 'time':
-            return <TimeField value={value as string} onChange={v => onChange(v)}/>
+            return <TimeField id={inputId} value={value as string} onChange={v => onChange(v)}/>
         case 'toggle':
-            return <ToggleField value={value as boolean} onChange={v => onChange(v)}/>
+            return <ToggleField id={inputId} value={value as boolean} onChange={v => onChange(v)}/>
         default:
             return (
                 <div
@@ -98,6 +101,7 @@ function FieldInput({field, value, onChange, contextItem, onExtraChange}: Props)
                         </span>
                     )}
                     <input
+                        id={inputId}
                         type={field.type || 'text'}
                         className="w-full min-w-0 bg-transparent text-sm focus:outline-none dark:text-white dark:placeholder-gray-500"
                         value={(value as string) || ''}
@@ -112,7 +116,7 @@ function FieldInput({field, value, onChange, contextItem, onExtraChange}: Props)
     }
 }
 
-function TextareaField({value, onChange}: { value: string; onChange: (v: string) => void }) {
+function TextareaField({id, value, onChange}: { id?: string; value: string; onChange: (v: string) => void }) {
     const ref = useRef<HTMLTextAreaElement>(null)
     const resize = useCallback(() => {
         if (ref.current) {
@@ -126,6 +130,7 @@ function TextareaField({value, onChange}: { value: string; onChange: (v: string)
     return (
         <textarea
             ref={ref}
+            id={id}
             className={inputCls + ' resize-y min-h-20'}
             rows={3}
             value={value || ''}
@@ -138,27 +143,35 @@ function TextareaField({value, onChange}: { value: string; onChange: (v: string)
     )
 }
 
-function SelectField({value, options, onChange}: { value: string; options: string[]; onChange: (v: string) => void }) {
+function SelectField({id, value, options, onChange}: { id?: string; value: string; options: string[]; onChange: (v: string) => void }) {
     return (
-        <select className={inputCls + ' cursor-pointer'} value={value || ''} onChange={e => onChange(e.target.value)}>
+        <select id={id} className={inputCls + ' cursor-pointer'} value={value || ''} onChange={e => onChange(e.target.value)}>
             <option value="">— Bitte wählen —</option>
             {options.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
     )
 }
 
-function DateField({value, onChange}: { value: string; onChange: (v: string) => void }) {
-    const isoToDE = (iso: string) => {
-        if (!iso) return '';
-        const [y, m, d] = iso.split('-');
-        return `${d}.${m}.${y}`
-    }
-    const deToISO = (de: string) => {
-        const m = de.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-        return m ? `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}` : ''
-    }
+function isoToDE(iso: string): string {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    return `${d}.${m}.${y}`
+}
+
+function deToISO(de: string): string {
+    const m = de.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+    return m ? `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}` : ''
+}
+
+function DateField({id, value, onChange}: { id?: string; value: string; onChange: (v: string) => void }) {
     const [display, setDisplay] = useState(isoToDE(value))
     const [valid, setValid] = useState(true)
+
+    // Sync display text when value changes externally (e.g. undo / redo / revert)
+    useEffect(() => {
+        setDisplay(isoToDE(value))
+        setValid(true)
+    }, [value])
 
     const hint = value ? new Date(value + 'T00:00:00').toLocaleDateString('de-DE', {
         weekday: 'long',
@@ -170,6 +183,7 @@ function DateField({value, onChange}: { value: string; onChange: (v: string) => 
     return (
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
             <input
+                id={id}
                 type="text"
                 className={`${inputCls} max-w-[160px] ${!valid ? 'text-spd-red' : ''}`}
                 placeholder="TT.MM.JJJJ"
@@ -191,19 +205,19 @@ function DateField({value, onChange}: { value: string; onChange: (v: string) => 
     )
 }
 
-function TimeField({value, onChange}: { value: string; onChange: (v: string) => void }) {
+function TimeField({id, value, onChange}: { id?: string; value: string; onChange: (v: string) => void }) {
     return (
         <div className="flex items-center gap-2">
-            <input type="text" className={`${inputCls} max-w-[100px]`} placeholder="HH:MM" value={value || ''}
+            <input id={id} type="text" className={`${inputCls} max-w-[100px]`} placeholder="HH:MM" value={value || ''}
                    onChange={e => onChange(e.target.value)}/>
             <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Uhr</span>
         </div>
     )
 }
 
-function ToggleField({value, onChange}: { value: boolean; onChange: (v: boolean) => void }) {
+function ToggleField({id, value, onChange}: { id?: string; value: boolean; onChange: (v: boolean) => void }) {
     return (
-        <button type="button" className="flex items-center gap-3 group" onClick={() => onChange(!value)}>
+        <button id={id} type="button" className="flex items-center gap-3 group" onClick={() => onChange(!value)}>
             <div
                 className={`w-12 h-7 rounded-full relative transition-all duration-300 ${value ? 'bg-gradient-to-r from-spd-red to-spd-red-dark shadow-sm shadow-spd-red/25' : 'bg-gray-200 dark:bg-gray-700'}`}>
                 <span
@@ -563,7 +577,7 @@ function StringListField({value, onChange}: { value: string[]; onChange: (v: str
     )
 }
 
-function IconPickerField({value, onChange}: { value: string; onChange: (v: string) => void }) {
+function IconPickerField({id, value, onChange}: { id?: string; value: string; onChange: (v: string) => void }) {
     const [open, setOpen] = useState(false)
     const [search, setSearch] = useState('')
     const [svgHtml, setSvgHtml] = useState('')
@@ -609,7 +623,7 @@ function IconPickerField({value, onChange}: { value: string; onChange: (v: strin
 
     return (
         <div>
-            <button ref={btnRef} type="button"
+            <button ref={btnRef} id={id} type="button"
                     className={inputCls + ' text-left flex items-center gap-2.5 cursor-pointer'}
                     onClick={() => setOpen(!open)}>
                 {svgHtml && <span className="w-4 h-4 shrink-0"

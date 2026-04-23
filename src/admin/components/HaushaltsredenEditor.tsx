@@ -11,6 +11,7 @@ export default function HaushaltsredenEditor() {
     const [existingMap, setExistingMap] = useState<Record<number, string>>({})
     const [disabledYears, setDisabledYears] = useState<Set<number>>(new Set())
     const [loading, setLoading] = useState(true)
+    const [loadError, setLoadError] = useState(false)
     const [busy, setBusy] = useState<number | null>(null)
     const toggleQueue = useRef(Promise.resolve())
     const latestDisabled = useRef(disabledYears)
@@ -18,6 +19,7 @@ export default function HaushaltsredenEditor() {
 
     const load = async (silent = false) => {
         if (!silent) setLoading(true)
+        setLoadError(false)
         try {
             const [files, config] = await Promise.all([
                 listDirectory(token, 'public/documents/fraktion/haushaltsreden'),
@@ -30,7 +32,8 @@ export default function HaushaltsredenEditor() {
             }
             setExistingMap(map)
             if (config?.disabledYears) setDisabledYears(new Set(config.disabledYears))
-        } catch { /* ignore */
+        } catch {
+            setLoadError(true)
         }
         setLoading(false)
     }
@@ -107,6 +110,14 @@ export default function HaushaltsredenEditor() {
                     <div
                         className="w-10 h-10 border-[3px] border-spd-red/20 border-t-spd-red rounded-full animate-spin mb-3"/>
                     <p className="text-xs text-gray-400">Lade Dokumente…</p>
+                </div>
+            ) : loadError ? (
+                <div className="flex flex-col items-center justify-center py-24 gap-4">
+                    <p className="text-sm text-red-500 dark:text-red-400">Fehler beim Laden der Dokumente.</p>
+                    <button type="button" onClick={() => load()}
+                            className="text-xs font-semibold px-4 py-2 rounded-xl bg-spd-red/10 text-spd-red hover:bg-spd-red/15 transition-colors">
+                        Erneut versuchen
+                    </button>
                 </div>
             ) : (
                 <>

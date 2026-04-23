@@ -7,7 +7,7 @@ interface Props {
     onComplete: (base64: string | null) => void
 }
 
-type HitType = 'none' | 'new' | 'move' | 'pan' | 'tl' | 'tr' | 'bl' | 'br' | 't' | 'r' | 'b' | 'l'
+type HitType = 'none' | 'move' | 'pan' | 'tl' | 'tr' | 'bl' | 'br' | 't' | 'r' | 'b' | 'l'
 
 const HANDLE_HIT = 24
 const MIN_CROP = 20
@@ -29,6 +29,18 @@ export default function CropOverlay({file, onComplete}: Props) {
     const [pan, setPan] = useState({x: 0, y: 0})
     const [crop, setCrop] = useState({x: 0, y: 0, w: 0, h: 0})
     const [baseSize, setBaseSize] = useState({w: 0, h: 0})
+    // Cursor is tracked as state because dragType is a ref and doesn't trigger re-renders
+    const [cursor, setCursor] = useState<string>('crosshair')
+
+    // dragType must be declared before the zoom-sync effect that reads it
+    const dragType = useRef<HitType>('none')
+
+    // Keep cursor in sync with zoom when not mid-drag
+    useEffect(() => {
+        if (dragType.current === 'none') {
+            setCursor(zoom > 1 ? 'grab' : 'crosshair')
+        }
+    }, [zoom])
 
     // Loupe state: visible + screen position
     const [loupe, setLoupe] = useState<{ visible: boolean; screenX: number; screenY: number; baseX: number; baseY: number }>({
@@ -42,7 +54,6 @@ export default function CropOverlay({file, onComplete}: Props) {
     const baseSizeRef = useRef({w: 0, h: 0})
     useEffect(() => { baseSizeRef.current = baseSize }, [baseSize])
 
-    const dragType = useRef<HitType>('none')
     const dragStart = useRef({x: 0, y: 0})
     const cropStart = useRef({x: 0, y: 0, w: 0, h: 0})
     const panStart = useRef({x: 0, y: 0})
@@ -125,9 +136,11 @@ export default function CropOverlay({file, onComplete}: Props) {
 
     // Load image & set initial fit (resize if too large)
     useEffect(() => {
+        let cancelled = false
         const MAX_PX = 1920
         const img = new Image()
         img.onload = () => {
+            if (cancelled) return
             // Downscale large images before cropping
             if (img.width > MAX_PX || img.height > MAX_PX) {
                 const scale = Math.min(MAX_PX / img.width, MAX_PX / img.height)
@@ -139,6 +152,7 @@ export default function CropOverlay({file, onComplete}: Props) {
                 offscreen.getContext('2d')!.drawImage(img, 0, 0, w, h)
                 const resized = new Image()
                 resized.onload = () => {
+                    if (cancelled) return
                     imgRef.current = resized
                     layoutToFit(resized)
                     setReady(true)
@@ -152,7 +166,10 @@ export default function CropOverlay({file, onComplete}: Props) {
         }
         const url = URL.createObjectURL(file)
         img.src = url
-        return () => URL.revokeObjectURL(url)
+        return () => {
+            cancelled = true
+            URL.revokeObjectURL(url)
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [file])
 
@@ -190,6 +207,7 @@ export default function CropOverlay({file, onComplete}: Props) {
         setZoom(1)
         setPan({x: Math.round((cw - bw) / 2), y: Math.round((ch - bh) / 2)})
         setCrop({x: 0, y: 0, w: bw, h: bh})
+        setCursor('crosshair')
     }
 
     const clientToBase = useCallback((clientX: number, clientY: number) => {
@@ -290,12 +308,14 @@ export default function CropOverlay({file, onComplete}: Props) {
         if (hit === 'none') {
             if (e.pointerType !== 'mouse' || zoom > 1.02) {
                 dragType.current = 'pan'
+                setCursor('grabbing')
             } else {
                 dragType.current = 'br'
                 setCrop({x: base.x, y: base.y, w: 0, h: 0})
             }
         } else if (hit === 'move') {
             dragType.current = hit
+            setCursor('move')
         } else {
             // It's a handle drag — show loupe
             dragType.current = hit
@@ -386,6 +406,7 @@ export default function CropOverlay({file, onComplete}: Props) {
         if (pointers.current.size < 2) pinchRef.current = null
         if (pointers.current.size === 0) {
             dragType.current = 'none'
+            setCursor(zoomRef.current > 1 ? 'grab' : 'crosshair')
             setLoupe(prev => ({...prev, visible: false}))
         }
     }
@@ -442,15 +463,15 @@ export default function CropOverlay({file, onComplete}: Props) {
     }
 
     // All 8 handles: 4 corners + 4 edge midpoints
-    const handles: { key: HitType; left?: number | string; right?: number | string; top?: number | string; bottom?: number | string; cursor: string }[] = [
-        {key: 'tl', left: -8, top: -8, cursor: 'nwse-resize'},
-        {key: 'tr', right: -8, top: -8, cursor: 'nesw-resize'},
-        {key: 'bl', left: -8, bottom: -8, cursor: 'nesw-resize'},
-        {key: 'br', right: -8, bottom: -8, cursor: 'nwse-resize'},
-        {key: 't', left: '50%', top: -8, cursor: 'ns-resize'},
-        {key: 'b', left: '50%', bottom: -8, cursor: 'ns-resize'},
-        {key: 'l', left: -8, top: '50%', cursor: 'ew-resize'},
-        {key: 'r', right: -8, top: '50%', cursor: 'ew-resize'},
+    const handles: { key: HitType; left?: number | string; right?: number | string; top?: number | string; bottom?: number | string }[] = [
+        {key: 'tl', left: -8, top: -8},
+        {key: 'tr', right: -8, top: -8},
+        {key: 'bl', left: -8, bottom: -8},
+        {key: 'br', right: -8, bottom: -8},
+        {key: 't', left: '50%', top: -8},
+        {key: 'b', left: '50%', bottom: -8},
+        {key: 'l', left: -8, top: '50%'},
+        {key: 'r', right: -8, top: '50%'},
     ]
 
     // Compute loupe position (offset above finger, clamped to stage)
@@ -500,7 +521,7 @@ export default function CropOverlay({file, onComplete}: Props) {
                 onPointerUp={onPointerUp}
                 onPointerCancel={onPointerUp}
                 onDoubleClick={onDoubleClick}
-                style={{touchAction: 'none', cursor: dragType.current === 'pan' ? 'grabbing' : zoom > 1 ? 'grab' : 'crosshair'}}
+                style={{touchAction: 'none', cursor}}
             >
                 {/* Image / canvas */}
                 <canvas

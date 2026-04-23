@@ -4,7 +4,7 @@ import {motion} from 'framer-motion'
 import type {TabConfig} from '../types'
 import {useAdminStore} from '../store'
 import {TABS} from '../config/tabs'
-import {type ChangeEntry, type ChangeKind, diffTab} from '../lib/diff'
+import {type ChangeEntry, diffTab, groupChangeEntries, type ChangeGroup} from '../lib/diff'
 import {FieldChangeDiff} from './DiffDisplay'
 
 interface Props {
@@ -17,27 +17,7 @@ interface TabChanges {
     groups: ChangeGroup[]
 }
 
-interface ChangeGroup {
-    key: string
-    group: string
-    itemLabel?: string
-    itemKind: ChangeKind
-    entries: ChangeEntry[]
-}
-
-function groupChangeEntries(entries: ChangeEntry[]): ChangeGroup[] {
-    const map = new Map<string, ChangeGroup>()
-    for (const e of entries) {
-        const gkey = [e.group, e.groupKey ?? '-', e.itemIndex ?? '-', e.kind === 'modified' ? 'm' : e.kind].join('|')
-        let g = map.get(gkey)
-        if (!g) {
-            g = {key: gkey, group: e.group, itemLabel: e.itemLabel, itemKind: e.kind, entries: []}
-            map.set(gkey, g)
-        }
-        g.entries.push(e)
-    }
-    return [...map.values()]
-}
+// ChangeGroup and groupChangeEntries are imported from lib/diff
 
 export default function GlobalDiffModal({onClose}: Props) {
     const state = useAdminStore(s => s.state)
@@ -87,7 +67,7 @@ export default function GlobalDiffModal({onClose}: Props) {
                             </p>
                         </div>
                     </div>
-                    <button onClick={onClose}
+                    <button type="button" onClick={onClose}
                             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 w-8 h-8 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition-colors">
                         <X size={16}/>
                     </button>
@@ -112,21 +92,23 @@ export default function GlobalDiffModal({onClose}: Props) {
                                     {confirmRevertTab === tc.tab.key ? (
                                         <div className="flex items-center gap-1.5">
                                             <button
+                                                type="button"
                                                 className="text-[10px] px-2.5 py-1 rounded-lg bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors"
-                                                onClick={() => {
-                                                    revertTab(tc.tab.key);
-                                                    setConfirmRevertTab(null)
-                                                }}>
-                                                Verwerfen
-                                            </button>
-                                            <button
-                                                className="text-[10px] px-2.5 py-1 rounded-lg border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
-                                                onClick={() => setConfirmRevertTab(null)}>
-                                                Abbrechen
-                                            </button>
+                                             onClick={() => {
+                                                     revertTab(tc.tab.key);
+                                                     setConfirmRevertTab(null)
+                                                 }}>
+                                             Verwerfen
+                                         </button>
+                                         <button type="button"
+                                                 className="text-[10px] px-2.5 py-1 rounded-lg border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
+                                                 onClick={() => setConfirmRevertTab(null)}>
+                                             Abbrechen
+                                         </button>
                                         </div>
                                     ) : (
                                         <button
+                                            type="button"
                                             onClick={() => setConfirmRevertTab(tc.tab.key)}
                                             className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2.5 py-1 rounded-lg border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1"
                                         >
@@ -152,28 +134,29 @@ export default function GlobalDiffModal({onClose}: Props) {
                             <div className="flex items-center gap-2">
                                 <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Alles verwerfen?</span>
                                 <button
+                                    type="button"
                                     className="text-xs px-3 py-2 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors flex items-center gap-1.5"
-                                    onClick={() => {
-                                        for (const tc of tabChanges) revertTab(tc.tab.key)
-                                        setConfirmRevertAll(false)
-                                    }}>
-                                    <Undo2 size={11}/> Ja, alles verwerfen
-                                </button>
-                                <button
-                                    className="text-xs px-3 py-2 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
-                                    onClick={() => setConfirmRevertAll(false)}>
-                                    Abbrechen
-                                </button>
+                                         onClick={() => {
+                                             for (const tc of tabChanges) revertTab(tc.tab.key)
+                                             setConfirmRevertAll(false)
+                                         }}>
+                                     <Undo2 size={11}/> Ja, alles verwerfen
+                                 </button>
+                                 <button type="button"
+                                     className="text-xs px-3 py-2 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
+                                     onClick={() => setConfirmRevertAll(false)}>
+                                     Abbrechen
+                                 </button>
                             </div>
                         ) : (
-                            <button
-                                className="text-xs px-3 py-2 rounded-xl border border-amber-300/60 dark:border-amber-700/40 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors font-medium flex items-center gap-1.5"
-                                onClick={() => setConfirmRevertAll(true)}>
-                                <Undo2 size={11}/> Alle zurücksetzen
-                            </button>
+                        <button type="button"
+                                     className="text-xs font-semibold px-3 py-2 rounded-xl text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1.5"
+                                     onClick={() => setConfirmRevertAll(true)}>
+                                 <Undo2 size={11}/> Alle zurücksetzen
+                             </button>
                         )
                     ) : <div/>}
-                    <button
+                    <button type="button"
                         className="text-xs px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
                         onClick={onClose}>Schließen
                     </button>
@@ -219,8 +202,9 @@ function GlobalChangeGroup({group, tabKey, onRevert}: {
                         </>
                     )}
                 </div>
-                {structural && (
+                 {structural && (
                     <button
+                        type="button"
                         onClick={() => onRevert(tabKey, structural)}
                         className="shrink-0 font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2 py-0.5 rounded-md border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1"
                     >
@@ -243,6 +227,7 @@ function GlobalChangeGroup({group, tabKey, onRevert}: {
                                 <FieldChangeDiff entry={e}/>
                             </div>
                             <button
+                                type="button"
                                 onClick={() => onRevert(tabKey, e)}
                                 className="shrink-0 font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2 py-0.5 rounded-md border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1"
                             >
