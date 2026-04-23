@@ -916,9 +916,10 @@ export default function Aktuelles() {
                 </span>
                 <time className="text-sm text-gray-400">{formatDate(selectedNews.datum)}</time>
               </div>
-              <h3 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white leading-tight mb-6">
+              <h3 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white leading-tight mb-4">
                 {selectedNews.titel}
               </h3>
+              <div className="w-10 h-0.5 bg-spd-red rounded-full mb-5" />
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base whitespace-pre-line">
                 {selectedNews.inhalt}
               </p>
