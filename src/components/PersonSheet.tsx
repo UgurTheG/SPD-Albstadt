@@ -1,6 +1,7 @@
 import { Building2, ExternalLink, Mail, MapPin, Phone } from 'lucide-react'
 import Sheet from './Sheet'
 import PhotoGallery from './PhotoGallery'
+import { getInitials } from './Avatar'
 
 /**
  * Normalised person data accepted by PersonSheet.
@@ -46,15 +47,11 @@ export interface PersonSheetData {
   ausschuesse?: string[]
 }
 
-interface Props {
-  person: PersonSheetData | null
+interface Props {  person: PersonSheetData | null
   open: boolean
   onClose: () => void
 }
 
-function initials(name: string): string {
-  return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-}
 
 export default function PersonSheet({ person, open, onClose }: Props) {
   const label = person?.rolle ?? person?.beruf
@@ -87,7 +84,7 @@ export default function PersonSheet({ person, open, onClose }: Props) {
                               [@media(orientation:landscape)_and_(max-height:600px)]:h-full
                               bg-linear-to-br from-spd-red to-spd-red-dark
                               flex items-center justify-center">
-                <span className="text-6xl font-bold text-white/90">{initials(person.name)}</span>
+                <span className="text-6xl font-bold text-white/90">{getInitials(person.name)}</span>
               </div>
             )}
 

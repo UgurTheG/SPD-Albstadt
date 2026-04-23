@@ -6,6 +6,8 @@ import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
 import PersonSheet from '../PersonSheet'
+import Avatar from '../Avatar'
+import SectionHeader from '../SectionHeader'
 
 interface TimelineEntry {
   jahr: string
@@ -40,16 +42,6 @@ function parseFirstYear(jahre: string): number {
   return Math.min(...matches.map(Number))
 }
 
-function Avatar({ name, imageUrl, size = 'md' }: { name: string; imageUrl?: string; size?: 'sm' | 'md' | 'lg' }) {
-  const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-  const sizes = { sm: 'w-10 h-10 text-sm', md: 'w-14 h-14 text-lg', lg: 'w-20 h-20 text-2xl' }
-  if (imageUrl) return <img loading="lazy" src={imageUrl} alt={name} className={`${sizes[size]} rounded-full object-cover shrink-0`} />
-  return (
-    <div className={`${sizes[size]} rounded-full bg-spd-red flex items-center justify-center text-white font-bold shrink-0`}>
-      {initials}
-    </div>
-  )
-}
 
 // ─── Event card (Chronik) ────────────────────────────────────────────────────
 
@@ -201,17 +193,14 @@ export default function Historie() {
     <section id="historie" className="py-24 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <motion.div ref={ref} initial={{ opacity: 0, y: 30 }} animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }} className="relative mb-16">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-1 w-12 bg-spd-red rounded-full" />
-            <span className="text-spd-red font-semibold text-sm uppercase tracking-wider">Historie</span>
-          </div>
-          <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-6 text-left">
-            Geschichte der SPD Albstadt
-          </h2>
-          {data && <p className="text-lg text-gray-500 dark:text-gray-400 max-w-3xl leading-relaxed">{data.einleitung}</p>}
-        </motion.div>
+        <SectionHeader
+          sectionRef={ref}
+          isInView={isInView}
+          label="Historie"
+          title="Geschichte der SPD Albstadt"
+          description={data?.einleitung}
+          descriptionClassName="max-w-3xl leading-relaxed"
+        />
 
         {/* Legend */}
         {merged.length > 0 && (

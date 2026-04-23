@@ -13,6 +13,7 @@ import {useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import PersonSheet from '../PersonSheet'
 import PersonCard, {personCardContainerVariants, personCardItemVariants} from '../PersonCard'
+import SectionHeader from '../SectionHeader'
 
 interface Schwerpunkt {
   titel: string
@@ -70,25 +71,13 @@ export default function Partei() {
     <section id="partei" className="py-24 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
-        <motion.div
-          ref={ref}
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="relative mb-16"        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-1 w-12 bg-spd-red rounded-full" />
-            <span className="text-spd-red font-semibold text-sm uppercase tracking-wider">Partei</span>
-          </div>
-          <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-6 text-left">
-            Die SPD Albstadt
-          </h2>
-          {data && (
-            <p className="text-lg text-gray-500 dark:text-gray-400 max-w-3xl leading-relaxed whitespace-pre-line">
-              {data.beschreibung}
-            </p>
-          )}
-        </motion.div>
+        <SectionHeader
+          sectionRef={ref}
+          isInView={isInView}
+          label="Partei"
+          title="Die SPD Albstadt"
+          description={data?.beschreibung}
+        />
 
         {/* Schwerpunkte */}
         <div className="mb-20">

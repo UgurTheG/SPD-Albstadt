@@ -7,8 +7,10 @@ import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
 import PersonSheet from '../PersonSheet'
 import PersonCard, {personCardContainerVariants, personCardItemVariants} from '../PersonCard'
+import SectionHeader from '../SectionHeader'
 import {useFeatures} from '../../hooks/useFeatures'
 import {useItemsPerPageMulti} from '../../utils/useItemsPerPage'
+import {formatDate} from '../../utils/formatDate'
 
 interface Gemeinderat {
   name: string
@@ -35,11 +37,6 @@ interface FraktionData {
   gemeinderaete: Gemeinderat[]
   kreisraete: Gemeinderat[]
   news: FraktionNews[]
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00')
-  return d.toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' })
 }
 
 export default function Fraktion() {
@@ -104,26 +101,13 @@ export default function Fraktion() {
     <section id="fraktion" className="py-24 bg-white dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
-        <motion.div
-          ref={ref}
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="relative mb-16"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-1 w-12 bg-spd-red rounded-full" />
-            <span className="text-spd-red font-semibold text-sm uppercase tracking-wider">Fraktion</span>
-          </div>
-          <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-6 text-left">
-            SPD-Fraktion im Gemeinderat
-          </h2>
-          {data && (
-            <p className="text-lg text-gray-500 dark:text-gray-400 max-w-3xl leading-relaxed whitespace-pre-line">
-              {data.beschreibung}
-            </p>
-          )}
-        </motion.div>
+        <SectionHeader
+          sectionRef={ref}
+          isInView={isInView}
+          label="Fraktion"
+          title="SPD-Fraktion im Gemeinderat"
+          description={data?.beschreibung}
+        />
 
         {/* Gemeinderäte */}
         <div className="mb-20">

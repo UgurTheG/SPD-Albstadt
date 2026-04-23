@@ -1,4 +1,5 @@
 import { motion, type Variants } from 'framer-motion'
+import { getInitials } from './Avatar'
 
 // ── Shared animation variants ─────────────────────────────────────────────────
 // Used by both Partei and Fraktion for their card grids (and other staggered lists).
@@ -27,10 +28,9 @@ interface PersonCardProps {
 }
 
 function Initials({ name }: { name: string }) {
-  const chars = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
   return (
     <div className="w-full h-full bg-spd-red flex items-center justify-center text-white font-bold text-4xl">
-      {chars}
+      {getInitials(name)}
     </div>
   )
 }
