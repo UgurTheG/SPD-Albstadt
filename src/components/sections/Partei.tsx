@@ -16,6 +16,7 @@ import {
 import {useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import Sheet from '../Sheet'
+import PhotoGallery from '../PhotoGallery'
 
 interface Schwerpunkt {
   titel: string
@@ -31,6 +32,7 @@ interface Mitglied {
   address?: string
   place?: string
   bildUrl: string
+  bildUrls?: string[]
   bio: string
 }
 
@@ -41,6 +43,7 @@ interface Abgeordneter {
   email: string
   website?: string
   bildUrl: string
+  bildUrls?: string[]
   bio: string
 }
 
@@ -409,6 +412,12 @@ export default function Partei() {
                       <span className="text-sm text-gray-600 dark:text-gray-400">{(selectedPerson as Abgeordneter).website?.replace('https://', '')}</span>
                     </a>
                   )}
+                </div>
+              )}
+              {selectedPerson.bildUrls && selectedPerson.bildUrls.length > 0 && (
+                <div>
+                  <div className="w-8 h-0.5 bg-spd-red rounded-full mb-4" />
+                  <PhotoGallery images={selectedPerson.bildUrls} alt={selectedPerson.name} />
                 </div>
               )}
             </div>

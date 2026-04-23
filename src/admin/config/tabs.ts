@@ -162,6 +162,7 @@ export const TABS: TabConfig[] = [
         file: '/data/config.json',
         ghPath: 'public/data/config.json',
         type: 'object',
+        previewPath: '/#kontakt',
         topFields: [{
             key: 'icsUrl',
             label: 'Kalender-URL (ICS)',
@@ -204,6 +205,13 @@ export const TABS: TabConfig[] = [
                         iconKey: 'instagram',
                         placeholder: 'https://instagram.com/…'
                     },
+                ]
+            },
+            {
+                key: 'features', label: 'Funktionen', isSingleObject: true,
+                fields: [
+                    {key: 'instagramFeed', label: 'Instagram-Feed anzeigen (Aktuelles)', type: 'toggle'},
+                    {key: 'fraktionNews', label: 'Fraktions-News anzeigen (Fraktion)', type: 'toggle'},
                 ]
             },
         ]
