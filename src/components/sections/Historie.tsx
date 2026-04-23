@@ -266,7 +266,7 @@ export default function Historie() {
                           [@media(orientation:landscape)_and_(max-height:600px)]:h-full">
 
             {/* Header */}
-            <div className="relative overflow-hidden bg-gray-950
+            <div className="relative overflow-hidden bg-gray-100 dark:bg-gray-950
                             px-6 pt-8 pb-8
                             [@media(orientation:landscape)_and_(max-height:600px)]:px-5
                             [@media(orientation:landscape)_and_(max-height:600px)]:pt-6
@@ -277,13 +277,13 @@ export default function Historie() {
                             [@media(orientation:landscape)_and_(max-height:600px)]:flex-col
                             [@media(orientation:landscape)_and_(max-height:600px)]:justify-center">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(227,0,15,0.08),transparent_50%)]" />
-              <span className="absolute -right-4 top-0 text-[120px] [@media(orientation:landscape)_and_(max-height:600px)]:text-[72px] font-black text-white/4 leading-none select-none pointer-events-none">
+              <span className="absolute -right-4 top-0 text-[120px] [@media(orientation:landscape)_and_(max-height:600px)]:text-[72px] font-black text-gray-900/8 dark:text-white/4 leading-none select-none pointer-events-none">
                 {selectedEntry.jahr.split('–')[0]}
               </span>
               <div className="relative">
                 <div className="w-10 h-0.5 bg-spd-red rounded-full mb-4" />
                 <p className="text-spd-red/70 text-xs font-bold uppercase tracking-widest mb-1.5 text-left [hyphens:none]">{selectedEntry.jahr}</p>
-                <h3 className="text-xl sm:text-2xl [@media(orientation:landscape)_and_(max-height:600px)]:text-lg font-black text-white leading-snug text-left [hyphens:none]">{selectedEntry.titel}</h3>
+                <h3 className="text-xl sm:text-2xl [@media(orientation:landscape)_and_(max-height:600px)]:text-lg font-black text-gray-900 dark:text-white leading-snug text-left [hyphens:none]">{selectedEntry.titel}</h3>
               </div>
             </div>
 
