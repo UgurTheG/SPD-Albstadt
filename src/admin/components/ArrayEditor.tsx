@@ -28,7 +28,6 @@ interface Props {
 
 export default function ArrayEditor({fields, data, tabKey, onStructureChange}: Props) {
     const updateState = useAdminStore(s => s.updateState)
-    const state = useAdminStore(s => s.state)
     const [activeId, setActiveId] = useState<string | null>(null)
     const [filter, setFilter] = useState('')
 
@@ -39,12 +38,20 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
 
     const commitArray = (newArr: Record<string, unknown>[]) => {
         if (onStructureChange) {
-            // Section-level array: let parent handle the store update
             onStructureChange(newArr)
         } else {
-            // Top-level array tab: update store directly
             updateState(tabKey, newArr)
         }
+    }
+
+    /** Immutable item-level update: replaces item at idx with newItem.
+     *  This is called by SortableItemCard/ItemCard onChange handlers.
+     *  Because NO in-place mutation happens before updateState is called,
+     *  the undo snapshot in updateState correctly captures the pre-edit state. */
+    const handleItemChange = (idx: number, newItem: Record<string, unknown>) => {
+        const newArr = [...data]
+        newArr[idx] = newItem
+        commitArray(newArr)
     }
 
     const handleMove = (from: number, to: number) => {
@@ -68,13 +75,6 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
         commitArray([...data, newItem])
     }
 
-    const triggerUpdate = () => {
-        // Called by child ItemCard when a field value changes (in-place mutation).
-        // Only update the store directly — do NOT call onStructureChange here,
-        // as that's only for structural changes (add/remove/move) and would
-        // cause a double-update that can lose in-place field mutations.
-        updateState(tabKey, JSON.parse(JSON.stringify(state[tabKey])))
-    }
 
     // Generate stable IDs for sortable
     const ids = data.map((item, i) => (item.id as string) || `item-${i}`)
@@ -138,7 +138,7 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
                                 item={item}
                                 index={i}
                                 total={data.length}
-                                onUpdate={triggerUpdate}
+                                onItemChange={(newItem) => handleItemChange(i, newItem)}
                                 onRemove={() => handleRemove(i)}
                                 onMove={handleMove}
                                 dragDisabled={!!filter}
@@ -163,12 +163,9 @@ export default function ArrayEditor({fields, data, tabKey, onStructureChange}: P
                             item={data[activeIndex]}
                             index={activeIndex}
                             total={data.length}
-                            onUpdate={() => {
-                            }}
-                            onRemove={() => {
-                            }}
-                            onMove={() => {
-                            }}
+                            onItemChange={() => {}}
+                            onRemove={() => {}}
+                            onMove={() => {}}
                         />
                     </div>
                 ) : null}

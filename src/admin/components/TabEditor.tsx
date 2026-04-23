@@ -197,9 +197,10 @@ export default function TabEditor({tab}: Props) {
 function ObjectEditor({tab, data}: { tab: TabConfig; data: Record<string, unknown> }) {
     const updateState = useAdminStore(s => s.updateState)
 
-    const updateField = (key: string, value: unknown) => {
+    const updateField = (key: string, value: unknown, extras?: Record<string, unknown>) => {
         const clone = JSON.parse(JSON.stringify(data))
         clone[key] = value
+        if (extras) Object.assign(clone, extras)
         updateState(tab.key, clone)
     }
 
@@ -220,7 +221,7 @@ function ObjectEditor({tab, data}: { tab: TabConfig; data: Record<string, unknow
                             key={field.key}
                             field={field}
                             value={data[field.key]}
-                            onChange={v => updateField(field.key, v)}
+                            onChange={(v, extras) => updateField(field.key, v, extras)}
                         />
                     ))}
                 </div>
@@ -267,8 +268,8 @@ function SectionEditor({section, data, tabKey, onSectionChange}: {
                             <div
                                 className="bg-white/50 dark:bg-gray-900/30 backdrop-blur-sm border border-gray-200/40 dark:border-gray-700/30 rounded-2xl p-4 sm:p-6">
                                 {sec.fields.map(field => (
-                                    <FieldRenderer key={field.key} field={field} value={obj[field.key]} onChange={v => {
-                                        onSectionChange({...obj, [field.key]: v})
+                                    <FieldRenderer key={field.key} field={field} value={obj[field.key]} onChange={(v, extras) => {
+                                        onSectionChange({...obj, [field.key]: v, ...(extras || {})})
                                     }}/>
                                 ))}
                             </div>

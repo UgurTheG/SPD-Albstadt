@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react'
 import {
+    AlertTriangle,
     Building2,
     FileSearch,
     FileText,
@@ -50,6 +51,7 @@ export default function AdminApp() {
         statusMessage,
         statusType,
         dataLoaded,
+        dataLoadErrors,
         statusCounter,
     } = useAdminStore()
     const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -96,6 +98,18 @@ export default function AdminApp() {
     useEffect(() => {
         document.documentElement.classList.toggle('dark', darkMode)
     }, [darkMode])
+
+    // Warn before closing/refreshing with unsaved changes
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (dirtyTabs().size > 0) {
+                e.preventDefault()
+                e.returnValue = ''
+            }
+        }
+        window.addEventListener('beforeunload', handleBeforeUnload)
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+    }, [dirtyTabs])
 
 
     useEffect(() => {
@@ -232,8 +246,9 @@ export default function AdminApp() {
                                         exit={{opacity: 0, y: 10}}
                                     type="button"
                                     onClick={handlePublishAll}
-                                    disabled={publishing}
-                                    className="w-full bg-spd-red hover:bg-spd-red-dark text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] transition-colors flex items-center justify-center gap-2 disabled:cursor-wait disabled:hover:bg-spd-red disabled:active:scale-100 whitespace-nowrap [hyphens:none]"
+                                    disabled={publishing || dataLoadErrors.length > 0}
+                                    title={dataLoadErrors.length > 0 ? 'Nicht möglich: Einige Daten konnten nicht geladen werden' : undefined}
+                                    className="w-full bg-spd-red hover:bg-spd-red-dark text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] transition-colors flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-spd-red disabled:active:scale-100 whitespace-nowrap [hyphens:none]"
                                 >
                                     {publishing ? (
                                         <Loader2 size={14} strokeWidth={2.5} className="animate-spin shrink-0"/>
@@ -293,6 +308,22 @@ export default function AdminApp() {
 
                 {/* Content */}
                 <main className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
+                    {/* Data load error banner */}
+                    {dataLoadErrors.length > 0 && (
+                        <div className="mb-6 flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-700/40 rounded-2xl px-4 py-3">
+                            <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"/>
+                            <div>
+                                <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                                    Daten konnten nicht geladen werden
+                                </p>
+                                <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5">
+                                    Folgende Tabs haben leere Daten erhalten:{' '}
+                                    <strong>{dataLoadErrors.map(k => TABS.find(t => t.key === k)?.label ?? k).join(', ')}</strong>.
+                                    Bitte nicht veröffentlichen — das würde Live-Daten überschreiben. Seite neu laden und erneut versuchen.
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     {/* Page header */}
                     <div className="mb-8">
                         <motion.div

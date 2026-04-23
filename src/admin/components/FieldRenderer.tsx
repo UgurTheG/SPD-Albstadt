@@ -47,13 +47,12 @@ function FieldIcon({iconKey}: { iconKey: NonNullable<FieldConfig['iconKey']> }) 
 interface Props {
     field: FieldConfig
     value: unknown
-    onChange: (v: unknown) => void
+    onChange: (v: unknown, extras?: Record<string, unknown>) => void
     contextItem?: Record<string, unknown>
-    onExtraChange?: (key: string, value: unknown) => void
     inputId?: string
 }
 
-export default function FieldRenderer({field, value, onChange, contextItem, onExtraChange}: Props) {
+export default function FieldRenderer({field, value, onChange, contextItem}: Props) {
     const inputId = useId()
     const label = field.label + (field.required ? ' *' : '')
 
@@ -64,12 +63,12 @@ export default function FieldRenderer({field, value, onChange, contextItem, onEx
                 className="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
                 {label}
             </label>
-            <FieldInput inputId={inputId} field={field} value={value} onChange={onChange} contextItem={contextItem} onExtraChange={onExtraChange}/>
+            <FieldInput inputId={inputId} field={field} value={value} onChange={onChange} contextItem={contextItem}/>
         </div>
     )
 }
 
-function FieldInput({field, value, onChange, contextItem, onExtraChange, inputId}: Props) {
+function FieldInput({field, value, onChange, contextItem, inputId}: Props) {
     switch (field.type) {
         case 'textarea':
             return <TextareaField id={inputId} value={value as string} onChange={v => onChange(v)}/>
@@ -79,8 +78,8 @@ function FieldInput({field, value, onChange, contextItem, onExtraChange, inputId
             return <ImageField field={field} value={value as string} onChange={v => onChange(v)}
                                contextItem={contextItem}/>
         case 'imagelist':
-            return <ImageListField field={field} value={value as string[]} onChange={v => onChange(v)}
-                                   contextItem={contextItem} onExtraChange={onExtraChange}/>
+            return <ImageListField field={field} value={value as string[]} onChange={(v, extras) => onChange(v, extras)}
+                                   contextItem={contextItem}/>
         case 'stringlist':
             return <StringListField value={value as string[]} onChange={v => onChange(v)}/>
         case 'icon-picker':
@@ -323,12 +322,11 @@ function ImageField({field, value, onChange, contextItem}: {
     )
 }
 
-function ImageListField({field, value, onChange, contextItem, onExtraChange}: {
+function ImageListField({field, value, onChange, contextItem}: {
     field: FieldConfig;
     value: string[];
-    onChange: (v: string[]) => void;
+    onChange: (v: string[], extras?: Record<string, unknown>) => void;
     contextItem?: Record<string, unknown>
-    onExtraChange?: (key: string, value: unknown) => void
 }) {
     const addPendingUpload = useAdminStore(s => s.addPendingUpload)
     const setStatus = useAdminStore(s => s.setStatus)
@@ -336,6 +334,11 @@ function ImageListField({field, value, onChange, contextItem, onExtraChange}: {
     const captionsKey = field.captionsKey
     const captions: string[] = captionsKey && contextItem ? (Array.isArray(contextItem[captionsKey]) ? [...(contextItem[captionsKey] as string[])] : []) : []
     const [cropData, setCropData] = useState<{ file: File; index: number } | null>(null)
+
+    // Build extras object for caption changes — keeps URLs and captions in sync
+    // within a single immutable update instead of two separate calls.
+    const withCaps = (caps: string[]): Record<string, unknown> | undefined =>
+        captionsKey ? {[captionsKey]: caps} : undefined
 
     // Stable ids for sortable (index-based since URLs can repeat)
     const ids = list.map((_, i) => `img-${i}`)
@@ -345,12 +348,6 @@ function ImageListField({field, value, onChange, contextItem, onExtraChange}: {
         useSensor(KeyboardSensor),
     )
 
-    const syncCaptions = (caps: string[]) => {
-        if (!captionsKey) return
-        if (onExtraChange) onExtraChange(captionsKey, caps)
-        else if (contextItem) contextItem[captionsKey] = caps
-    }
-
     const handleDragEnd = (event: DragEndEvent) => {
         const {active, over} = event
         if (!over || active.id === over.id) return
@@ -358,8 +355,7 @@ function ImageListField({field, value, onChange, contextItem, onExtraChange}: {
         const newIndex = ids.indexOf(over.id as string)
         const newList = arrayMove(list, oldIndex, newIndex)
         const newCaptions = arrayMove(captions, oldIndex, newIndex)
-        syncCaptions(newCaptions)
-        onChange(newList)
+        onChange(newList, withCaps(newCaptions))
     }
 
     const handleCrop = (base64: string | null) => {
@@ -402,8 +398,7 @@ function ImageListField({field, value, onChange, contextItem, onExtraChange}: {
                                 onCaptionChange={v => {
                                     const c = [...captions];
                                     c[i] = v;
-                                    syncCaptions(c);
-                                    onChange([...list])
+                                    onChange([...list], withCaps(c))
                                 }}
                                 onUpload={file => setCropData({file, index: i})}
                                 onRemove={() => {
@@ -411,22 +406,19 @@ function ImageListField({field, value, onChange, contextItem, onExtraChange}: {
                                     n.splice(i, 1)
                                     const c = [...captions];
                                     c.splice(i, 1)
-                                    syncCaptions(c)
-                                    onChange(n)
+                                    onChange(n, withCaps(c))
                                 }}
                                 onMoveUp={() => {
                                     if (i === 0) return
                                     const n = [...list]; [n[i - 1], n[i]] = [n[i], n[i - 1]]
                                     const c = [...captions]; [c[i - 1], c[i]] = [c[i], c[i - 1]]
-                                    syncCaptions(c)
-                                    onChange(n)
+                                    onChange(n, withCaps(c))
                                 }}
                                 onMoveDown={() => {
                                     if (i >= list.length - 1) return
                                     const n = [...list]; [n[i], n[i + 1]] = [n[i + 1], n[i]]
                                     const c = [...captions]; [c[i], c[i + 1]] = [c[i + 1], c[i]]
-                                    syncCaptions(c)
-                                    onChange(n)
+                                    onChange(n, withCaps(c))
                                 }}
                             />
                         ))}
@@ -434,11 +426,7 @@ function ImageListField({field, value, onChange, contextItem, onExtraChange}: {
                             type="button"
                             className="text-xs text-spd-red font-semibold hover:underline flex items-center gap-1"
                             onClick={() => {
-                                if (captionsKey) {
-                                    captions.push('');
-                                    syncCaptions(captions)
-                                }
-                                onChange([...list, ''])
+                                onChange([...list, ''], withCaps([...captions, '']))
                             }}
                         >
                             <Plus size={12}/> Bild hinzufügen

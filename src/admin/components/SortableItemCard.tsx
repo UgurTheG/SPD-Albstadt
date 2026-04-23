@@ -10,13 +10,13 @@ interface Props {
     item: Record<string, unknown>
     index: number
     total: number
-    onUpdate: () => void
+    onItemChange: (newItem: Record<string, unknown>) => void
     onRemove: () => void
     onMove: (from: number, to: number) => void
     dragDisabled?: boolean
 }
 
-export default function SortableItemCard({id, fields, item, index, total, onUpdate, onRemove, onMove, dragDisabled}: Props) {
+export default function SortableItemCard({id, fields, item, index, total, onItemChange, onRemove, onMove, dragDisabled}: Props) {
     const {
         attributes,
         listeners,
@@ -96,18 +96,12 @@ export default function SortableItemCard({id, fields, item, index, total, onUpda
                     key={field.key}
                     field={field}
                     value={item[field.key]}
-                    onChange={v => {
-                        item[field.key] = v;
-                        onUpdate()
+                    onChange={(v, extras) => {
+                        onItemChange({...item, [field.key]: v, ...(extras || {})})
                     }}
                     contextItem={item}
-                    onExtraChange={(key, v) => {
-                        item[key] = v;
-                        onUpdate()
-                    }}
                 />
             ))}
         </div>
     )
 }
-

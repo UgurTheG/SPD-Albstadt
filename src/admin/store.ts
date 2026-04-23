@@ -3,7 +3,7 @@ import type {GHUser, PendingUpload, TabConfig} from './types'
 import {TABS} from './config/tabs'
 import {collectImagePaths} from './lib/images'
 import {applyRevert, type ChangeEntry} from './lib/diff'
-import {commitTree, type TreeFileChange, validateToken} from './lib/github'
+import {AuthError, commitTree, type TreeFileChange, validateToken} from './lib/github'
 
 const TOKEN_KEY = 'spd-admin-token'
 const DARK_KEY = 'spd-admin-dark'
@@ -73,6 +73,7 @@ interface AdminState {
     originalState: Record<string, unknown>
     pendingUploads: PendingUpload[]
     dataLoaded: boolean
+    dataLoadErrors: string[]  // tabs whose data failed to load
 
     // Undo/Redo
     undoStacks: Record<string, unknown[]>
@@ -128,6 +129,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     originalState: {},
     pendingUploads: [],
     dataLoaded: false,
+    dataLoadErrors: [],
     undoStacks: {},
     redoStacks: {},
     darkMode: (() => {
@@ -186,10 +188,14 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         let user: GHUser
         try {
             user = await validateToken(token) as GHUser
-        } catch {
-            // Token is invalid or revoked — force logout
-            localStorage.removeItem(TOKEN_KEY)
-            set({token: ''})
+        } catch (e) {
+            // Only invalidate the session for definitive auth failures.
+            // Network errors (TypeError) or server errors leave the token intact
+            // so a transient outage does not log the user out permanently.
+            if (e instanceof AuthError) {
+                localStorage.removeItem(TOKEN_KEY)
+                set({token: ''})
+            }
             return
         }
         set({user})
@@ -207,11 +213,12 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         lastUndoPush = {}
         localStorage.removeItem(TOKEN_KEY)
         localStorage.removeItem(DRAFT_KEY)
-        set({token: '', user: null, state: {}, originalState: {}, dataLoaded: false, pendingUploads: [], undoStacks: {}, redoStacks: {}})
+        set({token: '', user: null, state: {}, originalState: {}, dataLoaded: false, dataLoadErrors: [], pendingUploads: [], undoStacks: {}, redoStacks: {}})
     },
 
     loadData: async () => {
         const newState: Record<string, unknown> = {}
+        const failedTabs: string[] = []
         // Admin must always see the latest data — bypass browser/CDN caches
         const bust = `t=${Date.now()}`
         await Promise.all(TABS.map(async (tab) => {
@@ -229,9 +236,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                     newState[tab.key] = await res.json()
                 } else {
                     newState[tab.key] = tab.type === 'array' ? [] : {}
+                    failedTabs.push(tab.key)
                 }
             } catch {
                 newState[tab.key] = tab.type === 'array' ? [] : {}
+                failedTabs.push(tab.key)
             }
         }))
         const original = JSON.parse(JSON.stringify(newState))
@@ -241,6 +250,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             state: merged,
             originalState: original,
             dataLoaded: true,
+            dataLoadErrors: failedTabs,
             undoStacks: {},
             redoStacks: {},
         })

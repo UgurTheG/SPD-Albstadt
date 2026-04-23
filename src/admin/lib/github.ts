@@ -1,3 +1,13 @@
+/** Thrown specifically for authentication/authorization failures (HTTP 401/403).
+ *  Network errors (TypeError from fetch) are NOT wrapped in this class so that
+ *  callers can distinguish "bad token" from "no internet". */
+export class AuthError extends Error {
+    constructor(msg: string) {
+        super(msg)
+        this.name = 'AuthError'
+    }
+}
+
 const REPO_OWNER = 'UgurTheG'
 const REPO_NAME = 'SPD-Albstadt'
 const BRANCH = 'main'
@@ -23,10 +33,16 @@ const shaCache = new Map<string, string>()
 
 export async function validateToken(token: string) {
     const res = await fetch('https://api.github.com/user', {headers: headers(token), cache: 'no-store'})
-    if (!res.ok) throw new Error('Token ungültig')
+    if (!res.ok) {
+        if (res.status === 401 || res.status === 403) throw new AuthError('Token ungültig')
+        throw new Error(`GitHub API Fehler (${res.status})`)
+    }
     const user = await res.json()
     const repoRes = await fetch(`${apiBase()}`, {headers: headers(token), cache: 'no-store'})
-    if (!repoRes.ok) throw new Error('Kein Zugriff auf das Repository')
+    if (!repoRes.ok) {
+        if (repoRes.status === 401 || repoRes.status === 403) throw new AuthError('Kein Zugriff auf das Repository')
+        throw new Error(`Repository-Zugriff Fehler (${repoRes.status})`)
+    }
     return user as { login: string; avatar_url: string }
 }
 
@@ -127,40 +143,28 @@ export async function commitTree(token: string, message: string, changes: TreeFi
     const commitData = await commitRes.json()
     const baseTreeSha: string = commitData.tree.sha
 
-    // 3. Build tree entries
+    // 3. Build tree entries (binary blobs are created in parallel)
+    const binaryChanges = changes.filter(c => !c.delete && c.base64Content)
+    const blobShas = await Promise.all(binaryChanges.map(async change => {
+        const blobRes = await fetch(`${base}/git/blobs`, {
+            method: 'POST', headers: h,
+            body: JSON.stringify({content: change.base64Content, encoding: 'base64'}),
+        })
+        if (!blobRes.ok) throw new Error(`Blob-Erstellung fehlgeschlagen für ${change.path}`)
+        const blobData = await blobRes.json()
+        return {path: change.path, sha: blobData.sha as string}
+    }))
+    const blobShaMap = new Map(blobShas.map(b => [b.path, b.sha]))
+
     const treeEntries: Record<string, unknown>[] = []
 
     for (const change of changes) {
         if (change.delete) {
-            // To delete a file, set sha to null
-            treeEntries.push({
-                path: change.path,
-                mode: '100644',
-                type: 'blob',
-                sha: null,
-            })
+            treeEntries.push({path: change.path, mode: '100644', type: 'blob', sha: null})
         } else if (change.base64Content) {
-            // For binary files, create a blob first
-            const blobRes = await fetch(`${base}/git/blobs`, {
-                method: 'POST', headers: h,
-                body: JSON.stringify({content: change.base64Content, encoding: 'base64'}),
-            })
-            if (!blobRes.ok) throw new Error(`Blob-Erstellung fehlgeschlagen für ${change.path}`)
-            const blobData = await blobRes.json()
-            treeEntries.push({
-                path: change.path,
-                mode: '100644',
-                type: 'blob',
-                sha: blobData.sha,
-            })
+            treeEntries.push({path: change.path, mode: '100644', type: 'blob', sha: blobShaMap.get(change.path)})
         } else if (change.content !== undefined) {
-            // For text files, content can be inlined
-            treeEntries.push({
-                path: change.path,
-                mode: '100644',
-                type: 'blob',
-                content: change.content,
-            })
+            treeEntries.push({path: change.path, mode: '100644', type: 'blob', content: change.content})
         }
     }
 

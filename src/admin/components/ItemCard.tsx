@@ -7,12 +7,12 @@ interface Props {
     item: Record<string, unknown>
     index: number
     total: number
-    onUpdate: () => void
+    onItemChange: (newItem: Record<string, unknown>) => void
     onRemove: () => void
     onMove: (from: number, to: number) => void
 }
 
-export default function ItemCard({fields, item, index, total, onUpdate, onRemove, onMove}: Props) {
+export default function ItemCard({fields, item, index, total, onItemChange, onRemove, onMove}: Props) {
     const previewText = (item.name || item.titel || item.jahr || `#${index + 1}`) as string
 
     return (
@@ -62,15 +62,10 @@ export default function ItemCard({fields, item, index, total, onUpdate, onRemove
                     key={field.key}
                     field={field}
                     value={item[field.key]}
-                    onChange={v => {
-                        item[field.key] = v;
-                        onUpdate()
+                    onChange={(v, extras) => {
+                        onItemChange({...item, [field.key]: v, ...(extras || {})})
                     }}
                     contextItem={item}
-                    onExtraChange={(key, v) => {
-                        item[key] = v;
-                        onUpdate()
-                    }}
                 />
             ))}
         </div>
