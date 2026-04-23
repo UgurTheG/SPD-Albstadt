@@ -300,6 +300,7 @@ export default function Historie() {
                     captions={selectedEntry.bilderBeschreibungen}
                     alt={selectedEntry.titel}
                   />
+                  <div className="w-10 h-0.5 bg-spd-red rounded-full mt-6" />
                 </div>
               )}
               <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">{selectedEntry.beschreibung}</p>
