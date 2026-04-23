@@ -21,6 +21,7 @@ import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
 import {type ICSEvent, parseICS} from '../../utils/icsParser'
 import {formatLocation} from '../../utils/formatLocation'
+import {useItemsPerPage} from '../../utils/useItemsPerPage'
 import {createEvent, type DateArray} from 'ics'
 
 interface NewsItem {
@@ -390,7 +391,9 @@ export default function Aktuelles() {
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null)
   const [dayEventsPickerList, setDayEventsPickerList] = useState<EventItem[]>([])
-  const [visibleCount, setVisibleCount] = useState(6)
+  const itemsPerPage = useItemsPerPage(768, 6, 3)
+  const [visibleCount, setVisibleCount] = useState(itemsPerPage)
+  useEffect(() => { setVisibleCount(itemsPerPage) }, [itemsPerPage])
   const [activeTag, setActiveTag] = useState<string>('Alle')
   const [searchQuery, setSearchQuery] = useState('')
   const features = useFeatures()
@@ -471,12 +474,12 @@ export default function Aktuelles() {
 
   function handleTagChange(tag: string) {
     setActiveTag(tag)
-    setVisibleCount(6)
+    setVisibleCount(itemsPerPage)
   }
 
   function handleSearchChange(value: string) {
     setSearchQuery(value)
-    setVisibleCount(6)
+    setVisibleCount(itemsPerPage)
   }
 
   const instagramItems = instagramFeed?.items ?? []
@@ -696,15 +699,15 @@ export default function Aktuelles() {
           )}
 
           {/* Pagination */}
-          {filteredNews && filteredNews.length > 6 && (
+          {filteredNews && filteredNews.length > itemsPerPage && (
             <div className="flex items-center justify-between pt-6">
               <span className="text-xs text-gray-400 dark:text-gray-500">
                 {Math.min(visibleCount, filteredNews.length)} von {filteredNews.length} Beiträgen
               </span>
               <div className="flex gap-2">
-                {visibleCount > 6 && (
+                {visibleCount > itemsPerPage && (
                   <button
-                    onClick={() => setVisibleCount(v => Math.max(6, v - 6))}
+                    onClick={() => setVisibleCount(v => Math.max(itemsPerPage, v - itemsPerPage))}
                     className="text-xs font-semibold text-gray-400 hover:text-spd-red transition-colors px-3 py-1.5 rounded-lg hover:bg-spd-red/5"
                   >
                     ↑ Weniger
@@ -712,7 +715,7 @@ export default function Aktuelles() {
                 )}
                 {hasMore && (
                   <button
-                    onClick={() => setVisibleCount(v => v + 6)}
+                    onClick={() => setVisibleCount(v => v + itemsPerPage)}
                     className="text-xs font-semibold text-spd-red border border-spd-red/30 hover:bg-spd-red hover:text-white transition-all px-3 py-1.5 rounded-lg"
                   >
                     Mehr laden ↓
