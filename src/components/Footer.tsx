@@ -1,4 +1,4 @@
-import {Heart, Mail} from 'lucide-react'
+import {Mail} from 'lucide-react'
 import {useConfig} from '../hooks/useConfig'
 
 const FacebookIcon = () => (
@@ -89,9 +89,6 @@ export default function Footer({ navigateTo }: FooterProps) {
         <div className="border-t border-gray-800/60 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs">
             © {year} SPD Albstadt. Alle Rechte vorbehalten.
-          </p>
-          <p className="text-xs flex items-center gap-1.5">
-            Gemacht mit <Heart size={11} className="text-spd-red fill-spd-red" /> für Albstadt
           </p>
           <div className="flex gap-4 text-xs">
             <button onClick={() => navigateTo('impressum')} className="hover:text-white transition-colors">Impressum</button>
