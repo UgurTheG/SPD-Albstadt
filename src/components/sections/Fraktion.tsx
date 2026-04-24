@@ -4,7 +4,7 @@ import {ExternalLink, FileDown} from 'lucide-react'
 import {fetchData, useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import PersonSheet from '../PersonSheet'
-import PersonCard, {personCardContainerVariants, personCardItemVariants} from '../PersonCard'
+import PersonCard, {personCardContainerVariants} from '../PersonCard'
 import SectionHeader from '../SectionHeader'
 import {useItemsPerPageMulti} from '../../utils/useItemsPerPage'
 
