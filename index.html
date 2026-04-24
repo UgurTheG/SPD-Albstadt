@@ -70,12 +70,12 @@
     <script src="https://elfsightcdn.com/platform.js" async></script>
     <script>
       (function () {
-        function removeElfsightBadge() {
-          document.querySelectorAll('a[href*="elfsight.com"]').forEach(function (el) { el.remove(); });
+        function removeElfsightUI() {
+          document.querySelectorAll('a[href*="elfsight.com"], .eapps-widget-toolbar, [class*="eapps-link"], [class*="eapps-panel"]').forEach(function (el) { el.remove(); });
         }
-        const observer = new MutationObserver(removeElfsightBadge);
+        const observer = new MutationObserver(removeElfsightUI);
         observer.observe(document.documentElement, { childList: true, subtree: true });
-        removeElfsightBadge();
+        removeElfsightUI();
       })();
     </script>
   </head>
