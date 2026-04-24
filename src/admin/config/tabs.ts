@@ -146,6 +146,30 @@ export const TABS: TabConfig[] = [
         ]
     },
     {
+        key: 'impressum',
+        label: 'Impressum',
+        file: '/data/impressum.json',
+        ghPath: 'public/data/impressum.json',
+        type: 'array',
+        previewPath: '/impressum',
+        fields: [
+            {key: 'title', label: 'Überschrift', type: 'text', required: true},
+            {key: 'content', label: 'Inhalt', type: 'textarea'},
+        ]
+    },
+    {
+        key: 'datenschutz',
+        label: 'Datenschutz',
+        file: '/data/datenschutz.json',
+        ghPath: 'public/data/datenschutz.json',
+        type: 'array',
+        previewPath: '/datenschutz',
+        fields: [
+            {key: 'title', label: 'Überschrift', type: 'text', required: true},
+            {key: 'content', label: 'Inhalt', type: 'textarea'},
+        ]
+    },
+    {
         key: 'config',
         label: 'Einstellungen',
         file: '/data/config.json',

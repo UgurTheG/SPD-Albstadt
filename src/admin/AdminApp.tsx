@@ -6,12 +6,14 @@ import {
     FileText,
     Landmark,
     Loader2,
+    ScrollText,
     LogOut,
     Menu,
     Moon,
     Newspaper,
     Rocket,
     Settings,
+    Shield,
     Sun,
     Users,
     X
@@ -31,8 +33,10 @@ const TAB_ICON_MAP: Record<string, React.ReactNode> = {
     news: <Newspaper size={18}/>,
     party: <Users size={18}/>,
     fraktion: <Building2 size={18}/>,
-    haushaltsreden: <FileText size={18}/>,
+    haushaltsreden: <ScrollText size={18}/>,
     history: <Landmark size={18}/>,
+    impressum: <FileText size={18}/>,
+    datenschutz: <Shield size={18}/>,
     config: <Settings size={18}/>,
 }
 
