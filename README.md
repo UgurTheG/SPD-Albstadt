@@ -33,7 +33,7 @@ Umgesetzte Hauptfunktionen:
 - Kalenderansicht auf Basis eines ICS-Feeds über `/api/ics`
 - Optionaler Instagram-Feed über `/api/instagram` mit automatischem Fallback
 - Kontaktformular (Formspree-URL über Konfiguration)
-- Admin-Editor mit Login per GitHub Personal Access Token, Drafts, Undo/Redo, Bild-Upload, Sammel-Veröffentlichung und Orphan-Bild-Erkennung
+- Admin-Editor mit Login per GitHub Personal Access Token, Drafts, Undo/Redo, Drag-and-Drop-Sortierung, Bild-Upload, Sammel-Veröffentlichung und Orphan-Bild-Erkennung
 
 ## 2. Technologie-Stack
 
@@ -44,6 +44,10 @@ Umgesetzte Hauptfunktionen:
 - State Management (Admin): Zustand
 - Datenabruf: SWR
 - Icons: Lucide
+- Drag & Drop (Admin): `@dnd-kit`
+- Toast-Benachrichtigungen (Admin): `sonner`
+- Bild-Lightbox: `yet-another-react-lightbox`
+- Kalender-Parsing: `ical.js`
 - Deployment-Ziel: Vercel
 - Serverless-Endpunkte: `api/ics.ts`, `api/instagram.ts`
 
@@ -117,7 +121,7 @@ Hinweise:
 Zentrale Laufzeit-Konfiguration erfolgt über `public/data/config.json`, unter anderem:
 
 - `icsUrl` für Kalenderimport
-- `features.instagramFeed` und `features.fraktionNews`
+- `features.instagramFeed` zum Ein-/Ausblenden des Instagram-Feeds
 - `kontakt.formspreeUrl` für Kontaktformular
 
 ## 6. Homepage nutzen und verstehen
@@ -135,11 +139,11 @@ Die Hauptseiten werden clientseitig geroutet:
 - `/datenschutz`
 - `/impressum`
 
-Zusätzlich existieren Fehlerseiten (`/400`, `/401`, `/403`, `/404`, `/500` usw.) mit Catch-All auf 404.
+Zusätzlich existieren Fehlerseiten (`/400`, `/401`, `/403`, `/405`, `/408`, `/429`, `/500`, `/502`, `/503`, `/504`) mit Catch-All auf 404.
 
 ### Datenquelle der Homepage
 
-Für Dateien unter `/data/*` wird zuerst GitHub Raw genutzt (`main`-Branch, Verzeichnis `public`), damit Änderungen sofort sichtbar sind. Falls GitHub temporär nicht erreichbar ist, wird auf die lokal ausgelieferte Kopie (`/data/*.json`) zurückgefallen.
+Die JSON-Dateien unter `/data/` werden direkt über SWR abgerufen. Durch `no-store`-Cache-Header in `vercel.json` stehen Änderungen nach dem nächsten Deployment sofort zur Verfügung.
 
 ## 7. Admin-Seite nutzen
 
@@ -164,13 +168,19 @@ Ohne gültigen Token ist keine Veröffentlichung möglich.
 ### Funktionen im Admin-Editor
 
 - Bearbeiten der Tabs `Aktuelles`, `Partei`, `Fraktion`, `Haushaltsreden`, `Historie`, `Einstellungen`
-- Ungespeicherte Änderungen pro Tab (Dirty-State)
+- Ungespeicherte Änderungen pro Tab (Dirty-State mit rotem Indikator)
 - Entwürfe (Drafts) in `localStorage` (`spd-admin-drafts`)
-- Undo/Redo pro Tab
+- Undo/Redo pro Tab (Schaltflächen und Tastaturkürzel Ctrl+Z / Ctrl+Shift+Z bzw. Ctrl+Y)
 - Dark-Mode-Einstellung im Browser (`spd-admin-dark`)
-- Gesamtansicht der Änderungen (Diff)
+- Drag-and-Drop-Sortierung von Listeneinträgen
+- Gesamtansicht der Änderungen (Diff) mit Option zum Zurücksetzen einzelner Felder
+- Vorschau-Funktion pro Tab
 - Veröffentlichung einzelner Tabs oder aller Änderungen in einem Commit
 - Erkennung verwaister Bilder mit optionaler Löschung
+- URL-Hash-Navigation (z. B. `/admin#news`) zum direkten Aufrufen eines Tabs
+- Mobilfreundliche Sidebar mit Swipe-Geste zum Schließen
+- Warnung beim Verlassen der Seite mit ungespeicherten Änderungen
+- Fehler-Banner bei fehlgeschlagenem Datenladen (verhindert versehentliches Überschreiben)
 
 ### Veröffentlichungslogik
 
@@ -189,7 +199,7 @@ Wichtige Dateien in `public/data/`:
 - `config.json`: globale Einstellungen (Features, Kontakt, Bürozeiten, Social, ICS-URL)
 - `news.json`: Beiträge für `Aktuelles`
 - `party.json`: Partei-Bereich, Vorstand, Abgeordnete, Schwerpunkte
-- `fraktion.json`: Fraktionsdaten, Gremienmitglieder, Fraktionsnews
+- `fraktion.json`: Fraktionsdaten, Gemeinderäte, Kreisräte
 - `history.json`: Historie, Chronik, Persönlichkeiten
 - `haushaltsreden.json`: Konfiguration deaktivierter Jahre (Haushaltsreden)
 
@@ -211,6 +221,7 @@ Typische Bildziele:
 - `public/images/kreisraete/`
 - `public/images/historie/`
 - `public/images/persoenlichkeiten/`
+- `public/images/kontakt/`
 
 Der Admin-Editor konvertiert Uploads nach WebP und referenziert sie in den JSON-Dateien als `/images/...`-Pfad.
 
@@ -289,6 +300,7 @@ npm run preview
 - Kalender leer: `icsUrl` in `public/data/config.json` prüfen, Erreichbarkeit des ICS-Feeds testen
 - Instagram leer: Feature-Flag und ENV-Variablen prüfen; Fallback ohne Karten ist vorgesehen
 - Kontaktformular ohne Versand: `kontakt.formspreeUrl` in `public/data/config.json` prüfen
+- Admin zeigt „Daten konnten nicht geladen werden": Seite neu laden; Veröffentlichen ist in diesem Zustand gesperrt, um Live-Daten nicht zu überschreiben
 
 ---
 
