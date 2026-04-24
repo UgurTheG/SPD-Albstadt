@@ -176,13 +176,22 @@ export const TABS: TabConfig[] = [
         ghPath: 'public/data/config.json',
         type: 'object',
         previewPath: '/#kontakt',
-        topFields: [{
-            key: 'icsUrl',
-            label: 'Kalender-URL (ICS)',
-            type: 'url',
-            iconKey: 'calendar',
-            placeholder: 'https://…/kalender.ics'
-        }],
+        topFields: [
+            {
+                key: 'icsUrl',
+                label: 'Kalender-URL (ICS)',
+                type: 'url',
+                iconKey: 'calendar',
+                placeholder: 'https://…/kalender.ics'
+            },
+            {
+                key: 'elfsightAppId',
+                label: 'Elfsight App-ID (Instagram-Feed)',
+                type: 'text',
+                iconKey: 'instagram',
+                placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+            },
+        ],
         sections: [
             {
                 key: 'kontakt', label: 'Kontaktdaten', isSingleObject: true,
@@ -220,12 +229,7 @@ export const TABS: TabConfig[] = [
                     },
                 ]
             },
-            {
-                key: 'features', label: 'Funktionen', isSingleObject: true,
-                fields: [
-                    {key: 'instagramFeed', label: 'Instagram-Feed anzeigen (Aktuelles)', type: 'toggle'},
-                ]
-            },
+
         ]
     },
 ]

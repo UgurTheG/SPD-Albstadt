@@ -1,8 +1,7 @@
 {
   "icsUrl": "https://p122-caldav.icloud.com/published/2/MjAwNjQzOTY4MjEyMDA2NMLddxkvT8tcvLgVQ6dehz9MjxtnrIu92Njn-UIJMnCsZGmJiYheC8PfQYwRBU5bm1kz0SaQASNZwa3q6BbwXjg",
-  "features": {
-    "instagramFeed": false
-  },
+  "elfsightAppId": "bf8e1852-6407-41fb-9e21-d4cc1181768b",
+  "features": {},
   "kontakt": {
     "adresse": "SPD Albstadt\nStadtgarten 1\n72458 Albstadt-Ebingen",
     "email": "info@spd-albstadt.de",

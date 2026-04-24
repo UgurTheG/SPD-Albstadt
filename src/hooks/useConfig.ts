@@ -2,10 +2,8 @@ import {useData} from './useData'
 
 export interface SiteConfig {
     icsUrl?: string
-    features?: {
-        instagramFeed?: boolean
-        fraktionNews?: boolean
-    }
+    elfsightAppId?: string
+    features?: Record<string, never>
     kontakt?: {
         adresse?: string
         email?: string

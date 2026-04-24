@@ -1,4 +1,4 @@
-import {memo, type MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef, useState} from 'react'
+import {memo, useEffect, useMemo, useRef, useState} from 'react'
 import {motion, useInView} from 'framer-motion'
 import {
   Calendar,
@@ -16,7 +16,7 @@ import {
 import {useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import {INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME} from '../../shared/instagram.ts'
-import {useFeatures} from '../../hooks/useFeatures'
+import {useConfig} from '../../hooks/useConfig'
 import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
 import {type ICSEvent, parseICS} from '../../utils/icsParser'
@@ -49,23 +49,6 @@ interface EventItem {
   beschreibung: string
 }
 
-interface InstagramPost {
-  id: string
-  caption: string
-  permalink: string
-  mediaType: string
-  mediaUrl: string | null
-  timestamp: string | null
-}
-
-interface InstagramFeedResponse {
-  username: string
-  profileUrl: string
-  source: 'instagram' | 'fallback'
-  fallbackReason?: 'missing_env' | 'upstream_error'
-  items: InstagramPost[]
-  fetchedAt: string
-}
 
 const CATEGORY_COLORS: Record<string, string> = {
   Gemeinderat: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
@@ -86,14 +69,6 @@ function formatEventDate(dateStr: string) {
 }
 
 
-function formatInstagramDate(dateStr: string | null): string {
-  if (!dateStr) return 'Instagram'
-
-  return new Date(dateStr).toLocaleDateString('de-DE', {
-    day: '2-digit',
-    month: 'short',
-  })
-}
 
 
 function downloadICS(event: EventItem) {
@@ -394,13 +369,6 @@ export default function Aktuelles() {
   useEffect(() => { setVisibleCount(itemsPerPage) }, [itemsPerPage])
   const [activeTag, setActiveTag] = useState<string>('Alle')
   const [searchQuery, setSearchQuery] = useState('')
-  const features = useFeatures()
-  const [canInstagramScrollLeft, setCanInstagramScrollLeft] = useState(false)
-  const [canInstagramScrollRight, setCanInstagramScrollRight] = useState(false)
-  const isInstagramDragging = useRef(false)
-  const instagramDragStartX = useRef(0)
-  const instagramDragScrollLeft = useRef(0)
-  const hasInstagramDragged = useRef(false)
 
   // ICS calendar state
   const [icsEvents, setIcsEvents] = useState<ICSEvent[]>([])
@@ -441,12 +409,10 @@ export default function Aktuelles() {
 
 
   const {data: newsItems, error: newsError} = useData<NewsItem[]>('/data/news.json')
-  const instagramScrollRef = useRef<HTMLDivElement>(null)
-  const { data: instagramFeed, loading: instagramLoading, error: instagramError } = useData<InstagramFeedResponse>(
-      features.INSTAGRAM_FEED ? '/api/instagram' : ''
-  )
+  const config = useConfig()
+  const elfsightAppId = config?.elfsightAppId
 
-  useHttpErrorRedirect(newsError, instagramError)
+  useHttpErrorRedirect(newsError)
 
   const allTags = newsItems
     ? ['Alle', ...Array.from(new Set(newsItems.map(n => n.kategorie)))]
@@ -480,67 +446,6 @@ export default function Aktuelles() {
     setVisibleCount(itemsPerPage)
   }
 
-  const instagramItems = instagramFeed?.items ?? []
-  const instagramProfileUrl = instagramFeed?.profileUrl ?? INSTAGRAM_PROFILE_URL
-
-
-  const updateInstagramScrollButtons = () => {
-    const el = instagramScrollRef.current
-    if (!el) return
-    setCanInstagramScrollLeft(el.scrollLeft > 10)
-    setCanInstagramScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10)
-  }
-
-  useEffect(() => {
-    const el = instagramScrollRef.current
-    if (!el) return
-    updateInstagramScrollButtons()
-    el.addEventListener('scroll', updateInstagramScrollButtons, { passive: true })
-    window.addEventListener('resize', updateInstagramScrollButtons)
-    return () => {
-      el.removeEventListener('scroll', updateInstagramScrollButtons)
-      window.removeEventListener('resize', updateInstagramScrollButtons)
-    }
-  }, [instagramItems.length, instagramLoading])
-
-  const scrollInstagram = (dir: 'left' | 'right') => {
-    const el = instagramScrollRef.current
-    if (!el) return
-    el.scrollBy({ left: dir === 'left' ? -320 : 320, behavior: 'smooth' })
-  }
-
-  const onInstagramMouseDown = (e: ReactMouseEvent) => {
-    const el = instagramScrollRef.current
-    if (!el) return
-    isInstagramDragging.current = true
-    hasInstagramDragged.current = false
-    instagramDragStartX.current = e.pageX - el.offsetLeft
-    instagramDragScrollLeft.current = el.scrollLeft
-    el.style.scrollSnapType = 'none'
-    el.style.cursor = 'grabbing'
-    el.style.userSelect = 'none'
-  }
-
-  const onInstagramMouseMove = (e: ReactMouseEvent) => {
-    if (!isInstagramDragging.current) return
-    const el = instagramScrollRef.current
-    if (!el) return
-    e.preventDefault()
-    const x = e.pageX - el.offsetLeft
-    const walk = x - instagramDragStartX.current
-    if (Math.abs(walk) > 5) hasInstagramDragged.current = true
-    el.scrollLeft = instagramDragScrollLeft.current - walk
-  }
-
-  const onInstagramMouseUpOrLeave = () => {
-    if (!isInstagramDragging.current) return
-    isInstagramDragging.current = false
-    const el = instagramScrollRef.current
-    if (!el) return
-    el.style.scrollSnapType = ''
-    el.style.cursor = ''
-    el.style.userSelect = ''
-  }
 
   return (
     <section id="aktuelles" className="py-24 bg-white dark:bg-gray-950">
@@ -555,6 +460,7 @@ export default function Aktuelles() {
           mb="mb-12"
           descriptionClassName="max-w-2xl"
         />
+
 
 
 
@@ -763,8 +669,7 @@ export default function Aktuelles() {
             )}
         </motion.div>
 
-        {/* ── Instagram (after news) ── */}
-        {features.INSTAGRAM_FEED && (
+        {/* ── Instagram (Elfsight) ── */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -778,113 +683,22 @@ export default function Aktuelles() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-tight">Instagram</h3>
-                <p className="text-[11px] text-gray-400 dark:text-gray-500">Neueste Beiträge von @{instagramFeed?.username ?? INSTAGRAM_USERNAME}</p>
+                <p className="text-[11px] text-gray-400 dark:text-gray-500">Neueste Beiträge von @{INSTAGRAM_USERNAME}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="hidden sm:flex items-center gap-1.5">
-                <button
-                  onClick={() => scrollInstagram('left')}
-                  disabled={!canInstagramScrollLeft}
-                  className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 hover:text-spd-red hover:border-spd-red/40 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                >
-                  <ChevronLeft size={15} />
-                </button>
-                <button
-                  onClick={() => scrollInstagram('right')}
-                  disabled={!canInstagramScrollRight}
-                  className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 hover:text-spd-red hover:border-spd-red/40 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                >
-                  <ChevronRight size={15} />
-                </button>
-              </div>
-              <a
-                href={instagramProfileUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full border border-spd-red/25 px-3 py-1.5 text-xs font-semibold text-spd-red hover:bg-spd-red hover:text-white transition-colors"
-              >
-                Folgen <ExternalLink size={12} />
-              </a>
-            </div>
-          </div>
-
-          {instagramLoading && (
-            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="snap-start shrink-0 w-[82vw] sm:w-80 rounded-2xl border border-gray-100 dark:border-gray-800 p-3">
-                  <div className="w-full aspect-square rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
-                  <div className="mt-3 space-y-2">
-                    <div className="h-3 w-20 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />
-                    <div className="h-3 w-full rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />
-                    <div className="h-3 w-4/5 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {!instagramLoading && instagramItems.length > 0 && (
-            <div
-              ref={instagramScrollRef}
-              className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar pb-2 cursor-grab"
-              onMouseDown={onInstagramMouseDown}
-              onMouseMove={onInstagramMouseMove}
-              onMouseUp={onInstagramMouseUpOrLeave}
-              onMouseLeave={onInstagramMouseUpOrLeave}
+            <a
+              href={INSTAGRAM_PROFILE_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-spd-red/25 px-3 py-1.5 text-xs font-semibold text-spd-red hover:bg-spd-red hover:text-white transition-colors"
             >
-              {instagramItems.map(item => (
-                <a
-                  key={item.id}
-                  href={item.permalink}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={(e) => { if (hasInstagramDragged.current) e.preventDefault() }}
-                  className="group snap-start shrink-0 w-[82vw] sm:w-80 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden hover:border-spd-red/30 hover:shadow-lg hover:shadow-spd-red/5 transition-all duration-300"
-                >
-                  <div className="relative w-full aspect-square bg-gray-100 dark:bg-gray-800">
-                    {item.mediaUrl ? (
-                      <img loading="lazy" src={item.mediaUrl} alt={item.caption || 'Instagram-Beitrag'} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
-                        <Camera size={24} />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-3">
-                    <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-spd-red">
-                      <span>{formatInstagramDate(item.timestamp)}</span>
-                    </div>
-                  </div>
-                </a>
-              ))}
-            </div>
-          )}
-
-          {!instagramLoading && instagramItems.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-950/40 p-5 text-center">
-              <div className="mx-auto w-12 h-12 rounded-2xl bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center text-spd-red mb-3">
-                <Camera size={20} />
-              </div>
-              <h4 className="text-sm font-bold text-gray-900 dark:text-white">Beiträge direkt auf Instagram ansehen</h4>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                {instagramError
-                  ? 'Der Feed konnte gerade nicht geladen werden. Unser Profil ist weiterhin direkt auf Instagram erreichbar.'
-                  : 'Die neuesten Beiträge sind aktuell direkt auf Instagram verfügbar.'}
-              </p>
-              <a
-                href={instagramProfileUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-spd-red px-4 py-2 text-sm font-semibold text-white hover:bg-spd-red-dark transition-colors"
-              >
-                Profil öffnen <ExternalLink size={14} />
-              </a>
-            </div>
+              Folgen <ExternalLink size={12} />
+            </a>
+          </div>
+          {elfsightAppId && (
+            <div className={`elfsight-app-${elfsightAppId}`} data-elfsight-app-lazy />
           )}
         </motion.div>
-        )}
       </div>
 
       {/* News detail sheet */}
