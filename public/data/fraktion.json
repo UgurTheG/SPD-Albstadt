@@ -5,11 +5,6 @@
       "name": "Marianne Roth",
       "beruf": "Arzthelferin",
       "bildUrl": "/images/gemeinderaete/marianne-roth.webp",
-      "bildUrls": [
-        "/images/gemeinderaete/marianne-roth.webp",
-        "/images/news/marianne.webp",
-        "/images/news/HHR2024.webp"
-      ],
       "seit": "2003",
       "address": "Flanderstr. 35",
       "zipCode": "72458 Albstadt-Ebingen",
@@ -91,12 +86,7 @@
       "datum": "2024-06-15",
       "titel": "Neue Gemeinderatsfraktion konstituiert sich – starkes Team für Albstadt",
       "inhalt": "Nach der erfolgreichen Gemeinderatswahl 2024 hat sich die SPD-Fraktion neu konstituiert. Mit Marianne Roth als Fraktionsvorsitzender, dem erfahrenen Martin Frohme, Frank Hipp und der neuen Gemeinderätin Lara Herter steht ein starkes, engagiertes Team für die Bürgerinnen und Bürger Albstadts bereit.\n\nIn der konstituierenden Sitzung wurden die Arbeitsschwerpunkte für die Legislaturperiode 2024 bis 2029 festgelegt. Ganz oben auf der Agenda stehen die Themen bezahlbares Wohnen, die Weiterentwicklung des ÖPNV rund um die Talgangbahn, Klimaschutz sowie die Förderung von Bildung und Jugend in Albstadt.\n\nFraktionsvorsitzende Marianne Roth erklärte bei der Konstituierung: 'Wir gehen diese Legislaturperiode mit frischem Wind und bewährter Erfahrung an. Mit Lara Herter haben wir eine junge, motivierte Stimme gewonnen, die genau das einbringt, was wir brauchen: den Blick der nächsten Generation auf unsere Stadt.' Martin Frohme, der als dienstältester Gemeinderat auf über 40 Jahre Erfahrung zurückblickt, ergänzte: 'Kontinuität und Erneuerung – das ist die Stärke unserer Fraktion.'\n\nFür Frank Hipp, seit 2007 im Gemeinderat, steht die soziale Verantwortung der Stadtpolitik im Mittelpunkt: 'Albstadt muss eine Stadt für alle sein – nicht nur für diejenigen, die es sich leisten können.' Die Fraktion wird regelmäßig über ihre Arbeit berichten und steht für Fragen und Anregungen jederzeit zur Verfügung.",
-      "bildUrl": "/images/news/gemeinderat2024.webp",
-      "bildUrls": [
-        "/images/news/gemeinderat2024.webp",
-        "/images/news/HHR2024.webp",
-        "/images/news/marianne.webp"
-      ]
+      "bildUrl": "/images/news/gemeinderat2024.webp"
     },
     {
       "id": "1",

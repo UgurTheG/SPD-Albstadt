@@ -48,7 +48,6 @@ export const TABS: TabConfig[] = [
                     {key: 'address', label: 'Adresse', type: 'text'},
                     {key: 'place', label: 'PLZ & Ort', type: 'text'},
                     {key: 'bildUrl', label: 'Profilbild', type: 'image', imageDir: 'vorstand'},
-                    {key: 'bildUrls', label: 'Weitere Bilder', type: 'imagelist', imageDir: 'vorstand'},
                     {key: 'bio', label: 'Biografie', type: 'textarea'},
                 ]
             },
@@ -61,7 +60,6 @@ export const TABS: TabConfig[] = [
                     {key: 'email', label: 'E-Mail', type: 'email'},
                     {key: 'website', label: 'Website', type: 'url'},
                     {key: 'bildUrl', label: 'Profilbild', type: 'image', imageDir: 'abgeordnete'},
-                    {key: 'bildUrls', label: 'Weitere Bilder', type: 'imagelist', imageDir: 'abgeordnete'},
                     {key: 'bio', label: 'Biografie', type: 'textarea'},
                 ]
             },

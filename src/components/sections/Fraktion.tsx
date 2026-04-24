@@ -4,7 +4,6 @@ import {ExternalLink, FileDown} from 'lucide-react'
 import {fetchData, useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import Sheet from '../Sheet'
-import PhotoGallery from '../PhotoGallery'
 import PersonSheet from '../PersonSheet'
 import PersonCard, {personCardContainerVariants, personCardItemVariants} from '../PersonCard'
 import SectionHeader from '../SectionHeader'
@@ -358,10 +357,14 @@ export default function Fraktion() {
         {selectedFraktionNews && (
           <div>
             {selectedFraktionNews.bildUrl && (
-              <PhotoGallery
-                  images={[selectedFraktionNews.bildUrl]}
-                alt={selectedFraktionNews.titel}
-              />
+              <div className="overflow-hidden bg-gray-100 dark:bg-gray-800">
+                <img
+                  loading="lazy"
+                  src={selectedFraktionNews.bildUrl}
+                  alt={selectedFraktionNews.titel}
+                  className="w-full object-cover max-h-[50dvh]"
+                />
+              </div>
             )}
             <div className="px-6 pt-6 pb-8">
               <div className="w-8 h-0.5 bg-spd-red rounded-full mb-4" />

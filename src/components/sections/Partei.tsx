@@ -29,7 +29,6 @@ interface Mitglied {
   address?: string
   place?: string
   bildUrl: string
-  bildUrls?: string[]
   bio: string
 }
 
@@ -40,7 +39,6 @@ interface Abgeordneter {
   email: string
   website?: string
   bildUrl: string
-  bildUrls?: string[]
   bio: string
 }
 
