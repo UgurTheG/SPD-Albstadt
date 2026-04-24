@@ -79,42 +79,5 @@
       ],
       "bio": "Seit über 30 Jahren Mitglied des Kreistags im Wahlkreis Albstadt. Ich setze mich besonders für den Umweltschutz, den Ausbau der Regionalstadtbahn und die Zentralklinik zwischen Albstadt und Balingen ein. Seit 2019 Fraktionsvorsitzender der SPD im Kreistag."
     }
-  ],
-  "news": [
-    {
-      "id": "0",
-      "datum": "2024-06-15",
-      "titel": "Neue Gemeinderatsfraktion konstituiert sich – starkes Team für Albstadt",
-      "inhalt": "Nach der erfolgreichen Gemeinderatswahl 2024 hat sich die SPD-Fraktion neu konstituiert. Mit Marianne Roth als Fraktionsvorsitzender, dem erfahrenen Martin Frohme, Frank Hipp und der neuen Gemeinderätin Lara Herter steht ein starkes, engagiertes Team für die Bürgerinnen und Bürger Albstadts bereit.\n\nIn der konstituierenden Sitzung wurden die Arbeitsschwerpunkte für die Legislaturperiode 2024 bis 2029 festgelegt. Ganz oben auf der Agenda stehen die Themen bezahlbares Wohnen, die Weiterentwicklung des ÖPNV rund um die Talgangbahn, Klimaschutz sowie die Förderung von Bildung und Jugend in Albstadt.\n\nFraktionsvorsitzende Marianne Roth erklärte bei der Konstituierung: 'Wir gehen diese Legislaturperiode mit frischem Wind und bewährter Erfahrung an. Mit Lara Herter haben wir eine junge, motivierte Stimme gewonnen, die genau das einbringt, was wir brauchen: den Blick der nächsten Generation auf unsere Stadt.' Martin Frohme, der als dienstältester Gemeinderat auf über 40 Jahre Erfahrung zurückblickt, ergänzte: 'Kontinuität und Erneuerung – das ist die Stärke unserer Fraktion.'\n\nFür Frank Hipp, seit 2007 im Gemeinderat, steht die soziale Verantwortung der Stadtpolitik im Mittelpunkt: 'Albstadt muss eine Stadt für alle sein – nicht nur für diejenigen, die es sich leisten können.' Die Fraktion wird regelmäßig über ihre Arbeit berichten und steht für Fragen und Anregungen jederzeit zur Verfügung.",
-      "bildUrl": "/images/news/gemeinderat2024.webp"
-    },
-    {
-      "id": "1",
-      "datum": "2024-02-01",
-      "titel": "Haushaltsrede 2024: SPD fordert ausgewogene Finanzplanung",
-      "inhalt": "Die SPD-Fraktionsvorsitzende Marianne Roth hielt am 1. Februar 2024 im Gemeinderat Albstadt ihre Haushaltsrede. Roth betonte die Bedeutung einer ausgewogenen finanziellen Planung und machte auf die Herausforderungen und Chancen für Albstadt aufmerksam.",
-      "bildUrl": "/images/news/HHR2024.webp"
-    },
-    {
-      "id": "2",
-      "datum": "2023-10-26",
-      "titel": "Zur Belegung der Ebinger Kreissporthalle durch geflüchtete Menschen",
-      "inhalt": "Am 24. Oktober 2023 wurde über die Zweckentfremdung der Kreissporthalle informiert. Die SPD Albstadt verurteilt aufs Schärfste fremdenfeindliche Aktionen und positioniert sich klar gegen jegliche Form rassistischer Hetze. Solidarität ist unser Gebot.",
-      "bildUrl": "/images/news/Kreisporthalle_Katja_Weiger_Schick.webp"
-    },
-    {
-      "id": "3",
-      "datum": "2023-09-23",
-      "titel": "Tag der SPD – Apfelsaft-Aktion auf dem Wochenmarkt",
-      "inhalt": "Beim 'Tag der SPD' auf dem Ebinger Wochenmarkt haben wir gemeinsam mit unseren Mitbürgerinnen und Mitbüergern gefeiert. Kinder und Erwachsene verarbeiteten Streuobstäpfel zu leckerem Apfelsaft – Nachhaltigkeit zum Anfassen.",
-      "bildUrl": "/images/news/Apfelpressen_Nils_Maute.webp"
-    },
-    {
-      "id": "4",
-      "datum": "2022-07-21",
-      "titel": "SPD-Fraktion stimmt für Talgangbahn – Einstieg in die Verkehrswende",
-      "inhalt": "Für Albstadt und die Region ist die Talgangbahn der Einstieg in die Verkehrswende mit positiven Folgen für den Klimaschutz. Die SPD-Fraktion stimmte geschlossen dem vorzeitigen Bau zu. 90% Bundesförderung und 5% Landesförderung machen das Projekt möglich.",
-      "bildUrl": "/images/news/bild_talbahn.webp"
-    }
   ]
 }

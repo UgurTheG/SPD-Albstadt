@@ -102,15 +102,6 @@ export const TABS: TabConfig[] = [
                     {key: 'bio', label: 'Biografie', type: 'textarea'},
                 ]
             },
-            {
-                key: 'news', label: 'Fraktions-News',
-                fields: [
-                    {key: 'datum', label: 'Datum', type: 'date'},
-                    {key: 'titel', label: 'Titel', type: 'text', required: true},
-                    {key: 'inhalt', label: 'Inhalt', type: 'textarea'},
-                    {key: 'bildUrl', label: 'Bild', type: 'image', imageDir: 'news'},
-                ]
-            },
         ]
     },
     {
@@ -209,7 +200,6 @@ export const TABS: TabConfig[] = [
                 key: 'features', label: 'Funktionen', isSingleObject: true,
                 fields: [
                     {key: 'instagramFeed', label: 'Instagram-Feed anzeigen (Aktuelles)', type: 'toggle'},
-                    {key: 'fraktionNews', label: 'Fraktions-News anzeigen (Fraktion)', type: 'toggle'},
                 ]
             },
         ]

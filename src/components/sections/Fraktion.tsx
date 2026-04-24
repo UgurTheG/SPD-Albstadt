@@ -3,13 +3,10 @@ import {motion, useInView} from 'framer-motion'
 import {ExternalLink, FileDown} from 'lucide-react'
 import {fetchData, useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
-import Sheet from '../Sheet'
 import PersonSheet from '../PersonSheet'
 import PersonCard, {personCardContainerVariants, personCardItemVariants} from '../PersonCard'
 import SectionHeader from '../SectionHeader'
-import {useFeatures} from '../../hooks/useFeatures'
 import {useItemsPerPageMulti} from '../../utils/useItemsPerPage'
-import {formatDate} from '../../utils/formatDate'
 
 interface Gemeinderat {
   name: string
@@ -23,29 +20,18 @@ interface Gemeinderat {
   bio?: string
 }
 
-interface FraktionNews {
-  id: string
-  datum: string
-  titel: string
-  inhalt: string
-  bildUrl?: string
-}
-
 interface FraktionData {
   beschreibung: string
   gemeinderaete: Gemeinderat[]
   kreisraete: Gemeinderat[]
-  news: FraktionNews[]
 }
 
 export default function Fraktion() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
-  const features = useFeatures()
   const {data, error} = useData<FraktionData>('/data/fraktion.json')
   useHttpErrorRedirect(error)
   const [selectedMember, setSelectedMember] = useState<Gemeinderat | null>(null)
-  const [selectedFraktionNews, setSelectedFraktionNews] = useState<FraktionNews | null>(null)
   // items per page = 2 full rows at every grid breakpoint (always an even number)
   // grid: 2 cols (xs) → 4 | 3 cols (sm 640) → 6 | 4 cols (md 768) → 8 | 5 cols (lg 1024) → 10
   const itemsPerPage = useItemsPerPageMulti([[1024, 10], [768, 8], [640, 6]], 4)
@@ -175,58 +161,6 @@ export default function Fraktion() {
           </motion.div>
         </div>
 
-        {/* Fraktion News */}
-        {features.FRAKTION_NEWS && data?.news && data.news.length > 0 && (
-          <div className="mb-20">
-            <motion.h3
-              initial={{ opacity: 0, x: -20 }}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-8"
-            >
-              Neues aus der Fraktion
-            </motion.h3>
-            <motion.div
-              variants={personCardContainerVariants}
-              initial="hidden"
-              animate={isInView ? 'visible' : 'hidden'}
-              className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"
-            >
-              {data.news.map(n => (
-                <motion.div
-                  key={n.id}
-                  variants={personCardItemVariants}
-                  onClick={() => setSelectedFraktionNews(n)}
-                  className="group rounded-2xl overflow-hidden cursor-pointer
-                             bg-white dark:bg-gray-800/50
-                             border border-gray-100 dark:border-gray-800/80
-                             shadow-sm dark:shadow-black/20
-                             hover:shadow-lg
-                             hover:-translate-y-1
-                             transition-all duration-500"
-                >
-                  {n.bildUrl && (
-                      <div className="aspect-4/3 overflow-hidden bg-gray-100 dark:bg-gray-800">
-                        <img loading="lazy" src={n.bildUrl} alt={n.titel}
-                           className="w-full h-full object-cover"/>
-                    </div>
-                  )}
-                  <div className="p-5 sm:p-6">
-                    <time className="text-[11px] font-medium text-gray-400 dark:text-gray-500 mb-3 block uppercase tracking-wider">{formatDate(n.datum)}</time>
-                    <h4 className="font-bold text-gray-900 dark:text-white mb-3 leading-snug">{n.titel}</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-3">{n.inhalt}</p>
-                    <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800/80">
-                      <span className="text-[11px] font-semibold text-spd-red flex items-center gap-1">
-                        Weiterlesen →
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        )}
-
         {/* Haushaltsreden */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -351,37 +285,6 @@ export default function Fraktion() {
         </motion.div>
       </div>
 
-      {/* Fraktion news detail sheet */}
-      {features.FRAKTION_NEWS && (
-      <Sheet open={!!selectedFraktionNews} onClose={() => setSelectedFraktionNews(null)} size="lg">
-        {selectedFraktionNews && (
-          <div>
-            {selectedFraktionNews.bildUrl && (
-              <div className="overflow-hidden bg-gray-100 dark:bg-gray-800">
-                <img
-                  loading="lazy"
-                  src={selectedFraktionNews.bildUrl}
-                  alt={selectedFraktionNews.titel}
-                  className="w-full object-cover max-h-[50dvh]"
-                />
-              </div>
-            )}
-            <div className="px-6 pt-6 pb-8">
-              <div className="w-8 h-0.5 bg-spd-red rounded-full mb-4" />
-              <time className="text-xs text-gray-400 dark:text-gray-500 mb-3 block">
-                {formatDate(selectedFraktionNews.datum)}
-              </time>
-              <h3 className="text-xl font-black text-gray-900 dark:text-white leading-snug mb-5">
-                {selectedFraktionNews.titel}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-                {selectedFraktionNews.inhalt}
-              </p>
-            </div>
-          </div>
-        )}
-      </Sheet>
-      )}
 
       {/* Member detail sheet */}
       <PersonSheet open={!!selectedMember} onClose={() => setSelectedMember(null)} person={selectedMember} />
