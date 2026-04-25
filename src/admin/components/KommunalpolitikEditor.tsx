@@ -4,6 +4,7 @@ import {
     ChevronDown,
     ChevronUp,
     Download,
+    ExternalLink,
     Eye,
     FileSearch,
     FileUp,
@@ -493,6 +494,27 @@ export default function KommunalpolitikEditor() {
     )
 }
 
+function mimeFromExt(ext: string): string {
+    switch (ext.toLowerCase()) {
+        case 'pdf': return 'application/pdf'
+        case 'doc': return 'application/msword'
+        case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        default: return 'application/octet-stream'
+    }
+}
+
+function openPendingFile(base64: string, publicUrl: string) {
+    const ext = publicUrl.split('.').pop() ?? 'pdf'
+    const mime = mimeFromExt(ext)
+    const byteChars = atob(base64)
+    const byteArr = new Uint8Array(byteChars.length)
+    for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i)
+    const blob = new Blob([byteArr], {type: mime})
+    const blobUrl = URL.createObjectURL(blob)
+    window.open(blobUrl, '_blank')
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
+}
+
 function DokumentRow({dok, onChange, onRemove}: {
     dok: Dokument
     onChange: (d: Dokument) => void
@@ -504,7 +526,10 @@ function DokumentRow({dok, onChange, onRemove}: {
     const pendingUploads = useAdminStore(s => s.pendingUploads)
     const [showUrl, setShowUrl] = useState(!dok.url)
 
-    const isPending = dok.url ? pendingUploads.some(u => u.ghPath.replace(/^public/, '') === dok.url) : false
+    const pendingEntry = dok.url
+        ? pendingUploads.find(u => u.ghPath.replace(/^public/, '') === dok.url) ?? null
+        : null
+    const isPending = !!pendingEntry
     const displayName = dok.url ? dok.url.split('/').pop() : null
 
     const handleFile = async (file: File) => {
@@ -516,9 +541,19 @@ function DokumentRow({dok, onChange, onRemove}: {
             const publicUrl = `/dokumente/kommunalpolitik/${namePart}.${ext}`
             addPendingUpload({ghPath, base64, message: `admin: Dokument ${namePart}.${ext} hochgeladen`})
             onChange({...dok, url: publicUrl})
+            setShowUrl(false)
             setStatus('Dokument vorbereitet — wird beim Veröffentlichen hochgeladen', 'success')
         } catch {
             setStatus('Fehler beim Lesen der Datei', 'error')
+        }
+    }
+
+    const handlePreview = () => {
+        if (!dok.url) return
+        if (pendingEntry) {
+            openPendingFile(pendingEntry.base64, dok.url)
+        } else {
+            window.open(dok.url, '_blank')
         }
     }
 
@@ -548,10 +583,19 @@ function DokumentRow({dok, onChange, onRemove}: {
                     <FileUp size={11}/> {displayName ? 'Ersetzen' : 'Datei hochladen'}
                 </button>
                 {displayName && (
-                    <span className={`text-[11px] font-mono truncate max-w-[180px] ${isPending ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'}`}
-                          title={dok.url}>
-                        {isPending ? '⏳ ' : ''}{displayName}
-                    </span>
+                    <>
+                        <button
+                            type="button"
+                            onClick={handlePreview}
+                            title="Dokument öffnen"
+                            className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400 hover:text-spd-red dark:hover:text-spd-red border border-gray-200/60 dark:border-gray-700/40 hover:border-spd-red/30 px-3 py-1.5 rounded-xl transition-colors">
+                            <ExternalLink size={11}/>
+                            <span className={`font-mono truncate max-w-[160px] ${isPending ? 'text-amber-600 dark:text-amber-400' : ''}`}
+                                  title={dok.url}>
+                                {isPending ? '⏳ ' : ''}{displayName}
+                            </span>
+                        </button>
+                    </>
                 )}
                 <button
                     type="button"

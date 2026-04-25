@@ -34,13 +34,17 @@ export default function PreviewModal({tabKey, onClose}: Props) {
     const state = useAdminStore(s => s.state)
     const pendingUploads = useAdminStore(s => s.pendingUploads)
 
-    // Build a map from public image URLs → base64 data URLs for pending uploads
+    // Build a map from public file URLs → base64 data URLs for pending uploads
     const uploadUrlMap = useMemo(() => {
         const map: Record<string, string> = {}
         for (const upload of pendingUploads) {
-            // ghPath is like "public/images/vorstand/name.webp" → public URL "/images/vorstand/name.webp"
             const publicUrl = upload.ghPath.replace(/^public/, '')
-            map[publicUrl] = `data:image/webp;base64,${upload.base64}`
+            const ext = publicUrl.split('.').pop()?.toLowerCase() ?? ''
+            let mime = 'image/webp'
+            if (ext === 'pdf') mime = 'application/pdf'
+            else if (ext === 'doc') mime = 'application/msword'
+            else if (ext === 'docx') mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            map[publicUrl] = `data:${mime};base64,${upload.base64}`
         }
         return map
     }, [pendingUploads])
