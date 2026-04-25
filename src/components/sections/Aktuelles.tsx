@@ -412,18 +412,6 @@ export default function Aktuelles() {
   const config = useConfig()
   const elfsightAppId = config?.elfsightAppId
 
-  // Track dark mode by observing the class on <html>
-  const [isDark, setIsDark] = useState(() =>
-    document.documentElement.classList.contains('dark')
-  )
-  useEffect(() => {
-    const obs = new MutationObserver(() => {
-      setIsDark(document.documentElement.classList.contains('dark'))
-    })
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
-    return () => obs.disconnect()
-  }, [])
-
   // Lazy-load the Elfsight platform script only when on this page
   useEffect(() => {
     if (!elfsightAppId) return
@@ -722,10 +710,9 @@ export default function Aktuelles() {
           </div>
           {elfsightAppId && (
             <div
-              key={isDark ? 'dark' : 'light'}
               className={`elfsight-app-${elfsightAppId}`}
               data-elfsight-app-lazy
-              data-elfsight-app-theme={isDark ? 'dark' : 'light'}
+              data-elfsight-app-theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
             />
           )}
         </motion.div>
