@@ -3,6 +3,7 @@ import {motion, useInView} from 'framer-motion'
 import {
   Briefcase,
   Bus,
+  ChevronRight,
   ExternalLink,
   GraduationCap,
   Home,
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react'
 import {useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
+import Sheet from '../Sheet'
 import PersonSheet from '../PersonSheet'
 import PersonCard, {personCardContainerVariants, personCardItemVariants} from '../PersonCard'
 import SectionHeader from '../SectionHeader'
@@ -19,6 +21,7 @@ interface Schwerpunkt {
   titel: string
   beschreibung: string
   icon: string
+  inhalt?: string
 }
 
 interface Mitglied {
@@ -64,6 +67,7 @@ export default function Partei() {
   const {data, error} = useData<PartyData>('/data/party.json')
   useHttpErrorRedirect(error)
   const [selectedPerson, setSelectedPerson] = useState<Mitglied | Abgeordneter | null>(null)
+  const [selectedSchwerpunkt, setSelectedSchwerpunkt] = useState<Schwerpunkt | null>(null)
 
   return (
     <section id="partei" className="py-24 bg-gray-50 dark:bg-gray-900">
@@ -99,7 +103,8 @@ export default function Partei() {
                 <motion.div
                   key={s.titel}
                   variants={personCardItemVariants}
-                  className="group relative rounded-2xl overflow-hidden
+                  onClick={() => setSelectedSchwerpunkt(s)}
+                  className="group relative rounded-2xl overflow-hidden cursor-pointer
                              bg-white dark:bg-gray-800/60
                              border border-gray-100 dark:border-gray-800/80
                              shadow-sm dark:shadow-black/20
@@ -112,9 +117,10 @@ export default function Partei() {
                       <div className="w-11 h-11 bg-spd-red/8 dark:bg-spd-red/12 rounded-xl flex items-center justify-center transition-all duration-300">
                         <Icon size={20} className="text-spd-red" />
                       </div>
+                      <ChevronRight size={14} className="text-gray-200 dark:text-gray-700 group-hover:text-spd-red transition-colors mt-1 shrink-0" />
                     </div>
                     <h4 className="font-bold text-gray-900 dark:text-white mb-2 leading-snug">{s.titel}</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed whitespace-pre-line">{s.beschreibung}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-3">{s.beschreibung}</p>
                   </div>
                 </motion.div>
               )
@@ -230,6 +236,38 @@ export default function Partei() {
 
       {/* Person detail sheet */}
       <PersonSheet open={!!selectedPerson} onClose={() => setSelectedPerson(null)} person={selectedPerson} />
+
+      {/* Schwerpunkt detail sheet */}
+      <SchwerpunktSheet item={selectedSchwerpunkt} onClose={() => setSelectedSchwerpunkt(null)} />
     </section>
+  )
+}
+
+function SchwerpunktSheet({ item, onClose }: { item: Schwerpunkt | null; onClose: () => void }) {
+  const Icon = (item ? ICONS[item.icon] : null) || Users
+  return (
+    <Sheet open={!!item} onClose={onClose}>
+      {item && (
+        <div>
+          <div className="bg-linear-to-br from-spd-red via-spd-red to-spd-red-dark px-5 sm:px-6 pt-6 pb-8 relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.12),transparent_50%)]" />
+            <div className="relative">
+              <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
+                <Icon size={22} className="text-white" />
+              </div>
+              <h3 className="font-black text-white text-xl sm:text-2xl leading-tight">{item.titel}</h3>
+            </div>
+          </div>
+          <div className="px-5 sm:px-6 pt-5 pb-8 space-y-4">
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">{item.beschreibung}</p>
+            {item.inhalt && (
+              <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">{item.inhalt}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </Sheet>
   )
 }

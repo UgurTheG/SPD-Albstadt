@@ -9,6 +9,7 @@ import {
   Clock,
   ExternalLink,
   MapPin,
+  Rss,
   Search,
   Tag,
   X
@@ -374,6 +375,7 @@ export default function Aktuelles() {
   const [icsEvents, setIcsEvents] = useState<ICSEvent[]>([])
   const [icsLoading, setIcsLoading] = useState(false)
   const [icsError, setIcsError] = useState<string | null>(null)
+  const [showSubscribeMenu, setShowSubscribeMenu] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -642,14 +644,74 @@ export default function Aktuelles() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mb-16"
         >
-            <div className="flex items-center gap-2.5 mb-5">
-              <div className="w-8 h-8 rounded-lg bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center">
-                <Calendar size={15} className="text-spd-red" />
+            <div className="flex items-center justify-between gap-3 mb-5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center">
+                  <Calendar size={15} className="text-spd-red" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-tight">Kalenderansicht</h3>
+                  <p className="text-[11px] text-gray-400 dark:text-gray-500">Alle Termine auf einen Blick</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-tight">Kalenderansicht</h3>
-                <p className="text-[11px] text-gray-400 dark:text-gray-500">Alle Termine auf einen Blick</p>
-              </div>
+              {config?.icsUrl && (
+                <div className="relative shrink-0">
+                  <button
+                    onClick={() => setShowSubscribeMenu(v => !v)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-spd-red/25 px-3 py-1.5 text-xs font-semibold text-spd-red hover:bg-spd-red hover:text-white transition-colors"
+                  >
+                    <Rss size={12} /> Abonnieren
+                  </button>
+                  {showSubscribeMenu && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setShowSubscribeMenu(false)} />
+                      <div className="absolute right-0 top-full mt-2 z-20 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl overflow-hidden min-w-56">
+                        <div className="px-3 pt-3 pb-1.5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Kalender abonnieren</p>
+                        </div>
+                        <a
+                          href={config.icsUrl.replace(/^https?:\/\//, 'webcal://')}
+                          onClick={() => setShowSubscribeMenu(false)}
+                          className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center shrink-0">
+                            <Calendar size={13} className="text-spd-red" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-gray-900 dark:text-white">Apple / Outlook</p>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500">Kalender-App öffnen</p>
+                          </div>
+                        </a>
+                        <a
+                          href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(config.icsUrl)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={() => setShowSubscribeMenu(false)}
+                          className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+                            <ExternalLink size={13} className="text-blue-500" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-gray-900 dark:text-white">Google Calendar</p>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500">Im Browser öffnen</p>
+                          </div>
+                        </a>
+                        <div className="px-3 pb-3 pt-1.5 border-t border-gray-100 dark:border-gray-800">
+                          <a
+                            href={config.icsUrl}
+                            download
+                            onClick={() => setShowSubscribeMenu(false)}
+                            className="flex items-center gap-1.5 text-[10px] font-medium text-gray-400 hover:text-spd-red transition-colors"
+                          >
+                            <Rss size={10} /> ICS-Datei herunterladen
+                          </a>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
             {icsLoading && (

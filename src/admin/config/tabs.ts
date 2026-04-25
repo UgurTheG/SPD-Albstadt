@@ -34,7 +34,8 @@ export const TABS: TabConfig[] = [
                 key: 'schwerpunkte', label: 'Schwerpunkte',
                 fields: [
                     {key: 'titel', label: 'Titel', type: 'text', required: true},
-                    {key: 'beschreibung', label: 'Beschreibung', type: 'textarea'},
+                    {key: 'beschreibung', label: 'Kurzbeschreibung (Karte)', type: 'textarea'},
+                    {key: 'inhalt', label: 'Ausführlicher Text (Detail-Ansicht)', type: 'textarea'},
                     {key: 'icon', label: 'Icon', type: 'icon-picker'},
                 ]
             },
