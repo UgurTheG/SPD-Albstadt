@@ -144,20 +144,37 @@ html.dark body {
   fill: #ffffff !important;
   stroke: #ffffff !important;
 }
-/* Close (X) — transparent background, white icon in dark */
+/* Close (X) — target by class name AND by element type as fallback */
 .dark [class*="eapps-instagram-feed-popup"] [class*="close"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="dismiss"] {
+.dark [class*="eapps-instagram-feed-popup"] [class*="dismiss"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="back"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="exit"],
+.dark [class*="eapps-instagram-feed-popup"] button,
+.dark [class*="eapps-instagram-feed-popup"] [role="button"] {
   background-color: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
   color: #ffffff !important;
 }
-.dark [class*="eapps-instagram-feed-popup"] [class*="close"] svg,
-.dark [class*="eapps-instagram-feed-popup"] [class*="close"] path,
-.dark [class*="eapps-instagram-feed-popup"] [class*="close"] polyline,
-.dark [class*="eapps-instagram-feed-popup"] [class*="close"] line {
+/* SVG-based X */
+.dark [class*="eapps-instagram-feed-popup"] button svg,
+.dark [class*="eapps-instagram-feed-popup"] button svg *,
+.dark [class*="eapps-instagram-feed-popup"] [role="button"] svg,
+.dark [class*="eapps-instagram-feed-popup"] [role="button"] svg *,
+.dark [class*="eapps-instagram-feed-popup"] [class*="close"] svg *,
+.dark [class*="eapps-instagram-feed-popup"] [class*="back"] svg * {
   fill: #ffffff !important;
   stroke: #ffffff !important;
+}
+/* CSS-drawn X (pseudo-elements with borders/background) */
+.dark [class*="eapps-instagram-feed-popup"] button::before,
+.dark [class*="eapps-instagram-feed-popup"] button::after,
+.dark [class*="eapps-instagram-feed-popup"] [class*="close"]::before,
+.dark [class*="eapps-instagram-feed-popup"] [class*="close"]::after,
+.dark [class*="eapps-instagram-feed-popup"] [class*="back"]::before,
+.dark [class*="eapps-instagram-feed-popup"] [class*="back"]::after {
+  background-color: #ffffff !important;
+  border-color: #ffffff !important;
 }
 /* Carousel progress bar/track → transparent, dots remain visible.
    Cast a wide net across every possible Elfsight class name variant. */
