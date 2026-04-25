@@ -123,49 +123,41 @@ html.dark body {
 .dark [class*="eapps-instagram-feed-popup"] span:not([class*="follow"]):not([class*="btn"]) {
   color: #e2e8f0 !important;
 }
-/* Nav arrows / close button — broad selectors + SVG fill override */
+/* Arrows — transparent background, white icon in dark / dark icon in light */
 .dark [class*="eapps-instagram-feed-popup"] [class*="arrow"],
 .dark [class*="eapps-instagram-feed-popup"] [class*="prev"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="next"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="close"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="dismiss"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="button"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="-btn"] {
-  background-color: rgba(15, 23, 42, 0.75) !important;
+.dark [class*="eapps-instagram-feed-popup"] [class*="next"] {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
   color: #ffffff !important;
-  border-color: #334155 !important;
 }
 .dark [class*="eapps-instagram-feed-popup"] [class*="arrow"] svg,
 .dark [class*="eapps-instagram-feed-popup"] [class*="prev"] svg,
 .dark [class*="eapps-instagram-feed-popup"] [class*="next"] svg,
-.dark [class*="eapps-instagram-feed-popup"] [class*="close"] svg,
 .dark [class*="eapps-instagram-feed-popup"] [class*="arrow"] path,
 .dark [class*="eapps-instagram-feed-popup"] [class*="prev"] path,
 .dark [class*="eapps-instagram-feed-popup"] [class*="next"] path,
-.dark [class*="eapps-instagram-feed-popup"] [class*="close"] path,
 .dark [class*="eapps-instagram-feed-popup"] [class*="arrow"] polyline,
-.dark [class*="eapps-instagram-feed-popup"] [class*="close"] polyline {
+.dark [class*="eapps-instagram-feed-popup"] [class*="prev"] polyline,
+.dark [class*="eapps-instagram-feed-popup"] [class*="next"] polyline {
   fill: #ffffff !important;
   stroke: #ffffff !important;
 }
-/* Light mode: restore clean light styling for arrows/close */
-[class*="eapps-instagram-feed-popup"] [class*="arrow"],
-[class*="eapps-instagram-feed-popup"] [class*="prev"],
-[class*="eapps-instagram-feed-popup"] [class*="next"],
-[class*="eapps-instagram-feed-popup"] [class*="close"] {
-  background-color: rgba(255, 255, 255, 0.9) !important;
-  color: #111827 !important;
+/* Close (X) — transparent background, white icon in dark */
+.dark [class*="eapps-instagram-feed-popup"] [class*="close"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="dismiss"] {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
 }
-[class*="eapps-instagram-feed-popup"] [class*="arrow"] svg,
-[class*="eapps-instagram-feed-popup"] [class*="prev"] svg,
-[class*="eapps-instagram-feed-popup"] [class*="next"] svg,
-[class*="eapps-instagram-feed-popup"] [class*="close"] svg,
-[class*="eapps-instagram-feed-popup"] [class*="arrow"] path,
-[class*="eapps-instagram-feed-popup"] [class*="close"] path,
-[class*="eapps-instagram-feed-popup"] [class*="arrow"] polyline,
-[class*="eapps-instagram-feed-popup"] [class*="close"] polyline {
-  fill: #111827 !important;
-  stroke: #111827 !important;
+.dark [class*="eapps-instagram-feed-popup"] [class*="close"] svg,
+.dark [class*="eapps-instagram-feed-popup"] [class*="close"] path,
+.dark [class*="eapps-instagram-feed-popup"] [class*="close"] polyline,
+.dark [class*="eapps-instagram-feed-popup"] [class*="close"] line {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
 }
 /* Carousel progress bar/track → transparent, dots remain visible.
    Cast a wide net across every possible Elfsight class name variant. */
