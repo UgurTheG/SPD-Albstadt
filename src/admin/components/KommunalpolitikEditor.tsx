@@ -32,7 +32,8 @@ interface KommunalpolitikJahr {
     id: string
     jahr: string
     aktiv: boolean
-    personen: KommunalpolitikPerson[]
+    gemeinderaete: KommunalpolitikPerson[]
+    kreisraete: KommunalpolitikPerson[]
 }
 
 interface KommunalpolitikData {
@@ -119,7 +120,8 @@ export default function KommunalpolitikEditor() {
             id: crypto.randomUUID?.() ?? String(Date.now()),
             jahr: String(new Date().getFullYear()),
             aktiv: true,
-            personen: [],
+            gemeinderaete: [],
+            kreisraete: [],
         }
         const newJahre = [...data.jahre, newJahr]
         update({jahre: newJahre})
@@ -136,26 +138,22 @@ export default function KommunalpolitikEditor() {
     }
 
     const toggleJahrAktiv = (id: string) => {
-        update({
-            jahre: data.jahre.map(j =>
-                j.id === id ? {...j, aktiv: !j.aktiv} : j
-            ),
-        })
+        update({jahre: data.jahre.map(j => j.id === id ? {...j, aktiv: !j.aktiv} : j)})
     }
 
     const updateJahrName = (id: string, name: string) => {
-        update({
-            jahre: data.jahre.map(j =>
-                j.id === id ? {...j, jahr: name} : j
-            ),
-        })
+        update({jahre: data.jahre.map(j => j.id === id ? {...j, jahr: name} : j)})
     }
 
-    const updatePersonen = (jahrId: string, personen: Record<string, unknown>[]) => {
+    const updateSection = (
+        jahrId: string,
+        section: 'gemeinderaete' | 'kreisraete',
+        personen: Record<string, unknown>[],
+    ) => {
         update({
             jahre: data.jahre.map(j =>
                 j.id === jahrId
-                    ? {...j, personen: personen as unknown as KommunalpolitikPerson[]}
+                    ? {...j, [section]: personen as unknown as KommunalpolitikPerson[]}
                     : j
             ),
         })
@@ -187,7 +185,7 @@ export default function KommunalpolitikEditor() {
                 />
             )}
             {showPreview && (
-                <PreviewModal path="/kommunalpolitik" onClose={() => setShowPreview(false)}/>
+                <PreviewModal tabKey="kommunalpolitik" onClose={() => setShowPreview(false)}/>
             )}
             {showPublishConfirm && (
                 <PublishConfirmModal
@@ -198,40 +196,25 @@ export default function KommunalpolitikEditor() {
 
             {/* Toolbar */}
             <div className="flex items-center gap-2 mb-6 flex-wrap">
-                <button
-                    type="button"
-                    onClick={() => undo('kommunalpolitik')}
-                    disabled={!canUndo}
-                    title="Rückgängig (Ctrl+Z)"
-                    className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                >
+                <button type="button" onClick={() => undo('kommunalpolitik')} disabled={!canUndo}
+                        title="Rückgängig (Ctrl+Z)"
+                        className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                     <Undo2 size={15}/>
                 </button>
-                <button
-                    type="button"
-                    onClick={() => redo('kommunalpolitik')}
-                    disabled={!canRedo}
-                    title="Wiederholen (Ctrl+Y)"
-                    className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                >
+                <button type="button" onClick={() => redo('kommunalpolitik')} disabled={!canRedo}
+                        title="Wiederholen (Ctrl+Y)"
+                        className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                     <Redo2 size={15}/>
                 </button>
-                <button
-                    type="button"
-                    onClick={() => setShowPreview(true)}
-                    title="Vorschau"
-                    className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all"
-                >
+                <button type="button" onClick={() => setShowPreview(true)} title="Vorschau"
+                        className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all">
                     <Eye size={15}/>
                 </button>
                 <div className="flex-1"/>
-                <button
-                    type="button"
-                    onClick={handlePublish}
-                    disabled={publishing || !isDirty || hasLoadError}
-                    title={hasLoadError ? 'Daten konnten nicht geladen werden' : undefined}
-                    className="flex items-center gap-2 bg-spd-red hover:bg-spd-red-dark text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-spd-red disabled:active:scale-100"
-                >
+                <button type="button" onClick={handlePublish}
+                        disabled={publishing || !isDirty || hasLoadError}
+                        title={hasLoadError ? 'Daten konnten nicht geladen werden' : undefined}
+                        className="flex items-center gap-2 bg-spd-red hover:bg-spd-red-dark text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-spd-red disabled:active:scale-100">
                     {publishing
                         ? <Loader2 size={14} strokeWidth={2.5} className="animate-spin"/>
                         : <Rocket size={14} strokeWidth={2.5}/>
@@ -244,23 +227,13 @@ export default function KommunalpolitikEditor() {
             <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/40 rounded-2xl p-5 mb-6">
                 <div className="flex items-center justify-between gap-4">
                     <div>
-                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                            Auf der Homepage anzeigen
-                        </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                            Zeigt den Kommunalpolitik-Tab in der Navigation
-                        </p>
+                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">Auf der Homepage anzeigen</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Zeigt den Kommunalpolitik-Tab in der Navigation</p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => update({sichtbar: !data.sichtbar})}
-                        className={`shrink-0 transition-colors ${data.sichtbar ? 'text-spd-red' : 'text-gray-300 dark:text-gray-600'}`}
-                        title={data.sichtbar ? 'Ausblenden' : 'Einblenden'}
-                    >
-                        {data.sichtbar
-                            ? <ToggleRight size={36} strokeWidth={1.5}/>
-                            : <ToggleLeft size={36} strokeWidth={1.5}/>
-                        }
+                    <button type="button" onClick={() => update({sichtbar: !data.sichtbar})}
+                            className={`shrink-0 transition-colors ${data.sichtbar ? 'text-spd-red' : 'text-gray-300 dark:text-gray-600'}`}
+                            title={data.sichtbar ? 'Ausblenden' : 'Einblenden'}>
+                        {data.sichtbar ? <ToggleRight size={36} strokeWidth={1.5}/> : <ToggleLeft size={36} strokeWidth={1.5}/>}
                     </button>
                 </div>
             </div>
@@ -270,13 +243,9 @@ export default function KommunalpolitikEditor() {
                 <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                     Beschreibung
                 </label>
-                <textarea
-                    value={data.beschreibung}
-                    onChange={e => update({beschreibung: e.target.value})}
-                    rows={3}
-                    placeholder="Kurze Beschreibung der Kommunalpolitik-Seite…"
-                    className={inputCls + ' resize-none'}
-                />
+                <textarea value={data.beschreibung} onChange={e => update({beschreibung: e.target.value})}
+                          rows={3} placeholder="Kurze Beschreibung der Kommunalpolitik-Seite…"
+                          className={inputCls + ' resize-none'}/>
             </div>
 
             {/* Jahre */}
@@ -288,11 +257,8 @@ export default function KommunalpolitikEditor() {
                             {data.jahre.length} {data.jahre.length === 1 ? 'Jahr' : 'Jahre'} angelegt
                         </p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={addJahr}
-                        className="flex items-center gap-1.5 text-xs font-semibold text-spd-red border border-spd-red/30 hover:bg-spd-red hover:text-white transition-all px-3 py-2 rounded-xl"
-                    >
+                    <button type="button" onClick={addJahr}
+                            className="flex items-center gap-1.5 text-xs font-semibold text-spd-red border border-spd-red/30 hover:bg-spd-red hover:text-white transition-all px-3 py-2 rounded-xl">
                         <Plus size={13}/> Jahr hinzufügen
                     </button>
                 </div>
@@ -306,83 +272,93 @@ export default function KommunalpolitikEditor() {
                 <AnimatePresence initial={false}>
                     {data.jahre.map((jahr) => {
                         const expanded = expandedJahrIds.has(jahr.id)
+                        const gemeinderaete = jahr.gemeinderaete ?? []
+                        const kreisraete = jahr.kreisraete ?? []
+                        const total = gemeinderaete.length + kreisraete.length
                         return (
-                            <motion.div
-                                key={jahr.id}
-                                layout
-                                initial={{opacity: 0, y: 10}}
-                                animate={{opacity: 1, y: 0}}
-                                exit={{opacity: 0, height: 0, overflow: 'hidden'}}
-                                transition={{duration: 0.2}}
-                                className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/40 rounded-2xl overflow-hidden"
-                            >
+                            <motion.div key={jahr.id} layout
+                                        initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}}
+                                        exit={{opacity: 0, height: 0, overflow: 'hidden'}}
+                                        transition={{duration: 0.2}}
+                                        className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/40 rounded-2xl overflow-hidden">
+
                                 {/* Year header */}
                                 <div className="flex items-center gap-3 px-4 py-3">
-                                    {/* Aktiv toggle */}
-                                    <button
-                                        type="button"
-                                        onClick={() => toggleJahrAktiv(jahr.id)}
-                                        title={jahr.aktiv ? 'Ausblenden' : 'Einblenden'}
-                                        className={`shrink-0 transition-colors ${jahr.aktiv ? 'text-spd-red' : 'text-gray-300 dark:text-gray-600'}`}
-                                    >
-                                        {jahr.aktiv
-                                            ? <ToggleRight size={26} strokeWidth={1.5}/>
-                                            : <ToggleLeft size={26} strokeWidth={1.5}/>
-                                        }
+                                    <button type="button" onClick={() => toggleJahrAktiv(jahr.id)}
+                                            title={jahr.aktiv ? 'Ausblenden' : 'Einblenden'}
+                                            className={`shrink-0 transition-colors ${jahr.aktiv ? 'text-spd-red' : 'text-gray-300 dark:text-gray-600'}`}>
+                                        {jahr.aktiv ? <ToggleRight size={26} strokeWidth={1.5}/> : <ToggleLeft size={26} strokeWidth={1.5}/>}
                                     </button>
 
-                                    {/* Year name */}
-                                    <input
-                                        type="text"
-                                        value={jahr.jahr}
-                                        onChange={e => updateJahrName(jahr.id, e.target.value)}
-                                        placeholder="z.B. 2024"
-                                        className="flex-1 bg-transparent border-none outline-none text-sm font-semibold text-gray-800 dark:text-gray-200 placeholder-gray-300 dark:placeholder-gray-600 min-w-0"
-                                        onClick={e => e.stopPropagation()}
-                                    />
+                                    <input type="text" value={jahr.jahr}
+                                           onChange={e => updateJahrName(jahr.id, e.target.value)}
+                                           placeholder="z.B. 2024"
+                                           className="flex-1 bg-transparent border-none outline-none text-sm font-semibold text-gray-800 dark:text-gray-200 placeholder-gray-300 dark:placeholder-gray-600 min-w-0"
+                                           onClick={e => e.stopPropagation()}/>
 
-                                    {/* Person count badge */}
                                     <span className="shrink-0 text-[11px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">
-                                        {jahr.personen.length} Person{jahr.personen.length !== 1 ? 'en' : ''}
+                                        {total} {total !== 1 ? 'Personen' : 'Person'}
                                     </span>
 
-                                    {/* Delete */}
-                                    <button
-                                        type="button"
-                                        onClick={() => removeJahr(jahr.id)}
-                                        className="shrink-0 w-7 h-7 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
-                                        title="Jahr löschen"
-                                    >
+                                    <button type="button" onClick={() => removeJahr(jahr.id)}
+                                            className="shrink-0 w-7 h-7 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                                            title="Jahr löschen">
                                         <Trash2 size={13}/>
                                     </button>
-
-                                    {/* Expand toggle */}
-                                    <button
-                                        type="button"
-                                        onClick={() => toggleExpand(jahr.id)}
-                                        className="shrink-0 w-7 h-7 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all"
-                                    >
+                                    <button type="button" onClick={() => toggleExpand(jahr.id)}
+                                            className="shrink-0 w-7 h-7 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all">
                                         {expanded ? <ChevronUp size={13}/> : <ChevronDown size={13}/>}
                                     </button>
                                 </div>
 
-                                {/* Persons editor */}
+                                {/* Gemeinderäte + Kreisräte editors */}
                                 <AnimatePresence initial={false}>
                                     {expanded && (
-                                        <motion.div
-                                            initial={{height: 0, opacity: 0}}
-                                            animate={{height: 'auto', opacity: 1}}
-                                            exit={{height: 0, opacity: 0}}
-                                            transition={{duration: 0.25, ease: 'easeInOut'}}
-                                            className="overflow-hidden border-t border-gray-200/50 dark:border-gray-700/40"
-                                        >
-                                            <div className="p-4">
-                                                <ArrayEditor
-                                                    fields={PERSON_FIELDS}
-                                                    data={jahr.personen as unknown as Record<string, unknown>[]}
-                                                    tabKey="kommunalpolitik"
-                                                    onStructureChange={newPersonen => updatePersonen(jahr.id, newPersonen)}
-                                                />
+                                        <motion.div initial={{height: 0, opacity: 0}}
+                                                    animate={{height: 'auto', opacity: 1}}
+                                                    exit={{height: 0, opacity: 0}}
+                                                    transition={{duration: 0.25, ease: 'easeInOut'}}
+                                                    className="overflow-hidden border-t border-gray-200/50 dark:border-gray-700/40">
+                                            <div className="p-4 space-y-6">
+
+                                                {/* Gemeinderäte */}
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-3">
+                                                        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                                                            Gemeinderäte
+                                                        </h4>
+                                                        <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">
+                                                            {gemeinderaete.length}
+                                                        </span>
+                                                    </div>
+                                                    <ArrayEditor
+                                                        fields={PERSON_FIELDS}
+                                                        data={gemeinderaete as unknown as Record<string, unknown>[]}
+                                                        tabKey="kommunalpolitik"
+                                                        onStructureChange={p => updateSection(jahr.id, 'gemeinderaete', p)}
+                                                    />
+                                                </div>
+
+                                                <div className="border-t border-gray-200/50 dark:border-gray-700/40"/>
+
+                                                {/* Kreisräte */}
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-3">
+                                                        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                                                            Kreisräte
+                                                        </h4>
+                                                        <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">
+                                                            {kreisraete.length}
+                                                        </span>
+                                                    </div>
+                                                    <ArrayEditor
+                                                        fields={PERSON_FIELDS}
+                                                        data={kreisraete as unknown as Record<string, unknown>[]}
+                                                        tabKey="kommunalpolitik"
+                                                        onStructureChange={p => updateSection(jahr.id, 'kreisraete', p)}
+                                                    />
+                                                </div>
+
                                             </div>
                                         </motion.div>
                                     )}

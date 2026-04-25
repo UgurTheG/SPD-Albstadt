@@ -60,10 +60,10 @@ export function collectImagePaths(tabConfig: {
         const jahre = (data as Record<string, unknown>).jahre
         if (Array.isArray(jahre)) {
             for (const jahr of jahre) {
-                const personen = (jahr as Record<string, unknown>).personen
-                if (Array.isArray(personen)) {
-                    scanFields([{key: 'bildUrl', type: 'image'}], personen as Record<string, unknown>[])
-                }
+                const j = jahr as Record<string, unknown>
+                const imgField = [{key: 'bildUrl', type: 'image'}]
+                if (Array.isArray(j.gemeinderaete)) scanFields(imgField, j.gemeinderaete as Record<string, unknown>[])
+                if (Array.isArray(j.kreisraete)) scanFields(imgField, j.kreisraete as Record<string, unknown>[])
             }
         }
     } else if (tabConfig.type === 'array' && tabConfig.fields) {
