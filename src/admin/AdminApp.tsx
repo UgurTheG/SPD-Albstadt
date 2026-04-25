@@ -117,6 +117,19 @@ export default function AdminApp() {
         document.documentElement.classList.toggle('dark', darkMode)
     }, [darkMode])
 
+    // Warn before browser refresh / tab close when there are unsaved changes
+    const pendingUploads = useAdminStore(s => s.pendingUploads)
+    useEffect(() => {
+        const hasChanges = dirty.size > 0 || pendingUploads.length > 0
+        if (!hasChanges) return
+        const handler = (e: BeforeUnloadEvent) => {
+            e.preventDefault()
+            e.returnValue = ''
+        }
+        window.addEventListener('beforeunload', handler)
+        return () => window.removeEventListener('beforeunload', handler)
+    }, [dirty, pendingUploads])
+
     // Warn before closing/refreshing with unsaved changes
     useEffect(() => {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {

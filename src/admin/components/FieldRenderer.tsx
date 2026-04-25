@@ -236,7 +236,22 @@ function ImageField({field, value, onChange, contextItem}: {
 }) {
     const addPendingUpload = useAdminStore(s => s.addPendingUpload)
     const setStatus = useAdminStore(s => s.setStatus)
-    const [preview, setPreview] = useState(value || '')
+    const pendingUploads = useAdminStore(s => s.pendingUploads)
+    // Always-current ref so resolvePreview never needs to be in useEffect deps
+    const pendingUploadsRef = useRef(pendingUploads)
+    pendingUploadsRef.current = pendingUploads
+
+    // Returns the base64 data URI if this URL is a pending (not-yet-uploaded) image,
+    // otherwise returns the URL itself. Fixes preview loss on component remount.
+    const resolvePreview = (url: string) => {
+        if (!url) return ''
+        const match = pendingUploadsRef.current.find(
+            u => u.ghPath.replace(/^public/, '') === url
+        )
+        return match ? `data:image/webp;base64,${match.base64}` : url
+    }
+
+    const [preview, setPreview] = useState(() => resolvePreview(value || ''))
     const [cropFile, setCropFile] = useState<File | null>(null)
     const fileRef = useRef<HTMLInputElement>(null)
     // Tracks the public URL of a pending upload so we don't overwrite its
@@ -247,8 +262,8 @@ function ImageField({field, value, onChange, contextItem}: {
         // Don't replace the local base64 preview with the (not-yet-uploaded) URL
         if (pendingUrlRef.current && value === pendingUrlRef.current) return
         pendingUrlRef.current = null
-        setPreview(value || '')
-    }, [value])
+        setPreview(resolvePreview(value || ''))
+    }, [value]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleCrop = (base64: string | null) => {
         setCropFile(null)
