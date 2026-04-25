@@ -22,7 +22,7 @@ export interface TabConfig {
     label: string
     file: string | null
     ghPath: string | null
-    type: 'array' | 'object' | 'haushaltsreden'
+    type: 'array' | 'object' | 'haushaltsreden' | 'kommunalpolitik'
     fields?: FieldConfig[]
     topFields?: FieldConfig[]
     sections?: SectionConfig[]

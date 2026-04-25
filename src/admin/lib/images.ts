@@ -56,7 +56,17 @@ export function collectImagePaths(tabConfig: {
         }
     }
 
-    if (tabConfig.type === 'array' && tabConfig.fields) {
+    if (tabConfig.type === 'kommunalpolitik') {
+        const jahre = (data as Record<string, unknown>).jahre
+        if (Array.isArray(jahre)) {
+            for (const jahr of jahre) {
+                const j = jahr as Record<string, unknown>
+                const imgField = [{key: 'bildUrl', type: 'image'}]
+                if (Array.isArray(j.gemeinderaete)) scanFields(imgField, j.gemeinderaete as Record<string, unknown>[])
+                if (Array.isArray(j.kreisraete)) scanFields(imgField, j.kreisraete as Record<string, unknown>[])
+            }
+        }
+    } else if (tabConfig.type === 'array' && tabConfig.fields) {
         scanFields(tabConfig.fields, data as unknown as Record<string, unknown>[])
     } else {
         if (tabConfig.topFields) {

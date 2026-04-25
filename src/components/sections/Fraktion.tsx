@@ -1,6 +1,6 @@
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {motion, useInView} from 'framer-motion'
-import {ExternalLink, FileDown} from 'lucide-react'
+import {FileDown} from 'lucide-react'
 import {fetchData, useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import PersonSheet from '../PersonSheet'
@@ -246,43 +246,6 @@ export default function Fraktion() {
           )}
         </motion.div>
 
-        {/* Flyer */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.6 }}
-        >
-          <p className="text-2xl font-black text-gray-900 dark:text-white mb-8">Kommunalwahl 2024 – Flyer</p>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {[
-              { label: 'Gemeinderatsliste 2024', file: 'SPD_Albstadt_Flyer_Kommunalwahl_2024_Gemeinderat.pdf' },
-              { label: 'Kreistagsliste 2024',    file: 'SPD_Albstadt_Flyer_Kommunalwahl__2024_Kreistag.pdf' },
-            ].map(({ label, file }) => (
-              <a
-                key={file}
-                href={`/documents/fraktion/flyer/${file}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center gap-4 p-5
-                           bg-white dark:bg-gray-800/60 rounded-2xl
-                           border border-gray-100 dark:border-gray-800/80
-                           shadow-sm dark:shadow-black/20
-                           hover:shadow-lg
-                           hover:-translate-y-0.5
-                           transition-all duration-400"
-              >
-                <div className="w-12 h-12 bg-spd-red/8 dark:bg-spd-red/12 rounded-xl flex items-center justify-center shrink-0">
-                  <FileDown size={20} className="text-spd-red" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-gray-900 dark:text-white text-sm leading-snug">{label}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">PDF herunterladen</p>
-                </div>
-                <ExternalLink size={14} className="text-gray-300 dark:text-gray-600 shrink-0" />
-              </a>
-            ))}
-          </div>
-        </motion.div>
       </div>
 
 

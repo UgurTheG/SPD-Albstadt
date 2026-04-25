@@ -8,6 +8,7 @@ import {TABS} from '../config/tabs'
 const Aktuelles = lazy(() => import('../../components/sections/Aktuelles'))
 const Partei = lazy(() => import('../../components/sections/Partei'))
 const Fraktion = lazy(() => import('../../components/sections/Fraktion'))
+const Kommunalpolitik = lazy(() => import('../../components/sections/Kommunalpolitik'))
 const Historie = lazy(() => import('../../components/sections/Historie'))
 const Kontakt = lazy(() => import('../../components/sections/Kontakt'))
 
@@ -19,6 +20,7 @@ const TAB_PREVIEW_MAP: Record<string, {
     news: {Component: Aktuelles as any, label: 'Aktuelles'},
     party: {Component: Partei as any, label: 'Partei'},
     fraktion: {Component: Fraktion as any, label: 'Fraktion'},
+    kommunalpolitik: {Component: Kommunalpolitik as any, label: 'Kommunalpolitik'},
     history: {Component: Historie as any, label: 'Historie'},
     config: {Component: Kontakt as any, label: 'Kontakt'},
 }

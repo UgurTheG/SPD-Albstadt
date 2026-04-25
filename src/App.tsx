@@ -11,6 +11,7 @@ const Aktuelles   = lazy(() => import('./components/sections/Aktuelles'))
 const Partei      = lazy(() => import('./components/sections/Partei'))
 const Fraktion    = lazy(() => import('./components/sections/Fraktion'))
 const Historie    = lazy(() => import('./components/sections/Historie'))
+const Kommunalpolitik = lazy(() => import('./components/sections/Kommunalpolitik'))
 const Kontakt     = lazy(() => import('./components/sections/Kontakt'))
 const Datenschutz = lazy(() => import('./components/sections/Datenschutz'))
 const Impressum   = lazy(() => import('./components/sections/Impressum'))
@@ -19,8 +20,9 @@ const ErrorPage = lazy(() => import('./components/sections/ErrorPage'))
 const PAGE_TITLES: Record<string, string> = {
   '/':            'SPD Albstadt',
   '/aktuelles':   'SPD Albstadt / Aktuelles',
-  '/partei':      'SPD Albstadt / Partei',
-  '/fraktion':    'SPD Albstadt / Fraktion',
+  '/partei':           'SPD Albstadt / Partei',
+  '/fraktion':         'SPD Albstadt / Fraktion',
+  '/kommunalpolitik':  'SPD Albstadt / Kommunalpolitik',
   '/historie':    'SPD Albstadt / Historie',
   '/kontakt':     'SPD Albstadt / Kontakt',
   '/datenschutz': 'SPD Albstadt / Datenschutz',
@@ -30,7 +32,7 @@ const PAGE_TITLES: Record<string, string> = {
 // Direction: 1 = going deeper, -1 = going back to home
 const DEPTH: Record<string, number> = {
   '/': 0, '/aktuelles': 1, '/partei': 1, '/fraktion': 1,
-  '/historie': 1, '/kontakt': 1, '/datenschutz': 1, '/impressum': 1,
+  '/kommunalpolitik': 1, '/historie': 1, '/kontakt': 1, '/datenschutz': 1, '/impressum': 1,
 }
 
 export default function App() {
@@ -125,6 +127,7 @@ export default function App() {
               <Route path="/aktuelles"   element={<><Aktuelles /><Footer navigateTo={navigateTo} /></>} />
               <Route path="/partei"      element={<><Partei /><Footer navigateTo={navigateTo} /></>} />
               <Route path="/fraktion"    element={<><Fraktion /><Footer navigateTo={navigateTo} /></>} />
+              <Route path="/kommunalpolitik" element={<><Kommunalpolitik /><Footer navigateTo={navigateTo} /></>} />
               <Route path="/historie"    element={<><Historie /><Footer navigateTo={navigateTo} /></>} />
               <Route path="/kontakt"     element={<><Kontakt /><Footer navigateTo={navigateTo} /></>} />
               <Route path="/datenschutz" element={<><Datenschutz /><Footer navigateTo={navigateTo} /></>} />

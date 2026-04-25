@@ -1,6 +1,7 @@
 import {useState} from 'react'
 import {AnimatePresence, motion} from 'framer-motion'
 import {ChevronLeft, Menu, Moon, Sun, X} from 'lucide-react'
+import {useData} from '../hooks/useData'
 
 interface NavbarProps {
   darkMode: boolean
@@ -9,10 +10,11 @@ interface NavbarProps {
   activePage: string
 }
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { id: 'aktuelles', label: 'Aktuelles' },
   { id: 'partei', label: 'Partei' },
   { id: 'fraktion', label: 'Fraktion' },
+  { id: 'kommunalpolitik', label: 'Kommunalpolitik' },
   { id: 'historie', label: 'Historie' },
   { id: 'kontakt', label: 'Kontakt' },
 ]
@@ -21,6 +23,7 @@ const SECTION_LABELS: Record<string, string> = {
   aktuelles: 'Aktuelles',
   partei: 'Partei',
   fraktion: 'Fraktion',
+  kommunalpolitik: 'Kommunalpolitik',
   historie: 'Historie',
   kontakt: 'Kontakt',
   datenschutz: 'Datenschutz',
@@ -30,6 +33,10 @@ const SECTION_LABELS: Record<string, string> = {
 export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePage }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const isHome = activePage === 'home'
+  const {data: kpData} = useData<{sichtbar?: boolean}>('/data/kommunalpolitik.json')
+  const navItems = BASE_NAV_ITEMS.filter(
+    item => item.id !== 'kommunalpolitik' || kpData?.sichtbar === true
+  )
 
   const handleNav = (id: string) => {
     navigateTo(id)
@@ -98,7 +105,7 @@ export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePag
                   <ChevronLeft size={14} />
                   Home
                 </button>
-                {NAV_ITEMS.map(item => (
+                {navItems.map(item => (
                   <button
                     key={item.id}
                     onClick={() => handleNav(item.id)}
@@ -174,7 +181,7 @@ export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePag
                   Startseite
                 </motion.button>
               )}
-              {NAV_ITEMS.map((item, i) => (
+              {navItems.map((item, i) => (
                 <motion.button
                   key={item.id}
                   initial={{ opacity: 0, x: -16 }}
