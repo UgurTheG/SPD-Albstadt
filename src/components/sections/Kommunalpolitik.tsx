@@ -122,7 +122,7 @@ export default function Kommunalpolitik() {
                       key={p.name}
                       name={p.name}
                       bildUrl={p.bildUrl}
-                      label={p.rolle}
+                      label={p.rolle ? `#${i + 1} · ${p.rolle}` : `#${i + 1}`}
                       onClick={() => setSelectedPerson({...p, listenplatz: i + 1})}
                     />
                   ))}
@@ -157,7 +157,7 @@ export default function Kommunalpolitik() {
                       key={p.name}
                       name={p.name}
                       bildUrl={p.bildUrl}
-                      label={p.rolle}
+                      label={p.rolle ? `#${i + 1} · ${p.rolle}` : `#${i + 1}`}
                       onClick={() => setSelectedPerson({...p, listenplatz: i + 1})}
                     />
                   ))}
