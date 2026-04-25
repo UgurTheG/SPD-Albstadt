@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react'
 import {useLocation, useNavigate} from 'react-router-dom'
 import {motion, useInView} from 'framer-motion'
-import {FileText} from 'lucide-react'
+import {FileDown} from 'lucide-react'
 import {useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import PersonSheet, {type PersonSheetData} from '../PersonSheet'
@@ -177,27 +177,43 @@ export default function Kommunalpolitik() {
             {/* Dokumente */}
             {dokumente.length > 0 && (
               <motion.div
-                initial={{opacity: 0, y: 16}}
+                initial={{opacity: 0, y: 24}}
                 animate={isInView ? {opacity: 1, y: 0} : {}}
-                transition={{delay: 0.35}}
+                transition={{delay: 0.35, duration: 0.5}}
                 className="mb-16"
               >
-                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4">
-                  Dokumente {activeJahr.jahr}
+                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">
+                  Dokumente
                 </h3>
-                <div className="flex flex-wrap gap-3">
-                  {dokumente.map(dok => (
-                    <a
-                      key={dok.id}
-                      href={dok.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-spd-red/40 hover:bg-spd-red/5 dark:hover:bg-spd-red/10 transition-all text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-spd-red dark:hover:text-spd-red shadow-sm hover:shadow-md"
-                    >
-                      <FileText size={15} className="shrink-0 text-spd-red"/>
-                      {dok.titel}
-                    </a>
-                  ))}
+                <p className="text-2xl font-black text-gray-900 dark:text-white mb-8">
+                  {activeJahr.jahr}
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {dokumente.map(dok => {
+                    const ext = dok.url.split('.').pop()?.toUpperCase() ?? 'DOK'
+                    return (
+                      <a
+                        key={dok.id}
+                        href={dok.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex flex-col items-center gap-2.5 p-4
+                                   bg-white dark:bg-gray-800/60 rounded-2xl
+                                   border border-gray-100 dark:border-gray-800/80
+                                   shadow-sm dark:shadow-black/20
+                                   hover:shadow-lg hover:-translate-y-0.5
+                                   transition-all duration-300"
+                      >
+                        <div className="w-10 h-10 bg-spd-red/8 dark:bg-spd-red/12 rounded-xl flex items-center justify-center">
+                          <FileDown size={18} className="text-spd-red"/>
+                        </div>
+                        <div className="text-center">
+                          <p className="font-black text-gray-900 dark:text-white text-sm leading-tight line-clamp-2">{dok.titel}</p>
+                          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 font-medium uppercase tracking-wider">{ext}</p>
+                        </div>
+                      </a>
+                    )
+                  })}
                 </div>
               </motion.div>
             )}
