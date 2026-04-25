@@ -239,8 +239,14 @@ function ImageField({field, value, onChange, contextItem}: {
     const [preview, setPreview] = useState(value || '')
     const [cropFile, setCropFile] = useState<File | null>(null)
     const fileRef = useRef<HTMLInputElement>(null)
+    // Tracks the public URL of a pending upload so we don't overwrite its
+    // base64 preview when the value prop updates to that same URL.
+    const pendingUrlRef = useRef<string | null>(null)
 
     useEffect(() => {
+        // Don't replace the local base64 preview with the (not-yet-uploaded) URL
+        if (pendingUrlRef.current && value === pendingUrlRef.current) return
+        pendingUrlRef.current = null
         setPreview(value || '')
     }, [value])
 
@@ -254,6 +260,7 @@ function ImageField({field, value, onChange, contextItem}: {
         const imageDir = field.imageDir || 'news'
         const ghFilePath = `public/images/${imageDir}/${nameSlug}.webp`
         const publicUrl = `/images/${imageDir}/${nameSlug}.webp`
+        pendingUrlRef.current = publicUrl
         addPendingUpload({ghPath: ghFilePath, base64, message: `admin: Bild ${nameSlug}.webp hochgeladen`})
         onChange(publicUrl)
         setPreview(`data:image/webp;base64,${base64}`)

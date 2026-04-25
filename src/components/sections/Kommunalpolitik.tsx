@@ -1,8 +1,9 @@
-import {useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
+import {useNavigate} from 'react-router-dom'
 import {motion, useInView} from 'framer-motion'
 import {useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
-import PersonSheet from '../PersonSheet'
+import PersonSheet, {type PersonSheetData} from '../PersonSheet'
 import PersonCard, {personCardContainerVariants} from '../PersonCard'
 import SectionHeader from '../SectionHeader'
 
@@ -12,7 +13,6 @@ interface KommunalpolitikPerson {
   bildUrl?: string
   email?: string
   bio?: string
-  listenplatz?: string | number
   stadt?: string
 }
 
@@ -33,9 +33,14 @@ interface KommunalpolitikData {
 export default function Kommunalpolitik() {
   const ref = useRef(null)
   const isInView = useInView(ref, {once: true, margin: '-80px'})
+  const navigate = useNavigate()
   const {data, error} = useData<KommunalpolitikData>('/data/kommunalpolitik.json')
   useHttpErrorRedirect(error)
-  const [selectedPerson, setSelectedPerson] = useState<KommunalpolitikPerson | null>(null)
+  const [selectedPerson, setSelectedPerson] = useState<PersonSheetData | null>(null)
+
+  useEffect(() => {
+    if (data?.sichtbar === false) navigate('/', {replace: true})
+  }, [data, navigate])
 
   const aktiveJahre = data?.jahre.filter(j => j.aktiv) ?? []
   const [activeJahrId, setActiveJahrId] = useState<string | null>(null)
@@ -109,13 +114,13 @@ export default function Kommunalpolitik() {
                   animate={isInView ? 'visible' : 'hidden'}
                   className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
                 >
-                  {gemeinderaete.map(p => (
+                  {gemeinderaete.map((p, i) => (
                     <PersonCard
                       key={p.name}
                       name={p.name}
                       bildUrl={p.bildUrl}
                       label={p.rolle}
-                      onClick={() => setSelectedPerson(p)}
+                      onClick={() => setSelectedPerson({...p, listenplatz: i + 1})}
                     />
                   ))}
                 </motion.div>
@@ -144,13 +149,13 @@ export default function Kommunalpolitik() {
                   animate={isInView ? 'visible' : 'hidden'}
                   className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
                 >
-                  {kreisraete.map(p => (
+                  {kreisraete.map((p, i) => (
                     <PersonCard
                       key={p.name}
                       name={p.name}
                       bildUrl={p.bildUrl}
                       label={p.rolle}
-                      onClick={() => setSelectedPerson(p)}
+                      onClick={() => setSelectedPerson({...p, listenplatz: i + 1})}
                     />
                   ))}
                 </motion.div>
