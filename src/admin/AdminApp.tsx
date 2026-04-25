@@ -6,6 +6,7 @@ import {
     FileText,
     Landmark,
     Loader2,
+    MapPin,
     ScrollText,
     LogOut,
     Menu,
@@ -25,6 +26,7 @@ import {TABS} from './config/tabs'
 import LoginScreen from './components/LoginScreen'
 import TabEditor from './components/TabEditor'
 import HaushaltsredenEditor from './components/HaushaltsredenEditor'
+import KommunalpolitikEditor from './components/KommunalpolitikEditor'
 import GlobalDiffModal from './components/GlobalDiffModal'
 import PublishConfirmModal from './components/PublishConfirmModal'
 import OrphanModal from './components/OrphanModal'
@@ -33,6 +35,7 @@ const TAB_ICON_MAP: Record<string, React.ReactNode> = {
     news: <Newspaper size={18}/>,
     party: <Users size={18}/>,
     fraktion: <Building2 size={18}/>,
+    kommunalpolitik: <MapPin size={18}/>,
     haushaltsreden: <ScrollText size={18}/>,
     history: <Landmark size={18}/>,
     impressum: <FileText size={18}/>,
@@ -398,6 +401,8 @@ export default function AdminApp() {
                                 </div>
                             ) : currentTab.type === 'haushaltsreden' ? (
                                 <HaushaltsredenEditor/>
+                            ) : currentTab.type === 'kommunalpolitik' ? (
+                                <KommunalpolitikEditor/>
                             ) : (
                                 <TabEditor tab={currentTab}/>
                             )}

@@ -105,6 +105,14 @@ export const TABS: TabConfig[] = [
         ]
     },
     {
+        key: 'kommunalpolitik',
+        label: 'Kommunalpolitik',
+        file: '/data/kommunalpolitik.json',
+        ghPath: 'public/data/kommunalpolitik.json',
+        type: 'kommunalpolitik',
+        previewPath: '/kommunalpolitik',
+    },
+    {
         key: 'haushaltsreden', label: 'Haushaltsreden', type: 'haushaltsreden',
         file: null, ghPath: null,
     },

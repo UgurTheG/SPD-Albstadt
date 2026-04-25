@@ -1,18 +1,26 @@
 import {useRef} from 'react'
 import {motion, useScroll, useTransform} from 'framer-motion'
 import {ChevronDown, UserPlus} from 'lucide-react'
+import {useData} from '../hooks/useData'
 
 interface HeroProps {
   navigateTo: (id: string) => void
 }
-const NAV_ITEMS = [
+
+const BASE_NAV_ITEMS = [
   { id: 'aktuelles', label: 'Aktuelles' },
   { id: 'partei', label: 'Partei' },
   { id: 'fraktion', label: 'Fraktion' },
+  { id: 'kommunalpolitik', label: 'Kommunalpolitik' },
   { id: 'historie', label: 'Historie' },
   { id: 'kontakt', label: 'Kontakt' },
 ]
+
 export default function Hero({ navigateTo }: HeroProps) {
+  const {data: kpData} = useData<{sichtbar?: boolean}>('/data/kommunalpolitik.json')
+  const navItems = BASE_NAV_ITEMS.filter(
+    item => item.id !== 'kommunalpolitik' || kpData?.sichtbar === true
+  )
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -89,7 +97,7 @@ export default function Hero({ navigateTo }: HeroProps) {
           transition={{duration: 0.7, delay: 0.4, ease: 'easeOut'}}
           className="flex flex-wrap justify-center gap-2.5 mb-8"
         >
-          {NAV_ITEMS.map((item, i) => (
+          {navItems.map((item, i) => (
             <motion.button
               key={item.id}
               initial={{ opacity: 0, y: 10 }}
