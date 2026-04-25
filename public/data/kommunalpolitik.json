@@ -6,15 +6,7 @@
       "id": "3e838de1-e8b4-45c9-9d86-4978a4504076",
       "jahr": "2026",
       "aktiv": false,
-      "gemeinderaete": [
-        {
-          "name": "Ugur Gündüz",
-          "rolle": "Test",
-          "bildUrl": "/images/kommunalpolitik/ugur-guenduez-1777154298448.webp",
-          "email": "ugurg@outlook.de",
-          "bio": "Fkflflf"
-        }
-      ],
+      "gemeinderaete": [],
       "kreisraete": []
     }
   ]
