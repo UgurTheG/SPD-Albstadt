@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from 'react'
-import {useNavigate} from 'react-router-dom'
+import {useLocation, useNavigate} from 'react-router-dom'
 import {motion, useInView} from 'framer-motion'
 import {useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
@@ -34,13 +34,16 @@ export default function Kommunalpolitik() {
   const ref = useRef(null)
   const isInView = useInView(ref, {once: true, margin: '-80px'})
   const navigate = useNavigate()
+  const location = useLocation()
   const {data, error} = useData<KommunalpolitikData>('/data/kommunalpolitik.json')
   useHttpErrorRedirect(error)
   const [selectedPerson, setSelectedPerson] = useState<PersonSheetData | null>(null)
 
   useEffect(() => {
-    if (data?.sichtbar === false) navigate('/', {replace: true})
-  }, [data, navigate])
+    if (data?.sichtbar === false && !location.pathname.startsWith('/admin')) {
+      navigate('/', {replace: true})
+    }
+  }, [data, navigate, location.pathname])
 
   const aktiveJahre = data?.jahre.filter(j => j.aktiv) ?? []
   const [activeJahrId, setActiveJahrId] = useState<string | null>(null)
