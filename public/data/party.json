@@ -4,7 +4,8 @@
     {
       "titel": "Bildung und Jugend",
       "beschreibung": "Gute Bildung für alle Kinder – unabhängig von Herkunft oder Geldbeutel. Wir investieren in Kitas, Schulen und Jugendzentren.",
-      "icon": "GraduationCap"
+      "icon": "GraduationCap",
+      "inhalt": "Test"
     },
     {
       "titel": "Soziales und Wohnen",
