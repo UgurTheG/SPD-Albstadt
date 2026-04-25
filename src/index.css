@@ -79,12 +79,18 @@ html.dark body {
 }
 
 /* ── Elfsight Instagram post popup – dark mode overrides ──────
-   Targets the popup that opens when a user taps an Instagram post.
    data-elfsight-app-theme covers Elfsight's own theming; these rules
-   handle the popup backgrounds/text as a reliable fallback.          */
+   are a reliable CSS fallback for the popup opened on post tap.       */
+
+/* Base: dark background, light text, ALL borders dark */
 .dark [class*="eapps-instagram-feed-popup"] {
   background-color: #0f172a !important;
   color: #e2e8f0 !important;
+}
+/* Force every border inside the popup to dark — fixes the white top line */
+.dark [class*="eapps-instagram-feed-popup"],
+.dark [class*="eapps-instagram-feed-popup"] * {
+  border-color: #1e293b !important;
 }
 .dark [class*="eapps-instagram-feed-popup-inner"],
 .dark [class*="eapps-instagram-feed-popup-frame"],
@@ -94,19 +100,18 @@ html.dark body {
 }
 .dark [class*="eapps-instagram-feed-popup-header"] {
   background-color: #1e293b !important;
-  border-bottom-color: #334155 !important;
 }
 .dark [class*="eapps-instagram-feed-popup-footer"] {
   background-color: #1e293b !important;
-  border-top-color: #334155 !important;
   color: #e2e8f0 !important;
 }
-/* Username in SPD red */
+/* Username → white */
 .dark [class*="eapps-instagram-feed-popup"] [class*="username"],
 .dark [class*="eapps-instagram-feed-popup"] [class*="user-name"],
 .dark [class*="eapps-instagram-feed-popup"] [class*="handle"] {
-  color: #E3000F !important;
+  color: #ffffff !important;
 }
+/* Body text */
 .dark [class*="eapps-instagram-feed-popup"] [class*="caption"],
 .dark [class*="eapps-instagram-feed-popup"] [class*="likes"],
 .dark [class*="eapps-instagram-feed-popup"] [class*="date"],
@@ -118,6 +123,7 @@ html.dark body {
 .dark [class*="eapps-instagram-feed-popup"] span:not([class*="follow"]):not([class*="btn"]) {
   color: #e2e8f0 !important;
 }
+/* Nav arrows / close button */
 .dark [class*="eapps-instagram-feed-popup-arrow"] {
   background-color: rgba(30, 41, 59, 0.85) !important;
   color: #e2e8f0 !important;
@@ -126,22 +132,21 @@ html.dark body {
   background-color: rgba(30, 41, 59, 0.85) !important;
   color: #e2e8f0 !important;
 }
-/* White separator line between sections → dark */
-.dark [class*="eapps-instagram-feed-popup"] hr,
-.dark [class*="eapps-instagram-feed-popup"] [class*="divider"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="separator"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="line"]:not([class*="slider"]) {
-  border-color: #334155 !important;
-  background-color: #334155 !important;
-}
-/* Carousel: hide the blue progress bar, keep only the dots */
-.dark [class*="eapps-instagram-feed-popup"] [class*="slider-line"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="progress-line"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="slider-track"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="progress-track"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="progress-bar"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="track"]:not([class*="dot"]) {
+/* Carousel progress bar/track → transparent, dots remain visible.
+   Cast a wide net across every possible Elfsight class name variant. */
+.dark [class*="eapps-instagram-feed-popup"] [class*="slider"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="progress"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="track"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="indicator"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="pagination"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="pager"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="scrollbar"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="scroll-bar"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="bullet-bar"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="dots-line"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="nav-line"] {
   background-color: transparent !important;
   border-color: transparent !important;
+  box-shadow: none !important;
 }
 
