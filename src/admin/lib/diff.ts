@@ -249,6 +249,75 @@ export function diffTab(
     const out: ChangeEntry[] = []
     if (tab.type === 'haushaltsreden') return out
 
+    if (tab.type === 'kommunalpolitik') {
+        const orig = (original ?? {}) as Record<string, unknown>
+        const curr = (current ?? {}) as Record<string, unknown>
+
+        const topFields: FieldConfig[] = [
+            {key: 'sichtbar', label: 'Auf Homepage anzeigen', type: 'toggle'},
+            {key: 'beschreibung', label: 'Beschreibung', type: 'textarea'},
+        ]
+        diffFields(topFields, orig, curr, [], 'Allgemein', undefined, undefined, undefined, out)
+
+        const personFields: FieldConfig[] = [
+            {key: 'name', label: 'Name', type: 'text'},
+            {key: 'rolle', label: 'Rolle / Amt', type: 'text'},
+            {key: 'bildUrl', label: 'Profilbild', type: 'image'},
+            {key: 'email', label: 'E-Mail', type: 'email'},
+            {key: 'bio', label: 'Biografie', type: 'textarea'},
+        ]
+        const jahrFields: FieldConfig[] = [
+            {key: 'aktiv', label: 'Aktiv', type: 'toggle'},
+            {key: 'jahr', label: 'Jahrbezeichnung', type: 'text'},
+        ]
+
+        const origJahre = Array.isArray(orig.jahre) ? orig.jahre as Record<string, unknown>[] : []
+        const currJahre = Array.isArray(curr.jahre) ? curr.jahre as Record<string, unknown>[] : []
+        const origById = new Map(origJahre.map((j, i) => [j.id as string, {j, i}]))
+        const currById = new Map(currJahre.map((j, i) => [j.id as string, {j, i}]))
+
+        for (const [id, {j, i}] of currById) {
+            if (!origById.has(id)) {
+                out.push({id: `jahre.${i}:added`, path: ['jahre', i], kind: 'added', group: 'Jahre', groupKey: 'jahre', itemIndex: i, itemLabel: (j.jahr as string) || `Jahr ${i + 1}`, after: j})
+            }
+        }
+        for (const [id, {j, i}] of origById) {
+            if (!currById.has(id)) {
+                out.push({id: `jahre.${i}:removed:${i}`, path: ['jahre', i], kind: 'removed', group: 'Jahre', groupKey: 'jahre', itemIndex: i, originalIndex: i, itemLabel: (j.jahr as string) || `Jahr ${i + 1}`, before: j})
+            }
+        }
+        for (const [id, {j: currJ, i: ci}] of currById) {
+            const origEntry = origById.get(id)
+            if (!origEntry) continue
+            const {j: origJ} = origEntry
+            const lbl = (currJ.jahr as string) || `Jahr ${ci + 1}`
+            diffFields(jahrFields, origJ, currJ, ['jahre', ci], lbl, `jahre.${id}`, ci, lbl, out)
+            diffArray(personFields, origJ.gemeinderaete as Record<string, unknown>[] | undefined, currJ.gemeinderaete as Record<string, unknown>[] | undefined, ['jahre', ci, 'gemeinderaete'], `${lbl} – Gemeinderäte`, `jahre.${id}.gemeinderaete`, out)
+            diffArray(personFields, origJ.kreisraete as Record<string, unknown>[] | undefined, currJ.kreisraete as Record<string, unknown>[] | undefined, ['jahre', ci, 'kreisraete'], `${lbl} – Kreisräte`, `jahre.${id}.kreisraete`, out)
+        }
+
+        if (pendingImagePaths && pendingImagePaths.size > 0) {
+            for (const {j: currJ, i: ci} of currById.values()) {
+                const lbl = (currJ.jahr as string) || `Jahr ${ci + 1}`;
+                ([
+                    {arr: currJ.gemeinderaete, section: 'gemeinderaete', sectionLabel: `${lbl} – Gemeinderäte`},
+                    {arr: currJ.kreisraete, section: 'kreisraete', sectionLabel: `${lbl} – Kreisräte`},
+                ] as {arr: unknown; section: string; sectionLabel: string}[]).forEach(({arr, section, sectionLabel}) => {
+                    if (!Array.isArray(arr)) return
+                    ;(arr as Record<string, unknown>[]).forEach((p, pi) => {
+                        const v = p.bildUrl
+                        if (typeof v !== 'string' || !pendingImagePaths.has(v)) return
+                        const fieldPath: ChangePath = ['jahre', ci, section, pi, 'bildUrl']
+                        const covered = new Set(out.map(e => e.path.join(' ')))
+                        if (covered.has(fieldPath.join(' '))) return
+                        out.push({id: fieldPath.join('.') + ':image-replaced', path: fieldPath, kind: 'modified', group: sectionLabel, groupKey: `jahre.${currJ.id}.${section}`, itemIndex: pi, itemLabel: (p.name as string) || `#${pi + 1}`, fieldKey: 'bildUrl', fieldLabel: 'Profilbild', fieldType: 'image', before: v, after: v, pendingImagePath: v})
+                    })
+                })
+            }
+        }
+        return out
+    }
+
     if (tab.type === 'array' && tab.fields) {
         diffArray(
             tab.fields,

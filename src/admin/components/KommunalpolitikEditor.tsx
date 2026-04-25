@@ -1,8 +1,11 @@
 import {useEffect, useState} from 'react'
 import {
+    AlertTriangle,
     ChevronDown,
     ChevronUp,
+    Download,
     Eye,
+    FileSearch,
     Loader2,
     Plus,
     Redo2,
@@ -15,9 +18,11 @@ import {
 import {AnimatePresence, motion} from 'framer-motion'
 import {useAdminStore} from '../store'
 import ArrayEditor from './ArrayEditor'
+import DiffModal from './DiffModal'
 import OrphanModal from './OrphanModal'
 import PreviewModal from './PreviewModal'
 import PublishConfirmModal from './PublishConfirmModal'
+import StickyPublishBar from './StickyPublishBar'
 import type {FieldConfig} from '../types'
 
 interface KommunalpolitikPerson {
@@ -65,9 +70,12 @@ export default function KommunalpolitikEditor() {
     const hasLoadError = useAdminStore(s => s.dataLoadErrors.includes('kommunalpolitik'))
     const isDirty = useAdminStore(s => s.dirtyTabs().has('kommunalpolitik'))
 
+    const revertTab = useAdminStore(s => s.revertTab)
+
     const [orphans, setOrphans] = useState<string[] | null>(null)
     const [showPreview, setShowPreview] = useState(false)
     const [showPublishConfirm, setShowPublishConfirm] = useState(false)
+    const [showDiff, setShowDiff] = useState(false)
     const [expandedJahrIds, setExpandedJahrIds] = useState<Set<string>>(new Set())
 
     const canUndo = (undoStacks['kommunalpolitik']?.length ?? 0) > 0
@@ -104,6 +112,16 @@ export default function KommunalpolitikEditor() {
     }
 
     const handlePublish = () => setShowPublishConfirm(true)
+
+    const handleDownload = () => {
+        const blob = new Blob([JSON.stringify(rawData, null, 2)], {type: 'application/json'})
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'kommunalpolitik.json'
+        a.click()
+        URL.revokeObjectURL(url)
+    }
 
     const handlePublishConfirmed = () => {
         setShowPublishConfirm(false)
@@ -189,9 +207,30 @@ export default function KommunalpolitikEditor() {
             )}
             {showPublishConfirm && (
                 <PublishConfirmModal
+                    tabKey="kommunalpolitik"
                     onConfirm={handlePublishConfirmed}
                     onCancel={() => setShowPublishConfirm(false)}
                 />
+            )}
+            {showDiff && (
+                <DiffModal
+                    tabKey="kommunalpolitik"
+                    onClose={() => setShowDiff(false)}
+                    onRevertAll={() => {
+                        revertTab('kommunalpolitik')
+                        setShowDiff(false)
+                    }}
+                />
+            )}
+
+            {/* Load-error banner */}
+            {hasLoadError && (
+                <div className="mb-5 flex items-start gap-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-700/40 rounded-2xl px-4 py-3">
+                    <AlertTriangle size={14} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"/>
+                    <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">
+                        Daten für diesen Tab konnten nicht geladen werden. Veröffentlichen ist gesperrt — bitte die Seite neu laden.
+                    </p>
+                </div>
             )}
 
             {/* Toolbar */}
@@ -211,6 +250,16 @@ export default function KommunalpolitikEditor() {
                     <Eye size={15}/>
                 </button>
                 <div className="flex-1"/>
+                {isDirty && (
+                    <button type="button" onClick={() => setShowDiff(true)}
+                            className="text-[10px] sm:text-xs font-medium text-amber-700 dark:text-amber-400 px-2.5 sm:px-3.5 py-2 rounded-xl border border-amber-300/60 dark:border-amber-700/40 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all flex items-center gap-1.5 sm:gap-2">
+                        <FileSearch size={13}/> <span>Änderungen</span>
+                    </button>
+                )}
+                <button type="button" onClick={handleDownload}
+                        className="text-[10px] sm:text-xs font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-2.5 sm:px-3.5 py-2 rounded-xl border border-gray-200/60 dark:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 transition-all flex items-center gap-1.5 sm:gap-2 backdrop-blur-sm bg-white/40 dark:bg-gray-800/30">
+                    <Download size={13}/> <span className="hidden sm:inline">Export</span>
+                </button>
                 <button type="button" onClick={handlePublish}
                         disabled={publishing || !isDirty || hasLoadError}
                         title={hasLoadError ? 'Daten konnten nicht geladen werden' : undefined}
@@ -368,6 +417,13 @@ export default function KommunalpolitikEditor() {
                     })}
                 </AnimatePresence>
             </div>
+
+            <StickyPublishBar
+                isDirty={isDirty && !hasLoadError}
+                publishing={publishing}
+                onPublish={handlePublish}
+                onShowDiff={() => setShowDiff(true)}
+            />
         </div>
     )
 }
