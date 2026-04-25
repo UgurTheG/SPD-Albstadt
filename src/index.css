@@ -78,3 +78,43 @@ html.dark body {
   }
 }
 
+/* ── Elfsight Instagram post popup – dark mode overrides ──────
+   Targets the popup that opens when a user taps an Instagram post.
+   data-elfsight-app-theme covers Elfsight's own theming; these rules
+   handle the popup backgrounds/text as a reliable fallback.          */
+.dark [class*="eapps-instagram-feed-popup"] {
+  background-color: #0f172a !important;
+  color: #e2e8f0 !important;
+}
+.dark [class*="eapps-instagram-feed-popup-inner"],
+.dark [class*="eapps-instagram-feed-popup-frame"],
+.dark [class*="eapps-instagram-feed-popup-body"],
+.dark [class*="eapps-instagram-feed-popup-content"] {
+  background-color: #0f172a !important;
+}
+.dark [class*="eapps-instagram-feed-popup-header"] {
+  background-color: #1e293b !important;
+  border-bottom-color: #334155 !important;
+}
+.dark [class*="eapps-instagram-feed-popup-footer"] {
+  background-color: #1e293b !important;
+  border-top-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+.dark [class*="eapps-instagram-feed-popup"] [class*="username"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="caption"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="likes"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="date"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="comments"],
+.dark [class*="eapps-instagram-feed-popup"] [class*="fullname"] {
+  color: #e2e8f0 !important;
+}
+.dark [class*="eapps-instagram-feed-popup-arrow"] {
+  background-color: rgba(30, 41, 59, 0.85) !important;
+  color: #e2e8f0 !important;
+}
+.dark [class*="eapps-instagram-feed-popup-close"] {
+  background-color: rgba(30, 41, 59, 0.85) !important;
+  color: #e2e8f0 !important;
+}
+
