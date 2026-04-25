@@ -1,4 +1,4 @@
-import { Building2, ExternalLink, Mail, MapPin, Phone } from 'lucide-react'
+import { Building2, ExternalLink, Hash, Mail, MapPin, Phone } from 'lucide-react'
 import Sheet from './Sheet'
 import PhotoGallery from './PhotoGallery'
 import { getInitials } from './Avatar'
@@ -45,6 +45,11 @@ export interface PersonSheetData {
 
   /** Committee memberships (Fraktion – Gemeinderat) */
   ausschuesse?: string[]
+
+  /** List position on ballot (Kommunalpolitik) */
+  listenplatz?: string | number
+  /** City / district (Kommunalpolitik) */
+  stadt?: string
 }
 
 interface Props {  person: PersonSheetData | null
@@ -99,9 +104,13 @@ export default function PersonSheet({ person, open, onClose }: Props) {
                 <p className="text-[11px] font-medium tracking-wide text-white/50 mb-1">{label}</p>
               )}
               <h3 className="font-black text-white text-2xl leading-snug">{person.name}</h3>
-              {person.wahlkreis && <p className="text-sm text-white/60 mt-1">{person.wahlkreis}</p>}
-              {person.jahre    && <p className="text-sm text-white/60 mt-1">{person.jahre}</p>}
-              {person.seit     && <p className="text-sm text-white/60 mt-1">seit {person.seit}</p>}
+              {person.wahlkreis   && <p className="text-sm text-white/60 mt-1">{person.wahlkreis}</p>}
+              {person.jahre       && <p className="text-sm text-white/60 mt-1">{person.jahre}</p>}
+              {person.seit        && <p className="text-sm text-white/60 mt-1">seit {person.seit}</p>}
+              {person.listenplatz != null && (
+                <p className="text-sm text-white/60 mt-1">Listenplatz {person.listenplatz}</p>
+              )}
+              {person.stadt       && <p className="text-sm text-white/60 mt-1">{person.stadt}</p>}
             </div>
           </div>
 
@@ -120,9 +129,13 @@ export default function PersonSheet({ person, open, onClose }: Props) {
                 </p>
               )}
               <h3 className="font-black text-gray-900 dark:text-white text-xl leading-snug">{person.name}</h3>
-              {person.wahlkreis && <p className="text-sm text-gray-500 dark:text-white/60 mt-0.5">{person.wahlkreis}</p>}
-              {person.jahre    && <p className="text-sm text-gray-500 dark:text-white/60 mt-0.5">{person.jahre}</p>}
-              {person.seit     && <p className="text-sm text-gray-500 dark:text-white/60 mt-0.5">seit {person.seit}</p>}
+              {person.wahlkreis   && <p className="text-sm text-gray-500 dark:text-white/60 mt-0.5">{person.wahlkreis}</p>}
+              {person.jahre       && <p className="text-sm text-gray-500 dark:text-white/60 mt-0.5">{person.jahre}</p>}
+              {person.seit        && <p className="text-sm text-gray-500 dark:text-white/60 mt-0.5">seit {person.seit}</p>}
+              {person.listenplatz != null && (
+                <p className="text-sm text-gray-500 dark:text-white/60 mt-0.5">Listenplatz {person.listenplatz}</p>
+              )}
+              {person.stadt       && <p className="text-sm text-gray-500 dark:text-white/60 mt-0.5">{person.stadt}</p>}
             </div>
 
             <div className="w-8 h-0.5 bg-spd-red rounded-full" />
@@ -142,9 +155,31 @@ export default function PersonSheet({ person, open, onClose }: Props) {
             )}
 
             {/* Contact rows */}
-            {(person.address || person.place || person.zipCode || person.phone || person.email || person.website) && (
+            {(person.listenplatz != null || person.stadt || person.address || person.place || person.zipCode || person.phone || person.email || person.website) && (
               <div className="rounded-2xl overflow-hidden divide-y divide-gray-100 dark:divide-gray-800
                               border border-gray-100 dark:border-gray-800">
+                {person.listenplatz != null && (
+                  <div className="flex items-center gap-3.5 px-4 py-3.5">
+                    <div className="w-8 h-8 rounded-xl bg-spd-red/8 dark:bg-spd-red/12 flex items-center justify-center shrink-0">
+                      <Hash size={14} className="text-spd-red" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Listenplatz</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{person.listenplatz}</p>
+                    </div>
+                  </div>
+                )}
+                {person.stadt && (
+                  <div className="flex items-center gap-3.5 px-4 py-3.5">
+                    <div className="w-8 h-8 rounded-xl bg-spd-red/8 dark:bg-spd-red/12 flex items-center justify-center shrink-0">
+                      <Building2 size={14} className="text-spd-red" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Stadt / Ortsteil</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{person.stadt}</p>
+                    </div>
+                  </div>
+                )}
                 {person.address && (
                   <div className="flex items-center gap-3.5 px-4 py-3.5">
                     <div className="w-8 h-8 rounded-xl bg-spd-red/8 dark:bg-spd-red/12 flex items-center justify-center shrink-0">

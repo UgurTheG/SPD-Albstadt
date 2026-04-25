@@ -12,6 +12,8 @@ interface KommunalpolitikPerson {
   bildUrl?: string
   email?: string
   bio?: string
+  listenplatz?: string | number
+  stadt?: string
 }
 
 interface KommunalpolitikJahr {

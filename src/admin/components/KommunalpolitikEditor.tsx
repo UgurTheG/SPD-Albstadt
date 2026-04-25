@@ -31,6 +31,8 @@ interface KommunalpolitikPerson {
     bildUrl?: string
     email?: string
     bio?: string
+    listenplatz?: string
+    stadt?: string
 }
 
 interface KommunalpolitikJahr {
@@ -50,6 +52,8 @@ interface KommunalpolitikData {
 const PERSON_FIELDS: FieldConfig[] = [
     {key: 'name', label: 'Name', type: 'text', required: true},
     {key: 'rolle', label: 'Rolle / Amt', type: 'text'},
+    {key: 'listenplatz', label: 'Listenplatz', type: 'text'},
+    {key: 'stadt', label: 'Stadt / Ortsteil', type: 'text'},
     {key: 'bildUrl', label: 'Profilbild', type: 'image', imageDir: 'kommunalpolitik'},
     {key: 'email', label: 'E-Mail', type: 'email'},
     {key: 'bio', label: 'Biografie', type: 'textarea'},
