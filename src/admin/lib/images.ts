@@ -64,6 +64,13 @@ export function collectImagePaths(tabConfig: {
                 const imgField = [{key: 'bildUrl', type: 'image'}]
                 if (Array.isArray(j.gemeinderaete)) scanFields(imgField, j.gemeinderaete as Record<string, unknown>[])
                 if (Array.isArray(j.kreisraete)) scanFields(imgField, j.kreisraete as Record<string, unknown>[])
+                if (Array.isArray(j.dokumente)) {
+                    for (const dok of j.dokumente as Record<string, unknown>[]) {
+                        if (typeof dok.url === 'string' && dok.url.startsWith('/dokumente/')) {
+                            paths.add(dok.url)
+                        }
+                    }
+                }
             }
         }
     } else if (tabConfig.type === 'array' && tabConfig.fields) {

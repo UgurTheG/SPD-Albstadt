@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {
     AlertTriangle,
     ChevronDown,
@@ -6,6 +6,8 @@ import {
     Download,
     Eye,
     FileSearch,
+    FileUp,
+    Link as LinkIcon,
     Loader2,
     Plus,
     Redo2,
@@ -23,6 +25,7 @@ import OrphanModal from './OrphanModal'
 import PreviewModal from './PreviewModal'
 import PublishConfirmModal from './PublishConfirmModal'
 import StickyPublishBar from './StickyPublishBar'
+import {fileToBase64, slugify} from '../lib/images'
 import type {FieldConfig} from '../types'
 
 interface KommunalpolitikPerson {
@@ -34,12 +37,19 @@ interface KommunalpolitikPerson {
     stadt?: string
 }
 
+interface Dokument {
+    id: string
+    titel: string
+    url: string
+}
+
 interface KommunalpolitikJahr {
     id: string
     jahr: string
     aktiv: boolean
     gemeinderaete: KommunalpolitikPerson[]
     kreisraete: KommunalpolitikPerson[]
+    dokumente: Dokument[]
 }
 
 interface KommunalpolitikData {
@@ -142,6 +152,7 @@ export default function KommunalpolitikEditor() {
             aktiv: true,
             gemeinderaete: [],
             kreisraete: [],
+            dokumente: [],
         }
         const newJahre = [...data.jahre, newJahr]
         update({jahre: newJahre})
@@ -177,6 +188,10 @@ export default function KommunalpolitikEditor() {
                     : j
             ),
         })
+    }
+
+    const updateDokumente = (jahrId: string, dokumente: Dokument[]) => {
+        update({jahre: data.jahre.map(j => j.id === jahrId ? {...j, dokumente} : j)})
     }
 
     const toggleExpand = (id: string) => {
@@ -325,6 +340,7 @@ export default function KommunalpolitikEditor() {
                         const expanded = expandedJahrIds.has(jahr.id)
                         const gemeinderaete = jahr.gemeinderaete ?? []
                         const kreisraete = jahr.kreisraete ?? []
+                        const dokumente = jahr.dokumente ?? []
                         const total = gemeinderaete.length + kreisraete.length
                         return (
                             <motion.div key={jahr.id} layout
@@ -349,6 +365,7 @@ export default function KommunalpolitikEditor() {
 
                                     <span className="shrink-0 text-[11px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">
                                         {total} {total !== 1 ? 'Personen' : 'Person'}
+                                        {dokumente.length > 0 && ` · ${dokumente.length} ${dokumente.length !== 1 ? 'Dok.' : 'Dok.'}`}
                                     </span>
 
                                     <button type="button" onClick={() => removeJahr(jahr.id)}
@@ -410,6 +427,52 @@ export default function KommunalpolitikEditor() {
                                                     />
                                                 </div>
 
+                                                <div className="border-t border-gray-200/50 dark:border-gray-700/40"/>
+
+                                                {/* Dokumente */}
+                                                <div>
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                                                                Dokumente
+                                                            </h4>
+                                                            <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">
+                                                                {dokumente.length}
+                                                            </span>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => updateDokumente(jahr.id, [
+                                                                ...dokumente,
+                                                                {id: crypto.randomUUID?.() ?? String(Date.now()), titel: '', url: ''},
+                                                            ])}
+                                                            className="flex items-center gap-1.5 text-[11px] font-semibold text-spd-red border border-spd-red/30 hover:bg-spd-red hover:text-white transition-all px-2.5 py-1.5 rounded-lg">
+                                                            <Plus size={11}/> Hinzufügen
+                                                        </button>
+                                                    </div>
+                                                    {dokumente.length === 0 && (
+                                                        <p className="text-[11px] text-gray-400 dark:text-gray-500 text-center py-4">
+                                                            Noch keine Dokumente hinzugefügt.
+                                                        </p>
+                                                    )}
+                                                    <div className="space-y-2">
+                                                        {dokumente.map((dok) => (
+                                                            <DokumentRow
+                                                                key={dok.id}
+                                                                dok={dok}
+                                                                onChange={updated => updateDokumente(
+                                                                    jahr.id,
+                                                                    dokumente.map(d => d.id === dok.id ? updated : d),
+                                                                )}
+                                                                onRemove={() => updateDokumente(
+                                                                    jahr.id,
+                                                                    dokumente.filter(d => d.id !== dok.id),
+                                                                )}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+
                                             </div>
                                         </motion.div>
                                     )}
@@ -426,6 +489,94 @@ export default function KommunalpolitikEditor() {
                 onPublish={handlePublish}
                 onShowDiff={() => setShowDiff(true)}
             />
+        </div>
+    )
+}
+
+function DokumentRow({dok, onChange, onRemove}: {
+    dok: Dokument
+    onChange: (d: Dokument) => void
+    onRemove: () => void
+}) {
+    const fileRef = useRef<HTMLInputElement>(null)
+    const addPendingUpload = useAdminStore(s => s.addPendingUpload)
+    const setStatus = useAdminStore(s => s.setStatus)
+    const pendingUploads = useAdminStore(s => s.pendingUploads)
+    const [showUrl, setShowUrl] = useState(!dok.url)
+
+    const isPending = dok.url ? pendingUploads.some(u => u.ghPath.replace(/^public/, '') === dok.url) : false
+    const displayName = dok.url ? dok.url.split('/').pop() : null
+
+    const handleFile = async (file: File) => {
+        try {
+            const base64 = await fileToBase64(file)
+            const namePart = slugify(dok.titel || 'dokument') + '-' + Date.now()
+            const ext = file.name.includes('.') ? file.name.split('.').pop()! : 'pdf'
+            const ghPath = `public/dokumente/kommunalpolitik/${namePart}.${ext}`
+            const publicUrl = `/dokumente/kommunalpolitik/${namePart}.${ext}`
+            addPendingUpload({ghPath, base64, message: `admin: Dokument ${namePart}.${ext} hochgeladen`})
+            onChange({...dok, url: publicUrl})
+            setStatus('Dokument vorbereitet — wird beim Veröffentlichen hochgeladen', 'success')
+        } catch {
+            setStatus('Fehler beim Lesen der Datei', 'error')
+        }
+    }
+
+    return (
+        <div className="bg-white/50 dark:bg-gray-800/30 border border-gray-200/50 dark:border-gray-700/40 rounded-2xl p-3 space-y-2">
+            <div className="flex gap-2 items-center">
+                <input
+                    type="text"
+                    value={dok.titel}
+                    onChange={e => onChange({...dok, titel: e.target.value})}
+                    placeholder="Titel des Dokuments…"
+                    className={inputCls + ' flex-1 py-2'}
+                />
+                <button
+                    type="button"
+                    onClick={onRemove}
+                    className="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                    title="Entfernen">
+                    <Trash2 size={13}/>
+                </button>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+                <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    className="flex items-center gap-1.5 text-[11px] font-semibold bg-spd-red/10 text-spd-red hover:bg-spd-red/15 px-3 py-1.5 rounded-xl transition-colors">
+                    <FileUp size={11}/> {displayName ? 'Ersetzen' : 'Datei hochladen'}
+                </button>
+                {displayName && (
+                    <span className={`text-[11px] font-mono truncate max-w-[180px] ${isPending ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'}`}
+                          title={dok.url}>
+                        {isPending ? '⏳ ' : ''}{displayName}
+                    </span>
+                )}
+                <button
+                    type="button"
+                    onClick={() => setShowUrl(v => !v)}
+                    className="text-[11px] font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex items-center gap-1">
+                    <LinkIcon size={10}/> {showUrl ? 'URL ausblenden' : 'URL eingeben'}
+                </button>
+                <input ref={fileRef} type="file" accept="application/pdf,.pdf,.doc,.docx" className="hidden"
+                       onChange={e => {
+                           if (e.target.files?.[0]) void handleFile(e.target.files[0])
+                           e.target.value = ''
+                       }}/>
+            </div>
+            {showUrl && (
+                <input
+                    type="text"
+                    className={inputCls + ' font-mono text-xs'}
+                    placeholder="/dokumente/... oder https://..."
+                    value={dok.url}
+                    spellCheck={false}
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    onChange={e => onChange({...dok, url: e.target.value})}
+                />
+            )}
         </div>
     )
 }

@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from 'react'
 import {useLocation, useNavigate} from 'react-router-dom'
 import {motion, useInView} from 'framer-motion'
+import {FileText} from 'lucide-react'
 import {useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import PersonSheet, {type PersonSheetData} from '../PersonSheet'
@@ -16,12 +17,19 @@ interface KommunalpolitikPerson {
   stadt?: string
 }
 
+interface Dokument {
+  id: string
+  titel: string
+  url: string
+}
+
 interface KommunalpolitikJahr {
   id: string
   jahr: string
   aktiv: boolean
   gemeinderaete: KommunalpolitikPerson[]
   kreisraete: KommunalpolitikPerson[]
+  dokumente?: Dokument[]
 }
 
 interface KommunalpolitikData {
@@ -51,7 +59,8 @@ export default function Kommunalpolitik() {
 
   const gemeinderaete = activeJahr?.gemeinderaete ?? []
   const kreisraete = activeJahr?.kreisraete ?? []
-  const hasContent = gemeinderaete.length > 0 || kreisraete.length > 0
+  const dokumente = (activeJahr?.dokumente ?? []).filter(d => d.titel && d.url)
+  const hasContent = gemeinderaete.length > 0 || kreisraete.length > 0 || dokumente.length > 0
 
   return (
     <section id="kommunalpolitik" className="py-24 bg-white dark:bg-gray-950">
@@ -163,6 +172,34 @@ export default function Kommunalpolitik() {
                   ))}
                 </motion.div>
               </div>
+            )}
+
+            {/* Dokumente */}
+            {dokumente.length > 0 && (
+              <motion.div
+                initial={{opacity: 0, y: 16}}
+                animate={isInView ? {opacity: 1, y: 0} : {}}
+                transition={{delay: 0.35}}
+                className="mb-16"
+              >
+                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4">
+                  Dokumente {activeJahr.jahr}
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                  {dokumente.map(dok => (
+                    <a
+                      key={dok.id}
+                      href={dok.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-spd-red/40 hover:bg-spd-red/5 dark:hover:bg-spd-red/10 transition-all text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-spd-red dark:hover:text-spd-red shadow-sm hover:shadow-md"
+                    >
+                      <FileText size={15} className="shrink-0 text-spd-red"/>
+                      {dok.titel}
+                    </a>
+                  ))}
+                </div>
+              </motion.div>
             )}
 
             {!hasContent && (
