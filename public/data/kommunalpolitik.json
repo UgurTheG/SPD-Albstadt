@@ -8,7 +8,7 @@
       "aktiv": true,
       "gemeinderaete": [
         {
-          "name": "",
+          "name": "1",
           "rolle": "",
           "stadt": "",
           "bildUrl": "",
@@ -16,7 +16,7 @@
           "bio": ""
         },
         {
-          "name": "",
+          "name": "2",
           "rolle": "",
           "stadt": "",
           "bildUrl": "",
@@ -26,7 +26,7 @@
       ],
       "kreisraete": [
         {
-          "name": "",
+          "name": "3",
           "rolle": "",
           "stadt": "",
           "bildUrl": "",
@@ -34,7 +34,7 @@
           "bio": ""
         },
         {
-          "name": "",
+          "name": "4",
           "rolle": "",
           "stadt": "",
           "bildUrl": "",
@@ -49,7 +49,7 @@
       "aktiv": true,
       "gemeinderaete": [
         {
-          "name": "",
+          "name": "A",
           "rolle": "",
           "stadt": "",
           "bildUrl": "",
@@ -57,7 +57,7 @@
           "bio": ""
         },
         {
-          "name": "",
+          "name": "B",
           "rolle": "",
           "stadt": "",
           "bildUrl": "",
@@ -67,7 +67,7 @@
       ],
       "kreisraete": [
         {
-          "name": "",
+          "name": "C",
           "rolle": "",
           "stadt": "",
           "bildUrl": "",
@@ -75,7 +75,7 @@
           "bio": ""
         },
         {
-          "name": "",
+          "name": "D",
           "rolle": "",
           "stadt": "",
           "bildUrl": "",
