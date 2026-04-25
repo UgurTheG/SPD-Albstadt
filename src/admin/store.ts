@@ -8,6 +8,7 @@ import {AuthError, commitTree, type TreeFileChange, validateToken} from './lib/g
 const TOKEN_KEY = 'spd-admin-token'
 const DARK_KEY = 'spd-admin-dark'
 const DRAFT_KEY = 'spd-admin-drafts'
+const PENDING_KEY = 'spd-admin-pending-uploads'
 const UNDO_LIMIT = 50
 
 // Debounced localStorage persistence
@@ -58,6 +59,20 @@ function restoreDrafts(state: Record<string, unknown>, originalState: Record<str
     } catch {
         return state
     }
+}
+
+function persistPendingUploads(uploads: PendingUpload[]) {
+    try {
+        if (uploads.length > 0) localStorage.setItem(PENDING_KEY, JSON.stringify(uploads))
+        else localStorage.removeItem(PENDING_KEY)
+    } catch { /* quota exceeded — ignore */ }
+}
+
+function restorePendingUploads(): PendingUpload[] {
+    try {
+        const raw = localStorage.getItem(PENDING_KEY)
+        return raw ? JSON.parse(raw) as PendingUpload[] : []
+    } catch { return [] }
 }
 
 interface AdminState {
@@ -127,7 +142,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     })(),
     state: {},
     originalState: {},
-    pendingUploads: [],
+    pendingUploads: restorePendingUploads(),
     dataLoaded: false,
     dataLoadErrors: [],
     undoStacks: {},
@@ -213,6 +228,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         lastUndoPush = {}
         localStorage.removeItem(TOKEN_KEY)
         localStorage.removeItem(DRAFT_KEY)
+        localStorage.removeItem(PENDING_KEY)
         set({token: '', user: null, state: {}, originalState: {}, dataLoaded: false, dataLoadErrors: [], pendingUploads: [], undoStacks: {}, redoStacks: {}})
     },
 
@@ -319,6 +335,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
 
     addPendingUpload: (upload) => {
         set(prev => ({pendingUploads: [...prev.pendingUploads, {...upload, tabKey: upload.tabKey ?? prev.activeTab}]}))
+        persistPendingUploads(get().pendingUploads)
     },
 
     resetOriginal: (tabKey) => {
@@ -383,6 +400,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 statusType: 'success',
                 statusCounter: prev.statusCounter + 1,
             }))
+            persistPendingUploads(otherUploads)
         } catch (e) {
             if (e instanceof AuthError) {
                 get().logout()
@@ -400,6 +418,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     },
 
     revertTab: (tabKey) => {
+        let keptForPersist: PendingUpload[] = []
         set(prev => {
             const orig = prev.originalState[tabKey]
             const nextState = {
@@ -419,6 +438,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             const keptUploads = prev.pendingUploads.filter(u =>
                 u.tabKey !== tabKey && allPaths.has(u.ghPath.replace(/^public/, ''))
             )
+            keptForPersist = keptUploads
             persistDirtyState(nextState, prev.originalState)
             return {
                 state: nextState,
@@ -430,9 +450,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 statusCounter: prev.statusCounter + 1,
             }
         })
+        persistPendingUploads(keptForPersist)
     },
 
     revertChange: (tabKey, entry) => {
+        let keptForPersist: PendingUpload[] = []
         set(prev => {
             const tab = TABS.find(t => t.key === tabKey)
             if (!tab) return prev
@@ -451,6 +473,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             if (entry.pendingImagePath) {
                 keptUploads = keptUploads.filter(u => u.ghPath.replace(/^public/, '') !== entry.pendingImagePath)
             }
+            keptForPersist = keptUploads
             persistDirtyState(nextState, prev.originalState)
             // Push current state onto undo stack so the revert itself is undoable,
             // instead of wiping the entire history.
@@ -467,6 +490,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 statusCounter: prev.statusCounter + 1,
             }
         })
+        persistPendingUploads(keptForPersist)
     },
 
     publishAll: async (orphansToDelete) => {
@@ -526,6 +550,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 statusType: 'success',
                 statusCounter: prev.statusCounter + 1,
             }))
+            persistPendingUploads([])
         } catch (e) {
             if (e instanceof AuthError) {
                 get().logout()
