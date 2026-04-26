@@ -90,6 +90,17 @@ export default function KommunalpolitikEditor() {
     const [showPublishConfirm, setShowPublishConfirm] = useState(false)
     const [showDiff, setShowDiff] = useState(false)
     const [expandedJahrIds, setExpandedJahrIds] = useState<Set<string>>(new Set())
+    // Track which person-sections are collapsed per year: key = `${jahrId}-gemeinderaete` | `${jahrId}-kreisraete`
+    const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
+
+    const toggleSection = (key: string) => {
+        setCollapsedSections(prev => {
+            const next = new Set(prev)
+            if (next.has(key)) next.delete(key)
+            else next.add(key)
+            return next
+        })
+    }
 
     const canUndo = (undoStacks['kommunalpolitik']?.length ?? 0) > 0
     const canRedo = (redoStacks['kommunalpolitik']?.length ?? 0) > 0
@@ -392,86 +403,145 @@ export default function KommunalpolitikEditor() {
 
                                                 {/* Gemeinderäte */}
                                                 <div>
-                                                    <div className="flex items-center gap-2 mb-3">
-                                                        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleSection(`${jahr.id}-gemeinderaete`)}
+                                                        className="flex items-center gap-2 mb-3 w-full text-left group"
+                                                    >
+                                                        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
                                                             Gemeinderäte
                                                         </h4>
                                                         <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">
                                                             {gemeinderaete.length}
                                                         </span>
-                                                    </div>
-                                                    <ArrayEditor
-                                                        fields={PERSON_FIELDS}
-                                                        data={gemeinderaete as unknown as Record<string, unknown>[]}
-                                                        tabKey="kommunalpolitik"
-                                                        onStructureChange={p => updateSection(jahr.id, 'gemeinderaete', p)}
-                                                    />
+                                                        <span className="ml-auto text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                                                            {collapsedSections.has(`${jahr.id}-gemeinderaete`) ? <ChevronDown size={13}/> : <ChevronUp size={13}/>}
+                                                        </span>
+                                                    </button>
+                                                    <AnimatePresence initial={false}>
+                                                        {!collapsedSections.has(`${jahr.id}-gemeinderaete`) && (
+                                                            <motion.div
+                                                                initial={{height: 0, opacity: 0}}
+                                                                animate={{height: 'auto', opacity: 1}}
+                                                                exit={{height: 0, opacity: 0}}
+                                                                transition={{duration: 0.2, ease: 'easeInOut'}}
+                                                                className="overflow-hidden"
+                                                            >
+                                                                <ArrayEditor
+                                                                    fields={PERSON_FIELDS}
+                                                                    data={gemeinderaete as unknown as Record<string, unknown>[]}
+                                                                    tabKey="kommunalpolitik"
+                                                                    onStructureChange={p => updateSection(jahr.id, 'gemeinderaete', p)}
+                                                                />
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
                                                 </div>
 
                                                 <div className="border-t border-gray-200/50 dark:border-gray-700/40"/>
 
                                                 {/* Kreisräte */}
                                                 <div>
-                                                    <div className="flex items-center gap-2 mb-3">
-                                                        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleSection(`${jahr.id}-kreisraete`)}
+                                                        className="flex items-center gap-2 mb-3 w-full text-left group"
+                                                    >
+                                                        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
                                                             Kreisräte
                                                         </h4>
                                                         <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">
                                                             {kreisraete.length}
                                                         </span>
-                                                    </div>
-                                                    <ArrayEditor
-                                                        fields={PERSON_FIELDS}
-                                                        data={kreisraete as unknown as Record<string, unknown>[]}
-                                                        tabKey="kommunalpolitik"
-                                                        onStructureChange={p => updateSection(jahr.id, 'kreisraete', p)}
-                                                    />
+                                                        <span className="ml-auto text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                                                            {collapsedSections.has(`${jahr.id}-kreisraete`) ? <ChevronDown size={13}/> : <ChevronUp size={13}/>}
+                                                        </span>
+                                                    </button>
+                                                    <AnimatePresence initial={false}>
+                                                        {!collapsedSections.has(`${jahr.id}-kreisraete`) && (
+                                                            <motion.div
+                                                                initial={{height: 0, opacity: 0}}
+                                                                animate={{height: 'auto', opacity: 1}}
+                                                                exit={{height: 0, opacity: 0}}
+                                                                transition={{duration: 0.2, ease: 'easeInOut'}}
+                                                                className="overflow-hidden"
+                                                            >
+                                                                <ArrayEditor
+                                                                    fields={PERSON_FIELDS}
+                                                                    data={kreisraete as unknown as Record<string, unknown>[]}
+                                                                    tabKey="kommunalpolitik"
+                                                                    onStructureChange={p => updateSection(jahr.id, 'kreisraete', p)}
+                                                                />
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
                                                 </div>
 
                                                 <div className="border-t border-gray-200/50 dark:border-gray-700/40"/>
 
                                                 {/* Dokumente */}
                                                 <div>
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                                                    <div className="flex items-center mb-3 gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => toggleSection(`${jahr.id}-dokumente`)}
+                                                            className="flex items-center gap-2 flex-1 text-left group"
+                                                        >
+                                                            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
                                                                 Dokumente
                                                             </h4>
                                                             <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">
                                                                 {dokumente.length}
                                                             </span>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => updateDokumente(jahr.id, [
-                                                                ...dokumente,
-                                                                {id: crypto.randomUUID?.() ?? String(Date.now()), titel: '', url: ''},
-                                                            ])}
-                                                            className="flex items-center gap-1.5 text-[11px] font-semibold text-spd-red border border-spd-red/30 hover:bg-spd-red hover:text-white transition-all px-2.5 py-1.5 rounded-lg">
-                                                            <Plus size={11}/> Hinzufügen
+                                                            <span className="text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                                                                {collapsedSections.has(`${jahr.id}-dokumente`) ? <ChevronDown size={13}/> : <ChevronUp size={13}/>}
+                                                            </span>
                                                         </button>
+                                                        {!collapsedSections.has(`${jahr.id}-dokumente`) && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => updateDokumente(jahr.id, [
+                                                                    ...dokumente,
+                                                                    {id: crypto.randomUUID?.() ?? String(Date.now()), titel: '', url: ''},
+                                                                ])}
+                                                                className="flex items-center gap-1.5 text-[11px] font-semibold text-spd-red border border-spd-red/30 hover:bg-spd-red hover:text-white transition-all px-2.5 py-1.5 rounded-lg shrink-0">
+                                                                <Plus size={11}/> Hinzufügen
+                                                            </button>
+                                                        )}
                                                     </div>
-                                                    {dokumente.length === 0 && (
-                                                        <p className="text-[11px] text-gray-400 dark:text-gray-500 text-center py-4">
-                                                            Noch keine Dokumente hinzugefügt.
-                                                        </p>
-                                                    )}
-                                                    <div className="space-y-2">
-                                                        {dokumente.map((dok) => (
-                                                            <DokumentRow
-                                                                key={dok.id}
-                                                                dok={dok}
-                                                                onChange={updated => updateDokumente(
-                                                                    jahr.id,
-                                                                    dokumente.map(d => d.id === dok.id ? updated : d),
+                                                    <AnimatePresence initial={false}>
+                                                        {!collapsedSections.has(`${jahr.id}-dokumente`) && (
+                                                            <motion.div
+                                                                initial={{height: 0, opacity: 0}}
+                                                                animate={{height: 'auto', opacity: 1}}
+                                                                exit={{height: 0, opacity: 0}}
+                                                                transition={{duration: 0.2, ease: 'easeInOut'}}
+                                                                className="overflow-hidden"
+                                                            >
+                                                                {dokumente.length === 0 && (
+                                                                    <p className="text-[11px] text-gray-400 dark:text-gray-500 text-center py-4">
+                                                                        Noch keine Dokumente hinzugefügt.
+                                                                    </p>
                                                                 )}
-                                                                onRemove={() => updateDokumente(
-                                                                    jahr.id,
-                                                                    dokumente.filter(d => d.id !== dok.id),
-                                                                )}
-                                                            />
-                                                        ))}
-                                                    </div>
+                                                                <div className="space-y-2">
+                                                                    {dokumente.map((dok) => (
+                                                                        <DokumentRow
+                                                                            key={dok.id}
+                                                                            dok={dok}
+                                                                            onChange={updated => updateDokumente(
+                                                                                jahr.id,
+                                                                                dokumente.map(d => d.id === dok.id ? updated : d),
+                                                                            )}
+                                                                            onRemove={() => updateDokumente(
+                                                                                jahr.id,
+                                                                                dokumente.filter(d => d.id !== dok.id),
+                                                                            )}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
                                                 </div>
 
                                             </div>

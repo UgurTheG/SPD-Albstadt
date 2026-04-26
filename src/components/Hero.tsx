@@ -7,6 +7,10 @@ interface HeroProps {
   navigateTo: (id: string) => void
 }
 
+interface ConfigData {
+  heroSlogan?: string
+}
+
 const BASE_NAV_ITEMS = [
   { id: 'aktuelles', label: 'Aktuelles' },
   { id: 'partei', label: 'Partei' },
@@ -18,6 +22,8 @@ const BASE_NAV_ITEMS = [
 
 export default function Hero({ navigateTo }: HeroProps) {
   const {data: kpData} = useData<{sichtbar?: boolean}>('/data/kommunalpolitik.json')
+  const {data: configData} = useData<ConfigData>('/data/config.json')
+  const slogan = configData?.heroSlogan || 'Gemeinsam für Albstadt — sozial, gerecht und zukunftsorientiert.'
   const navItems = BASE_NAV_ITEMS.filter(
     item => item.id !== 'kommunalpolitik' || kpData?.sichtbar === true
   )
@@ -86,8 +92,7 @@ export default function Hero({ navigateTo }: HeroProps) {
           transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
           className="text-lg sm:text-2xl text-white/75 max-w-xl mb-12 font-light leading-relaxed"
         >
-          Gemeinsam für Albstadt —
-          <br className="hidden sm:block" /> sozial, gerecht und zukunftsorientiert.
+          {slogan}
         </motion.p>
 
         {/* Navigation pills */}
