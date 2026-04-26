@@ -17,7 +17,13 @@
         }
       ],
       "kreisraete": [],
-      "dokumente": []
+      "dokumente": [
+        {
+          "id": "25d11c9f-1f15-4094-b240-fcc0694de66c",
+          "titel": "test",
+          "url": "/dokumente/kommunalpolitik/dokument-1777207382753.pdf"
+        }
+      ]
     }
   ]
 }
