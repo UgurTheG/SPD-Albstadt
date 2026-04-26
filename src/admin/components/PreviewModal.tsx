@@ -1,4 +1,4 @@
-import {lazy, Suspense, useEffect, useMemo} from 'react'
+import {lazy, Suspense, useEffect, useMemo, useRef} from 'react'
 import {motion} from 'framer-motion'
 import {Monitor, X} from 'lucide-react'
 import {SWRConfig} from 'swr'
@@ -34,20 +34,46 @@ export default function PreviewModal({tabKey, onClose}: Props) {
     const state = useAdminStore(s => s.state)
     const pendingUploads = useAdminStore(s => s.pendingUploads)
 
-    // Build a map from public file URLs → base64 data URLs for pending uploads
+    // Track blob URLs so we can revoke them on unmount / when uploads change
+    const blobUrlsRef = useRef<string[]>([])
+
+    // Build a map from public file URLs → previewable URLs for pending uploads.
+    // Images use data: URLs; documents use blob: URLs so target="_blank" links work
+    // (browsers block navigation to data: URIs in new tabs).
     const uploadUrlMap = useMemo(() => {
+        // Revoke previous blob URLs before creating new ones
+        blobUrlsRef.current.forEach(u => URL.revokeObjectURL(u))
+        blobUrlsRef.current = []
+
         const map: Record<string, string> = {}
         for (const upload of pendingUploads) {
             const publicUrl = upload.ghPath.replace(/^public/, '')
             const ext = publicUrl.split('.').pop()?.toLowerCase() ?? ''
-            let mime = 'image/webp'
-            if (ext === 'pdf') mime = 'application/pdf'
-            else if (ext === 'doc') mime = 'application/msword'
-            else if (ext === 'docx') mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            map[publicUrl] = `data:${mime};base64,${upload.base64}`
+            if (ext === 'pdf' || ext === 'doc' || ext === 'docx') {
+                // Use blob URL so document links open properly in a new tab
+                const mime = ext === 'pdf' ? 'application/pdf'
+                    : ext === 'doc' ? 'application/msword'
+                    : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                try {
+                    const bytes = atob(upload.base64)
+                    const arr = new Uint8Array(bytes.length)
+                    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i)
+                    const blobUrl = URL.createObjectURL(new Blob([arr], {type: mime}))
+                    blobUrlsRef.current.push(blobUrl)
+                    map[publicUrl] = blobUrl
+                } catch { /* ignore malformed base64 */ }
+            } else {
+                // Images: data URL is fine (used in <img> src, not target="_blank" links)
+                map[publicUrl] = `data:image/webp;base64,${upload.base64}`
+            }
         }
         return map
     }, [pendingUploads])
+
+    // Revoke blob URLs when the modal unmounts
+    useEffect(() => {
+        return () => { blobUrlsRef.current.forEach(u => URL.revokeObjectURL(u)) }
+    }, [])
 
     // Build SWR fallback map: file URL → admin store data
     // This makes useData() inside the real components return admin data
@@ -142,6 +168,9 @@ export default function PreviewModal({tabKey, onClose}: Props) {
                     >
                         <SWRConfig value={{
                             fallback: swrFallback,
+                            // Isolated cache so live data from the main app never leaks in
+                            // and the fallback (= current admin state) is always used.
+                            provider: () => new Map(),
                             // Use a fetcher that first checks the fallback, so components
                             // that fetch URLs we have in admin state get the admin data.
                             // For other URLs (e.g. /api/instagram), fall through to real fetch.
@@ -155,7 +184,10 @@ export default function PreviewModal({tabKey, onClose}: Props) {
                             },
                             revalidateOnFocus: false,
                             revalidateOnReconnect: false,
-                            // Disable revalidation so fallback data sticks
+                            // Prevent SWR from overwriting fallback data with live server data
+                            // on mount — useData() passes fetchData explicitly which bypasses
+                            // the custom fetcher above, so we must stop it here.
+                            revalidateOnMount: false,
                             revalidateIfStale: false,
                         }}>
                             <Suspense fallback={

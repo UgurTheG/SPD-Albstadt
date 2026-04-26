@@ -266,6 +266,10 @@ export function diffTab(
             {key: 'email', label: 'E-Mail', type: 'email'},
             {key: 'bio', label: 'Biografie', type: 'textarea'},
         ]
+        const dokumentFields: FieldConfig[] = [
+            {key: 'titel', label: 'Titel', type: 'text'},
+            {key: 'url', label: 'Datei', type: 'url'},
+        ]
         const jahrFields: FieldConfig[] = [
             {key: 'aktiv', label: 'Aktiv', type: 'toggle'},
             {key: 'jahr', label: 'Jahrbezeichnung', type: 'text'},
@@ -292,7 +296,8 @@ export function diffTab(
             const {j: origJ} = origEntry
             const lbl = (currJ.jahr as string) || `Jahr ${ci + 1}`
             diffFields(jahrFields, origJ, currJ, ['jahre', ci], lbl, `jahre.${id}`, ci, lbl, out)
-            diffArray(personFields, origJ.gemeinderaete as Record<string, unknown>[] | undefined, currJ.gemeinderaete as Record<string, unknown>[] | undefined, ['jahre', ci, 'gemeinderaete'], `${lbl} – Gemeinderäte`, `jahre.${id}.gemeinderaete`, out)
+            diffArray(dokumentFields, origJ.dokumente as Record<string, unknown>[] | undefined, currJ.dokumente as Record<string, unknown>[] | undefined, ['jahre', ci, 'dokumente'], `${lbl} – Dokumente`, `jahre.${id}.dokumente`, out)
+            diffArray(personFields, origJ.gemeinderaete as Record<string, unknown>[] | undefined, currJ.gemeinderaete as Record<string, unknown>[] | undefined, ['jahre', ci, 'gemeinderaete'], `${lbl} – Gemeinderte`, `jahre.${id}.gemeinderaete`, out)
             diffArray(personFields, origJ.kreisraete as Record<string, unknown>[] | undefined, currJ.kreisraete as Record<string, unknown>[] | undefined, ['jahre', ci, 'kreisraete'], `${lbl} – Kreisräte`, `jahre.${id}.kreisraete`, out)
         }
 
@@ -411,6 +416,7 @@ function addPendingImageEntries(
             })
         }
     }
+
 
     if (tab.type === 'array' && tab.fields) {
         const arr = Array.isArray(current) ? current as Record<string, unknown>[] : []

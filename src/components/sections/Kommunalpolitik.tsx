@@ -190,7 +190,6 @@ export default function Kommunalpolitik() {
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                   {dokumente.map(dok => {
-                    const ext = dok.url.split('.').pop()?.toUpperCase() ?? 'DOK'
                     return (
                       <a
                         key={dok.id}
@@ -209,7 +208,6 @@ export default function Kommunalpolitik() {
                         </div>
                         <div className="text-center">
                           <p className="font-black text-gray-900 dark:text-white text-sm leading-tight line-clamp-2">{dok.titel}</p>
-                          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 font-medium uppercase tracking-wider">{ext}</p>
                         </div>
                       </a>
                     )

@@ -205,7 +205,7 @@ export default function KommunalpolitikEditor() {
     }
 
     return (
-        <div>
+        <div className="pb-28">
             {orphans && (
                 <OrphanModal
                     orphans={orphans}
