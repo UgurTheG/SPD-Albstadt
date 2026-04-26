@@ -167,6 +167,12 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 dirty.add(tab.key)
             }
         }
+        // Mark a tab dirty if it owns a pending upload — the tabKey is the ground truth,
+        // so this catches document uploads where the new URL may not yet be in the state
+        // (race between addPendingUpload and the state update from onChange).
+        for (const upload of pendingUploads) {
+            if (upload.tabKey) dirty.add(upload.tabKey)
+        }
         // Also mark a tab dirty if there's a pending image upload targeting a path
         // referenced by the tab — otherwise replacing an image with the same URL
         // (e.g. same-named Abgeordneter) would leave the tab undetected as changed.
