@@ -81,6 +81,7 @@ interface AdminState {
     user: GHUser | null
     loginError: string
     loginLoading: boolean
+    loginAuthStatus: number | null
 
     // Editor
     activeTab: string
@@ -136,6 +137,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     user: null,
     loginError: '',
     loginLoading: false,
+    loginAuthStatus: null,
     activeTab: (() => {
         const hash = window.location.hash.slice(1)
         return TABS.some(t => t.key === hash) ? hash : TABS[0].key
@@ -192,14 +194,18 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     },
 
     login: async (token: string) => {
-        set({loginLoading: true, loginError: ''})
+        set({loginLoading: true, loginError: '', loginAuthStatus: null})
         try {
             const user = await validateToken(token)
             localStorage.setItem(TOKEN_KEY, token)
             set({token, user: user as GHUser, loginLoading: false})
             await get().loadData()
         } catch (e) {
-            set({loginError: (e as Error).message, loginLoading: false})
+            if (e instanceof AuthError) {
+                set({loginError: (e as Error).message, loginLoading: false, loginAuthStatus: e.status})
+            } else {
+                set({loginError: (e as Error).message, loginLoading: false})
+            }
         }
     },
 

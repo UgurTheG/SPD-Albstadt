@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react'
 import {Loader2, Shield} from 'lucide-react'
 import {motion} from 'framer-motion'
+import {useNavigate} from 'react-router-dom'
 import {useAdminStore} from '../store'
 
 function GitHubMark({size = 18}: {size?: number}) {
@@ -24,8 +25,15 @@ function generateState(): string {
 }
 
 export default function LoginScreen() {
-    const {login, loginError, loginLoading} = useAdminStore()
+    const {login, loginError, loginLoading, loginAuthStatus} = useAdminStore()
     const [oauthError, setOauthError] = useState('')
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        if (loginAuthStatus === 401 || loginAuthStatus === 403) {
+            navigate(`/${loginAuthStatus}`, {replace: true})
+        }
+    }, [loginAuthStatus, navigate])
 
     useEffect(() => {
         const hash = window.location.hash.slice(1)

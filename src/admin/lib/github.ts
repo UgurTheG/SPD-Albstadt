@@ -2,9 +2,11 @@
  *  Network errors (TypeError from fetch) are NOT wrapped in this class so that
  *  callers can distinguish "bad token" from "no internet". */
 export class AuthError extends Error {
-    constructor(msg: string) {
+    status: number
+    constructor(msg: string, status = 401) {
         super(msg)
         this.name = 'AuthError'
+        this.status = status
     }
 }
 
@@ -34,13 +36,13 @@ const shaCache = new Map<string, string>()
 export async function validateToken(token: string) {
     const res = await fetch('https://api.github.com/user', {headers: headers(token), cache: 'no-store'})
     if (!res.ok) {
-        if (res.status === 401 || res.status === 403) throw new AuthError('Token ungültig')
+        if (res.status === 401 || res.status === 403) throw new AuthError('Token ungültig', res.status)
         throw new Error(`GitHub API Fehler (${res.status})`)
     }
     const user = await res.json()
     const repoRes = await fetch(`${apiBase()}`, {headers: headers(token), cache: 'no-store'})
     if (!repoRes.ok) {
-        if (repoRes.status === 401 || repoRes.status === 403) throw new AuthError('Kein Zugriff auf das Repository')
+        if (repoRes.status === 401 || repoRes.status === 403) throw new AuthError('Kein Zugriff auf das Repository', repoRes.status)
         throw new Error(`Repository-Zugriff Fehler (${repoRes.status})`)
     }
     return user as { login: string; avatar_url: string }
