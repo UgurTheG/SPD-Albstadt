@@ -185,9 +185,6 @@ export default function Kommunalpolitik() {
                 <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">
                   Dokumente
                 </h3>
-                <p className="text-2xl font-black text-gray-900 dark:text-white mb-8">
-                  {activeJahr.jahr}
-                </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                   {dokumente.map(dok => {
                     return (
