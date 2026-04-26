@@ -32,6 +32,29 @@
           "url": "/dokumente/kommunalpolitik/dokument-1777207382753.pdf"
         }
       ]
+    },
+    {
+      "id": "0169d53f-2c82-43e3-9268-1ceef375acd8",
+      "jahr": "2025",
+      "aktiv": true,
+      "gemeinderaete": [
+        {
+          "name": "Ugur nicht Gündüz",
+          "rolle": "",
+          "stadt": "Albstadt",
+          "bildUrl": "/images/kommunalpolitik/ugur-nicht-guenduez-1777207790080.webp",
+          "email": "ugur.guenduez@mercedes-benz.com",
+          "bio": ""
+        }
+      ],
+      "kreisraete": [],
+      "dokumente": [
+        {
+          "id": "78386820-be24-4649-bcb4-789263db6e30",
+          "titel": "test",
+          "url": "/dokumente/kommunalpolitik/dokument-1777207796854.pdf"
+        }
+      ]
     }
   ]
 }
