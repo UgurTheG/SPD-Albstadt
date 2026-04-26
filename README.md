@@ -33,7 +33,7 @@ Umgesetzte Hauptfunktionen:
 - Kalenderansicht auf Basis eines ICS-Feeds über `/api/ics`
 - Optionaler Instagram-Feed über `/api/instagram` mit automatischem Fallback
 - Kontaktformular (Formspree-URL über Konfiguration)
-- Admin-Editor mit Login per GitHub Personal Access Token, Drafts, Undo/Redo, Drag-and-Drop-Sortierung, Bild-Upload, Sammel-Veröffentlichung und Orphan-Bild-Erkennung
+- Admin-Editor mit Login per GitHub OAuth 2.0, Drafts, Undo/Redo, Drag-and-Drop-Sortierung, Bild-Upload, Sammel-Veröffentlichung und Orphan-Bild-Erkennung
 
 ## 2. Technologie-Stack
 
@@ -49,7 +49,7 @@ Umgesetzte Hauptfunktionen:
 - Bild-Lightbox: `yet-another-react-lightbox`
 - Kalender-Parsing: `ical.js`
 - Deployment-Ziel: Vercel
-- Serverless-Endpunkte: `api/ics.ts`, `api/instagram.ts`
+- Serverless-Endpunkte: `api/ics.ts`, `api/instagram.ts`, `api/auth/callback.ts`
 
 ## 3. Projektstruktur
 
@@ -96,9 +96,22 @@ npm run lint
 
 ## 5. Konfiguration und Umgebungsvariablen
 
-### Instagram-Integration
+### GitHub OAuth (Admin-Login)
 
-Die Variablen sind in `.env.example` dokumentiert:
+Für den Admin-Login wird eine GitHub OAuth App benötigt. Erstellen unter: https://github.com/settings/developers
+
+Callback-URLs eintragen:
+- Produktion: `https://<deine-domain>/api/auth/callback`
+- Lokal: `http://localhost:5173/api/auth/callback`
+
+Benötigte Umgebungsvariablen (in Vercel und lokal in `.env`):
+
+```bash
+VITE_GITHUB_CLIENT_ID=     # Client-ID der OAuth App (öffentlich, wird im Frontend verwendet)
+GITHUB_CLIENT_SECRET=      # Client-Secret der OAuth App (privat, nur serverseitig)
+```
+
+### Instagram-Integration
 
 ```bash
 INSTAGRAM_USER_ID=
@@ -108,7 +121,7 @@ INSTAGRAM_ACCESS_TOKEN=
 Lokale Einrichtung:
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
 Hinweise:
@@ -156,14 +169,14 @@ Die Route `/admin` wird über SPA-Rewrite auf `index.html` geführt; die React-A
 
 ### Login
 
-Der Admin-Editor nutzt einen GitHub Personal Access Token (PAT):
+Der Admin-Editor nutzt GitHub OAuth 2.0:
 
-- Format: klassischer PAT (`ghp_...`)
-- Scope: `repo`
-- Validierung über GitHub API (`/user` und Repository-Zugriff)
-- Token-Speicherung im Browser-`localStorage` unter `spd-admin-token`
+1. Auf der Login-Seite „Mit GitHub anmelden" klicken
+2. GitHub-Autorisierungsseite bestätigen
+3. Weiterleitung zurück zur Admin-Seite; Token wird im Browser-`localStorage` unter `spd-admin-token` gespeichert
+4. Bei nachfolgenden Besuchen erfolgt automatischer Login über den gespeicherten Token
 
-Ohne gültigen Token ist keine Veröffentlichung möglich.
+Zugangsberechtigung: Nur GitHub-Konten mit **Push-Zugriff** auf das Repository können sich erfolgreich anmelden. Unbefugte Konten werden auf die entsprechende Fehlerseite weitergeleitet (`/401`, `/403` oder `/404`).
 
 ### Funktionen im Admin-Editor
 
@@ -240,6 +253,13 @@ Der Admin-Editor konvertiert Uploads nach WebP und referenziert sie in den JSON-
 - Liefert normalisierte Feed-Objekte für die Website
 - Bei Fehlern oder fehlender Konfiguration: Fallback-Antwort mit leerer Liste und Profil-Link
 
+### `GET /api/auth/callback`
+
+- OAuth 2.0 Callback-Endpunkt für den Admin-Login
+- Empfängt `code` und `state` von GitHub nach Nutzerbestätigung
+- Tauscht den Code serverseitig gegen ein GitHub Access Token (nutzt `GITHUB_CLIENT_SECRET`)
+- Leitet bei Erfolg zu `/admin#token=...` weiter, bei Fehler zu `/admin#error=...`
+
 ## 11. Deployment
 
 Das Repository ist für Vercel konfiguriert.
@@ -258,17 +278,20 @@ npm run preview
 
 ## 12. Sicherheit und Betriebshinweise
 
-- Der Admin-Token liegt ausschließlich im Browser-`localStorage`
+- Login erfolgt über GitHub OAuth 2.0 — kein manuelles Token-Management nötig
+- Das GitHub Access Token liegt ausschließlich im Browser-`localStorage`
 - API-Aufrufe für Veröffentlichung laufen direkt gegen `api.github.com`
+- Das OAuth Client-Secret (`GITHUB_CLIENT_SECRET`) ist ausschließlich serverseitig verfügbar
 - `/admin` ist öffentlich erreichbar, aber ohne gültigen Token funktional gesperrt
-- Für den produktiven Betrieb sollte der Token nur auf vertrauenswürdigen Geräten verwendet werden
+- Ungültige Logins (kein Repo-Zugriff, ungültiges Token) werden auf Fehlerseiten weitergeleitet
+- Zugriffskontrolle erfolgt über GitHub-Repository-Kollaboratoren (Settings → Collaborators)
 
 ## 13. Typische Workflows
 
 ### A) Redaktion über Admin-Seite
 
 1. `/admin` öffnen
-2. Mit GitHub PAT anmelden
+2. „Mit GitHub anmelden" klicken und auf GitHub bestätigen
 3. Inhalte in gewünschten Tabs bearbeiten
 4. Optional Änderungen prüfen (Diff)
 5. `Alle veröffentlichen`
@@ -293,14 +316,22 @@ npm run preview
 2. In `public/data/config.json` `features.instagramFeed` auf `true`
 3. Deployment prüfen und Feed unter `/aktuelles` kontrollieren
 
+### E) Neuen Admin-Nutzer hinzufügen
+
+1. GitHub-Konto der Person als Kollaborator einladen: Repository → Settings → Collaborators
+2. Scope `repo` (Write-Zugriff) vergeben
+3. Person kann sich danach über „Mit GitHub anmelden" einloggen
+
 ## 14. Fehlerbehebung
 
-- Admin-Login scheitert: Token-Scope `repo` prüfen, Repo-Zugriff verifizieren
+- Admin-Login scheitert mit Fehlerseite 403: GitHub-Konto hat keinen Push-Zugriff auf das Repository — unter Settings → Collaborators prüfen
+- Admin-Login scheitert mit Fehlerseite 401: Token ist ungültig oder abgelaufen — erneut einloggen
 - Änderungen erscheinen nicht: Veröffentlichung im Admin ausführen und kurz auf Redeploy warten
 - Kalender leer: `icsUrl` in `public/data/config.json` prüfen, Erreichbarkeit des ICS-Feeds testen
 - Instagram leer: Feature-Flag und ENV-Variablen prüfen; Fallback ohne Karten ist vorgesehen
 - Kontaktformular ohne Versand: `kontakt.formspreeUrl` in `public/data/config.json` prüfen
 - Admin zeigt „Daten konnten nicht geladen werden": Seite neu laden; Veröffentlichen ist in diesem Zustand gesperrt, um Live-Daten nicht zu überschreiben
+- OAuth funktioniert nicht lokal: `VITE_GITHUB_CLIENT_ID` und `GITHUB_CLIENT_SECRET` in `.env` prüfen; Callback-URL `http://localhost:5173/api/auth/callback` in der GitHub OAuth App eintragen
 
 ---
 
