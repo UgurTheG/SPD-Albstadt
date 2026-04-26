@@ -72,9 +72,11 @@ export default function HaushaltsredenEditor() {
     const uploadPdf = async (year: number, file: File) => {
         setBusy(year)
         try {
-            await commitBinaryFile(token, `public/documents/fraktion/haushaltsreden/${year}.pdf`, await fileToBase64(file), `admin: Haushaltsrede ${year}.pdf hochgeladen`)
+            const result = await commitBinaryFile(token, `public/documents/fraktion/haushaltsreden/${year}.pdf`, await fileToBase64(file), `admin: Haushaltsrede ${year}.pdf hochgeladen`)
+            const sha: string = result?.content?.sha ?? 'pending'
+            setExistingMap(prev => ({...prev, [year]: sha}))
             setStatus(`${year}.pdf erfolgreich hochgeladen!`, 'success')
-            await load()
+            load(true)
         } catch (e) {
             setStatus('Fehler: ' + (e as Error).message, 'error')
         }
@@ -86,8 +88,13 @@ export default function HaushaltsredenEditor() {
         setBusy(year)
         try {
             await deleteFile(token, `public/documents/fraktion/haushaltsreden/${year}.pdf`, `admin: Haushaltsrede ${year}.pdf gelöscht`)
+            setExistingMap(prev => {
+                const next = {...prev}
+                delete next[year]
+                return next
+            })
             setStatus(`${year}.pdf gelöscht`, 'success')
-            await load()
+            load(true)
         } catch (e) {
             setStatus('Fehler: ' + (e as Error).message, 'error')
         }
@@ -135,6 +142,10 @@ export default function HaushaltsredenEditor() {
                             <span className="flex items-center gap-1.5">
                 <span
                     className="w-2 h-2 bg-orange-400 rounded-full"/> {allYears.length - totalAvail - [...disabledYears].filter(y => !(y in existingMap)).length} fehlen
+              </span>
+                            <span className="flex items-center gap-1.5">
+                <span
+                    className="w-2 h-2 bg-gray-400 rounded-full"/> {[...disabledYears].filter(y => !(y in existingMap)).length} ausgeblendet
               </span>
                         </div>
                     </div>
