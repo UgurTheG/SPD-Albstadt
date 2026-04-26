@@ -1,5 +1,23 @@
 {
   "sichtbar": false,
   "beschreibung": "Die SPD Albstadt gestaltet Kommunalpolitik für alle – sozial, nachhaltig und nah an den Menschen. Hier finden Sie unsere Kandidatinnen und Kandidaten für die Gemeinderats- und Kreistagswahlen: engagierte Albstädterinnen und Albstädter, die Verantwortung übernehmen und gemeinsam mit Ihnen eine lebenswerte Stadt für alle gestalten möchten.",
-  "jahre": []
+  "jahre": [
+    {
+      "id": "9d7893f5-4a22-44d8-9ee6-acf9dcf66e6b",
+      "jahr": "2026",
+      "aktiv": true,
+      "gemeinderaete": [
+        {
+          "name": "Ugur Gündüz",
+          "rolle": "test",
+          "stadt": "Albstadt",
+          "bildUrl": "/images/kommunalpolitik/ugur-guenduez-1777206954721.webp",
+          "email": "ugur.guenduez@mercedes-benz.com",
+          "bio": ""
+        }
+      ],
+      "kreisraete": [],
+      "dokumente": []
+    }
+  ]
 }
