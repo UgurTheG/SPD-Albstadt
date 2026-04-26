@@ -12,17 +12,16 @@ const Kommunalpolitik = lazy(() => import('../../components/sections/Kommunalpol
 const Historie = lazy(() => import('../../components/sections/Historie'))
 const Kontakt = lazy(() => import('../../components/sections/Kontakt'))
 
+type AnyComponent = React.LazyExoticComponent<React.ComponentType<Record<string, unknown>>>
+
 /** Maps admin tab keys to the section component + the data file URL */
-const TAB_PREVIEW_MAP: Record<string, {
-    Component: React.LazyExoticComponent<React.ComponentType<any>>;
-    label: string
-}> = {
-    news: {Component: Aktuelles as any, label: 'Aktuelles'},
-    party: {Component: Partei as any, label: 'Partei'},
-    fraktion: {Component: Fraktion as any, label: 'Fraktion'},
-    kommunalpolitik: {Component: Kommunalpolitik as any, label: 'Kommunalpolitik'},
-    history: {Component: Historie as any, label: 'Historie'},
-    config: {Component: Kontakt as any, label: 'Kontakt'},
+const TAB_PREVIEW_MAP: Record<string, {Component: AnyComponent; label: string}> = {
+    news: {Component: Aktuelles as AnyComponent, label: 'Aktuelles'},
+    party: {Component: Partei as AnyComponent, label: 'Partei'},
+    fraktion: {Component: Fraktion as AnyComponent, label: 'Fraktion'},
+    kommunalpolitik: {Component: Kommunalpolitik as AnyComponent, label: 'Kommunalpolitik'},
+    history: {Component: Historie as AnyComponent, label: 'Historie'},
+    config: {Component: Kontakt as AnyComponent, label: 'Kontakt'},
 }
 
 interface Props {

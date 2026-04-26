@@ -1,6 +1,6 @@
 import React from 'react'
 
-const URL_OR_EMAIL_RE = /(\bhttps?:\/\/[^\s]+|\b[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/g
+const URL_OR_EMAIL_RE = /(\bhttps?:\/\/[^\s]+|\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g
 
 /**
  * Renders plain text with newlines as line-breaks and auto-linked URLs/emails.

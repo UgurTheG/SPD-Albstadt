@@ -67,6 +67,17 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
     exit: (d: number) => ({ x: d > 0 ? '-100%' : '100%', opacity: 0 }),
   }
 
+  // Must be before early return to satisfy rules-of-hooks
+  const dotRange = useMemo(() => {
+    if (total <= MAX_VISIBLE_DOTS) return {start: 0, end: total}
+    const half = Math.floor(MAX_VISIBLE_DOTS / 2)
+    let start = active - half
+    let end = active + half + 1
+    if (start < 0) { start = 0; end = MAX_VISIBLE_DOTS }
+    if (end > total) { end = total; start = total - MAX_VISIBLE_DOTS }
+    return {start, end}
+  }, [active, total])
+
   if (images.length === 0) return null
 
   const slides = images.map((src, i) => ({
@@ -125,23 +136,6 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
     }
     setLightboxOpen(true)
   }
-
-  // Compute visible dot window for large galleries
-  const dotRange = useMemo(() => {
-    if (total <= MAX_VISIBLE_DOTS) return {start: 0, end: total}
-    const half = Math.floor(MAX_VISIBLE_DOTS / 2)
-    let start = active - half
-    let end = active + half + 1
-    if (start < 0) {
-      start = 0;
-      end = MAX_VISIBLE_DOTS
-    }
-    if (end > total) {
-      end = total;
-      start = total - MAX_VISIBLE_DOTS
-    }
-    return {start, end}
-  }, [active, total])
 
   return (
     <div className={className}>
