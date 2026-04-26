@@ -187,6 +187,12 @@ export const TABS: TabConfig[] = [
         previewPath: '/#kontakt',
         topFields: [
             {
+                key: 'heroSlogan',
+                label: 'Hero-Slogan (Startseite)',
+                type: 'textarea',
+                placeholder: 'Gemeinsam für Albstadt — sozial, gerecht und zukunftsorientiert.'
+            },
+            {
                 key: 'icsUrl',
                 label: 'Kalender-URL (ICS)',
                 type: 'url',
