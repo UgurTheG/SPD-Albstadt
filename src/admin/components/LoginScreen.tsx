@@ -30,7 +30,7 @@ export default function LoginScreen() {
     const navigate = useNavigate()
 
     useEffect(() => {
-        if (loginAuthStatus === 401 || loginAuthStatus === 403) {
+        if (loginAuthStatus === 401 || loginAuthStatus === 403 || loginAuthStatus === 404) {
             navigate(`/${loginAuthStatus}`, {replace: true})
         }
     }, [loginAuthStatus, navigate])

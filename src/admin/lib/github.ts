@@ -42,7 +42,8 @@ export async function validateToken(token: string) {
     const user = await res.json()
     const repoRes = await fetch(`${apiBase()}`, {headers: headers(token), cache: 'no-store'})
     if (!repoRes.ok) {
-        if (repoRes.status === 401 || repoRes.status === 403) throw new AuthError('Kein Zugriff auf das Repository', repoRes.status)
+        if (repoRes.status === 401 || repoRes.status === 403 || repoRes.status === 404)
+            throw new AuthError('Kein Zugriff auf das Repository', repoRes.status)
         throw new Error(`Repository-Zugriff Fehler (${repoRes.status})`)
     }
     return user as { login: string; avatar_url: string }
