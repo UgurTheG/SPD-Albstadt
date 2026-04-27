@@ -30,6 +30,9 @@ export default async function handler(
 
         const data = await tokenRes.json() as {
             access_token?: string
+            expires_in?: number
+            refresh_token?: string
+            refresh_token_expires_in?: number
             error?: string
             error_description?: string
         }
@@ -39,9 +42,13 @@ export default async function handler(
             return redirect(`#error=${encodeURIComponent(msg)}`)
         }
 
-        let fragment = `#token=${encodeURIComponent(data.access_token)}`
-        if (state) fragment += `&state=${encodeURIComponent(state)}`
-        return redirect(fragment)
+        const params = new URLSearchParams()
+        params.set('token', data.access_token)
+        if (data.expires_in) params.set('expires_in', String(data.expires_in))
+        if (data.refresh_token) params.set('refresh_token', data.refresh_token)
+        if (data.refresh_token_expires_in) params.set('refresh_token_expires_in', String(data.refresh_token_expires_in))
+        if (state) params.set('state', state)
+        return redirect(`#${params.toString()}`)
     } catch {
         return redirect('#error=token_exchange_failed')
     }

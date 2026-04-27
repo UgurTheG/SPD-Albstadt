@@ -6,9 +6,19 @@ import {applyRevert, type ChangeEntry} from './lib/diff'
 import {AuthError, commitTree, type TreeFileChange, validateToken} from './lib/github'
 
 const TOKEN_KEY = 'spd-admin-token'
+const TOKEN_EXP_KEY = 'spd-admin-token-exp'
+const REFRESH_TOKEN_KEY = 'spd-admin-refresh'
+const REFRESH_EXP_KEY = 'spd-admin-refresh-exp'
 const DARK_KEY = 'spd-admin-dark'
 const DRAFT_KEY = 'spd-admin-drafts'
 const PENDING_KEY = 'spd-admin-pending-uploads'
+
+interface LoginTokenData {
+    token: string
+    expiresAt?: number
+    refreshToken?: string
+    refreshTokenExpiresAt?: number
+}
 const UNDO_LIMIT = 50
 
 // Debounced localStorage persistence
@@ -78,6 +88,9 @@ function restorePendingUploads(): PendingUpload[] {
 interface AdminState {
     // Auth
     token: string
+    tokenExpiresAt: number
+    refreshToken: string
+    refreshTokenExpiresAt: number
     user: GHUser | null
     loginError: string
     loginLoading: boolean
@@ -108,9 +121,10 @@ interface AdminState {
     dirtyTabs: () => Set<string>
 
     // Actions
-    login: (token: string) => Promise<void>
+    login: (data: LoginTokenData) => Promise<void>
     tryAutoLogin: () => Promise<void>
     logout: () => void
+    ensureFreshToken: () => Promise<string>
     loadData: () => Promise<void>
     setActiveTab: (key: string) => void
     updateState: (tabKey: string, data: unknown) => void
@@ -134,6 +148,9 @@ const UNDO_DEBOUNCE = 600 // ms
 
 export const useAdminStore = create<AdminState>((set, get) => ({
     token: localStorage.getItem(TOKEN_KEY) || '',
+    tokenExpiresAt: Number(localStorage.getItem(TOKEN_EXP_KEY) || 0),
+    refreshToken: localStorage.getItem(REFRESH_TOKEN_KEY) || '',
+    refreshTokenExpiresAt: Number(localStorage.getItem(REFRESH_EXP_KEY) || 0),
     user: null,
     loginError: '',
     loginLoading: false,
@@ -193,12 +210,15 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         return dirty
     },
 
-    login: async (token: string) => {
+    login: async ({token, expiresAt = 0, refreshToken = '', refreshTokenExpiresAt = 0}: LoginTokenData) => {
         set({loginLoading: true, loginError: '', loginAuthStatus: null})
         try {
             const user = await validateToken(token)
             localStorage.setItem(TOKEN_KEY, token)
-            set({token, user: user as GHUser, loginLoading: false})
+            localStorage.setItem(TOKEN_EXP_KEY, String(expiresAt))
+            localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+            localStorage.setItem(REFRESH_EXP_KEY, String(refreshTokenExpiresAt))
+            set({token, tokenExpiresAt: expiresAt, refreshToken, refreshTokenExpiresAt, user: user as GHUser, loginLoading: false})
             await get().loadData()
         } catch (e) {
             if (e instanceof AuthError) {
@@ -212,16 +232,22 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     tryAutoLogin: async () => {
         const token = get().token
         if (!token) return
+        let freshToken: string
+        try {
+            freshToken = await get().ensureFreshToken()
+        } catch {
+            // ensureFreshToken already cleared state on expiry
+            return
+        }
         let user: GHUser
         try {
-            user = await validateToken(token) as GHUser
+            user = await validateToken(freshToken) as GHUser
         } catch (e) {
             // Only invalidate the session for definitive auth failures.
             // Network errors (TypeError) or server errors leave the token intact
             // so a transient outage does not log the user out permanently.
             if (e instanceof AuthError) {
-                localStorage.removeItem(TOKEN_KEY)
-                set({token: ''})
+                get().logout()
             }
             return
         }
@@ -239,9 +265,52 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         if (saveTimer) { clearTimeout(saveTimer); saveTimer = null }
         lastUndoPush = {}
         localStorage.removeItem(TOKEN_KEY)
+        localStorage.removeItem(TOKEN_EXP_KEY)
+        localStorage.removeItem(REFRESH_TOKEN_KEY)
+        localStorage.removeItem(REFRESH_EXP_KEY)
         localStorage.removeItem(DRAFT_KEY)
         localStorage.removeItem(PENDING_KEY)
-        set({token: '', user: null, state: {}, originalState: {}, dataLoaded: false, dataLoadErrors: [], pendingUploads: [], undoStacks: {}, redoStacks: {}})
+        set({token: '', tokenExpiresAt: 0, refreshToken: '', refreshTokenExpiresAt: 0, user: null, state: {}, originalState: {}, dataLoaded: false, dataLoadErrors: [], pendingUploads: [], undoStacks: {}, redoStacks: {}})
+    },
+
+    ensureFreshToken: async () => {
+        const {token, tokenExpiresAt, refreshToken, refreshTokenExpiresAt} = get()
+        // No expiry info (classic OAuth token) — use as-is
+        if (!tokenExpiresAt) return token
+        // Valid for more than 5 minutes — use as-is
+        if (Date.now() < tokenExpiresAt - 5 * 60 * 1000) return token
+        // Need to refresh — check we have a non-expired refresh token
+        if (!refreshToken || (refreshTokenExpiresAt && Date.now() > refreshTokenExpiresAt)) {
+            get().logout()
+            throw new AuthError('Sitzung abgelaufen — bitte neu anmelden.', 401)
+        }
+        const res = await fetch('/api/auth/refresh', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({refresh_token: refreshToken}),
+        })
+        if (!res.ok) {
+            get().logout()
+            throw new AuthError('Sitzung abgelaufen — bitte neu anmelden.', 401)
+        }
+        const data = await res.json() as {
+            access_token: string
+            expires_in?: number
+            refresh_token?: string
+            refresh_token_expires_in?: number
+        }
+        const newToken = data.access_token
+        const newExpiresAt = data.expires_in ? Date.now() + data.expires_in * 1000 : 0
+        const newRefreshToken = data.refresh_token ?? refreshToken
+        const newRefreshTokenExpiresAt = data.refresh_token_expires_in
+            ? Date.now() + data.refresh_token_expires_in * 1000
+            : refreshTokenExpiresAt
+        localStorage.setItem(TOKEN_KEY, newToken)
+        localStorage.setItem(TOKEN_EXP_KEY, String(newExpiresAt))
+        localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken)
+        localStorage.setItem(REFRESH_EXP_KEY, String(newRefreshTokenExpiresAt))
+        set({token: newToken, tokenExpiresAt: newExpiresAt, refreshToken: newRefreshToken, refreshTokenExpiresAt: newRefreshTokenExpiresAt})
+        return newToken
     },
 
     loadData: async () => {
@@ -369,7 +438,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     },
 
     publishTab: async (tabKey, orphansToDelete) => {
-        const {token, state: s, pendingUploads, publishing, dataLoadErrors} = get()
+        const {state: s, pendingUploads, publishing, dataLoadErrors} = get()
         if (publishing) return
         // Internal guard: never publish a tab whose data failed to load
         if (dataLoadErrors.includes(tabKey)) return
@@ -377,6 +446,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         if (!tab?.ghPath) return
         set({publishing: true})
         try {
+            const token = await get().ensureFreshToken()
             const changes: TreeFileChange[] = []
             const currentPaths = collectImagePaths(tab as TabConfig, s[tabKey] as Record<string, unknown>)
 
@@ -506,7 +576,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     },
 
     publishAll: async (orphansToDelete) => {
-        const {token, pendingUploads, publishing} = get()
+        const {pendingUploads, publishing} = get()
         if (publishing) return
 
         // Collect all changes BEFORE touching publishing state so an empty
@@ -543,6 +613,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
 
         set({publishing: true})
         try {
+            const token = await get().ensureFreshToken()
             // Build commit message
             const fileNames = dirtyKeys.map(k => {
                 const tab = TABS.find(t => t.key === k)

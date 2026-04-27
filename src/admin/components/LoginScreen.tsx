@@ -29,29 +29,39 @@ export default function LoginScreen() {
     const navigate = useNavigate()
 
     // Parse the OAuth callback hash once at mount — avoids setState inside an effect
-    const [{hashError, hashToken}] = useState(() => {
+    const [{hashError, hashToken, hashExpiresAt, hashRefreshToken, hashRefreshTokenExpiresAt}] = useState(() => {
+        const empty = {hashError: '', hashToken: null as string | null, hashExpiresAt: 0, hashRefreshToken: '', hashRefreshTokenExpiresAt: 0}
         const hash = window.location.hash.slice(1)
-        if (!hash) return {hashError: '', hashToken: null as string | null}
+        if (!hash) return empty
         const params = new URLSearchParams(hash)
         window.history.replaceState(null, '', window.location.pathname + window.location.search)
         const error = params.get('error')
-        if (error) return {hashError: `Anmeldung fehlgeschlagen: ${decodeURIComponent(error)}`, hashToken: null}
+        if (error) return {...empty, hashError: `Anmeldung fehlgeschlagen: ${decodeURIComponent(error)}`}
         const token = params.get('token')
         const returnedState = params.get('state')
-        if (!token) return {hashError: '', hashToken: null}
+        if (!token) return empty
         const savedState = sessionStorage.getItem('oauth_state')
         sessionStorage.removeItem('oauth_state')
         if (!returnedState || !savedState || returnedState !== savedState) {
-            return {hashError: 'Sicherheitsfehler: Ungültige Anfrage.', hashToken: null}
+            return {...empty, hashError: 'Sicherheitsfehler: Ungültige Anfrage.'}
         }
-        return {hashError: '', hashToken: decodeURIComponent(token)}
+        const expiresIn = params.get('expires_in')
+        const refreshToken = params.get('refresh_token')
+        const refreshTokenExpiresIn = params.get('refresh_token_expires_in')
+        return {
+            hashError: '',
+            hashToken: decodeURIComponent(token),
+            hashExpiresAt: expiresIn ? Date.now() + parseInt(expiresIn, 10) * 1000 : 0,
+            hashRefreshToken: refreshToken ? decodeURIComponent(refreshToken) : '',
+            hashRefreshTokenExpiresAt: refreshTokenExpiresIn ? Date.now() + parseInt(refreshTokenExpiresIn, 10) * 1000 : 0,
+        }
     })
 
     const [oauthError, setOauthError] = useState(hashError)
 
     useEffect(() => {
-        if (hashToken) login(hashToken)
-    }, [hashToken, login])
+        if (hashToken) login({token: hashToken, expiresAt: hashExpiresAt, refreshToken: hashRefreshToken, refreshTokenExpiresAt: hashRefreshTokenExpiresAt})
+    }, [hashToken, login, hashExpiresAt, hashRefreshToken, hashRefreshTokenExpiresAt])
 
     useEffect(() => {
         if (loginAuthStatus === 401 || loginAuthStatus === 403 || loginAuthStatus === 404) {
@@ -64,7 +74,7 @@ export default function LoginScreen() {
         setOauthError('')
         const state = generateState()
         sessionStorage.setItem('oauth_state', state)
-        const params = new URLSearchParams({client_id: CLIENT_ID, scope: 'repo', state})
+        const params = new URLSearchParams({client_id: CLIENT_ID, state})
         window.location.href = `https://github.com/login/oauth/authorize?${params}`
     }
 
