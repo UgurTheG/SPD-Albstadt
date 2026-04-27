@@ -1,0 +1,50 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '08:00'
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 10
+    groups:
+      react:
+        patterns:
+          - react
+          - react-dom
+          - react-router-dom
+          - '@types/react'
+          - '@types/react-dom'
+      tailwind:
+        patterns:
+          - tailwindcss
+          - '@tailwindcss/*'
+      framer:
+        patterns:
+          - framer-motion
+      dnd-kit:
+        patterns:
+          - '@dnd-kit/*'
+      eslint:
+        patterns:
+          - eslint
+          - '@eslint/*'
+          - eslint-*
+          - typescript-eslint
+      vite:
+        patterns:
+          - vite
+          - '@vitejs/*'
+      typescript:
+        patterns:
+          - typescript
+          - '@types/*'
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '08:00'
+      timezone: Europe/Berlin
