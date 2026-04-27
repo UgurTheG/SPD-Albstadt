@@ -36,7 +36,11 @@ export default function Fraktion() {
   // grid: 2 cols (xs) → 4 | 3 cols (sm 640) → 6 | 4 cols (md 768) → 8 | 5 cols (lg 1024) → 10
   const itemsPerPage = useItemsPerPageMulti([[1024, 10], [768, 8], [640, 6]], 4)
   const [visibleRedenCount, setVisibleRedenCount] = useState(itemsPerPage)
-  useEffect(() => { setVisibleRedenCount(itemsPerPage) }, [itemsPerPage])
+  const [prevItemsPerPage, setPrevItemsPerPage] = useState(itemsPerPage)
+  if (itemsPerPage !== prevItemsPerPage) {
+    setPrevItemsPerPage(itemsPerPage)
+    setVisibleRedenCount(itemsPerPage)
+  }
   const [availableYears, setAvailableYears] = useState<Set<number> | null>(null)
   const [disabledYears, setDisabledYears] = useState<Set<number>>(new Set([2013, 2015]))
 

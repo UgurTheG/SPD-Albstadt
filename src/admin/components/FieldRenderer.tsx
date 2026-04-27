@@ -165,12 +165,14 @@ function deToISO(de: string): string {
 function DateField({id, value, onChange}: { id?: string; value: string; onChange: (v: string) => void }) {
     const [display, setDisplay] = useState(isoToDE(value))
     const [valid, setValid] = useState(true)
+    const [prevValue, setPrevValue] = useState(value)
 
     // Sync display text when value changes externally (e.g. undo / redo / revert)
-    useEffect(() => {
+    if (value !== prevValue) {
+        setPrevValue(value)
         setDisplay(isoToDE(value))
         setValid(true)
-    }, [value])
+    }
 
     const hint = value ? new Date(value + 'T00:00:00').toLocaleDateString('de-DE', {
         weekday: 'long',
@@ -237,33 +239,33 @@ function ImageField({field, value, onChange, contextItem}: {
     const addPendingUpload = useAdminStore(s => s.addPendingUpload)
     const setStatus = useAdminStore(s => s.setStatus)
     const pendingUploads = useAdminStore(s => s.pendingUploads)
-    // Always-current ref so resolvePreview never needs to be in useEffect deps
-    const pendingUploadsRef = useRef(pendingUploads)
-    pendingUploadsRef.current = pendingUploads
 
     // Returns the base64 data URI if this URL is a pending (not-yet-uploaded) image,
     // otherwise returns the URL itself. Fixes preview loss on component remount.
     const resolvePreview = (url: string) => {
         if (!url) return ''
-        const match = pendingUploadsRef.current.find(
-            u => u.ghPath.replace(/^public/, '') === url
-        )
+        const match = pendingUploads.find(u => u.ghPath.replace(/^public/, '') === url)
         return match ? `data:image/webp;base64,${match.base64}` : url
     }
 
     const [preview, setPreview] = useState(() => resolvePreview(value || ''))
     const [cropFile, setCropFile] = useState<File | null>(null)
     const fileRef = useRef<HTMLInputElement>(null)
-    // Tracks the public URL of a pending upload so we don't overwrite its
-    // base64 preview when the value prop updates to that same URL.
-    const pendingUrlRef = useRef<string | null>(null)
+    const [showUrl, setShowUrl] = useState(!value)
+    const [prevValue, setPrevValue] = useState(value)
+    // Tracks the URL of our own pending upload to avoid overwriting its local preview
+    const [ownUploadUrl, setOwnUploadUrl] = useState<string | null>(null)
 
-    useEffect(() => {
-        // Don't replace the local base64 preview with the (not-yet-uploaded) URL
-        if (pendingUrlRef.current && value === pendingUrlRef.current) return
-        pendingUrlRef.current = null
-        setPreview(resolvePreview(value || ''))
-    }, [value]) // eslint-disable-line react-hooks/exhaustive-deps
+    // Sync preview and showUrl when value changes externally (undo / redo / item switch)
+    if (value !== prevValue) {
+        setPrevValue(value)
+        if (value !== ownUploadUrl) {
+            setPreview(resolvePreview(value || ''))
+        } else {
+            setOwnUploadUrl(null)
+        }
+        setShowUrl(!value)
+    }
 
     const handleCrop = (base64: string | null) => {
         setCropFile(null)
@@ -275,17 +277,12 @@ function ImageField({field, value, onChange, contextItem}: {
         const imageDir = field.imageDir || 'news'
         const ghFilePath = `public/images/${imageDir}/${nameSlug}.webp`
         const publicUrl = `/images/${imageDir}/${nameSlug}.webp`
-        pendingUrlRef.current = publicUrl
+        setOwnUploadUrl(publicUrl)
         addPendingUpload({ghPath: ghFilePath, base64, message: `admin: Bild ${nameSlug}.webp hochgeladen`})
         onChange(publicUrl)
         setPreview(`data:image/webp;base64,${base64}`)
         setStatus('Bild vorbereitet — wird beim Veröffentlichen hochgeladen', 'success')
     }
-
-    const [showUrl, setShowUrl] = useState(!value)
-    useEffect(() => {
-        setShowUrl(!value)
-    }, [value])
 
     return (
         <>
@@ -358,7 +355,7 @@ function ImageListField({field, value, onChange, contextItem}: {
     const list = Array.isArray(value) ? [...value] : []
     const captionsKey = field.captionsKey
     const captions: string[] = captionsKey && contextItem ? (Array.isArray(contextItem[captionsKey]) ? [...(contextItem[captionsKey] as string[])] : []) : []
-    const [cropData, setCropData] = useState<{ file: File; index: number } | null>(null)
+    const [cropData, setCropData] = useState<{ file: File; index: number; nameSlug: string } | null>(null)
 
     // Build extras object for caption changes — keeps URLs and captions in sync
     // within a single immutable update instead of two separate calls.
@@ -385,11 +382,10 @@ function ImageListField({field, value, onChange, contextItem}: {
 
     const handleCrop = (base64: string | null) => {
         if (!cropData) return
-        const {index} = cropData
+        const {index, nameSlug} = cropData
         setCropData(null)
         if (!base64) return
         const imageDir = field.imageDir || 'news'
-        const nameSlug = slugify('bild-' + Date.now())
         const ghFilePath = `public/images/${imageDir}/${nameSlug}.webp`
         const publicUrl = `/images/${imageDir}/${nameSlug}.webp`
         addPendingUpload({ghPath: ghFilePath, base64, message: `admin: Bild ${nameSlug}.webp hochgeladen`})
@@ -425,7 +421,7 @@ function ImageListField({field, value, onChange, contextItem}: {
                                     c[i] = v;
                                     onChange([...list], withCaps(c))
                                 }}
-                                onUpload={file => setCropData({file, index: i})}
+                                onUpload={file => setCropData({file, index: i, nameSlug: `bild-${Date.now()}`})}
                                 onRemove={() => {
                                     const n = [...list];
                                     n.splice(i, 1)

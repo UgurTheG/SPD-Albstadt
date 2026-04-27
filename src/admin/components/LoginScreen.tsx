@@ -26,41 +26,38 @@ function generateState(): string {
 
 export default function LoginScreen() {
     const {login, loginError, loginLoading, loginAuthStatus} = useAdminStore()
-    const [oauthError, setOauthError] = useState('')
     const navigate = useNavigate()
+
+    // Parse the OAuth callback hash once at mount — avoids setState inside an effect
+    const [{hashError, hashToken}] = useState(() => {
+        const hash = window.location.hash.slice(1)
+        if (!hash) return {hashError: '', hashToken: null as string | null}
+        const params = new URLSearchParams(hash)
+        window.history.replaceState(null, '', window.location.pathname + window.location.search)
+        const error = params.get('error')
+        if (error) return {hashError: `Anmeldung fehlgeschlagen: ${decodeURIComponent(error)}`, hashToken: null}
+        const token = params.get('token')
+        const returnedState = params.get('state')
+        if (!token) return {hashError: '', hashToken: null}
+        const savedState = sessionStorage.getItem('oauth_state')
+        sessionStorage.removeItem('oauth_state')
+        if (savedState && returnedState && returnedState !== savedState) {
+            return {hashError: 'Sicherheitsfehler: Ungültige Anfrage.', hashToken: null}
+        }
+        return {hashError: '', hashToken: decodeURIComponent(token)}
+    })
+
+    const [oauthError, setOauthError] = useState(hashError)
+
+    useEffect(() => {
+        if (hashToken) login(hashToken)
+    }, [hashToken, login])
 
     useEffect(() => {
         if (loginAuthStatus === 401 || loginAuthStatus === 403 || loginAuthStatus === 404) {
             navigate(`/${loginAuthStatus}`, {replace: true})
         }
     }, [loginAuthStatus, navigate])
-
-    useEffect(() => {
-        const hash = window.location.hash.slice(1)
-        if (!hash) return
-        const params = new URLSearchParams(hash)
-
-        const token = params.get('token')
-        const error = params.get('error')
-        const returnedState = params.get('state')
-
-        window.history.replaceState(null, '', window.location.pathname + window.location.search)
-
-        if (error) {
-            setOauthError(`Anmeldung fehlgeschlagen: ${decodeURIComponent(error)}`)
-            return
-        }
-
-        if (token) {
-            const savedState = sessionStorage.getItem('oauth_state')
-            sessionStorage.removeItem('oauth_state')
-            if (savedState && returnedState && returnedState !== savedState) {
-                setOauthError('Sicherheitsfehler: Ungültige Anfrage.')
-                return
-            }
-            login(decodeURIComponent(token))
-        }
-    }, [login])
 
     const handleGitHubLogin = () => {
         if (!CLIENT_ID) return

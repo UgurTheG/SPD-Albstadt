@@ -367,7 +367,11 @@ export default function Aktuelles() {
   const [dayEventsPickerList, setDayEventsPickerList] = useState<EventItem[]>([])
   const itemsPerPage = useItemsPerPage(768, 6, 3)
   const [visibleCount, setVisibleCount] = useState(itemsPerPage)
-  useEffect(() => { setVisibleCount(itemsPerPage) }, [itemsPerPage])
+  const [prevItemsPerPage, setPrevItemsPerPage] = useState(itemsPerPage)
+  if (itemsPerPage !== prevItemsPerPage) {
+    setPrevItemsPerPage(itemsPerPage)
+    setVisibleCount(itemsPerPage)
+  }
   const [activeTag, setActiveTag] = useState<string>('Alle')
   const [searchQuery, setSearchQuery] = useState('')
 

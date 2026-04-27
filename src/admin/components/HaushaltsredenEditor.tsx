@@ -15,11 +15,9 @@ export default function HaushaltsredenEditor() {
     const [busy, setBusy] = useState<number | null>(null)
     const toggleQueue = useRef(Promise.resolve())
     const latestDisabled = useRef(disabledYears)
-    latestDisabled.current = disabledYears
+    useEffect(() => { latestDisabled.current = disabledYears }, [disabledYears])
 
     const load = async (silent = false) => {
-        if (!silent) setLoading(true)
-        setLoadError(false)
         try {
             const [files, config] = await Promise.all([
                 listDirectory(token, 'public/documents/fraktion/haushaltsreden'),
@@ -32,15 +30,36 @@ export default function HaushaltsredenEditor() {
             }
             setExistingMap(map)
             if (config?.disabledYears) setDisabledYears(new Set(config.disabledYears))
+            if (!silent) setLoadError(false)
         } catch {
-            setLoadError(true)
+            if (!silent) setLoadError(true)
         }
-        setLoading(false)
+        if (!silent) setLoading(false)
     }
 
     useEffect(() => {
-        load()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        let cancelled = false
+        ;(async () => {
+            try {
+                const [files, config] = await Promise.all([
+                    listDirectory(token, 'public/documents/fraktion/haushaltsreden'),
+                    getFileContent(token, 'public/data/haushaltsreden.json'),
+                ])
+                if (cancelled) return
+                const map: Record<number, string> = {}
+                for (const f of files) {
+                    const m = f.name.match(/^(\d{4})\.pdf$/i)
+                    if (m) map[parseInt(m[1])] = f.sha
+                }
+                setExistingMap(map)
+                if (config?.disabledYears) setDisabledYears(new Set(config.disabledYears))
+                setLoadError(false)
+            } catch {
+                if (!cancelled) setLoadError(true)
+            }
+            if (!cancelled) setLoading(false)
+        })()
+        return () => { cancelled = true }
     }, [token])
 
     const saveConfig = async (disabled: Set<number>) => {
@@ -121,7 +140,7 @@ export default function HaushaltsredenEditor() {
             ) : loadError ? (
                 <div className="flex flex-col items-center justify-center py-24 gap-4">
                     <p className="text-sm text-red-500 dark:text-red-400">Fehler beim Laden der Dokumente.</p>
-                    <button type="button" onClick={() => load()}
+                    <button type="button" onClick={() => { setLoading(true); setLoadError(false); load() }}
                             className="text-xs font-semibold px-4 py-2 rounded-xl bg-spd-red/10 text-spd-red hover:bg-spd-red/15 transition-colors">
                         Erneut versuchen
                     </button>

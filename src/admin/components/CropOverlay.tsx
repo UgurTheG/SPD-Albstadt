@@ -29,6 +29,8 @@ export default function CropOverlay({file, onComplete}: Props) {
     const [pan, setPan] = useState({x: 0, y: 0})
     const [crop, setCrop] = useState({x: 0, y: 0, w: 0, h: 0})
     const [baseSize, setBaseSize] = useState({w: 0, h: 0})
+    const [containerDims, setContainerDims] = useState({w: 0, h: 0})
+    const [imgNaturalSize, setImgNaturalSize] = useState({w: 0, h: 0})
     // Cursor is tracked as state because dragType is a ref and doesn't trigger re-renders
     const [cursor, setCursor] = useState<string>('crosshair')
 
@@ -134,6 +136,30 @@ export default function CropOverlay({file, onComplete}: Props) {
         }
     }, [])
 
+    const layoutToFit = (img: HTMLImageElement) => {
+        const container = containerRef.current
+        if (!container) return
+        const cw = container.clientWidth
+        const ch = container.clientHeight
+        setContainerDims({w: cw, h: ch})
+        const availW = cw - EDGE_PADDING * 2
+        const availH = ch - EDGE_PADDING * 2
+        const s = Math.min(availW / img.width, availH / img.height, 1)
+        const bw = Math.round(img.width * s)
+        const bh = Math.round(img.height * s)
+        setBaseSize({w: bw, h: bh})
+        const canvas = canvasRef.current!
+        canvas.width = bw
+        canvas.height = bh
+        const ctx = canvas.getContext('2d')!
+        ctx.clearRect(0, 0, bw, bh)
+        ctx.drawImage(img, 0, 0, bw, bh)
+        setZoom(1)
+        setPan({x: Math.round((cw - bw) / 2), y: Math.round((ch - bh) / 2)})
+        setCrop({x: 0, y: 0, w: bw, h: bh})
+        setCursor('crosshair')
+    }
+
     // Load image & set initial fit (resize if too large)
     useEffect(() => {
         let cancelled = false
@@ -154,12 +180,14 @@ export default function CropOverlay({file, onComplete}: Props) {
                 resized.onload = () => {
                     if (cancelled) return
                     imgRef.current = resized
+                    setImgNaturalSize({w: resized.width, h: resized.height})
                     layoutToFit(resized)
                     setReady(true)
                 }
                 resized.src = offscreen.toDataURL('image/png')
             } else {
                 imgRef.current = img
+                setImgNaturalSize({w: img.width, h: img.height})
                 layoutToFit(img)
                 setReady(true)
             }
@@ -170,7 +198,6 @@ export default function CropOverlay({file, onComplete}: Props) {
             cancelled = true
             URL.revokeObjectURL(url)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [file])
 
     // Re-fit on resize
@@ -184,31 +211,7 @@ export default function CropOverlay({file, onComplete}: Props) {
             window.removeEventListener('resize', onResize)
             window.removeEventListener('orientationchange', onResize)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
-
-    const layoutToFit = (img: HTMLImageElement) => {
-        const container = containerRef.current
-        if (!container) return
-        const cw = container.clientWidth
-        const ch = container.clientHeight
-        const availW = cw - EDGE_PADDING * 2
-        const availH = ch - EDGE_PADDING * 2
-        const s = Math.min(availW / img.width, availH / img.height, 1)
-        const bw = Math.round(img.width * s)
-        const bh = Math.round(img.height * s)
-        setBaseSize({w: bw, h: bh})
-        const canvas = canvasRef.current!
-        canvas.width = bw
-        canvas.height = bh
-        const ctx = canvas.getContext('2d')!
-        ctx.clearRect(0, 0, bw, bh)
-        ctx.drawImage(img, 0, 0, bw, bh)
-        setZoom(1)
-        setPan({x: Math.round((cw - bw) / 2), y: Math.round((ch - bh) / 2)})
-        setCrop({x: 0, y: 0, w: bw, h: bh})
-        setCursor('crosshair')
-    }
 
     const clientToBase = useCallback((clientX: number, clientY: number) => {
         const canvas = canvasRef.current!
@@ -476,11 +479,8 @@ export default function CropOverlay({file, onComplete}: Props) {
 
     // Compute loupe position (offset above finger, clamped to stage)
     const loupeStyle = (() => {
-        if (!loupe.visible) return {display: 'none'} as React.CSSProperties
-        const container = containerRef.current
-        if (!container) return {display: 'none'} as React.CSSProperties
-        const cw = container.clientWidth
-        const ch = container.clientHeight
+        if (!loupe.visible || containerDims.w === 0) return {display: 'none'} as React.CSSProperties
+        const {w: cw, h: ch} = containerDims
         let lx = loupe.screenX - LOUPE_SIZE / 2
         let ly = loupe.screenY + LOUPE_OFFSET_Y - LOUPE_SIZE / 2
         // If loupe would go above the stage, show it below the finger instead
@@ -639,7 +639,7 @@ export default function CropOverlay({file, onComplete}: Props) {
             {/* Toolbar */}
             <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2.5 sm:px-6 sm:py-4 border-t border-white/10 bg-black/50">
                 <div className="text-[10px] sm:text-[11px] text-white/60 tabular-nums">
-                    {Math.round(crop.w * (imgRef.current?.width ?? 0) / (baseSize.w || 1))} × {Math.round(crop.h * (imgRef.current?.height ?? 0) / (baseSize.h || 1))} px
+                    {Math.round(crop.w * imgNaturalSize.w / (baseSize.w || 1))} × {Math.round(crop.h * imgNaturalSize.h / (baseSize.h || 1))} px
                     · {Math.round(zoom * 100)}%
                 </div>
                 <div className="flex gap-2">
