@@ -1,17 +1,8 @@
-import { motion, type Variants } from 'framer-motion'
-import { getInitials } from './Avatar'
+import { motion } from 'framer-motion'
+import { personCardItemVariants } from './personCardVariants'
 
-// ── Shared animation variants ─────────────────────────────────────────────────
-// Used by both Partei and Fraktion for their card grids (and other staggered lists).
-
-export const personCardContainerVariants: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.07 } },
-}
-
-export const personCardItemVariants: Variants = {
-  hidden: { opacity: 0, y: 25 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+function getInitials(name: string): string {
+  return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 }
 
 // ── PersonCard ─────────────────────────────────────────────────────────────────

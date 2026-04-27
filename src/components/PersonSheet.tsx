@@ -1,7 +1,7 @@
 import { Building2, ExternalLink, Hash, Mail, MapPin, Phone } from 'lucide-react'
 import Sheet from './Sheet'
 import PhotoGallery from './PhotoGallery'
-import { getInitials } from './Avatar'
+const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 
 /**
  * Normalised person data accepted by PersonSheet.

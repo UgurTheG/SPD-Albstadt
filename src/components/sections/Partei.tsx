@@ -14,7 +14,8 @@ import {useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import Sheet from '../Sheet'
 import PersonSheet from '../PersonSheet'
-import PersonCard, {personCardContainerVariants, personCardItemVariants} from '../PersonCard'
+import PersonCard from '../PersonCard'
+import {personCardContainerVariants, personCardItemVariants} from '../personCardVariants'
 import SectionHeader from '../SectionHeader'
 
 interface Schwerpunkt {

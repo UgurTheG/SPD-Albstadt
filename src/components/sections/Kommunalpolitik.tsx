@@ -5,7 +5,8 @@ import {FileDown} from 'lucide-react'
 import {useData} from '../../hooks/useData'
 import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
 import PersonSheet, {type PersonSheetData} from '../PersonSheet'
-import PersonCard, {personCardContainerVariants} from '../PersonCard'
+import PersonCard from '../PersonCard'
+import {personCardContainerVariants} from '../personCardVariants'
 import SectionHeader from '../SectionHeader'
 
 interface KommunalpolitikPerson {
