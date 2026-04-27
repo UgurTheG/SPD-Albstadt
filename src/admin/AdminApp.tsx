@@ -1,28 +1,28 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-    AlertTriangle,
-    Building2,
-    FileSearch,
-    FileText,
-    Landmark,
-    Loader2,
-    MapPin,
-    ScrollText,
-    LogOut,
-    Menu,
-    Moon,
-    Newspaper,
-    Rocket,
-    Settings,
-    Shield,
-    Sun,
-    Users,
-    X
+  AlertTriangle,
+  Building2,
+  FileSearch,
+  FileText,
+  Landmark,
+  Loader2,
+  MapPin,
+  ScrollText,
+  LogOut,
+  Menu,
+  Moon,
+  Newspaper,
+  Rocket,
+  Settings,
+  Shield,
+  Sun,
+  Users,
+  X,
 } from 'lucide-react'
-import {AnimatePresence, motion} from 'framer-motion'
-import {toast, Toaster} from 'sonner'
-import {useAdminStore} from './store'
-import {TABS} from './config/tabs'
+import { AnimatePresence, motion } from 'framer-motion'
+import { toast, Toaster } from 'sonner'
+import { useAdminStore } from './store'
+import { TABS } from './config/tabs'
 import LoginScreen from './components/LoginScreen'
 import TabEditor from './components/TabEditor'
 import HaushaltsredenEditor from './components/HaushaltsredenEditor'
@@ -32,398 +32,417 @@ import PublishConfirmModal from './components/PublishConfirmModal'
 import OrphanModal from './components/OrphanModal'
 
 const TAB_ICON_MAP: Record<string, React.ReactNode> = {
-    news: <Newspaper size={18}/>,
-    party: <Users size={18}/>,
-    fraktion: <Building2 size={18}/>,
-    kommunalpolitik: <MapPin size={18}/>,
-    haushaltsreden: <ScrollText size={18}/>,
-    history: <Landmark size={18}/>,
-    impressum: <FileText size={18}/>,
-    datenschutz: <Shield size={18}/>,
-    config: <Settings size={18}/>,
+  news: <Newspaper size={18} />,
+  party: <Users size={18} />,
+  fraktion: <Building2 size={18} />,
+  kommunalpolitik: <MapPin size={18} />,
+  haushaltsreden: <ScrollText size={18} />,
+  history: <Landmark size={18} />,
+  impressum: <FileText size={18} />,
+  datenschutz: <Shield size={18} />,
+  config: <Settings size={18} />,
 }
 
 export default function AdminApp() {
-    // Actions: Zustand action references are stable — they never change between renders.
-    const tryAutoLogin = useAdminStore(s => s.tryAutoLogin)
-    const logout = useAdminStore(s => s.logout)
-    const setActiveTab = useAdminStore(s => s.setActiveTab)
-    const toggleDark = useAdminStore(s => s.toggleDark)
-    const publishAll = useAdminStore(s => s.publishAll)
+  // Actions: Zustand action references are stable — they never change between renders.
+  const tryAutoLogin = useAdminStore(s => s.tryAutoLogin)
+  const logout = useAdminStore(s => s.logout)
+  const setActiveTab = useAdminStore(s => s.setActiveTab)
+  const toggleDark = useAdminStore(s => s.toggleDark)
+  const publishAll = useAdminStore(s => s.publishAll)
 
-    // State slices: each selector only causes a re-render when its own value changes.
-    const user = useAdminStore(s => s.user)
-    const token = useAdminStore(s => s.token)
-    const activeTab = useAdminStore(s => s.activeTab)
-    const darkMode = useAdminStore(s => s.darkMode)
-    const publishing = useAdminStore(s => s.publishing)
-    const statusMessage = useAdminStore(s => s.statusMessage)
-    const statusType = useAdminStore(s => s.statusType)
-    const statusCounter = useAdminStore(s => s.statusCounter)
-    const dataLoaded = useAdminStore(s => s.dataLoaded)
-    const dataLoadErrors = useAdminStore(s => s.dataLoadErrors)
+  // State slices: each selector only causes a re-render when its own value changes.
+  const user = useAdminStore(s => s.user)
+  const token = useAdminStore(s => s.token)
+  const activeTab = useAdminStore(s => s.activeTab)
+  const darkMode = useAdminStore(s => s.darkMode)
+  const publishing = useAdminStore(s => s.publishing)
+  const statusMessage = useAdminStore(s => s.statusMessage)
+  const statusType = useAdminStore(s => s.statusType)
+  const statusCounter = useAdminStore(s => s.statusCounter)
+  const dataLoaded = useAdminStore(s => s.dataLoaded)
+  const dataLoadErrors = useAdminStore(s => s.dataLoadErrors)
 
-    // Dirty set as a stable string — AdminApp only re-renders when the *set of dirty
-    // tab keys* changes, not on every keystroke inside a tab that is already dirty.
-    const dirtyString = useAdminStore(s => [...s.dirtyTabs()].sort().join(','))
-    const dirty = useMemo(
-        () => new Set(dirtyString ? dirtyString.split(',') : []),
-        [dirtyString],
-    )
+  // Dirty set as a stable string — AdminApp only re-renders when the *set of dirty
+  // tab keys* changes, not on every keystroke inside a tab that is already dirty.
+  const dirtyString = useAdminStore(s => [...s.dirtyTabs()].sort().join(','))
+  const dirty = useMemo(() => new Set(dirtyString ? dirtyString.split(',') : []), [dirtyString])
 
-    const [sidebarOpen, setSidebarOpen] = useState(false)
-    const [showGlobalDiff, setShowGlobalDiff] = useState(false)
-    const [showPublishConfirm, setShowPublishConfirm] = useState(false)
-    const [globalOrphans, setGlobalOrphans] = useState<string[] | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showGlobalDiff, setShowGlobalDiff] = useState(false)
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false)
+  const [globalOrphans, setGlobalOrphans] = useState<string[] | null>(null)
 
-    // Swipe-left to close sidebar on mobile
-    const touchStartX = useRef<number | null>(null)
-    const handleTouchStart = useCallback((e: React.TouchEvent) => {
-        touchStartX.current = e.touches[0].clientX
-    }, [])
-    const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-        if (touchStartX.current !== null) {
-            const delta = e.changedTouches[0].clientX - touchStartX.current
-            if (delta < -50) setSidebarOpen(false)
-            touchStartX.current = null
-        }
-    }, [])
-
-    useEffect(() => {
-        tryAutoLogin()
-    }, [tryAutoLogin])
-
-    // Sync active tab from URL hash on mount and hash changes
-    useEffect(() => {
-        const syncFromHash = () => {
-            const hash = window.location.hash.slice(1)
-            if (hash && TABS.some(t => t.key === hash)) {
-                setActiveTab(hash)
-            }
-        }
-        syncFromHash()
-        window.addEventListener('hashchange', syncFromHash)
-        return () => window.removeEventListener('hashchange', syncFromHash)
-    }, [setActiveTab])
-
-    // Update URL hash when active tab changes
-    useEffect(() => {
-        if (activeTab && window.location.hash !== `#${activeTab}`) {
-            window.history.replaceState(null, '', `#${activeTab}`)
-        }
-    }, [activeTab])
-
-    useEffect(() => {
-        document.documentElement.classList.toggle('dark', darkMode)
-    }, [darkMode])
-
-    // Warn before browser refresh / tab close when there are unsaved changes
-    const pendingUploads = useAdminStore(s => s.pendingUploads)
-    useEffect(() => {
-        const hasChanges = dirty.size > 0 || pendingUploads.length > 0
-        if (!hasChanges) return
-        const handler = (e: BeforeUnloadEvent) => {
-            e.preventDefault()
-            e.returnValue = ''
-        }
-        window.addEventListener('beforeunload', handler)
-        return () => window.removeEventListener('beforeunload', handler)
-    }, [dirty, pendingUploads])
-
-    // Warn before closing/refreshing with unsaved changes
-    useEffect(() => {
-        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            if (useAdminStore.getState().dirtyTabs().size > 0) {
-                e.preventDefault()
-                e.returnValue = ''
-            }
-        }
-        window.addEventListener('beforeunload', handleBeforeUnload)
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-    }, []) // no deps — uses static getState() which always reads fresh store
-
-
-    useEffect(() => {
-        if (!statusMessage) return
-        if (statusType === 'success') toast.success(statusMessage)
-        else if (statusType === 'error') toast.error(statusMessage)
-        else toast(statusMessage)
-    }, [statusMessage, statusType, statusCounter])
-
-    if (!token || !user) return <LoginScreen/>
-
-    const currentTab = TABS.find(t => t.key === activeTab) ?? TABS[0]
-
-    const handlePublishAll = () => {
-        setShowPublishConfirm(true)
+  // Swipe-left to close sidebar on mobile
+  const touchStartX = useRef<number | null>(null)
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }, [])
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current !== null) {
+      const delta = e.changedTouches[0].clientX - touchStartX.current
+      if (delta < -50) setSidebarOpen(false)
+      touchStartX.current = null
     }
+  }, [])
 
-    const handlePublishAllConfirmed = () => {
-        setShowPublishConfirm(false)
-        const orphans = useAdminStore.getState().findOrphanImages()
-        if (orphans.length > 0) {
-            // Show the orphan modal so the admin can choose what to delete
-            setGlobalOrphans(orphans)
-            return
-        }
-        publishAll()
+  useEffect(() => {
+    tryAutoLogin()
+  }, [tryAutoLogin])
+
+  // Sync active tab from URL hash on mount and hash changes
+  useEffect(() => {
+    const syncFromHash = () => {
+      const hash = window.location.hash.slice(1)
+      if (hash && TABS.some(t => t.key === hash)) {
+        setActiveTab(hash)
+      }
     }
+    syncFromHash()
+    window.addEventListener('hashchange', syncFromHash)
+    return () => window.removeEventListener('hashchange', syncFromHash)
+  }, [setActiveTab])
 
-    return (
-        <div
-            className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900 text-gray-900 dark:text-gray-100 transition-colors [text-align:left] [hyphens:none]">
-            <Toaster position="top-right" richColors closeButton theme={darkMode ? 'dark' : 'light'}/>
+  // Update URL hash when active tab changes
+  useEffect(() => {
+    if (activeTab && window.location.hash !== `#${activeTab}`) {
+      window.history.replaceState(null, '', `#${activeTab}`)
+    }
+  }, [activeTab])
 
-            {showGlobalDiff && <GlobalDiffModal onClose={() => setShowGlobalDiff(false)}/>}
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode)
+  }, [darkMode])
 
-            {showPublishConfirm && (
-                <PublishConfirmModal
-                    onConfirm={handlePublishAllConfirmed}
-                    onCancel={() => setShowPublishConfirm(false)}
-                />
-            )}
+  // Warn before browser refresh / tab close when there are unsaved changes
+  const pendingUploads = useAdminStore(s => s.pendingUploads)
+  useEffect(() => {
+    const hasChanges = dirty.size > 0 || pendingUploads.length > 0
+    if (!hasChanges) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [dirty, pendingUploads])
 
-            {globalOrphans && (
-                <OrphanModal
-                    orphans={globalOrphans}
-                    onConfirm={(toDelete) => {
-                        setGlobalOrphans(null)
-                        publishAll(toDelete.length > 0 ? toDelete : undefined)
-                    }}
-                    onKeep={() => {
-                        setGlobalOrphans(null)
-                        publishAll()
-                    }}
-                    onCancel={() => setGlobalOrphans(null)}
-                />
-            )}            {/* Mobile sidebar overlay */}
-            <AnimatePresence>
-                {sidebarOpen && (
+  // Warn before closing/refreshing with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (useAdminStore.getState().dirtyTabs().size > 0) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, []) // no deps — uses static getState() which always reads fresh store
+
+  useEffect(() => {
+    if (!statusMessage) return
+    if (statusType === 'success') toast.success(statusMessage)
+    else if (statusType === 'error') toast.error(statusMessage)
+    else toast(statusMessage)
+  }, [statusMessage, statusType, statusCounter])
+
+  if (!token || !user) return <LoginScreen />
+
+  const currentTab = TABS.find(t => t.key === activeTab) ?? TABS[0]
+
+  const handlePublishAll = () => {
+    setShowPublishConfirm(true)
+  }
+
+  const handlePublishAllConfirmed = () => {
+    setShowPublishConfirm(false)
+    const orphans = useAdminStore.getState().findOrphanImages()
+    if (orphans.length > 0) {
+      // Show the orphan modal so the admin can choose what to delete
+      setGlobalOrphans(orphans)
+      return
+    }
+    publishAll()
+  }
+
+  return (
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-gray-50 to-gray-100 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900 text-gray-900 dark:text-gray-100 transition-colors text-left [hyphens:none]">
+      <Toaster position="top-right" richColors closeButton theme={darkMode ? 'dark' : 'light'} />
+      {showGlobalDiff && <GlobalDiffModal onClose={() => setShowGlobalDiff(false)} />}
+      {showPublishConfirm && (
+        <PublishConfirmModal
+          onConfirm={handlePublishAllConfirmed}
+          onCancel={() => setShowPublishConfirm(false)}
+        />
+      )}
+      {globalOrphans && (
+        <OrphanModal
+          orphans={globalOrphans}
+          onConfirm={toDelete => {
+            setGlobalOrphans(null)
+            publishAll(toDelete.length > 0 ? toDelete : undefined)
+          }}
+          onKeep={() => {
+            setGlobalOrphans(null)
+            publishAll()
+          }}
+          onCancel={() => setGlobalOrphans(null)}
+        />
+      )}{' '}
+      {/* Mobile sidebar overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+      {/* Sidebar */}
+      <aside
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        className={`fixed top-0 left-0 h-full w-64 z-50 flex flex-col transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <div className="flex flex-col h-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/60 dark:border-gray-800/60">
+          {/* Logo area */}
+          <div className="p-5 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl shadow-lg shadow-spd-red/25 overflow-hidden">
+                <img src="/spd-logo.svg" alt="SPD" className="w-full h-full" />
+              </div>
+              <div>
+                <h1 className="font-extrabold text-sm dark:text-white tracking-tight">
+                  Daten-Editor
+                </h1>
+                <p className="text-[10px] text-gray-400 font-medium">SPD Albstadt</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(false)}
+                className="ml-auto lg:hidden text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+
+          {/* Nav items */}
+          <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
+            {TABS.map(tab => {
+              const isActive = activeTab === tab.key
+              const isDirty = dirty.has(tab.key)
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => {
+                    setActiveTab(tab.key)
+                    setSidebarOpen(false)
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 group relative ${
+                    isActive
+                      ? 'bg-spd-red/10 dark:bg-spd-red/15 text-spd-red dark:text-red-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-200'
+                  }`}
+                >
+                  {isActive && (
                     <motion.div
-                        initial={{opacity: 0}}
-                        animate={{opacity: 1}}
-                        exit={{opacity: 0}}
-                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
-                        onClick={() => setSidebarOpen(false)}
+                      layoutId="sidebar-active"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-spd-red rounded-r-full"
+                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                     />
-                )}
-            </AnimatePresence>
-
-            {/* Sidebar */}
-            <aside
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
-                className={`fixed top-0 left-0 h-full w-64 z-50 flex flex-col transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div
-                    className="flex flex-col h-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/60 dark:border-gray-800/60">
-                    {/* Logo area */}
-                    <div className="p-5 pb-4">
-                        <div className="flex items-center gap-3">
-                            <div
-                                className="w-10 h-10 rounded-2xl shadow-lg shadow-spd-red/25 overflow-hidden">
-                                <img src="/spd-logo.svg" alt="SPD" className="w-full h-full"/>
-                            </div>
-                            <div>
-                                <h1 className="font-extrabold text-sm dark:text-white tracking-tight">Daten-Editor</h1>
-                                <p className="text-[10px] text-gray-400 font-medium">SPD Albstadt</p>
-                            </div>
-                            <button type="button" onClick={() => setSidebarOpen(false)}
-                                    className="ml-auto lg:hidden text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                                <X size={18}/>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Nav items */}
-                    <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
-                        {TABS.map(tab => {
-                            const isActive = activeTab === tab.key
-                            const isDirty = dirty.has(tab.key)
-                            return (
-                                <button
-                                    key={tab.key}
-                                    type="button"
-                                    onClick={() => {
-                                        setActiveTab(tab.key);
-                                        setSidebarOpen(false)
-                                    }}
-                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 group relative ${
-                                        isActive
-                                            ? 'bg-spd-red/10 dark:bg-spd-red/15 text-spd-red dark:text-red-400 shadow-sm'
-                                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-200'
-                                    }`}
-                                >
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="sidebar-active"
-                                            className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-spd-red rounded-r-full"
-                                            transition={{type: 'spring', stiffness: 350, damping: 30}}
-                                        />
-                                    )}
-                                    <span
-                                        className={`transition-colors ${isActive ? 'text-spd-red dark:text-red-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
+                  )}
+                  <span
+                    className={`transition-colors ${isActive ? 'text-spd-red dark:text-red-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}
+                  >
                     {TAB_ICON_MAP[tab.key]}
                   </span>
-                                    <span className="truncate">{tab.label}</span>
-                                    {isDirty && (
-                                        <span className="ml-auto w-2 h-2 bg-spd-red rounded-full animate-pulse"/>
-                                    )}
-                                </button>
-                            )
-                        })}
-                    </nav>
+                  <span className="truncate">{tab.label}</span>
+                  {isDirty && (
+                    <span className="ml-auto w-2 h-2 bg-spd-red rounded-full animate-pulse" />
+                  )}
+                </button>
+              )
+            })}
+          </nav>
 
-                    {/* Bottom section */}
-                    <div className="p-4 border-t border-gray-200/60 dark:border-gray-800/60 space-y-3">
-                        {/* Global changes + Publish all */}
-                        <AnimatePresence>
-                            {dirty.size > 0 && (
-                                <>
-                                    <motion.button
-                                        initial={{opacity: 0, y: 10}}
-                                        animate={{opacity: 1, y: 0}}
-                                        exit={{opacity: 0, y: 10}}
-                                        type="button"
-                                        onClick={() => setShowGlobalDiff(true)}
-                                        className="w-full text-xs font-medium px-4 py-2.5 rounded-xl border border-amber-300/60 dark:border-amber-700/40 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <FileSearch size={13}/>
-                                        Alle Änderungen ({dirty.size})
-                                    </motion.button>
-                                    <motion.button
-                                        initial={{opacity: 0, y: 10}}
-                                        animate={{opacity: 1, y: 0}}
-                                        exit={{opacity: 0, y: 10}}
-                                    type="button"
-                                    onClick={handlePublishAll}
-                                    disabled={publishing || dataLoadErrors.length > 0}
-                                    title={dataLoadErrors.length > 0 ? 'Nicht möglich: Einige Daten konnten nicht geladen werden' : undefined}
-                                    className="w-full bg-spd-red hover:bg-spd-red-dark text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] transition-colors flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-spd-red disabled:active:scale-100 whitespace-nowrap [hyphens:none]"
-                                >
-                                    {publishing ? (
-                                        <Loader2 size={14} strokeWidth={2.5} className="animate-spin shrink-0"/>
-                                    ) : (
-                                        <Rocket size={14} strokeWidth={2.5} className="shrink-0"/>
-                                    )}
-                                    <span className="whitespace-nowrap">{publishing ? 'Veröffentliche…' : `Alle veröffentlichen (${dirty.size})`}</span>
-                                </motion.button>
-                                </>
-                            )}
-                        </AnimatePresence>
-
-                        {/* User info + controls */}
-                        <div className="flex items-center gap-2">
-                            {user.avatar_url && <img src={user.avatar_url} alt=""
-                                                     className="w-7 h-7 rounded-full ring-2 ring-gray-200 dark:ring-gray-700"/>}
-                            <div className="flex-1 min-w-0">
-                                <p className="text-xs font-semibold dark:text-white truncate">{user.login}</p>
-                                <p className="text-[10px] text-gray-400">Verbunden</p>
-                            </div>
-                            <button type="button" onClick={toggleDark}
-                                    className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                                    title="Dark Mode">
-                                {darkMode ? <Sun size={13}/> : <Moon size={13}/>}
-                            </button>
-                            <button type="button" onClick={logout}
-                                    className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
-                                    title="Abmelden">
-                                <LogOut size={13}/>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            {/* Main content area */}
-            <div className="lg:pl-64">
-                {/* Top bar for mobile */}
-                <header
-                    className="lg:hidden sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-800/60">
-                    <div className="flex items-center justify-between px-4 py-3">
-                        <button type="button" onClick={() => setSidebarOpen(true)}
-                                className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400">
-                            <Menu size={18}/>
-                        </button>
-                        <div className="flex items-center gap-2">
-                            <div
-                                className="w-8 h-8 rounded-xl overflow-hidden">
-                                <img src="/spd-logo.svg" alt="SPD" className="w-full h-full"/>
-                            </div>
-                            <span className="font-bold text-sm dark:text-white">Editor</span>
-                        </div>
-                        <div className="w-9"/>
-                        {/* Spacer */}
-                    </div>
-                </header>
-
-                {/* Content */}
-                <main className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
-                    {/* Data load error banner */}
-                    {dataLoadErrors.length > 0 && (
-                        <div className="mb-6 flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-700/40 rounded-2xl px-4 py-3">
-                            <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"/>
-                            <div>
-                                <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
-                                    Daten konnten nicht geladen werden
-                                </p>
-                                <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5">
-                                    Folgende Tabs haben leere Daten erhalten:{' '}
-                                    <strong>{dataLoadErrors.map(k => TABS.find(t => t.key === k)?.label ?? k).join(', ')}</strong>.
-                                    Bitte nicht veröffentlichen — das würde Live-Daten überschreiben. Seite neu laden und erneut versuchen.
-                                </p>
-                            </div>
-                        </div>
+          {/* Bottom section */}
+          <div className="p-4 border-t border-gray-200/60 dark:border-gray-800/60 space-y-3">
+            {/* Global changes + Publish all */}
+            <AnimatePresence>
+              {dirty.size > 0 && (
+                <>
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    type="button"
+                    onClick={() => setShowGlobalDiff(true)}
+                    className="w-full text-xs font-medium px-4 py-2.5 rounded-xl border border-amber-300/60 dark:border-amber-700/40 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all flex items-center justify-center gap-2"
+                  >
+                    <FileSearch size={13} />
+                    Alle Änderungen ({dirty.size})
+                  </motion.button>
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    type="button"
+                    onClick={handlePublishAll}
+                    disabled={publishing || dataLoadErrors.length > 0}
+                    title={
+                      dataLoadErrors.length > 0
+                        ? 'Nicht möglich: Einige Daten konnten nicht geladen werden'
+                        : undefined
+                    }
+                    className="w-full bg-spd-red hover:bg-spd-red-dark text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] transition-colors flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-spd-red disabled:active:scale-100 whitespace-nowrap [hyphens:none]"
+                  >
+                    {publishing ? (
+                      <Loader2 size={14} strokeWidth={2.5} className="animate-spin shrink-0" />
+                    ) : (
+                      <Rocket size={14} strokeWidth={2.5} className="shrink-0" />
                     )}
-                    {/* Page header */}
-                    <div className="mb-8">
-                        <motion.div
-                            key={activeTab}
-                            initial={{opacity: 0, y: 8}}
-                            animate={{opacity: 1, y: 0}}
-                            transition={{duration: 0.25}}
-                        >
-                            <div className="flex items-center gap-3 mb-2">
-                                <div
-                                    className="w-10 h-10 rounded-xl bg-gradient-to-br from-spd-red/10 to-spd-red/5 dark:from-spd-red/20 dark:to-spd-red/10 flex items-center justify-center text-spd-red">
-                                    {TAB_ICON_MAP[currentTab.key]}
-                                </div>
-                                <div>
-                                    <h2 className="text-xl sm:text-2xl font-extrabold dark:text-white tracking-tight">{currentTab.label}</h2>
-                                    <p className="text-xs text-gray-400 font-medium flex items-center gap-1">
-                                        Direkt-Bearbeitung — Veröffentlichung per Klick
-                                    </p>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </div>
+                    <span className="whitespace-nowrap">
+                      {publishing ? 'Veröffentliche…' : `Alle veröffentlichen (${dirty.size})`}
+                    </span>
+                  </motion.button>
+                </>
+              )}
+            </AnimatePresence>
 
-                    {/* Editor content */}
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={activeTab}
-                            initial={{opacity: 0, y: 12}}
-                            animate={{opacity: 1, y: 0}}
-                            exit={{opacity: 0, y: -8}}
-                            transition={{duration: 0.2}}
-                        >
-                            {!dataLoaded ? (
-                                <div className="flex flex-col items-center justify-center py-32">
-                                    <div
-                                        className="w-12 h-12 border-[3px] border-spd-red/20 border-t-spd-red rounded-full animate-spin mb-4"/>
-                                    <p className="text-sm text-gray-400">Daten werden geladen…</p>
-                                </div>
-                            ) : currentTab.type === 'haushaltsreden' ? (
-                                <HaushaltsredenEditor/>
-                            ) : currentTab.type === 'kommunalpolitik' ? (
-                                <KommunalpolitikEditor/>
-                            ) : (
-                                <TabEditor tab={currentTab}/>
-                            )}
-                        </motion.div>
-                    </AnimatePresence>
-                </main>
+            {/* User info + controls */}
+            <div className="flex items-center gap-2">
+              {user.avatar_url && (
+                <img
+                  src={user.avatar_url}
+                  alt=""
+                  className="w-7 h-7 rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold dark:text-white truncate">{user.login}</p>
+                <p className="text-[10px] text-gray-400">Verbunden</p>
+              </div>
+              <button
+                type="button"
+                onClick={toggleDark}
+                className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                title="Dark Mode"
+              >
+                {darkMode ? <Sun size={13} /> : <Moon size={13} />}
+              </button>
+              <button
+                type="button"
+                onClick={logout}
+                className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
+                title="Abmelden"
+              >
+                <LogOut size={13} />
+              </button>
             </div>
-
+          </div>
         </div>
-    )
+      </aside>
+      {/* Main content area */}
+      <div className="lg:pl-64">
+        {/* Top bar for mobile */}
+        <header className="lg:hidden sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-800/60">
+          <div className="flex items-center justify-between px-4 py-3">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400"
+            >
+              <Menu size={18} />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl overflow-hidden">
+                <img src="/spd-logo.svg" alt="SPD" className="w-full h-full" />
+              </div>
+              <span className="font-bold text-sm dark:text-white">Editor</span>
+            </div>
+            <div className="w-9" />
+            {/* Spacer */}
+          </div>
+        </header>
+
+        {/* Content */}
+        <main className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
+          {/* Data load error banner */}
+          {dataLoadErrors.length > 0 && (
+            <div className="mb-6 flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-700/40 rounded-2xl px-4 py-3">
+              <AlertTriangle
+                size={16}
+                className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"
+              />
+              <div>
+                <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                  Daten konnten nicht geladen werden
+                </p>
+                <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5">
+                  Folgende Tabs haben leere Daten erhalten:{' '}
+                  <strong>
+                    {dataLoadErrors.map(k => TABS.find(t => t.key === k)?.label ?? k).join(', ')}
+                  </strong>
+                  . Bitte nicht veröffentlichen — das würde Live-Daten überschreiben. Seite neu
+                  laden und erneut versuchen.
+                </p>
+              </div>
+            </div>
+          )}
+          {/* Page header */}
+          <div className="mb-8">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl bg-linear-to-br from-spd-red/10 to-spd-red/5 dark:from-spd-red/20 dark:to-spd-red/10 flex items-center justify-center text-spd-red">
+                  {TAB_ICON_MAP[currentTab.key]}
+                </div>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-extrabold dark:text-white tracking-tight">
+                    {currentTab.label}
+                  </h2>
+                  <p className="text-xs text-gray-400 font-medium flex items-center gap-1">
+                    Direkt-Bearbeitung — Veröffentlichung per Klick
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Editor content */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              {!dataLoaded ? (
+                <div className="flex flex-col items-center justify-center py-32">
+                  <div className="w-12 h-12 border-[3px] border-spd-red/20 border-t-spd-red rounded-full animate-spin mb-4" />
+                  <p className="text-sm text-gray-400">Daten werden geladen…</p>
+                </div>
+              ) : currentTab.type === 'haushaltsreden' ? (
+                <HaushaltsredenEditor />
+              ) : currentTab.type === 'kommunalpolitik' ? (
+                <KommunalpolitikEditor />
+              ) : (
+                <TabEditor tab={currentTab} />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
+    </div>
+  )
 }

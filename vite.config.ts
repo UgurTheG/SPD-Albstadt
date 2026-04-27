@@ -1,17 +1,19 @@
-import {defineConfig, loadEnv, type Plugin} from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import {readFileSync} from 'fs'
-import {join} from 'path'
-import {loadInstagramFeedFromUrl} from './server/instagram'
-import {INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME} from './src/shared/instagram.ts'
+import { readFileSync } from 'fs'
+import { join } from 'path'
+import { loadInstagramFeedFromUrl } from './server/instagram'
+import { INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME } from './src/shared/instagram.ts'
 
 function getIcsUrl(): string {
   try {
     const raw = readFileSync(join(process.cwd(), 'public', 'data', 'config.json'), 'utf-8')
     const config = JSON.parse(raw) as { icsUrl?: string }
     if (config.icsUrl) return config.icsUrl.replace(/^[a-zA-Z]+:\/\//, 'https://')
-  } catch { /* */ }
+  } catch {
+    /* */
+  }
   throw new Error('No ICS URL configured in config.json')
 }
 
@@ -20,10 +22,16 @@ function serveIcsProxy(): Plugin {
     name: 'serve-ics-proxy',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        if (req.url !== '/api/ics') { next(); return }
+        if (req.url !== '/api/ics') {
+          next()
+          return
+        }
 
         void fetch(getIcsUrl(), {
-          headers: { 'User-Agent': 'SPD-Albstadt-Website/1.0', Accept: 'text/calendar, text/plain, */*' },
+          headers: {
+            'User-Agent': 'SPD-Albstadt-Website/1.0',
+            Accept: 'text/calendar, text/plain, */*',
+          },
         })
           .then(async upstream => {
             if (!upstream.ok) {
@@ -68,14 +76,16 @@ function serveInstagramApi(env: Record<string, string>): Plugin {
           .catch(() => {
             res.statusCode = 200
             res.setHeader('Content-Type', 'application/json; charset=utf-8')
-            res.end(JSON.stringify({
-              username: INSTAGRAM_USERNAME,
-              profileUrl: INSTAGRAM_PROFILE_URL,
-              source: 'fallback',
-              fallbackReason: 'upstream_error',
-              items: [],
-              fetchedAt: new Date().toISOString(),
-            }))
+            res.end(
+              JSON.stringify({
+                username: INSTAGRAM_USERNAME,
+                profileUrl: INSTAGRAM_PROFILE_URL,
+                source: 'fallback',
+                fallbackReason: 'upstream_error',
+                items: [],
+                fetchedAt: new Date().toISOString(),
+              }),
+            )
           })
       })
     },
@@ -87,7 +97,10 @@ function serveOAuthCallback(env: Record<string, string>): Plugin {
     name: 'serve-oauth-callback',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        if (!req.url?.startsWith('/api/auth/callback')) { next(); return }
+        if (!req.url?.startsWith('/api/auth/callback')) {
+          next()
+          return
+        }
 
         const url = new URL(req.url, 'http://localhost')
         const code = url.searchParams.get('code')
@@ -108,10 +121,17 @@ function serveOAuthCallback(env: Record<string, string>): Plugin {
 
         void fetch('https://github.com/login/oauth/access_token', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-          body: JSON.stringify({client_id: clientId, client_secret: clientSecret, code}),
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code }),
         })
-          .then(r => r.json() as Promise<{access_token?: string; error?: string; error_description?: string}>)
+          .then(
+            r =>
+              r.json() as Promise<{
+                access_token?: string
+                error?: string
+                error_description?: string
+              }>,
+          )
           .then(data => {
             if (!data.access_token) {
               const msg = data.error_description ?? data.error ?? 'token_exchange_failed'
@@ -132,6 +152,12 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
-    plugins: [serveIcsProxy(), serveInstagramApi(env), serveOAuthCallback(env), react(), tailwindcss()],
+    plugins: [
+      serveIcsProxy(),
+      serveInstagramApi(env),
+      serveOAuthCallback(env),
+      react(),
+      tailwindcss(),
+    ],
   }
 })

@@ -101,6 +101,7 @@ npm run lint
 Für den Admin-Login wird eine GitHub OAuth App benötigt. Erstellen unter: https://github.com/settings/developers
 
 Callback-URLs eintragen:
+
 - Produktion: `https://<deine-domain>/api/auth/callback`
 - Lokal: `http://localhost:5173/api/auth/callback`
 

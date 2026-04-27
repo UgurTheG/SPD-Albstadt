@@ -7,8 +7,8 @@ import ICAL from 'ical.js'
 
 export interface ICSEvent {
   id: string
-  datum: string       // YYYY-MM-DD
-  uhrzeit: string     // HH:MM (00:00 when ganztaegig)
+  datum: string // YYYY-MM-DD
+  uhrzeit: string // HH:MM (00:00 when ganztaegig)
   ganztaegig: boolean // true for all-day (VALUE=DATE) events
   titel: string
   ort: string
@@ -69,16 +69,12 @@ export function parseICS(icsText: string): ICSEvent[] {
   ) => {
     // For all-day events DTEND is exclusive, so a single-day event has
     // end = start + 1 day. For timed events we only render on the start day.
-    const spanDays = isAllDay && endJs
-      ? Math.min(MAX_DAYS_PER_EVENT, dayDiff(startJs, endJs))
-      : 1
+    const spanDays = isAllDay && endJs ? Math.min(MAX_DAYS_PER_EVENT, dayDiff(startJs, endJs)) : 1
 
     for (let offset = 0; offset < spanDays; offset++) {
       const jsDate = spanDays > 1 ? addDays(startJs, offset) : startJs
       const datum = `${jsDate.getFullYear()}-${pad(jsDate.getMonth() + 1)}-${pad(jsDate.getDate())}`
-      const uhrzeit = isAllDay
-        ? '00:00'
-        : `${pad(jsDate.getHours())}:${pad(jsDate.getMinutes())}`
+      const uhrzeit = isAllDay ? '00:00' : `${pad(jsDate.getHours())}:${pad(jsDate.getMinutes())}`
       events.push({
         id: `${uid}-${index}-${offset}-${datum}`,
         datum,

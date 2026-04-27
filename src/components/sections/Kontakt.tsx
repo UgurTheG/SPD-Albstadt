@@ -1,7 +1,7 @@
-import {type ChangeEvent, type FormEvent, useRef, useState} from 'react'
-import {AnimatePresence, motion, useInView} from 'framer-motion'
-import {AlertCircle, CheckCircle, ChevronDown, Mail, MapPin, Phone, Send} from 'lucide-react'
-import {useConfig} from '../../hooks/useConfig'
+import { type ChangeEvent, type FormEvent, useRef, useState } from 'react'
+import { AnimatePresence, motion, useInView } from 'framer-motion'
+import { AlertCircle, CheckCircle, ChevronDown, Mail, MapPin, Phone, Send } from 'lucide-react'
+import { useConfig } from '../../hooks/useConfig'
 
 interface FormData {
   name: string
@@ -13,11 +13,18 @@ interface FormData {
 export default function Kontakt() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
-  const [formData, setFormData] = useState<FormData>({ name: '', email: '', betreff: '', nachricht: '' })
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    email: '',
+    betreff: '',
+    nachricht: '',
+  })
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
   const config = useConfig()
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
@@ -57,7 +64,9 @@ export default function Kontakt() {
 
   const kontakt = config?.kontakt
   const buerozeiten = config?.buerozeiten
-  const adresseLines = (kontakt?.adresse || 'SPD Albstadt\nStadtgarten 1\n72458 Albstadt-Ebingen').split('\n')
+  const adresseLines = (
+    kontakt?.adresse || 'SPD Albstadt\nStadtgarten 1\n72458 Albstadt-Ebingen'
+  ).split('\n')
   const email = kontakt?.email || 'info@spd-albstadt.de'
   const telefon = kontakt?.telefon || '07431 / 000 000'
   const telefonLink = '+49' + telefon.replace(/[^0-9]/g, '').replace(/^0/, '')
@@ -100,7 +109,8 @@ export default function Kontakt() {
             Schreiben Sie uns
           </h2>
           <p className="text-lg text-gray-500 dark:text-white/70 max-w-2xl">
-            Haben Sie Fragen, Anregungen oder möchten Sie Mitglied werden? Wir freuen uns auf Ihre Nachricht.
+            Haben Sie Fragen, Anregungen oder möchten Sie Mitglied werden? Wir freuen uns auf Ihre
+            Nachricht.
           </p>
         </motion.div>
 
@@ -126,9 +136,15 @@ export default function Kontakt() {
                     animate={{ scale: 1 }}
                     transition={{ type: 'spring', stiffness: 300, delay: 0.1 }}
                   >
-                    <CheckCircle size={56} className="text-spd-red dark:text-white mb-5" strokeWidth={1.5} />
+                    <CheckCircle
+                      size={56}
+                      className="text-spd-red dark:text-white mb-5"
+                      strokeWidth={1.5}
+                    />
                   </motion.div>
-                  <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-3">Nachricht gesendet!</h3>
+                  <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-3">
+                    Nachricht gesendet!
+                  </h3>
                   <p className="text-gray-500 dark:text-white/70 mb-6 text-sm leading-relaxed">
                     Vielen Dank für Ihre Nachricht. Wir melden uns so bald wie möglich bei Ihnen.
                   </p>
@@ -226,8 +242,8 @@ export default function Kontakt() {
                   {status === 'error' && (
                     <div className="flex items-center gap-2.5 bg-red-50 dark:bg-white text-spd-red rounded-xl px-4 py-3 text-sm font-medium border border-red-200 dark:border-transparent">
                       <AlertCircle size={16} className="shrink-0" />
-                      Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder schreiben Sie uns direkt per
-                      E-Mail.
+                      Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder schreiben
+                      Sie uns direkt per E-Mail.
                     </div>
                   )}
 
@@ -256,7 +272,8 @@ export default function Kontakt() {
                   </motion.button>
 
                   <p className="text-gray-400 dark:text-white/40 text-xs text-center leading-relaxed">
-                    Mit dem Absenden stimmen Sie zu, dass wir Ihre Daten zur Bearbeitung Ihrer Anfrage verwenden.
+                    Mit dem Absenden stimmen Sie zu, dass wir Ihre Daten zur Bearbeitung Ihrer
+                    Anfrage verwenden.
                   </p>
                 </motion.form>
               )}
@@ -271,8 +288,10 @@ export default function Kontakt() {
             className="lg:col-span-2 flex flex-col gap-6"
           >
             {/* Group photo — hidden on small landscape screens where height is very limited */}
-            <div className="rounded-2xl overflow-hidden ring-1 ring-gray-200 dark:ring-white/10 shadow-sm
-                            [@media(orientation:landscape)_and_(max-height:600px)]:hidden">
+            <div
+              className="rounded-2xl overflow-hidden ring-1 ring-gray-200 dark:ring-white/10 shadow-sm
+                            [@media(orientation:landscape)_and_(max-height:600px)]:hidden"
+            >
               <img
                 src={kontakt?.gruppenbild || '/images/kontakt/gruppenbild.webp'}
                 alt="SPD Albstadt – Gruppenbild"
@@ -291,9 +310,9 @@ export default function Kontakt() {
                     <p className="text-gray-900 dark:text-white font-semibold text-sm">Anschrift</p>
                     <p className="text-gray-500 dark:text-white/60 text-sm mt-0.5 leading-relaxed">
                       {adresseLines.map((line, index) => (
-                          <span key={index}>
+                        <span key={index}>
                           {line}
-                            {index < adresseLines.length - 1 && <br/>}
+                          {index < adresseLines.length - 1 && <br />}
                         </span>
                       ))}
                     </p>
@@ -306,7 +325,7 @@ export default function Kontakt() {
                   <div>
                     <p className="text-gray-900 dark:text-white font-semibold text-sm">E-Mail</p>
                     <a
-                        href={`mailto:${email}`}
+                      href={`mailto:${email}`}
                       className="text-gray-500 dark:text-white/60 text-sm hover:text-spd-red dark:hover:text-white transition-colors mt-0.5 block"
                     >
                       {email}
@@ -320,7 +339,7 @@ export default function Kontakt() {
                   <div>
                     <p className="text-gray-900 dark:text-white font-semibold text-sm">Telefon</p>
                     <a
-                        href={`tel:${telefonLink}`}
+                      href={`tel:${telefonLink}`}
                       className="text-gray-500 dark:text-white/60 text-sm hover:text-spd-red dark:hover:text-white transition-colors mt-0.5 block"
                     >
                       {telefon}
@@ -333,14 +352,19 @@ export default function Kontakt() {
             <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
               <h4 className="text-gray-900 dark:text-white font-bold mb-3">Bürozeiten</h4>
               <div className="space-y-2 text-sm">
-                {(buerozeiten || [{tage: 'Montag – Freitag', zeit: '10:00 – 16:00'}, {
-                  tage: 'Samstag',
-                  zeit: 'Nach Vereinbarung'
-                }]).map((b, index) => (
-                    <div key={index} className="flex justify-between">
-                      <span className="text-gray-500 dark:text-white/60">{b.tage}</span>
-                      <span className="text-gray-900 dark:text-white font-medium">{b.zeit}</span>
-                    </div>
+                {(
+                  buerozeiten || [
+                    { tage: 'Montag – Freitag', zeit: '10:00 – 16:00' },
+                    {
+                      tage: 'Samstag',
+                      zeit: 'Nach Vereinbarung',
+                    },
+                  ]
+                ).map((b, index) => (
+                  <div key={index} className="flex justify-between">
+                    <span className="text-gray-500 dark:text-white/60">{b.tage}</span>
+                    <span className="text-gray-900 dark:text-white font-medium">{b.zeit}</span>
+                  </div>
                 ))}
               </div>
             </div>

@@ -1,7 +1,7 @@
-import {useRef} from 'react'
-import {motion, useScroll, useTransform} from 'framer-motion'
-import {ChevronDown, UserPlus} from 'lucide-react'
-import {useData} from '../hooks/useData'
+import { useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { ChevronDown, UserPlus } from 'lucide-react'
+import { useData } from '../hooks/useData'
 
 interface HeroProps {
   navigateTo: (id: string) => void
@@ -21,11 +21,12 @@ const BASE_NAV_ITEMS = [
 ]
 
 export default function Hero({ navigateTo }: HeroProps) {
-  const {data: kpData} = useData<{sichtbar?: boolean}>('/data/kommunalpolitik.json')
-  const {data: configData} = useData<ConfigData>('/data/config.json')
-  const slogan = configData?.heroSlogan || 'Gemeinsam für Albstadt — sozial, gerecht und zukunftsorientiert.'
+  const { data: kpData } = useData<{ sichtbar?: boolean }>('/data/kommunalpolitik.json')
+  const { data: configData } = useData<ConfigData>('/data/config.json')
+  const slogan =
+    configData?.heroSlogan || 'Gemeinsam für Albstadt — sozial, gerecht und zukunftsorientiert.'
   const navItems = BASE_NAV_ITEMS.filter(
-    item => item.id !== 'kommunalpolitik' || kpData?.sichtbar === true
+    item => item.id !== 'kommunalpolitik' || kpData?.sichtbar === true,
   )
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
@@ -36,16 +37,26 @@ export default function Hero({ navigateTo }: HeroProps) {
   const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0])
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.05])
   return (
-    <section ref={ref} id="hero" className="relative h-screen min-h-150 overflow-hidden bg-spd-red dark:bg-red-950">
+    <section
+      ref={ref}
+      id="hero"
+      className="relative h-screen min-h-150 overflow-hidden bg-spd-red dark:bg-red-950"
+    >
       {/* Background layers */}
       <motion.div style={{ scale }} className="absolute inset-0">
         <div className="absolute inset-0 bg-linear-to-b from-spd-red via-spd-red-dark to-[#8B000A] dark:from-red-950 dark:via-red-950 dark:to-[#1a0000]" />
         {/* Radial vignette — darkens edges, keeps center bright */}
         <div
           className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 40%, transparent 0%, rgba(0,0,0,0.35) 100%)' }}
+          style={{
+            background:
+              'radial-gradient(ellipse 70% 60% at 50% 40%, transparent 0%, rgba(0,0,0,0.35) 100%)',
+          }}
         />
-        <svg className="absolute inset-0 w-full h-full opacity-[0.05]" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          className="absolute inset-0 w-full h-full opacity-[0.05]"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <defs>
             <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
               <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
@@ -57,7 +68,9 @@ export default function Hero({ navigateTo }: HeroProps) {
         <div className="absolute top-1/3 -left-48 w-100 h-100 rounded-full bg-white/3" />
         <div className="absolute -bottom-24 right-1/4 w-75 h-75 rounded-full bg-white/3" />
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none select-none">
-          <span className="text-[20vw] font-black text-white/3 tracking-tighter leading-none">SPD</span>
+          <span className="text-[20vw] font-black text-white/3 tracking-tighter leading-none">
+            SPD
+          </span>
         </div>
       </motion.div>
       {/* Main content with parallax */}
@@ -99,7 +112,7 @@ export default function Hero({ navigateTo }: HeroProps) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{duration: 0.7, delay: 0.4, ease: 'easeOut'}}
+          transition={{ duration: 0.7, delay: 0.4, ease: 'easeOut' }}
           className="flex flex-wrap justify-center gap-2.5 mb-8"
         >
           {navItems.map((item, i) => (
@@ -107,7 +120,7 @@ export default function Hero({ navigateTo }: HeroProps) {
               key={item.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{delay: 0.45 + i * 0.08}}
+              transition={{ delay: 0.45 + i * 0.08 }}
               whileHover={{ scale: 1.06, backgroundColor: 'rgba(255,255,255,0.22)' }}
               whileTap={{ scale: 0.96 }}
               onClick={() => navigateTo(item.id)}
@@ -120,29 +133,29 @@ export default function Hero({ navigateTo }: HeroProps) {
 
         {/* Divider */}
         <motion.div
-            initial={{opacity: 0}}
-            animate={{opacity: 1}}
-            transition={{duration: 0.6, delay: 0.85}}
-            className="flex items-center gap-3 mb-6 w-56"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.85 }}
+          className="flex items-center gap-3 mb-6 w-56"
         >
-          <div className="flex-1 h-px bg-white/15"/>
+          <div className="flex-1 h-px bg-white/15" />
           <span className="text-[11px] text-white/35 font-medium tracking-wide">oder</span>
-          <div className="flex-1 h-px bg-white/15"/>
+          <div className="flex-1 h-px bg-white/15" />
         </motion.div>
 
         {/* Secondary CTA */}
         <motion.a
-            href="https://www.spd.de/unterstuetzen/mitglied-werden"
-            target="_blank"
-            rel="noopener noreferrer"
-            initial={{opacity: 0, y: 12}}
-            animate={{opacity: 1, y: 0}}
-            transition={{duration: 0.6, delay: 0.9, ease: 'easeOut'}}
-            whileHover={{scale: 1.04}}
-            whileTap={{scale: 0.97}}
-            className="inline-flex items-center gap-2 bg-white/12 backdrop-blur-sm border border-white/25 text-white font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-white/20 hover:border-white/40 transition-all cursor-pointer"
+          href="https://www.spd.de/unterstuetzen/mitglied-werden"
+          target="_blank"
+          rel="noopener noreferrer"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.9, ease: 'easeOut' }}
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.97 }}
+          className="inline-flex items-center gap-2 bg-white/12 backdrop-blur-sm border border-white/25 text-white font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-white/20 hover:border-white/40 transition-all cursor-pointer"
         >
-          <UserPlus size={15} strokeWidth={2.5}/>
+          <UserPlus size={15} strokeWidth={2.5} />
           Mitglied werden
         </motion.a>
       </motion.div>

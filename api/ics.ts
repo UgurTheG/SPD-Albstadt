@@ -1,5 +1,5 @@
-import {readFileSync} from 'fs'
-import {join} from 'path'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
 const DEFAULT_ICS_URL = ''
 
@@ -13,7 +13,8 @@ function getIcsUrl(): string {
     const raw = readFileSync(configPath, 'utf-8')
     const config = JSON.parse(raw) as { icsUrl?: string }
     if (config.icsUrl) return normalizeUrl(config.icsUrl)
-  } catch { /* use default */
+  } catch {
+    /* use default */
   }
   if (!DEFAULT_ICS_URL) throw new Error('No ICS URL configured in config.json')
   return DEFAULT_ICS_URL
@@ -33,7 +34,7 @@ export default async function handler(_req: unknown, res: ApiResponse) {
     const upstream = await fetch(icsUrl, {
       headers: {
         'User-Agent': 'SPD-Albstadt-Website/1.0',
-        'Accept': 'text/calendar, text/plain, */*',
+        Accept: 'text/calendar, text/plain, */*',
       },
     })
 

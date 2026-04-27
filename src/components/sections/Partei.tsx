@@ -1,5 +1,5 @@
-import {type ElementType, useRef, useState} from 'react'
-import {motion, useInView} from 'framer-motion'
+import { type ElementType, useRef, useState } from 'react'
+import { motion, useInView } from 'framer-motion'
 import {
   Briefcase,
   Bus,
@@ -8,14 +8,14 @@ import {
   GraduationCap,
   Home,
   Leaf,
-  Users
+  Users,
 } from 'lucide-react'
-import {useData} from '../../hooks/useData'
-import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
+import { useData } from '../../hooks/useData'
+import { useHttpErrorRedirect } from '../../hooks/useHttpErrorRedirect'
 import Sheet from '../Sheet'
 import PersonSheet from '../PersonSheet'
 import PersonCard from '../PersonCard'
-import {personCardContainerVariants, personCardItemVariants} from '../personCardVariants'
+import { personCardContainerVariants, personCardItemVariants } from '../personCardVariants'
 import SectionHeader from '../SectionHeader'
 
 interface Schwerpunkt {
@@ -65,7 +65,7 @@ const ICONS: Record<string, ElementType> = {
 export default function Partei() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
-  const {data, error} = useData<PartyData>('/data/party.json')
+  const { data, error } = useData<PartyData>('/data/party.json')
   useHttpErrorRedirect(error)
   const [selectedPerson, setSelectedPerson] = useState<Mitglied | Abgeordneter | null>(null)
   const [selectedSchwerpunkt, setSelectedSchwerpunkt] = useState<Schwerpunkt | null>(null)
@@ -98,7 +98,7 @@ export default function Partei() {
             animate={isInView ? 'visible' : 'hidden'}
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"
           >
-            {data?.schwerpunkte.map((s) => {
+            {data?.schwerpunkte.map(s => {
               const Icon = ICONS[s.icon] || Users
               return (
                 <motion.div
@@ -118,20 +118,29 @@ export default function Partei() {
                       <div className="w-11 h-11 bg-spd-red/8 dark:bg-spd-red/12 rounded-xl flex items-center justify-center transition-all duration-300">
                         <Icon size={20} className="text-spd-red" />
                       </div>
-                      <ChevronRight size={14} className="text-gray-200 dark:text-gray-700 group-hover:text-spd-red transition-colors mt-1 shrink-0" />
+                      <ChevronRight
+                        size={14}
+                        className="text-gray-200 dark:text-gray-700 group-hover:text-spd-red transition-colors mt-1 shrink-0"
+                      />
                     </div>
-                    <h4 className="font-bold text-gray-900 dark:text-white mb-2 leading-snug">{s.titel}</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-3">{s.beschreibung}</p>
+                    <h4 className="font-bold text-gray-900 dark:text-white mb-2 leading-snug">
+                      {s.titel}
+                    </h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-3">
+                      {s.beschreibung}
+                    </p>
                   </div>
                 </motion.div>
               )
             })}
 
-            {!data && (
+            {!data &&
               Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-gray-100 dark:bg-gray-800 rounded-2xl h-40 animate-pulse" />
-              ))
-            )}
+                <div
+                  key={i}
+                  className="bg-gray-100 dark:bg-gray-800 rounded-2xl h-40 animate-pulse"
+                />
+              ))}
           </motion.div>
         </div>
 
@@ -192,7 +201,6 @@ export default function Partei() {
                              hover:shadow-xl
                              transition-all duration-500 hover:-translate-y-1"
                 >
-
                   {/* Image column — fully visible, dark-framed */}
                   <div className="relative w-32 sm:w-60 [@media(orientation:landscape)_and_(max-height:600px)]:w-32 shrink-0 overflow-hidden bg-gray-950 self-stretch">
                     <img
@@ -206,10 +214,18 @@ export default function Partei() {
                   {/* Content */}
                   <div className="flex-1 min-w-0 flex flex-col justify-between p-4 sm:p-7 [@media(orientation:landscape)_and_(max-height:600px)]:p-4 min-h-45 sm:min-h-65 [@media(orientation:landscape)_and_(max-height:600px)]:min-h-0">
                     <div>
-                      <p className="text-[11px] font-medium tracking-wide text-gray-400 dark:text-gray-500 mb-0.5">{a.rolle}</p>
-                      <h4 className="font-extrabold text-gray-900 dark:text-white text-lg sm:text-2xl leading-tight">{a.name}</h4>
-                      <p className="text-[11px] sm:text-xs text-gray-400 dark:text-gray-500 mt-1 sm:mt-1.5">{a.wahlkreis}</p>
-                      <p className="hidden sm:block [@media(orientation:landscape)_and_(max-height:600px)]:hidden text-sm text-gray-500 dark:text-gray-400 leading-relaxed mt-4 line-clamp-4 whitespace-pre-line">{a.bio}</p>
+                      <p className="text-[11px] font-medium tracking-wide text-gray-400 dark:text-gray-500 mb-0.5">
+                        {a.rolle}
+                      </p>
+                      <h4 className="font-extrabold text-gray-900 dark:text-white text-lg sm:text-2xl leading-tight">
+                        {a.name}
+                      </h4>
+                      <p className="text-[11px] sm:text-xs text-gray-400 dark:text-gray-500 mt-1 sm:mt-1.5">
+                        {a.wahlkreis}
+                      </p>
+                      <p className="hidden sm:block [@media(orientation:landscape)_and_(max-height:600px)]:hidden text-sm text-gray-500 dark:text-gray-400 leading-relaxed mt-4 line-clamp-4 whitespace-pre-line">
+                        {a.bio}
+                      </p>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
                       {a.website && (
@@ -236,7 +252,11 @@ export default function Partei() {
       </div>
 
       {/* Person detail sheet */}
-      <PersonSheet open={!!selectedPerson} onClose={() => setSelectedPerson(null)} person={selectedPerson} />
+      <PersonSheet
+        open={!!selectedPerson}
+        onClose={() => setSelectedPerson(null)}
+        person={selectedPerson}
+      />
 
       {/* Schwerpunkt detail sheet */}
       <SchwerpunktSheet item={selectedSchwerpunkt} onClose={() => setSelectedSchwerpunkt(null)} />
@@ -256,13 +276,17 @@ function SchwerpunktSheet({ item, onClose }: { item: Schwerpunkt | null; onClose
               <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
                 <Icon size={22} className="text-white" />
               </div>
-              <h3 className="font-black text-white text-xl sm:text-2xl leading-tight">{item.titel}</h3>
+              <h3 className="font-black text-white text-xl sm:text-2xl leading-tight">
+                {item.titel}
+              </h3>
             </div>
           </div>
           <div className="px-5 sm:px-6 pt-5 pb-8 space-y-4">
             {item.inhalt && (
               <div className="pt-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">{item.inhalt}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
+                  {item.inhalt}
+                </p>
               </div>
             )}
           </div>

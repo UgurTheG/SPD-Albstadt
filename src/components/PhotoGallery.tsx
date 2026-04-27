@@ -1,6 +1,6 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
-import {AnimatePresence, motion} from 'framer-motion'
-import {ChevronLeft, ChevronRight} from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Lightbox from 'yet-another-react-lightbox'
 import Counter from 'yet-another-react-lightbox/plugins/counter'
 import Captions from 'yet-another-react-lightbox/plugins/captions'
@@ -8,7 +8,6 @@ import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
 import 'yet-another-react-lightbox/plugins/counter.css'
 import 'yet-another-react-lightbox/plugins/captions.css'
-
 
 // ── PhotoGallery ─────────────────────────────────────────────────────────────
 
@@ -69,13 +68,19 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
 
   // Must be before early return to satisfy rules-of-hooks
   const dotRange = useMemo(() => {
-    if (total <= MAX_VISIBLE_DOTS) return {start: 0, end: total}
+    if (total <= MAX_VISIBLE_DOTS) return { start: 0, end: total }
     const half = Math.floor(MAX_VISIBLE_DOTS / 2)
     let start = active - half
     let end = active + half + 1
-    if (start < 0) { start = 0; end = MAX_VISIBLE_DOTS }
-    if (end > total) { end = total; start = total - MAX_VISIBLE_DOTS }
-    return {start, end}
+    if (start < 0) {
+      start = 0
+      end = MAX_VISIBLE_DOTS
+    }
+    if (end > total) {
+      end = total
+      start = total - MAX_VISIBLE_DOTS
+    }
+    return { start, end }
   }, [active, total])
 
   if (images.length === 0) return null
@@ -147,10 +152,12 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="relative aspect-video overflow-hidden max-h-[55vh]
+        <div
+          className="relative aspect-video overflow-hidden max-h-[55vh]
                         [@media(orientation:landscape)_and_(max-height:600px)]:aspect-auto
                         [@media(orientation:landscape)_and_(max-height:600px)]:h-[62vh]
-                        [@media(orientation:landscape)_and_(max-height:600px)]:max-h-[62vh]">
+                        [@media(orientation:landscape)_and_(max-height:600px)]:max-h-[62vh]"
+        >
           <AnimatePresence initial={false} custom={direction} mode="wait">
             <motion.img
               key={active}
@@ -215,28 +222,28 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
 
       {/* Dot indicators */}
       {total > 1 && (
-          <div className="flex justify-center items-center gap-1.5 mt-3">
-            {dotRange.start > 0 && (
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600"/>
-            )}
-            {images.slice(dotRange.start, dotRange.end).map((_, idx) => {
-              const i = dotRange.start + idx
-              return (
-                  <button
-                      key={i}
-                      onClick={() => go(i)}
-                      className={`rounded-full transition-all duration-300 ${
-                          i === active
-                              ? 'w-6 h-2 bg-spd-red'
-                              : 'w-2 h-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
-                      }`}
-                      aria-label={`Bild ${i + 1}`}
-                  />
-              )
-            })}
-            {dotRange.end < total && (
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600"/>
-            )}
+        <div className="flex justify-center items-center gap-1.5 mt-3">
+          {dotRange.start > 0 && (
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
+          )}
+          {images.slice(dotRange.start, dotRange.end).map((_, idx) => {
+            const i = dotRange.start + idx
+            return (
+              <button
+                key={i}
+                onClick={() => go(i)}
+                className={`rounded-full transition-all duration-300 ${
+                  i === active
+                    ? 'w-6 h-2 bg-spd-red'
+                    : 'w-2 h-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
+                }`}
+                aria-label={`Bild ${i + 1}`}
+              />
+            )
+          })}
+          {dotRange.end < total && (
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
+          )}
         </div>
       )}
 
@@ -248,7 +255,7 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
         index={active}
         on={{ view: ({ index }) => setActive(index) }}
         plugins={[Counter, Captions, Zoom]}
-        captions={{descriptionTextAlign: 'center'}}
+        captions={{ descriptionTextAlign: 'center' }}
         carousel={{ finite: total <= 1 }}
         zoom={{
           maxZoomPixelRatio: 3,

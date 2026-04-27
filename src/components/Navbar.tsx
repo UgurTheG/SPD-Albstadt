@@ -1,7 +1,7 @@
-import {useState} from 'react'
-import {AnimatePresence, motion} from 'framer-motion'
-import {ChevronLeft, Menu, Moon, Sun, X} from 'lucide-react'
-import {useData} from '../hooks/useData'
+import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronLeft, Menu, Moon, Sun, X } from 'lucide-react'
+import { useData } from '../hooks/useData'
 
 interface NavbarProps {
   darkMode: boolean
@@ -33,9 +33,9 @@ const SECTION_LABELS: Record<string, string> = {
 export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePage }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const isHome = activePage === 'home'
-  const {data: kpData} = useData<{sichtbar?: boolean}>('/data/kommunalpolitik.json')
+  const { data: kpData } = useData<{ sichtbar?: boolean }>('/data/kommunalpolitik.json')
   const navItems = BASE_NAV_ITEMS.filter(
-    item => item.id !== 'kommunalpolitik' || kpData?.sichtbar === true
+    item => item.id !== 'kommunalpolitik' || kpData?.sichtbar === true,
   )
 
   const handleNav = (id: string) => {
@@ -46,12 +46,9 @@ export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePag
   const solid = true
 
   return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl shadow-lg shadow-black/5 dark:shadow-black/30"
-    >
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl shadow-lg shadow-black/5 dark:shadow-black/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-
           {/* Left: logo + optional back button */}
           <div className="flex items-center gap-3 min-w-0">
             <button
@@ -59,11 +56,17 @@ export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePag
               className={`flex items-center gap-2.5 group shrink-0 ${isHome ? 'hidden' : ''}`}
               aria-label="Startseite"
             >
-              <img src="/spd-logo.svg" alt="SPD" className="w-9 h-9 rounded-lg shadow-md group-hover:scale-105 transition-transform" />
+              <img
+                src="/spd-logo.svg"
+                alt="SPD"
+                className="w-9 h-9 rounded-lg shadow-md group-hover:scale-105 transition-transform"
+              />
               {!isHome && (
-                  <span className={`font-bold text-lg tracking-tight transition-colors duration-300 ${
-                      solid ? 'text-gray-900 dark:text-white' : 'text-white'
-                  }`}>
+                <span
+                  className={`font-bold text-lg tracking-tight transition-colors duration-300 ${
+                    solid ? 'text-gray-900 dark:text-white' : 'text-white'
+                  }`}
+                >
                   Albstadt
                 </span>
               )}
@@ -143,17 +146,17 @@ export default function Navbar({ darkMode, toggleDarkMode, navigateTo, activePag
             </button>
 
             {!isHome && (
-                <button
-                    onClick={() => setMenuOpen(!menuOpen)}
-                    className={`md:hidden p-2.5 rounded-xl transition-all duration-200 ${
-                        solid
-                            ? 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-                            : 'text-white/80 hover:text-white hover:bg-white/10'
-                    }`}
-                    aria-label="Menü öffnen"
-                >
-                  {menuOpen ? <X size={20}/> : <Menu size={20}/>}
-                </button>
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className={`md:hidden p-2.5 rounded-xl transition-all duration-200 ${
+                  solid
+                    ? 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+                aria-label="Menü öffnen"
+              >
+                {menuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
             )}
           </div>
         </div>

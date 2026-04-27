@@ -1,7 +1,14 @@
-import {X} from 'lucide-react'
-import {animate, AnimatePresence, motion, type PanInfo, useDragControls, useMotionValue} from 'framer-motion'
-import {type ReactNode, useEffect, useRef} from 'react'
-import {lockScroll} from '../utils/scrollLock'
+import { X } from 'lucide-react'
+import {
+  animate,
+  AnimatePresence,
+  motion,
+  type PanInfo,
+  useDragControls,
+  useMotionValue,
+} from 'framer-motion'
+import { type ReactNode, useEffect, useRef } from 'react'
+import { lockScroll } from '../utils/scrollLock'
 
 interface SheetProps {
   open: boolean
@@ -52,14 +59,18 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
     let dismissing = false
 
     const onTouchStart = (e: TouchEvent) => {
-      const isInteractive = (e.target as HTMLElement).closest('button, a, input, textarea, select, [role="button"]')
+      const isInteractive = (e.target as HTMLElement).closest(
+        'button, a, input, textarea, select, [role="button"]',
+      )
       if (isInteractive) return
       startY = e.touches[0].clientY
       dismissing = false
     }
 
     const onTouchMove = (e: TouchEvent) => {
-      const isInteractive = (e.target as HTMLElement).closest('button, a, input, textarea, select, [role="button"]')
+      const isInteractive = (e.target as HTMLElement).closest(
+        'button, a, input, textarea, select, [role="button"]',
+      )
       if (isInteractive) return
 
       const currentY = e.touches[0].clientY
@@ -122,7 +133,11 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
           exit={{ opacity: 0, transition: { duration: 0.25, ease: 'easeIn' } }}
           onClick={onClose}
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 touch-none"
-          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)' }}
+          style={{
+            background: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+          }}
         >
           <motion.div
             ref={sheetRef}

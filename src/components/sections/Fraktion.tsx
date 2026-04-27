@@ -1,13 +1,13 @@
-import {useEffect, useMemo, useRef, useState} from 'react'
-import {motion, useInView} from 'framer-motion'
-import {FileDown} from 'lucide-react'
-import {fetchData, useData} from '../../hooks/useData'
-import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { motion, useInView } from 'framer-motion'
+import { FileDown } from 'lucide-react'
+import { fetchData, useData } from '../../hooks/useData'
+import { useHttpErrorRedirect } from '../../hooks/useHttpErrorRedirect'
 import PersonSheet from '../PersonSheet'
 import PersonCard from '../PersonCard'
-import {personCardContainerVariants} from '../personCardVariants'
+import { personCardContainerVariants } from '../personCardVariants'
 import SectionHeader from '../SectionHeader'
-import {useItemsPerPageMulti} from '../../utils/useItemsPerPage'
+import { useItemsPerPageMulti } from '../../utils/useItemsPerPage'
 
 interface Gemeinderat {
   name: string
@@ -30,12 +30,19 @@ interface FraktionData {
 export default function Fraktion() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
-  const {data, error} = useData<FraktionData>('/data/fraktion.json')
+  const { data, error } = useData<FraktionData>('/data/fraktion.json')
   useHttpErrorRedirect(error)
   const [selectedMember, setSelectedMember] = useState<Gemeinderat | null>(null)
   // items per page = 2 full rows at every grid breakpoint (always an even number)
   // grid: 2 cols (xs) → 4 | 3 cols (sm 640) → 6 | 4 cols (md 768) → 8 | 5 cols (lg 1024) → 10
-  const itemsPerPage = useItemsPerPageMulti([[1024, 10], [768, 8], [640, 6]], 4)
+  const itemsPerPage = useItemsPerPageMulti(
+    [
+      [1024, 10],
+      [768, 8],
+      [640, 6],
+    ],
+    4,
+  )
   const [visibleRedenCount, setVisibleRedenCount] = useState(itemsPerPage)
   const [prevItemsPerPage, setPrevItemsPerPage] = useState(itemsPerPage)
   if (itemsPerPage !== prevItemsPerPage) {
@@ -58,15 +65,17 @@ export default function Fraktion() {
       const results = await Promise.all(
         alleReden.map(async year => {
           try {
-            const r = await fetch(`/documents/fraktion/haushaltsreden/${year}.pdf`, { method: 'HEAD' })
+            const r = await fetch(`/documents/fraktion/haushaltsreden/${year}.pdf`, {
+              method: 'HEAD',
+            })
             const ct = r.headers.get('content-type') ?? ''
             // In dev Vite's SPA fallback returns 200+text/html for missing files;
             // real PDFs return application/pdf. In production missing files return 404.
-            return (r.ok && !ct.includes('text/html')) ? year : null
+            return r.ok && !ct.includes('text/html') ? year : null
           } catch {
             return null
           }
-        })
+        }),
       )
       if (!cancelled) {
         setAvailableYears(new Set(results.filter((y): y is number => y !== null)))
@@ -74,15 +83,19 @@ export default function Fraktion() {
     }
     check()
     // Fetch disabled years config
-    fetchData<{disabledYears?: number[]}>('/data/haushaltsreden.json')
-      .then(data => { if (!cancelled && data?.disabledYears) setDisabledYears(new Set(data.disabledYears)) })
+    fetchData<{ disabledYears?: number[] }>('/data/haushaltsreden.json')
+      .then(data => {
+        if (!cancelled && data?.disabledYears) setDisabledYears(new Set(data.disabledYears))
+      })
       .catch(() => {})
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [alleReden])
 
   // Filter out years that have no PDF and are explicitly disabled by the admin
-  const visibleReden = alleReden.filter(year =>
-    availableYears === null || availableYears.has(year) || !disabledYears.has(year)
+  const visibleReden = alleReden.filter(
+    year => availableYears === null || availableYears.has(year) || !disabledYears.has(year),
   )
   const sichtbareReden = visibleReden.slice(0, visibleRedenCount)
   const hasMoreReden = visibleRedenCount < visibleReden.length
@@ -126,11 +139,22 @@ export default function Fraktion() {
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
           >
             {data?.gemeinderaete.map(m => (
-              <PersonCard key={m.name} name={m.name} bildUrl={m.bildUrl} label={m.beruf} sublabel={`seit ${m.seit}`} onClick={() => setSelectedMember(m)} />
+              <PersonCard
+                key={m.name}
+                name={m.name}
+                bildUrl={m.bildUrl}
+                label={m.beruf}
+                sublabel={`seit ${m.seit}`}
+                onClick={() => setSelectedMember(m)}
+              />
             ))}
-            {!data && Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-gray-100 dark:bg-gray-800 rounded-2xl h-64 animate-pulse" />
-            ))}
+            {!data &&
+              Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-gray-100 dark:bg-gray-800 rounded-2xl h-64 animate-pulse"
+                />
+              ))}
           </motion.div>
         </div>
 
@@ -161,7 +185,14 @@ export default function Fraktion() {
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
           >
             {data?.kreisraete.map(m => (
-              <PersonCard key={m.name} name={m.name} bildUrl={m.bildUrl} label={m.beruf} sublabel={`seit ${m.seit}`} onClick={() => setSelectedMember(m)} />
+              <PersonCard
+                key={m.name}
+                name={m.name}
+                bildUrl={m.bildUrl}
+                label={m.beruf}
+                sublabel={`seit ${m.seit}`}
+                onClick={() => setSelectedMember(m)}
+              />
             ))}
           </motion.div>
         </div>
@@ -194,7 +225,9 @@ export default function Fraktion() {
                     </div>
                     <div className="text-center">
                       <p className="font-black text-gray-300 dark:text-gray-600 text-sm">{year}</p>
-                      <p className="text-[10px] text-gray-300 dark:text-gray-600 mt-0.5 font-medium uppercase tracking-wider">Demnächst</p>
+                      <p className="text-[10px] text-gray-300 dark:text-gray-600 mt-0.5 font-medium uppercase tracking-wider">
+                        Demnächst
+                      </p>
                     </div>
                   </div>
                 )
@@ -218,7 +251,9 @@ export default function Fraktion() {
                   </div>
                   <div className="text-center">
                     <p className="font-black text-gray-900 dark:text-white text-sm">{year}</p>
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 font-medium uppercase tracking-wider">PDF</p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 font-medium uppercase tracking-wider">
+                      PDF
+                    </p>
                   </div>
                 </a>
               )
@@ -227,12 +262,15 @@ export default function Fraktion() {
           {visibleReden.length > itemsPerPage && (
             <div className="flex items-center justify-between pt-4">
               <span className="text-xs text-gray-400 dark:text-gray-500">
-                {Math.min(visibleRedenCount, visibleReden.length)} von {visibleReden.length} Haushaltsreden
+                {Math.min(visibleRedenCount, visibleReden.length)} von {visibleReden.length}{' '}
+                Haushaltsreden
               </span>
               <div className="flex gap-2">
                 {visibleRedenCount > itemsPerPage && (
                   <button
-                    onClick={() => setVisibleRedenCount(v => Math.max(itemsPerPage, v - itemsPerPage))}
+                    onClick={() =>
+                      setVisibleRedenCount(v => Math.max(itemsPerPage, v - itemsPerPage))
+                    }
                     className="text-xs font-semibold text-gray-400 hover:text-spd-red transition-colors px-3 py-1.5 rounded-lg hover:bg-spd-red/5"
                   >
                     ↑ Weniger
@@ -250,13 +288,14 @@ export default function Fraktion() {
             </div>
           )}
         </motion.div>
-
       </div>
 
-
       {/* Member detail sheet */}
-      <PersonSheet open={!!selectedMember} onClose={() => setSelectedMember(null)} person={selectedMember} />
-
+      <PersonSheet
+        open={!!selectedMember}
+        onClose={() => setSelectedMember(null)}
+        person={selectedMember}
+      />
     </section>
   )
 }

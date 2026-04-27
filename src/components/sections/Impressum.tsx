@@ -28,7 +28,9 @@ export default function Impressum() {
             <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
               <FileText size={22} />
             </div>
-            <span className="text-sm font-semibold uppercase tracking-widest text-red-200">Rechtliches</span>
+            <span className="text-sm font-semibold uppercase tracking-widest text-red-200">
+              Rechtliches
+            </span>
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
@@ -66,7 +68,9 @@ export default function Impressum() {
                 transition={{ duration: 0.45, delay: i * 0.08 }}
                 className="border-b border-gray-200 dark:border-gray-800 pb-8 last:border-0"
               >
-                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">{section.title}</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+                  {section.title}
+                </h2>
                 <div className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm sm:text-base whitespace-pre-line">
                   {renderTextContent(section.content)}
                 </div>

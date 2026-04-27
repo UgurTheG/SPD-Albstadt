@@ -1,5 +1,5 @@
-import {memo, useEffect, useMemo, useRef, useState} from 'react'
-import {motion, useInView} from 'framer-motion'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { motion, useInView } from 'framer-motion'
 import {
   Calendar,
   CalendarPlus,
@@ -12,20 +12,20 @@ import {
   Rss,
   Search,
   Tag,
-  X
+  X,
 } from 'lucide-react'
-import {useData} from '../../hooks/useData'
-import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
-import {INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME} from '../../shared/instagram.ts'
-import {useConfig} from '../../hooks/useConfig'
+import { useData } from '../../hooks/useData'
+import { useHttpErrorRedirect } from '../../hooks/useHttpErrorRedirect'
+import { INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME } from '../../shared/instagram.ts'
+import { useConfig } from '../../hooks/useConfig'
 import Sheet from '../Sheet'
 import PhotoGallery from '../PhotoGallery'
-import {type ICSEvent, parseICS} from '../../utils/icsParser'
-import {formatLocation} from '../../utils/formatLocation'
-import {useItemsPerPage} from '../../utils/useItemsPerPage'
-import {formatDate} from '../../utils/formatDate'
+import { type ICSEvent, parseICS } from '../../utils/icsParser'
+import { formatLocation } from '../../utils/formatLocation'
+import { useItemsPerPage } from '../../utils/useItemsPerPage'
+import { formatDate } from '../../utils/formatDate'
 import SectionHeader from '../SectionHeader'
-import {createEvent, type DateArray} from 'ics'
+import { createEvent, type DateArray } from 'ics'
 
 interface NewsItem {
   id: string
@@ -50,7 +50,6 @@ interface EventItem {
   beschreibung: string
 }
 
-
 const CATEGORY_COLORS: Record<string, string> = {
   Gemeinderat: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   Veranstaltung: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
@@ -58,19 +57,20 @@ const CATEGORY_COLORS: Record<string, string> = {
   Ortsverein: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
 }
 
-
 function formatEventDate(dateStr: string) {
   const d = new Date(dateStr + 'T00:00:00')
   return {
     day: d.toLocaleDateString('de-DE', { day: '2-digit' }),
     month: d.toLocaleDateString('de-DE', { month: 'short' }),
     weekday: d.toLocaleDateString('de-DE', { weekday: 'short' }),
-    full: d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+    full: d.toLocaleDateString('de-DE', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }),
   }
 }
-
-
-
 
 function downloadICS(event: EventItem) {
   const d = new Date(event.datum + 'T00:00:00')
@@ -116,14 +116,15 @@ function toDateStr(d: Date) {
 const CalendarView = memo(function CalendarView({
   events,
   onSelectEvent,
-                                                  onSelectDayEvents,
+  onSelectDayEvents,
 }: {
   events: EventItem[]
   onSelectEvent: (e: EventItem) => void
   onSelectDayEvents: (events: EventItem[]) => void
 }) {
   const [current, setCurrent] = useState(() => {
-    const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), 1)
+    const t = new Date()
+    return new Date(t.getFullYear(), t.getMonth(), 1)
   })
   const year = current.getFullYear()
   const monthIdx = current.getMonth()
@@ -132,7 +133,9 @@ const CalendarView = memo(function CalendarView({
 
   const eventsByDate = useMemo(() => {
     const map: Record<string, EventItem[]> = {}
-    events.forEach(e => { (map[e.datum] ??= []).push(e) })
+    events.forEach(e => {
+      ;(map[e.datum] ??= []).push(e)
+    })
     return map
   }, [events])
 
@@ -150,11 +153,15 @@ const CalendarView = memo(function CalendarView({
     return result
   }, [year, monthIdx])
 
-  const monthEvents = useMemo(() =>
-    events
-      .filter(e => { const d = new Date(e.datum + 'T00:00:00'); return d.getFullYear() === year && d.getMonth() === monthIdx })
-      .sort((a, b) => a.datum.localeCompare(b.datum)),
-    [events, year, monthIdx]
+  const monthEvents = useMemo(
+    () =>
+      events
+        .filter(e => {
+          const d = new Date(e.datum + 'T00:00:00')
+          return d.getFullYear() === year && d.getMonth() === monthIdx
+        })
+        .sort((a, b) => a.datum.localeCompare(b.datum)),
+    [events, year, monthIdx],
   )
 
   const isCurrentMonth = year === new Date().getFullYear() && monthIdx === new Date().getMonth()
@@ -172,12 +179,16 @@ const CalendarView = memo(function CalendarView({
         </button>
         <div className="flex items-center gap-2">
           <Calendar size={14} className="text-spd-red" />
-          <span className="text-sm font-bold text-gray-900 dark:text-white capitalize">{monthLabel}</span>
+          <span className="text-sm font-bold text-gray-900 dark:text-white capitalize">
+            {monthLabel}
+          </span>
         </div>
         <div className="flex items-center gap-1">
           {!isCurrentMonth && (
             <button
-              onClick={() => setCurrent(new Date(new Date().getFullYear(), new Date().getMonth(), 1))}
+              onClick={() =>
+                setCurrent(new Date(new Date().getFullYear(), new Date().getMonth(), 1))
+              }
               className="text-[11px] font-semibold text-spd-red hover:bg-spd-red/10 px-2 py-1 rounded-lg transition-colors mr-1"
             >
               Heute
@@ -195,7 +206,10 @@ const CalendarView = memo(function CalendarView({
       {/* Weekday headers */}
       <div className="grid grid-cols-7 border-b border-gray-100 dark:border-gray-800">
         {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map(d => (
-          <div key={d} className="py-1.5 sm:py-2 text-center text-[9px] sm:text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+          <div
+            key={d}
+            className="py-1.5 sm:py-2 text-center text-[9px] sm:text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide"
+          >
             {d}
           </div>
         ))}
@@ -213,15 +227,20 @@ const CalendarView = memo(function CalendarView({
             <button
               key={i}
               disabled={!hasEvs}
-              onClick={() => hasEvs && (dayEvs.length === 1 ? onSelectEvent(dayEvs[0]) : onSelectDayEvents(dayEvs))}
+              onClick={() =>
+                hasEvs &&
+                (dayEvs.length === 1 ? onSelectEvent(dayEvs[0]) : onSelectDayEvents(dayEvs))
+              }
               className={`relative flex flex-col items-center justify-start pt-0.5 sm:pt-1 pb-1 sm:pb-1.5 rounded-lg sm:rounded-xl min-h-9 sm:min-h-11 transition-all
                 ${!thisMonth ? 'opacity-20' : ''}
                 ${hasEvs ? 'cursor-pointer hover:bg-spd-red/8 dark:hover:bg-spd-red/15' : 'cursor-default'}
               `}
             >
-              <span className={`w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full text-[11px] sm:text-[12px] font-semibold leading-none
+              <span
+                className={`w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full text-[11px] sm:text-[12px] font-semibold leading-none
                 ${isToday ? 'bg-spd-red text-white font-black' : thisMonth ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400'}
-              `}>
+              `}
+              >
                 {cell.getDate()}
               </span>
               {hasEvs && (
@@ -240,7 +259,8 @@ const CalendarView = memo(function CalendarView({
       {monthEvents.length > 0 && (
         <div className="border-t border-gray-100 dark:border-gray-800 px-3 sm:px-5 py-2.5 sm:py-3 space-y-0.5 sm:space-y-1">
           <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5 sm:mb-2">
-            {monthEvents.length} Termin{monthEvents.length !== 1 ? 'e' : ''} im {current.toLocaleDateString('de-DE', { month: 'long' })}
+            {monthEvents.length} Termin{monthEvents.length !== 1 ? 'e' : ''} im{' '}
+            {current.toLocaleDateString('de-DE', { month: 'long' })}
           </p>
           {monthEvents.map(e => {
             const { day, month: mon, weekday } = formatEventDate(e.datum)
@@ -250,26 +270,44 @@ const CalendarView = memo(function CalendarView({
                 role="button"
                 tabIndex={0}
                 onClick={() => onSelectEvent(e)}
-                onKeyDown={ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onSelectEvent(e) } }}
+                onKeyDown={ev => {
+                  if (ev.key === 'Enter' || ev.key === ' ') {
+                    ev.preventDefault()
+                    onSelectEvent(e)
+                  }
+                }}
                 className="w-full flex items-center gap-2.5 sm:gap-3 text-left p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors group cursor-pointer"
               >
                 <div className="shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-spd-red text-white flex flex-col items-center justify-center">
                   <span className="text-[10px] sm:text-[11px] font-black leading-none">{day}</span>
-                  <span className="text-[6px] sm:text-[7px] uppercase opacity-80 tracking-wide">{mon}</span>
+                  <span className="text-[6px] sm:text-[7px] uppercase opacity-80 tracking-wide">
+                    {mon}
+                  </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] sm:text-xs font-bold text-gray-900 dark:text-white truncate group-hover:text-spd-red transition-colors">{e.titel}</p>
-                  <p className="text-[9px] sm:text-[10px] text-gray-400 dark:text-gray-500 truncate">{weekday} · {e.ganztaegig ? 'Ganztägig' : `${e.uhrzeit} Uhr`}{e.ort ? ` · ${e.ort}` : ''}</p>
+                  <p className="text-[11px] sm:text-xs font-bold text-gray-900 dark:text-white truncate group-hover:text-spd-red transition-colors">
+                    {e.titel}
+                  </p>
+                  <p className="text-[9px] sm:text-[10px] text-gray-400 dark:text-gray-500 truncate">
+                    {weekday} · {e.ganztaegig ? 'Ganztägig' : `${e.uhrzeit} Uhr`}
+                    {e.ort ? ` · ${e.ort}` : ''}
+                  </p>
                 </div>
                 <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                   <button
-                    onClick={ev => { ev.stopPropagation(); downloadICS(e) }}
+                    onClick={ev => {
+                      ev.stopPropagation()
+                      downloadICS(e)
+                    }}
                     title="Termin speichern"
                     className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center text-gray-300 dark:text-gray-600 hover:text-spd-red hover:bg-spd-red/10 transition-colors"
                   >
                     <CalendarPlus size={11} />
                   </button>
-                  <ChevronRight size={12} className="text-gray-300 dark:text-gray-600 group-hover:text-spd-red transition-colors" />
+                  <ChevronRight
+                    size={12}
+                    className="text-gray-300 dark:text-gray-600 group-hover:text-spd-red transition-colors"
+                  />
                 </div>
               </div>
             )
@@ -293,12 +331,16 @@ function EventDetailContent({ event }: { event: EventItem }) {
       {/* Hero */}
       <div className="bg-linear-to-br from-spd-red via-spd-red to-spd-red-dark px-5 sm:px-6 pt-6 sm:pt-8 pb-7 sm:pb-9 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.12),transparent_50%)]" />
-        <span className="absolute -right-3 -bottom-4 text-[90px] sm:text-[120px] font-black text-white/6 leading-none select-none pointer-events-none">{day}</span>
+        <span className="absolute -right-3 -bottom-4 text-[90px] sm:text-[120px] font-black text-white/6 leading-none select-none pointer-events-none">
+          {day}
+        </span>
         <div className="relative">
           <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-white/15 backdrop-blur-sm rounded-full pl-0.5 pr-3 sm:pl-1 sm:pr-4 py-0.5 sm:py-1 mb-3 sm:mb-5">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white flex flex-col items-center justify-center">
               <span className="text-xs sm:text-sm font-black text-spd-red leading-none">{day}</span>
-              <span className="text-[6px] sm:text-[7px] font-bold text-spd-red/70 uppercase leading-none">{month}</span>
+              <span className="text-[6px] sm:text-[7px] font-bold text-spd-red/70 uppercase leading-none">
+                {month}
+              </span>
             </div>
             <span className="text-white/90 text-[11px] sm:text-xs font-medium">{full}</span>
           </div>
@@ -314,8 +356,12 @@ function EventDetailContent({ event }: { event: EventItem }) {
               <Clock size={15} className="text-spd-red" />
             </div>
             <div>
-              <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Uhrzeit</p>
-              <p className="text-sm font-bold text-gray-900 dark:text-white">{event.ganztaegig ? 'Ganztägig' : `${event.uhrzeit} Uhr`}</p>
+              <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                Uhrzeit
+              </p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">
+                {event.ganztaegig ? 'Ganztägig' : `${event.uhrzeit} Uhr`}
+              </p>
             </div>
           </div>
           {event.ort && (
@@ -324,8 +370,13 @@ function EventDetailContent({ event }: { event: EventItem }) {
                 <MapPin size={15} className="text-spd-red" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Ort</p>
-                <p className="text-sm text-gray-900 dark:text-white leading-snug" style={{ hyphens: 'none' }}>
+                <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                  Ort
+                </p>
+                <p
+                  className="text-sm text-gray-900 dark:text-white leading-snug"
+                  style={{ hyphens: 'none' }}
+                >
                   {formatLocation(event.ort).map((line, i) => (
                     <span key={i}>
                       {i > 0 && <br />}
@@ -340,8 +391,12 @@ function EventDetailContent({ event }: { event: EventItem }) {
 
         {event.beschreibung && (
           <div>
-            <h4 className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Beschreibung</h4>
-            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">{event.beschreibung}</p>
+            <h4 className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+              Beschreibung
+            </h4>
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+              {event.beschreibung}
+            </p>
           </div>
         )}
       </div>
@@ -403,18 +458,21 @@ export default function Aktuelles() {
         }
       } catch (err) {
         if (!cancelled) {
-          setIcsError(`Fehler beim Laden: ${err instanceof Error ? err.message : 'Unbekannter Fehler'}`)
+          setIcsError(
+            `Fehler beim Laden: ${err instanceof Error ? err.message : 'Unbekannter Fehler'}`,
+          )
         }
       } finally {
         if (!cancelled) setIcsLoading(false)
       }
     }
     fetchICS()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-
-  const {data: newsItems, error: newsError} = useData<NewsItem[]>('/data/news.json')
+  const { data: newsItems, error: newsError } = useData<NewsItem[]>('/data/news.json')
   const config = useConfig()
   const elfsightAppId = config?.elfsightAppId
 
@@ -465,7 +523,6 @@ export default function Aktuelles() {
     setVisibleCount(itemsPerPage)
   }
 
-
   return (
     <section id="aktuelles" className="py-24 bg-white dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -474,14 +531,15 @@ export default function Aktuelles() {
           sectionRef={ref}
           isInView={isInView}
           label="Aktuelles"
-          title={<>Neuigkeiten <span className="whitespace-nowrap">& Termine</span></>}
+          title={
+            <>
+              Neuigkeiten <span className="whitespace-nowrap">& Termine</span>
+            </>
+          }
           description="Bleiben Sie informiert über aktuelle Themen der SPD Albstadt und kommende Veranstaltungen."
           mb="mb-12"
           descriptionClassName="max-w-2xl"
         />
-
-
-
 
         {/* ── News Feed ── */}
         <div className="min-w-0 mb-16">
@@ -490,7 +548,9 @@ export default function Aktuelles() {
               <Tag size={15} className="text-spd-red" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-tight">Neuigkeiten</h3>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
+                Neuigkeiten
+              </h3>
               <p className="text-[11px] text-gray-400 dark:text-gray-500">
                 {filteredNews?.length ?? 0} Beitrag{(filteredNews?.length ?? 0) !== 1 ? 'e' : ''}
               </p>
@@ -503,7 +563,9 @@ export default function Aktuelles() {
             transition={{ delay: 0.2 }}
             className="relative mb-4"
           >
-            <label htmlFor="news-search" className="sr-only">Neuigkeiten durchsuchen</label>
+            <label htmlFor="news-search" className="sr-only">
+              Neuigkeiten durchsuchen
+            </label>
             <Search
               size={16}
               className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none"
@@ -544,7 +606,14 @@ export default function Aktuelles() {
                     : 'bg-transparent text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-spd-red/50 hover:text-spd-red'
                 }`}
               >
-                {tag === 'Alle' ? tag : (<><Tag size={10} className="inline mr-1" />{tag}</>)}
+                {tag === 'Alle' ? (
+                  tag
+                ) : (
+                  <>
+                    <Tag size={10} className="inline mr-1" />
+                    {tag}
+                  </>
+                )}
               </button>
             ))}
           </motion.div>
@@ -559,7 +628,7 @@ export default function Aktuelles() {
                 <div className="flex items-start gap-4">
                   {(news.bildUrls?.length || news.bildUrl) && (
                     <img
-                        src={news.bildUrl || news.bildUrls?.[0]}
+                      src={news.bildUrl || news.bildUrls?.[0]}
                       alt={news.titel}
                       loading="lazy"
                       className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-200 dark:bg-gray-800 object-cover"
@@ -567,11 +636,15 @@ export default function Aktuelles() {
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2 flex-wrap">
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORY_COLORS[news.kategorie] || 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}`}>
+                      <span
+                        className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORY_COLORS[news.kategorie] || 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}`}
+                      >
                         <Tag size={10} className="inline mr-1" />
                         {news.kategorie}
                       </span>
-                      <time className="text-xs text-gray-400 dark:text-gray-500">{formatDate(news.datum)}</time>
+                      <time className="text-xs text-gray-400 dark:text-gray-500">
+                        {formatDate(news.datum)}
+                      </time>
                     </div>
                     <h4 className="text-gray-900 dark:text-white font-bold text-base leading-snug mb-1.5 group-hover:text-spd-red transition-colors line-clamp-2">
                       {news.titel}
@@ -591,7 +664,10 @@ export default function Aktuelles() {
           {!newsItems && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {[1, 2, 3, 4].map(i => (
-                <div key={i} className="bg-gray-100 dark:bg-gray-800 rounded-2xl h-36 animate-pulse" />
+                <div
+                  key={i}
+                  className="bg-gray-100 dark:bg-gray-800 rounded-2xl h-36 animate-pulse"
+                />
               ))}
             </div>
           )}
@@ -640,7 +716,6 @@ export default function Aktuelles() {
           )}
         </div>
 
-
         {/* ── ICS Calendar ── */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -648,104 +723,123 @@ export default function Aktuelles() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mb-16"
         >
-            <div className="flex items-center justify-between gap-3 mb-5">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center">
-                  <Calendar size={15} className="text-spd-red" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-tight">Kalenderansicht</h3>
-                  <p className="text-[11px] text-gray-400 dark:text-gray-500">Alle Termine auf einen Blick</p>
-                </div>
+          <div className="flex items-center justify-between gap-3 mb-5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center">
+                <Calendar size={15} className="text-spd-red" />
               </div>
-              {config?.icsUrl && (
-                <div className="relative shrink-0">
-                  <button
-                    onClick={() => setShowSubscribeMenu(v => !v)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-spd-red/25 px-3 py-1.5 text-xs font-semibold text-spd-red hover:bg-spd-red hover:text-white transition-colors"
-                  >
-                    <Rss size={12} /> Abonnieren
-                  </button>
-                  {showSubscribeMenu && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setShowSubscribeMenu(false)} />
-                      <div className="absolute right-0 top-full mt-2 z-20 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl overflow-hidden min-w-56">
-                        <div className="px-3 pt-3 pb-1.5">
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Kalender abonnieren</p>
-                        </div>
-                        <a
-                          href={config.icsUrl.replace(/^https?:\/\//, 'webcal://')}
-                          onClick={() => setShowSubscribeMenu(false)}
-                          className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        >
-                          <div className="w-7 h-7 rounded-lg bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center shrink-0">
-                            <Calendar size={13} className="text-spd-red" />
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold text-gray-900 dark:text-white">Apple / Outlook</p>
-                            <p className="text-[10px] text-gray-400 dark:text-gray-500">Kalender-App öffnen</p>
-                          </div>
-                        </a>
-                        <a
-                          href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(config.icsUrl)}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={() => setShowSubscribeMenu(false)}
-                          className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        >
-                          <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
-                            <ExternalLink size={13} className="text-blue-500" />
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold text-gray-900 dark:text-white">Google Calendar</p>
-                            <p className="text-[10px] text-gray-400 dark:text-gray-500">Im Browser öffnen</p>
-                          </div>
-                        </a>
-                        <div className="px-3 pb-3 pt-1.5 border-t border-gray-100 dark:border-gray-800">
-                          <a
-                            href={config.icsUrl}
-                            download
-                            onClick={() => setShowSubscribeMenu(false)}
-                            className="flex items-center gap-1.5 text-[10px] font-medium text-gray-400 hover:text-spd-red transition-colors"
-                          >
-                            <Rss size={10} /> ICS-Datei herunterladen
-                          </a>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
+                  Kalenderansicht
+                </h3>
+                <p className="text-[11px] text-gray-400 dark:text-gray-500">
+                  Alle Termine auf einen Blick
+                </p>
+              </div>
             </div>
-
-            {icsLoading && (
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-8 flex items-center justify-center gap-3">
-                <span className="w-5 h-5 border-2 border-spd-red/20 dark:border-spd-red/30 border-t-spd-red rounded-full animate-spin" />
-                <span className="text-sm text-gray-400 dark:text-gray-500">Termine werden geladen…</span>
+            {config?.icsUrl && (
+              <div className="relative shrink-0">
+                <button
+                  onClick={() => setShowSubscribeMenu(v => !v)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-spd-red/25 px-3 py-1.5 text-xs font-semibold text-spd-red hover:bg-spd-red hover:text-white transition-colors"
+                >
+                  <Rss size={12} /> Abonnieren
+                </button>
+                {showSubscribeMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowSubscribeMenu(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-2 z-20 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl overflow-hidden min-w-56">
+                      <div className="px-3 pt-3 pb-1.5">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                          Kalender abonnieren
+                        </p>
+                      </div>
+                      <a
+                        href={config.icsUrl.replace(/^https?:\/\//, 'webcal://')}
+                        onClick={() => setShowSubscribeMenu(false)}
+                        className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-spd-red/10 dark:bg-spd-red/15 flex items-center justify-center shrink-0">
+                          <Calendar size={13} className="text-spd-red" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                            Apple / Outlook
+                          </p>
+                          <p className="text-[10px] text-gray-400 dark:text-gray-500">
+                            Kalender-App öffnen
+                          </p>
+                        </div>
+                      </a>
+                      <a
+                        href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(config.icsUrl)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => setShowSubscribeMenu(false)}
+                        className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+                          <ExternalLink size={13} className="text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                            Google Calendar
+                          </p>
+                          <p className="text-[10px] text-gray-400 dark:text-gray-500">
+                            Im Browser öffnen
+                          </p>
+                        </div>
+                      </a>
+                      <div className="px-3 pb-3 pt-1.5 border-t border-gray-100 dark:border-gray-800">
+                        <a
+                          href={config.icsUrl}
+                          download
+                          onClick={() => setShowSubscribeMenu(false)}
+                          className="flex items-center gap-1.5 text-[10px] font-medium text-gray-400 hover:text-spd-red transition-colors"
+                        >
+                          <Rss size={10} /> ICS-Datei herunterladen
+                        </a>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
+          </div>
 
-            {icsError && (
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 text-center">
-                <p className="text-sm text-gray-400 dark:text-gray-500">{icsError}</p>
-              </div>
-            )}
+          {icsLoading && (
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-8 flex items-center justify-center gap-3">
+              <span className="w-5 h-5 border-2 border-spd-red/20 dark:border-spd-red/30 border-t-spd-red rounded-full animate-spin" />
+              <span className="text-sm text-gray-400 dark:text-gray-500">
+                Termine werden geladen…
+              </span>
+            </div>
+          )}
 
-            {!icsLoading && icsEvents.length > 0 && (
-              <CalendarView
-                events={icsEvents.map(e => ({
-                  id: e.id,
-                  datum: e.datum,
-                  uhrzeit: e.uhrzeit,
-                  ganztaegig: e.ganztaegig,
-                  titel: e.titel,
-                  ort: e.ort,
-                  beschreibung: e.beschreibung,
-                }))}
-                onSelectEvent={setSelectedEvent}
-                onSelectDayEvents={setDayEventsPickerList}
-              />
-            )}
+          {icsError && (
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 text-center">
+              <p className="text-sm text-gray-400 dark:text-gray-500">{icsError}</p>
+            </div>
+          )}
+
+          {!icsLoading && icsEvents.length > 0 && (
+            <CalendarView
+              events={icsEvents.map(e => ({
+                id: e.id,
+                datum: e.datum,
+                uhrzeit: e.uhrzeit,
+                ganztaegig: e.ganztaegig,
+                titel: e.titel,
+                ort: e.ort,
+                beschreibung: e.beschreibung,
+              }))}
+              onSelectEvent={setSelectedEvent}
+              onSelectDayEvents={setDayEventsPickerList}
+            />
+          )}
         </motion.div>
 
         {/* ── Instagram (Elfsight) ── */}
@@ -761,8 +855,12 @@ export default function Aktuelles() {
                 <Camera size={15} className="text-spd-red" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-tight">Instagram</h3>
-                <p className="text-[11px] text-gray-400 dark:text-gray-500">Neueste Beiträge von @{INSTAGRAM_USERNAME}</p>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
+                  Instagram
+                </h3>
+                <p className="text-[11px] text-gray-400 dark:text-gray-500">
+                  Neueste Beiträge von @{INSTAGRAM_USERNAME}
+                </p>
               </div>
             </div>
             <a
@@ -778,7 +876,9 @@ export default function Aktuelles() {
             <div
               className={`elfsight-app-${elfsightAppId}`}
               data-elfsight-app-lazy
-              data-elfsight-app-theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
+              data-elfsight-app-theme={
+                document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+              }
             />
           )}
         </motion.div>
@@ -790,14 +890,22 @@ export default function Aktuelles() {
           <div>
             {(selectedNews.bildUrls?.length || selectedNews.bildUrl) && (
               <PhotoGallery
-                  images={[...(selectedNews.bildUrl ? [selectedNews.bildUrl] : []), ...(selectedNews.bildUrls || [])].filter(Boolean)}
-                  captions={[...(selectedNews.bildUrl ? [selectedNews.bildBeschreibung || ''] : []), ...(selectedNews.bildBeschreibungen || [])]}
+                images={[
+                  ...(selectedNews.bildUrl ? [selectedNews.bildUrl] : []),
+                  ...(selectedNews.bildUrls || []),
+                ].filter(Boolean)}
+                captions={[
+                  ...(selectedNews.bildUrl ? [selectedNews.bildBeschreibung || ''] : []),
+                  ...(selectedNews.bildBeschreibungen || []),
+                ]}
                 alt={selectedNews.titel}
               />
             )}
             <div className="p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-3 flex-wrap">
-                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORY_COLORS[selectedNews.kategorie] || ''}`}>
+                <span
+                  className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORY_COLORS[selectedNews.kategorie] || ''}`}
+                >
                   {selectedNews.kategorie}
                 </span>
                 <time className="text-sm text-gray-400">{formatDate(selectedNews.datum)}</time>
@@ -814,67 +922,71 @@ export default function Aktuelles() {
         )}
       </Sheet>
 
-
       {/* Day events picker sheet (multiple events on one day) */}
       <Sheet open={dayEventsPickerList.length > 0} onClose={() => setDayEventsPickerList([])}>
         {dayEventsPickerList.length > 0 && (
-            <div>
-              <div
-                  className="bg-linear-to-br from-spd-red via-spd-red to-spd-red-dark px-5 sm:px-6 pt-6 sm:pt-8 pb-5 sm:pb-6 relative overflow-hidden">
-                <div
-                    className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.12),transparent_50%)]"/>
-                <div className="relative">
-                  <p className="text-white/80 text-xs font-semibold uppercase tracking-wider mb-1">
-                    {formatEventDate(dayEventsPickerList[0].datum).full}
-                  </p>
-                  <h3 className="font-black text-white text-lg sm:text-xl leading-tight">
-                    {dayEventsPickerList.length} Termine an diesem Tag
-                  </h3>
-                </div>
-              </div>
-              <div className="px-3 sm:px-5 py-4 sm:py-5 space-y-2.5">
-                {dayEventsPickerList.map(e => {
-                  const {day, month: mon} = formatEventDate(e.datum)
-                  return (
-                      <div
-                          key={e.id}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => {
-                            setDayEventsPickerList([]);
-                            setSelectedEvent(e)
-                          }}
-                          onKeyDown={ev => {
-                            if (ev.key === 'Enter' || ev.key === ' ') {
-                              ev.preventDefault();
-                              setDayEventsPickerList([]);
-                              setSelectedEvent(e)
-                            }
-                          }}
-                          className="w-full flex items-center gap-3 sm:gap-4 text-left p-3 sm:p-4 rounded-2xl border border-gray-200 dark:border-gray-700/80 bg-white dark:bg-gray-800/40 hover:border-spd-red/40 hover:shadow-lg hover:shadow-spd-red/5 transition-all duration-200 group cursor-pointer"
-                      >
-                        <div
-                            className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-spd-red text-white flex flex-col items-center justify-center shadow-sm shadow-spd-red/20">
-                          <span className="text-xs sm:text-sm font-black leading-none">{day}</span>
-                          <span className="text-[7px] sm:text-[8px] uppercase opacity-80 tracking-wide">{mon}</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-gray-900 dark:text-white truncate group-hover:text-spd-red transition-colors">{e.titel}</p>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <Clock size={10} className="text-gray-400 dark:text-gray-500 shrink-0"/>
-                            <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 truncate">{e.ganztaegig ? 'Ganztägig' : `${e.uhrzeit} Uhr`}{e.ort ? ` · ${e.ort}` : ''}</p>
-                          </div>
-                        </div>
-                        <div
-                            className="shrink-0 w-7 h-7 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center group-hover:border-spd-red/40 group-hover:bg-spd-red/5 transition-all">
-                          <ChevronRight size={13}
-                                        className="text-gray-300 dark:text-gray-600 group-hover:text-spd-red transition-colors"/>
-                        </div>
-                      </div>
-                  )
-                })}
+          <div>
+            <div className="bg-linear-to-br from-spd-red via-spd-red to-spd-red-dark px-5 sm:px-6 pt-6 sm:pt-8 pb-5 sm:pb-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.12),transparent_50%)]" />
+              <div className="relative">
+                <p className="text-white/80 text-xs font-semibold uppercase tracking-wider mb-1">
+                  {formatEventDate(dayEventsPickerList[0].datum).full}
+                </p>
+                <h3 className="font-black text-white text-lg sm:text-xl leading-tight">
+                  {dayEventsPickerList.length} Termine an diesem Tag
+                </h3>
               </div>
             </div>
+            <div className="px-3 sm:px-5 py-4 sm:py-5 space-y-2.5">
+              {dayEventsPickerList.map(e => {
+                const { day, month: mon } = formatEventDate(e.datum)
+                return (
+                  <div
+                    key={e.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      setDayEventsPickerList([])
+                      setSelectedEvent(e)
+                    }}
+                    onKeyDown={ev => {
+                      if (ev.key === 'Enter' || ev.key === ' ') {
+                        ev.preventDefault()
+                        setDayEventsPickerList([])
+                        setSelectedEvent(e)
+                      }
+                    }}
+                    className="w-full flex items-center gap-3 sm:gap-4 text-left p-3 sm:p-4 rounded-2xl border border-gray-200 dark:border-gray-700/80 bg-white dark:bg-gray-800/40 hover:border-spd-red/40 hover:shadow-lg hover:shadow-spd-red/5 transition-all duration-200 group cursor-pointer"
+                  >
+                    <div className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-spd-red text-white flex flex-col items-center justify-center shadow-sm shadow-spd-red/20">
+                      <span className="text-xs sm:text-sm font-black leading-none">{day}</span>
+                      <span className="text-[7px] sm:text-[8px] uppercase opacity-80 tracking-wide">
+                        {mon}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-gray-900 dark:text-white truncate group-hover:text-spd-red transition-colors">
+                        {e.titel}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <Clock size={10} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                        <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 truncate">
+                          {e.ganztaegig ? 'Ganztägig' : `${e.uhrzeit} Uhr`}
+                          {e.ort ? ` · ${e.ort}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="shrink-0 w-7 h-7 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center group-hover:border-spd-red/40 group-hover:bg-spd-red/5 transition-all">
+                      <ChevronRight
+                        size={13}
+                        className="text-gray-300 dark:text-gray-600 group-hover:text-spd-red transition-colors"
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         )}
       </Sheet>
 
@@ -885,4 +997,3 @@ export default function Aktuelles() {
     </section>
   )
 }
-

@@ -26,7 +26,7 @@ export async function fetchData<T = unknown>(url: string): Promise<T> {
 }
 
 export function useData<T>(url: string): UseDataResult<T> {
-  const {data, error, isLoading} = useSWR<T>(url || null, fetchData, {
+  const { data, error, isLoading } = useSWR<T>(url || null, fetchData, {
     revalidateOnFocus: false,
     dedupingInterval: 60_000,
   })
@@ -34,6 +34,11 @@ export function useData<T>(url: string): UseDataResult<T> {
   return {
     data: data ?? null,
     loading: isLoading,
-    error: error instanceof HttpError ? error : error ? new HttpError(0, (error as Error).message) : null,
+    error:
+      error instanceof HttpError
+        ? error
+        : error
+          ? new HttpError(0, (error as Error).message)
+          : null,
   }
 }

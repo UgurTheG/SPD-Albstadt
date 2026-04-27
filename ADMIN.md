@@ -28,20 +28,20 @@ GitHub API, and the live website updates automatically within approximately 1 mi
 
 Only GitHub accounts with **push access** to the repository can log in. Unauthorized logins are redirected:
 
-| Situation | Redirect |
-|---|---|
-| Token invalid / revoked | `/401` |
-| No repository access | `/403` |
-| Repository not found | `/404` |
+| Situation               | Redirect |
+| ----------------------- | -------- |
+| Token invalid / revoked | `/401`   |
+| No repository access    | `/403`   |
+| Repository not found    | `/404`   |
 
 Access is managed via GitHub repository collaborators: **Settings → Collaborators**.
 
 ### Required Environment Variables
 
-| Variable | Where | Purpose |
-|---|---|---|
-| `VITE_GITHUB_CLIENT_ID` | Vercel + `.env` | OAuth App Client ID (public) |
-| `GITHUB_CLIENT_SECRET` | Vercel + `.env` | OAuth App Client Secret (private, server-side only) |
+| Variable                | Where           | Purpose                                             |
+| ----------------------- | --------------- | --------------------------------------------------- |
+| `VITE_GITHUB_CLIENT_ID` | Vercel + `.env` | OAuth App Client ID (public)                        |
+| `GITHUB_CLIENT_SECRET`  | Vercel + `.env` | OAuth App Client Secret (private, server-side only) |
 
 OAuth App setup: https://github.com/settings/developers  
 Callback URLs: `https://<domain>/api/auth/callback` and `http://localhost:5173/api/auth/callback` (dev)
@@ -56,20 +56,20 @@ Clicking the logout button removes the token from `localStorage` and returns to 
 
 ### Technology Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 19, TypeScript |
-| Build | Vite |
-| Styling | Tailwind CSS v4 |
-| Animations | Framer Motion |
-| State Management | Zustand |
-| Icons | Lucide React |
-| Drag & Drop | `@dnd-kit` |
-| Notifications | `sonner` |
-| Backend | GitHub REST API (Contents API + Git Trees API) |
-| Hosting | Vercel |
-| Auth | GitHub OAuth 2.0 (`api/auth/callback.ts`) |
-| Data Format | JSON files in `public/data/` |
+| Layer            | Technology                                     |
+| ---------------- | ---------------------------------------------- |
+| Frontend         | React 19, TypeScript                           |
+| Build            | Vite                                           |
+| Styling          | Tailwind CSS v4                                |
+| Animations       | Framer Motion                                  |
+| State Management | Zustand                                        |
+| Icons            | Lucide React                                   |
+| Drag & Drop      | `@dnd-kit`                                     |
+| Notifications    | `sonner`                                       |
+| Backend          | GitHub REST API (Contents API + Git Trees API) |
+| Hosting          | Vercel                                         |
+| Auth             | GitHub OAuth 2.0 (`api/auth/callback.ts`)      |
+| Data Format      | JSON files in `public/data/`                   |
 
 ### Key Files
 
@@ -111,17 +111,17 @@ const BRANCH = 'main'
 
 ### Tabs
 
-| Tab | Key | Data File | Type |
-|---|---|---|---|
-| Aktuelles (News) | `news` | `public/data/news.json` | Array |
-| Partei (Party) | `party` | `public/data/party.json` | Object with sections |
-| Fraktion (Council Group) | `fraktion` | `public/data/fraktion.json` | Object with sections |
-| Kommunalpolitik | `kommunalpolitik` | `public/data/kommunalpolitik.json` | Custom |
-| Haushaltsreden (Budget Speeches) | `haushaltsreden` | N/A (PDF manager) | Custom |
-| Historie (History) | `history` | `public/data/history.json` | Object with sections |
-| Impressum | `impressum` | `public/data/impressum.json` | Object |
-| Datenschutz | `datenschutz` | `public/data/datenschutz.json` | Object |
-| Einstellungen (Settings) | `config` | `public/data/config.json` | Object with sections |
+| Tab                              | Key               | Data File                          | Type                 |
+| -------------------------------- | ----------------- | ---------------------------------- | -------------------- |
+| Aktuelles (News)                 | `news`            | `public/data/news.json`            | Array                |
+| Partei (Party)                   | `party`           | `public/data/party.json`           | Object with sections |
+| Fraktion (Council Group)         | `fraktion`        | `public/data/fraktion.json`        | Object with sections |
+| Kommunalpolitik                  | `kommunalpolitik` | `public/data/kommunalpolitik.json` | Custom               |
+| Haushaltsreden (Budget Speeches) | `haushaltsreden`  | N/A (PDF manager)                  | Custom               |
+| Historie (History)               | `history`         | `public/data/history.json`         | Object with sections |
+| Impressum                        | `impressum`       | `public/data/impressum.json`       | Object               |
+| Datenschutz                      | `datenschutz`     | `public/data/datenschutz.json`     | Object               |
+| Einstellungen (Settings)         | `config`          | `public/data/config.json`          | Object with sections |
 
 Each tab shows a **red dot badge** when it has unsaved changes.
 
@@ -136,16 +136,16 @@ Each tab shows a **red dot badge** when it has unsaved changes.
 
 Each news item has:
 
-| Field | Key | Type | Required |
-|---|---|---|---|
-| Datum | `datum` | Date (DD.MM.YYYY ↔ ISO) | ✅ |
-| Titel | `titel` | Text | ✅ |
-| Zusammenfassung | `zusammenfassung` | Textarea | |
-| Inhalt | `inhalt` | Textarea | |
-| Kategorie | `kategorie` | Select: Gemeinderat, Veranstaltung, Haushalt, Ortsverein, Wahl | |
-| Titelbild | `bildUrl` | Image upload (→ `images/news/`) | |
-| Bildunterschrift Titelbild | `bildBeschreibung` | Text | |
-| Weitere Bilder | `bildUrls` | Image list (→ `images/news/`), captions in `bildBeschreibungen` | |
+| Field                      | Key                | Type                                                            | Required |
+| -------------------------- | ------------------ | --------------------------------------------------------------- | -------- |
+| Datum                      | `datum`            | Date (DD.MM.YYYY ↔ ISO)                                         | ✅       |
+| Titel                      | `titel`            | Text                                                            | ✅       |
+| Zusammenfassung            | `zusammenfassung`  | Textarea                                                        |          |
+| Inhalt                     | `inhalt`           | Textarea                                                        |          |
+| Kategorie                  | `kategorie`        | Select: Gemeinderat, Veranstaltung, Haushalt, Ortsverein, Wahl  |          |
+| Titelbild                  | `bildUrl`          | Image upload (→ `images/news/`)                                 |          |
+| Bildunterschrift Titelbild | `bildBeschreibung` | Text                                                            |          |
+| Weitere Bilder             | `bildUrls`         | Image list (→ `images/news/`), captions in `bildBeschreibungen` |          |
 
 ### 2. Partei (Party)
 
@@ -195,19 +195,19 @@ Year-based grid (2010 to current year). Each card shows upload, replace, delete,
 
 ## Field Types Reference
 
-| Type | Behavior |
-|---|---|
-| `text` | Standard text input |
-| `email` | Email input |
-| `url` | URL input |
-| `textarea` | Auto-resizing textarea; line breaks preserved |
-| `date` | German date format (DD.MM.YYYY); stored as ISO (YYYY-MM-DD); shows weekday preview |
-| `select` | Dropdown with predefined options |
-| `toggle` | Boolean toggle switch |
-| `image` | URL input + file upload; converts to WebP at 85% quality; supports crop overlay |
-| `imagelist` | Multiple images with optional captions |
-| `stringlist` | Dynamic list of text inputs |
-| `icon-picker` | Searchable grid of Lucide icons |
+| Type          | Behavior                                                                           |
+| ------------- | ---------------------------------------------------------------------------------- |
+| `text`        | Standard text input                                                                |
+| `email`       | Email input                                                                        |
+| `url`         | URL input                                                                          |
+| `textarea`    | Auto-resizing textarea; line breaks preserved                                      |
+| `date`        | German date format (DD.MM.YYYY); stored as ISO (YYYY-MM-DD); shows weekday preview |
+| `select`      | Dropdown with predefined options                                                   |
+| `toggle`      | Boolean toggle switch                                                              |
+| `image`       | URL input + file upload; converts to WebP at 85% quality; supports crop overlay    |
+| `imagelist`   | Multiple images with optional captions                                             |
+| `stringlist`  | Dynamic list of text inputs                                                        |
+| `icon-picker` | Searchable grid of Lucide icons                                                    |
 
 ---
 
@@ -224,14 +224,14 @@ Year-based grid (2010 to current year). Each card shows upload, replace, delete,
 
 ### Image Directories
 
-| `imageDir` | Path |
-|---|---|
-| `news` | `public/images/news/` |
-| `vorstand` | `public/images/vorstand/` |
-| `abgeordnete` | `public/images/abgeordnete/` |
-| `gemeinderaete` | `public/images/gemeinderaete/` |
-| `kreisraete` | `public/images/kreisraete/` |
-| `historie` | `public/images/historie/` |
+| `imageDir`          | Path                               |
+| ------------------- | ---------------------------------- |
+| `news`              | `public/images/news/`              |
+| `vorstand`          | `public/images/vorstand/`          |
+| `abgeordnete`       | `public/images/abgeordnete/`       |
+| `gemeinderaete`     | `public/images/gemeinderaete/`     |
+| `kreisraete`        | `public/images/kreisraete/`        |
+| `historie`          | `public/images/historie/`          |
 | `persoenlichkeiten` | `public/images/persoenlichkeiten/` |
 
 ### Orphan Image Detection

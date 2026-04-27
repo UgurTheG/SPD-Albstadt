@@ -1,12 +1,12 @@
-import {useEffect, useRef, useState} from 'react'
-import {useLocation, useNavigate} from 'react-router-dom'
-import {motion, useInView} from 'framer-motion'
-import {FileDown} from 'lucide-react'
-import {useData} from '../../hooks/useData'
-import {useHttpErrorRedirect} from '../../hooks/useHttpErrorRedirect'
-import PersonSheet, {type PersonSheetData} from '../PersonSheet'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { motion, useInView } from 'framer-motion'
+import { FileDown } from 'lucide-react'
+import { useData } from '../../hooks/useData'
+import { useHttpErrorRedirect } from '../../hooks/useHttpErrorRedirect'
+import PersonSheet, { type PersonSheetData } from '../PersonSheet'
 import PersonCard from '../PersonCard'
-import {personCardContainerVariants} from '../personCardVariants'
+import { personCardContainerVariants } from '../personCardVariants'
 import SectionHeader from '../SectionHeader'
 
 interface KommunalpolitikPerson {
@@ -41,16 +41,16 @@ interface KommunalpolitikData {
 
 export default function Kommunalpolitik() {
   const ref = useRef(null)
-  const isInView = useInView(ref, {once: true, margin: '-80px'})
+  const isInView = useInView(ref, { once: true, margin: '-80px' })
   const navigate = useNavigate()
   const location = useLocation()
-  const {data, error} = useData<KommunalpolitikData>('/data/kommunalpolitik.json')
+  const { data, error } = useData<KommunalpolitikData>('/data/kommunalpolitik.json')
   useHttpErrorRedirect(error)
   const [selectedPerson, setSelectedPerson] = useState<PersonSheetData | null>(null)
 
   useEffect(() => {
     if (data?.sichtbar === false && !location.pathname.startsWith('/admin')) {
-      navigate('/', {replace: true})
+      navigate('/', { replace: true })
     }
   }, [data, navigate, location.pathname])
 
@@ -77,9 +77,9 @@ export default function Kommunalpolitik() {
         {/* Year selector */}
         {aktiveJahre.length > 1 && (
           <motion.div
-            initial={{opacity: 0, y: 16}}
-            animate={isInView ? {opacity: 1, y: 0} : {}}
-            transition={{delay: 0.2}}
+            initial={{ opacity: 0, y: 16 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.2 }}
             className="flex flex-wrap gap-2 mb-10"
           >
             {aktiveJahre.map(j => (
@@ -101,17 +101,17 @@ export default function Kommunalpolitik() {
         {activeJahr && (
           <motion.div
             key={activeJahr.id}
-            initial={{opacity: 0}}
-            animate={{opacity: 1}}
-            transition={{duration: 0.3}}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
           >
             {/* Gemeinderäte */}
             {gemeinderaete.length > 0 && (
               <div className="mb-20">
                 <motion.div
-                  initial={{opacity: 0}}
-                  animate={isInView ? {opacity: 1} : {}}
-                  transition={{delay: 0.2}}
+                  initial={{ opacity: 0 }}
+                  animate={isInView ? { opacity: 1 } : {}}
+                  transition={{ delay: 0.2 }}
                   className="mb-8"
                 >
                   <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
@@ -133,7 +133,7 @@ export default function Kommunalpolitik() {
                       name={p.name}
                       bildUrl={p.bildUrl}
                       label={p.rolle ? `Listenplatz ${i + 1} · ${p.rolle}` : `Listenplatz ${i + 1}`}
-                      onClick={() => setSelectedPerson({...p, listenplatz: i + 1})}
+                      onClick={() => setSelectedPerson({ ...p, listenplatz: i + 1 })}
                     />
                   ))}
                 </motion.div>
@@ -144,9 +144,9 @@ export default function Kommunalpolitik() {
             {kreisraete.length > 0 && (
               <div className="mb-20">
                 <motion.div
-                  initial={{opacity: 0}}
-                  animate={isInView ? {opacity: 1} : {}}
-                  transition={{delay: 0.3}}
+                  initial={{ opacity: 0 }}
+                  animate={isInView ? { opacity: 1 } : {}}
+                  transition={{ delay: 0.3 }}
                   className="mb-8"
                 >
                   <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
@@ -168,7 +168,7 @@ export default function Kommunalpolitik() {
                       name={p.name}
                       bildUrl={p.bildUrl}
                       label={p.rolle ? `Listenplatz ${i + 1} · ${p.rolle}` : `Listenplatz ${i + 1}`}
-                      onClick={() => setSelectedPerson({...p, listenplatz: i + 1})}
+                      onClick={() => setSelectedPerson({ ...p, listenplatz: i + 1 })}
                     />
                   ))}
                 </motion.div>
@@ -178,9 +178,9 @@ export default function Kommunalpolitik() {
             {/* Dokumente */}
             {dokumente.length > 0 && (
               <motion.div
-                initial={{opacity: 0, y: 24}}
-                animate={isInView ? {opacity: 1, y: 0} : {}}
-                transition={{delay: 0.35, duration: 0.5}}
+                initial={{ opacity: 0, y: 24 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: 0.35, duration: 0.5 }}
                 className="mb-16"
               >
                 <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">
@@ -202,10 +202,12 @@ export default function Kommunalpolitik() {
                                    transition-all duration-300"
                       >
                         <div className="w-10 h-10 bg-spd-red/8 dark:bg-spd-red/12 rounded-xl flex items-center justify-center">
-                          <FileDown size={18} className="text-spd-red"/>
+                          <FileDown size={18} className="text-spd-red" />
                         </div>
                         <div className="text-center">
-                          <p className="font-black text-gray-900 dark:text-white text-sm leading-tight line-clamp-2">{dok.titel}</p>
+                          <p className="font-black text-gray-900 dark:text-white text-sm leading-tight line-clamp-2">
+                            {dok.titel}
+                          </p>
                         </div>
                       </a>
                     )
@@ -225,8 +227,11 @@ export default function Kommunalpolitik() {
         {/* Skeleton while loading */}
         {!data && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {Array.from({length: 4}).map((_, i) => (
-              <div key={i} className="bg-gray-100 dark:bg-gray-800 rounded-2xl h-64 animate-pulse"/>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-gray-100 dark:bg-gray-800 rounded-2xl h-64 animate-pulse"
+              />
             ))}
           </div>
         )}

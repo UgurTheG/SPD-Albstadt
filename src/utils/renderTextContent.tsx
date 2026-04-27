@@ -27,7 +27,7 @@ export function renderTextContent(text: string): React.ReactNode {
           className="text-spd-red dark:text-red-400 hover:underline break-all"
         >
           {token}
-        </a>
+        </a>,
       )
       lastIndex = match.index + token.length
     }
@@ -42,4 +42,3 @@ export function renderTextContent(text: string): React.ReactNode {
     )
   })
 }
-

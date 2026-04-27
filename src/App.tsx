@@ -1,38 +1,45 @@
-import {lazy, Suspense, useEffect, useState} from 'react'
-import {Route, Routes, useLocation, useNavigate} from 'react-router-dom'
-import {AnimatePresence, motion} from 'framer-motion'
-import {ArrowUp, Moon, Sun} from 'lucide-react'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ArrowUp, Moon, Sun } from 'lucide-react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Footer from './components/Footer'
 
 const AdminApp = lazy(() => import('./admin/AdminApp'))
-const Aktuelles   = lazy(() => import('./components/sections/Aktuelles'))
-const Partei      = lazy(() => import('./components/sections/Partei'))
-const Fraktion    = lazy(() => import('./components/sections/Fraktion'))
-const Historie    = lazy(() => import('./components/sections/Historie'))
+const Aktuelles = lazy(() => import('./components/sections/Aktuelles'))
+const Partei = lazy(() => import('./components/sections/Partei'))
+const Fraktion = lazy(() => import('./components/sections/Fraktion'))
+const Historie = lazy(() => import('./components/sections/Historie'))
 const Kommunalpolitik = lazy(() => import('./components/sections/Kommunalpolitik'))
-const Kontakt     = lazy(() => import('./components/sections/Kontakt'))
+const Kontakt = lazy(() => import('./components/sections/Kontakt'))
 const Datenschutz = lazy(() => import('./components/sections/Datenschutz'))
-const Impressum   = lazy(() => import('./components/sections/Impressum'))
+const Impressum = lazy(() => import('./components/sections/Impressum'))
 const ErrorPage = lazy(() => import('./components/sections/ErrorPage'))
 
 const PAGE_TITLES: Record<string, string> = {
-  '/':            'SPD Albstadt',
-  '/aktuelles':   'SPD Albstadt / Aktuelles',
-  '/partei':           'SPD Albstadt / Partei',
-  '/fraktion':         'SPD Albstadt / Fraktion',
-  '/kommunalpolitik':  'SPD Albstadt / Kommunalpolitik',
-  '/historie':    'SPD Albstadt / Historie',
-  '/kontakt':     'SPD Albstadt / Kontakt',
+  '/': 'SPD Albstadt',
+  '/aktuelles': 'SPD Albstadt / Aktuelles',
+  '/partei': 'SPD Albstadt / Partei',
+  '/fraktion': 'SPD Albstadt / Fraktion',
+  '/kommunalpolitik': 'SPD Albstadt / Kommunalpolitik',
+  '/historie': 'SPD Albstadt / Historie',
+  '/kontakt': 'SPD Albstadt / Kontakt',
   '/datenschutz': 'SPD Albstadt / Datenschutz',
-  '/impressum':   'SPD Albstadt / Impressum',
+  '/impressum': 'SPD Albstadt / Impressum',
 }
 
 // Direction: 1 = going deeper, -1 = going back to home
 const DEPTH: Record<string, number> = {
-  '/': 0, '/aktuelles': 1, '/partei': 1, '/fraktion': 1,
-  '/kommunalpolitik': 1, '/historie': 1, '/kontakt': 1, '/datenschutz': 1, '/impressum': 1,
+  '/': 0,
+  '/aktuelles': 1,
+  '/partei': 1,
+  '/fraktion': 1,
+  '/kommunalpolitik': 1,
+  '/historie': 1,
+  '/kontakt': 1,
+  '/datenschutz': 1,
+  '/impressum': 1,
 }
 
 export default function App() {
@@ -80,13 +87,15 @@ export default function App() {
 
   if (isAdmin) {
     return (
-        <Suspense fallback={
+      <Suspense
+        fallback={
           <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
-            <div className="w-10 h-10 border-4 border-spd-red/30 border-t-spd-red rounded-full animate-spin"/>
+            <div className="w-10 h-10 border-4 border-spd-red/30 border-t-spd-red rounded-full animate-spin" />
           </div>
-        }>
-          <AdminApp/>
-        </Suspense>
+        }
+      >
+        <AdminApp />
+      </Suspense>
     )
   }
 
@@ -114,48 +123,203 @@ export default function App() {
           key={location.pathname}
           initial={{ opacity: 0, y: direction > 0 ? 36 : -28 }}
           animate={{ opacity: 1, y: 0, transition: { duration: 0.46, ease: 'easeOut' } }}
-          exit={{ opacity: 0, y: direction > 0 ? -24 : 36, transition: { duration: 0.26, ease: 'easeIn' } }}
+          exit={{
+            opacity: 0,
+            y: direction > 0 ? -24 : 36,
+            transition: { duration: 0.26, ease: 'easeIn' },
+          }}
           className="relative min-h-screen flex flex-col"
         >
-          <Suspense fallback={
-            <div className="flex items-center justify-center min-h-[60vh]">
-              <div className="w-10 h-10 border-4 border-spd-red/30 border-t-spd-red rounded-full animate-spin" />
-            </div>
-          }>
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="w-10 h-10 border-4 border-spd-red/30 border-t-spd-red rounded-full animate-spin" />
+              </div>
+            }
+          >
             <Routes location={location}>
-              <Route path="/" element={<><Hero navigateTo={navigateTo} /><Footer navigateTo={navigateTo} /></>} />
-              <Route path="/aktuelles"   element={<><Aktuelles /><Footer navigateTo={navigateTo} /></>} />
-              <Route path="/partei"      element={<><Partei /><Footer navigateTo={navigateTo} /></>} />
-              <Route path="/fraktion"    element={<><Fraktion /><Footer navigateTo={navigateTo} /></>} />
-              <Route path="/kommunalpolitik" element={<><Kommunalpolitik /><Footer navigateTo={navigateTo} /></>} />
-              <Route path="/historie"    element={<><Historie /><Footer navigateTo={navigateTo} /></>} />
-              <Route path="/kontakt"     element={<><Kontakt /><Footer navigateTo={navigateTo} /></>} />
-              <Route path="/datenschutz" element={<><Datenschutz /><Footer navigateTo={navigateTo} /></>} />
-              <Route path="/impressum"   element={<><Impressum /><Footer navigateTo={navigateTo} /></>} />
+              <Route
+                path="/"
+                element={
+                  <>
+                    <Hero navigateTo={navigateTo} />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/aktuelles"
+                element={
+                  <>
+                    <Aktuelles />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/partei"
+                element={
+                  <>
+                    <Partei />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/fraktion"
+                element={
+                  <>
+                    <Fraktion />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/kommunalpolitik"
+                element={
+                  <>
+                    <Kommunalpolitik />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/historie"
+                element={
+                  <>
+                    <Historie />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/kontakt"
+                element={
+                  <>
+                    <Kontakt />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/datenschutz"
+                element={
+                  <>
+                    <Datenschutz />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/impressum"
+                element={
+                  <>
+                    <Impressum />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
               {/* Error pages */}
-              <Route path="/400"
-                     element={<><ErrorPage code={400} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
-              <Route path="/401"
-                     element={<><ErrorPage code={401} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
-              <Route path="/403"
-                     element={<><ErrorPage code={403} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
-              <Route path="/405"
-                     element={<><ErrorPage code={405} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
-              <Route path="/408"
-                     element={<><ErrorPage code={408} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
-              <Route path="/429"
-                     element={<><ErrorPage code={429} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
-              <Route path="/500"
-                     element={<><ErrorPage code={500} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
-              <Route path="/502"
-                     element={<><ErrorPage code={502} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
-              <Route path="/503"
-                     element={<><ErrorPage code={503} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
-              <Route path="/504"
-                     element={<><ErrorPage code={504} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
+              <Route
+                path="/400"
+                element={
+                  <>
+                    <ErrorPage code={400} navigateTo={navigateTo} />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/401"
+                element={
+                  <>
+                    <ErrorPage code={401} navigateTo={navigateTo} />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/403"
+                element={
+                  <>
+                    <ErrorPage code={403} navigateTo={navigateTo} />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/405"
+                element={
+                  <>
+                    <ErrorPage code={405} navigateTo={navigateTo} />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/408"
+                element={
+                  <>
+                    <ErrorPage code={408} navigateTo={navigateTo} />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/429"
+                element={
+                  <>
+                    <ErrorPage code={429} navigateTo={navigateTo} />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/500"
+                element={
+                  <>
+                    <ErrorPage code={500} navigateTo={navigateTo} />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/502"
+                element={
+                  <>
+                    <ErrorPage code={502} navigateTo={navigateTo} />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/503"
+                element={
+                  <>
+                    <ErrorPage code={503} navigateTo={navigateTo} />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
+              <Route
+                path="/504"
+                element={
+                  <>
+                    <ErrorPage code={504} navigateTo={navigateTo} />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
               {/* Catch-all → 404 */}
-              <Route path="*"
-                     element={<><ErrorPage code={404} navigateTo={navigateTo}/><Footer navigateTo={navigateTo}/></>}/>
+              <Route
+                path="*"
+                element={
+                  <>
+                    <ErrorPage code={404} navigateTo={navigateTo} />
+                    <Footer navigateTo={navigateTo} />
+                  </>
+                }
+              />
             </Routes>
           </Suspense>
         </motion.div>

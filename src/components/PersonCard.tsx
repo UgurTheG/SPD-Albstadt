@@ -2,7 +2,12 @@ import { motion } from 'framer-motion'
 import { personCardItemVariants } from './personCardVariants'
 
 function getInitials(name: string): string {
-  return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
 }
 
 // ── PersonCard ─────────────────────────────────────────────────────────────────
@@ -63,7 +68,9 @@ export default function PersonCard({ name, bildUrl, label, sublabel, onClick }: 
       {/* Info overlay */}
       <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 pointer-events-none">
         {label && (
-          <p className="text-[10px] sm:text-[11px] font-medium tracking-wide text-white/50 mb-0.5">{label}</p>
+          <p className="text-[10px] sm:text-[11px] font-medium tracking-wide text-white/50 mb-0.5">
+            {label}
+          </p>
         )}
         <h4 className="font-extrabold text-white text-sm sm:text-base leading-tight">{name}</h4>
         {sublabel && (
@@ -76,4 +83,3 @@ export default function PersonCard({ name, bildUrl, label, sublabel, onClick }: 
     </motion.div>
   )
 }
-

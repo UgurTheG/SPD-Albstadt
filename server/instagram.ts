@@ -68,7 +68,10 @@ function clampLimit(value?: number | string | null): number {
   return Math.min(MAX_LIMIT, Math.max(1, Math.trunc(parsed)))
 }
 
-function createFallbackResponse(reason: FallbackReason, pageSize: number = DEFAULT_LIMIT): InstagramFeedResponse {
+function createFallbackResponse(
+  reason: FallbackReason,
+  pageSize: number = DEFAULT_LIMIT,
+): InstagramFeedResponse {
   return {
     username: INSTAGRAM_USERNAME,
     profileUrl: INSTAGRAM_PROFILE_URL,
@@ -87,7 +90,13 @@ function getPrimaryMediaUrl(item: InstagramGraphMediaItem): string | null {
 
   if (item.media_type === 'CAROUSEL_ALBUM') {
     const firstChild = item.children?.data?.find(child => child.thumbnail_url || child.media_url)
-    return firstChild?.thumbnail_url ?? firstChild?.media_url ?? item.thumbnail_url ?? item.media_url ?? null
+    return (
+      firstChild?.thumbnail_url ??
+      firstChild?.media_url ??
+      item.thumbnail_url ??
+      item.media_url ??
+      null
+    )
   }
 
   return item.media_url ?? item.thumbnail_url ?? null
@@ -106,7 +115,12 @@ function normalizeItem(item: InstagramGraphMediaItem): InstagramFeedItem | null 
   }
 }
 
-function buildGraphApiUrl(userId: string, accessToken: string, limit: number, after?: string): string {
+function buildGraphApiUrl(
+  userId: string,
+  accessToken: string,
+  limit: number,
+  after?: string,
+): string {
   const mediaModifiers = [`.limit(${limit})`]
   if (after) mediaModifiers.push(`.after(${after})`)
 
@@ -118,7 +132,11 @@ function buildGraphApiUrl(userId: string, accessToken: string, limit: number, af
   return `https://graph.facebook.com/v22.0/${userId}?${params.toString()}`
 }
 
-export async function loadInstagramFeed(env: EnvLike, limit: number | string | null = DEFAULT_LIMIT, fetchImpl: typeof fetch = fetch): Promise<InstagramFeedResponse> {
+export async function loadInstagramFeed(
+  env: EnvLike,
+  limit: number | string | null = DEFAULT_LIMIT,
+  fetchImpl: typeof fetch = fetch,
+): Promise<InstagramFeedResponse> {
   const accessToken = env.INSTAGRAM_ACCESS_TOKEN
   const userId = env.INSTAGRAM_USER_ID
   const safeLimit = clampLimit(limit)
@@ -144,7 +162,7 @@ export async function loadInstagramFeed(env: EnvLike, limit: number | string | n
         return createFallbackResponse('upstream_error', safeLimit)
       }
 
-      const payload = await response.json() as InstagramGraphResponse
+      const payload = (await response.json()) as InstagramGraphResponse
       const mediaConnection = payload.business_discovery?.media
       const pageItems = (mediaConnection?.data ?? [])
         .map(normalizeItem)
@@ -175,9 +193,11 @@ export async function loadInstagramFeed(env: EnvLike, limit: number | string | n
   }
 }
 
-export async function loadInstagramFeedFromUrl(requestUrl: string, env: EnvLike, fetchImpl: typeof fetch = fetch): Promise<InstagramFeedResponse> {
+export async function loadInstagramFeedFromUrl(
+  requestUrl: string,
+  env: EnvLike,
+  fetchImpl: typeof fetch = fetch,
+): Promise<InstagramFeedResponse> {
   const url = new URL(requestUrl, 'http://localhost')
   return loadInstagramFeed(env, url.searchParams.get('limit'), fetchImpl)
 }
-
-

@@ -1,12 +1,12 @@
-@import "@fontsource-variable/inter/opsz.css";
-@import "@fontsource-variable/inter/opsz-italic.css";
-@import "tailwindcss";
+@import '@fontsource-variable/inter/opsz.css';
+@import '@fontsource-variable/inter/opsz-italic.css';
+@import 'tailwindcss';
 @custom-variant dark (&:where(.dark, .dark *));
 @theme {
-  --color-spd-red: #E3000F;
-  --color-spd-red-dark: #B8000C;
-  --color-spd-red-light: #FF2020;
-  --font-family-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --color-spd-red: #e3000f;
+  --color-spd-red-dark: #b8000c;
+  --color-spd-red-light: #ff2020;
+  --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 html {
   scroll-behavior: smooth;
@@ -19,7 +19,12 @@ html.dark {
 }
 body {
   margin: 0;
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   text-align: justify;
   hyphens: auto;
   -webkit-hyphens: auto;
@@ -30,7 +35,12 @@ body {
 /* Form controls should never inherit body's justify/hyphenation — it
    causes button labels like "Veröffentlichen" to break into "Veröffent-
    lichen" in narrow containers. */
-button, input, select, textarea, label, [role="button"] {
+button,
+input,
+select,
+textarea,
+label,
+[role='button'] {
   text-align: start;
   hyphens: manual;
   -webkit-hyphens: manual;
@@ -41,12 +51,22 @@ html.dark body {
 #root {
   min-height: 100dvh;
 }
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
 /* ── Lightbox caption overrides ─────────────────────────────────── */
 .yarl__slide_description_container {
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%) !important;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.85) 0%,
+    rgba(0, 0, 0, 0.5) 60%,
+    transparent 100%
+  ) !important;
   padding: 32px 20px 20px !important;
   max-height: 35vh !important;
   overflow-y: auto !important;
@@ -54,7 +74,7 @@ html.dark body {
 }
 
 .yarl__slide_description {
-  font-family: "Inter", system-ui, sans-serif !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
   font-size: 13px !important;
   line-height: 1.6 !important;
   color: rgba(255, 255, 255, 0.9) !important;
@@ -83,114 +103,113 @@ html.dark body {
    are a reliable CSS fallback for the popup opened on post tap.       */
 
 /* Base: dark background, light text, ALL borders dark */
-.dark [class*="eapps-instagram-feed-popup"] {
+.dark [class*='eapps-instagram-feed-popup'] {
   background-color: #0f172a !important;
   color: #e2e8f0 !important;
 }
 /* Force every border inside the popup to dark — fixes the white top line */
-.dark [class*="eapps-instagram-feed-popup"],
-.dark [class*="eapps-instagram-feed-popup"] * {
+.dark [class*='eapps-instagram-feed-popup'],
+.dark [class*='eapps-instagram-feed-popup'] * {
   border-color: #1e293b !important;
 }
-.dark [class*="eapps-instagram-feed-popup-inner"],
-.dark [class*="eapps-instagram-feed-popup-frame"],
-.dark [class*="eapps-instagram-feed-popup-body"],
-.dark [class*="eapps-instagram-feed-popup-content"] {
+.dark [class*='eapps-instagram-feed-popup-inner'],
+.dark [class*='eapps-instagram-feed-popup-frame'],
+.dark [class*='eapps-instagram-feed-popup-body'],
+.dark [class*='eapps-instagram-feed-popup-content'] {
   background-color: #0f172a !important;
 }
-.dark [class*="eapps-instagram-feed-popup-header"] {
+.dark [class*='eapps-instagram-feed-popup-header'] {
   background-color: #1e293b !important;
 }
-.dark [class*="eapps-instagram-feed-popup-footer"] {
+.dark [class*='eapps-instagram-feed-popup-footer'] {
   background-color: #1e293b !important;
   color: #e2e8f0 !important;
 }
 /* Username → white */
-.dark [class*="eapps-instagram-feed-popup"] [class*="username"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="user-name"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="handle"] {
+.dark [class*='eapps-instagram-feed-popup'] [class*='username'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='user-name'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='handle'] {
   color: #ffffff !important;
 }
 /* Body text */
-.dark [class*="eapps-instagram-feed-popup"] [class*="caption"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="likes"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="date"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="comments"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="fullname"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="count"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="text"],
-.dark [class*="eapps-instagram-feed-popup"] p,
-.dark [class*="eapps-instagram-feed-popup"] span:not([class*="follow"]):not([class*="btn"]) {
+.dark [class*='eapps-instagram-feed-popup'] [class*='caption'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='likes'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='date'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='comments'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='fullname'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='count'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='text'],
+.dark [class*='eapps-instagram-feed-popup'] p,
+.dark [class*='eapps-instagram-feed-popup'] span:not([class*='follow']):not([class*='btn']) {
   color: #e2e8f0 !important;
 }
 /* Arrows — transparent background, white icon in dark / dark icon in light */
-.dark [class*="eapps-instagram-feed-popup"] [class*="arrow"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="prev"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="next"] {
+.dark [class*='eapps-instagram-feed-popup'] [class*='arrow'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='prev'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='next'] {
   background-color: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
   color: #ffffff !important;
 }
-.dark [class*="eapps-instagram-feed-popup"] [class*="arrow"] svg,
-.dark [class*="eapps-instagram-feed-popup"] [class*="prev"] svg,
-.dark [class*="eapps-instagram-feed-popup"] [class*="next"] svg,
-.dark [class*="eapps-instagram-feed-popup"] [class*="arrow"] path,
-.dark [class*="eapps-instagram-feed-popup"] [class*="prev"] path,
-.dark [class*="eapps-instagram-feed-popup"] [class*="next"] path,
-.dark [class*="eapps-instagram-feed-popup"] [class*="arrow"] polyline,
-.dark [class*="eapps-instagram-feed-popup"] [class*="prev"] polyline,
-.dark [class*="eapps-instagram-feed-popup"] [class*="next"] polyline {
+.dark [class*='eapps-instagram-feed-popup'] [class*='arrow'] svg,
+.dark [class*='eapps-instagram-feed-popup'] [class*='prev'] svg,
+.dark [class*='eapps-instagram-feed-popup'] [class*='next'] svg,
+.dark [class*='eapps-instagram-feed-popup'] [class*='arrow'] path,
+.dark [class*='eapps-instagram-feed-popup'] [class*='prev'] path,
+.dark [class*='eapps-instagram-feed-popup'] [class*='next'] path,
+.dark [class*='eapps-instagram-feed-popup'] [class*='arrow'] polyline,
+.dark [class*='eapps-instagram-feed-popup'] [class*='prev'] polyline,
+.dark [class*='eapps-instagram-feed-popup'] [class*='next'] polyline {
   fill: #ffffff !important;
   stroke: #ffffff !important;
 }
 /* Close (X) — target by class name AND by element type as fallback */
-.dark [class*="eapps-instagram-feed-popup"] [class*="close"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="dismiss"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="back"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="exit"],
-.dark [class*="eapps-instagram-feed-popup"] button,
-.dark [class*="eapps-instagram-feed-popup"] [role="button"] {
+.dark [class*='eapps-instagram-feed-popup'] [class*='close'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='dismiss'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='back'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='exit'],
+.dark [class*='eapps-instagram-feed-popup'] button,
+.dark [class*='eapps-instagram-feed-popup'] [role='button'] {
   background-color: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
   color: #ffffff !important;
 }
 /* SVG-based X */
-.dark [class*="eapps-instagram-feed-popup"] button svg,
-.dark [class*="eapps-instagram-feed-popup"] button svg *,
-.dark [class*="eapps-instagram-feed-popup"] [role="button"] svg,
-.dark [class*="eapps-instagram-feed-popup"] [role="button"] svg *,
-.dark [class*="eapps-instagram-feed-popup"] [class*="close"] svg *,
-.dark [class*="eapps-instagram-feed-popup"] [class*="back"] svg * {
+.dark [class*='eapps-instagram-feed-popup'] button svg,
+.dark [class*='eapps-instagram-feed-popup'] button svg *,
+.dark [class*='eapps-instagram-feed-popup'] [role='button'] svg,
+.dark [class*='eapps-instagram-feed-popup'] [role='button'] svg *,
+.dark [class*='eapps-instagram-feed-popup'] [class*='close'] svg *,
+.dark [class*='eapps-instagram-feed-popup'] [class*='back'] svg * {
   fill: #ffffff !important;
   stroke: #ffffff !important;
 }
 /* CSS-drawn X (pseudo-elements with borders/background) */
-.dark [class*="eapps-instagram-feed-popup"] button::before,
-.dark [class*="eapps-instagram-feed-popup"] button::after,
-.dark [class*="eapps-instagram-feed-popup"] [class*="close"]::before,
-.dark [class*="eapps-instagram-feed-popup"] [class*="close"]::after,
-.dark [class*="eapps-instagram-feed-popup"] [class*="back"]::before,
-.dark [class*="eapps-instagram-feed-popup"] [class*="back"]::after {
+.dark [class*='eapps-instagram-feed-popup'] button::before,
+.dark [class*='eapps-instagram-feed-popup'] button::after,
+.dark [class*='eapps-instagram-feed-popup'] [class*='close']::before,
+.dark [class*='eapps-instagram-feed-popup'] [class*='close']::after,
+.dark [class*='eapps-instagram-feed-popup'] [class*='back']::before,
+.dark [class*='eapps-instagram-feed-popup'] [class*='back']::after {
   background-color: #ffffff !important;
   border-color: #ffffff !important;
 }
 /* Carousel progress bar/track → transparent, dots remain visible.
    Cast a wide net across every possible Elfsight class name variant. */
-.dark [class*="eapps-instagram-feed-popup"] [class*="slider"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="progress"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="track"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="indicator"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="pagination"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="pager"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="scrollbar"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="scroll-bar"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="bullet-bar"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="dots-line"],
-.dark [class*="eapps-instagram-feed-popup"] [class*="nav-line"] {
+.dark [class*='eapps-instagram-feed-popup'] [class*='slider'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='progress'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='track'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='indicator'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='pagination'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='pager'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='scrollbar'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='scroll-bar'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='bullet-bar'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='dots-line'],
+.dark [class*='eapps-instagram-feed-popup'] [class*='nav-line'] {
   background-color: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
 }
-

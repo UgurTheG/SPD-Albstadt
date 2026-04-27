@@ -1,5 +1,5 @@
-import {Mail} from 'lucide-react'
-import {useConfig} from '../hooks/useConfig'
+import { Mail } from 'lucide-react'
+import { useConfig } from '../hooks/useConfig'
 
 const FacebookIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -8,7 +8,16 @@ const FacebookIcon = () => (
 )
 
 const InstagramIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="2" y="2" width="20" height="20" rx="5" />
     <circle cx="12" cy="12" r="5" />
     <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
@@ -37,10 +46,11 @@ export default function Footer({ navigateTo }: FooterProps) {
               <span className="font-black text-white text-xl tracking-tight">Albstadt</span>
             </div>
             <p className="text-sm leading-relaxed mb-4 max-w-xs">
-              Sozialdemokratische Partei Deutschlands, Ortsverein Albstadt. Für eine gerechte, soziale und zukunftsorientierte Stadtpolitik.
+              Sozialdemokratische Partei Deutschlands, Ortsverein Albstadt. Für eine gerechte,
+              soziale und zukunftsorientierte Stadtpolitik.
             </p>
             <a
-                href={`mailto:${email}`}
+              href={`mailto:${email}`}
               className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors mb-5"
             >
               <Mail size={14} />
@@ -48,7 +58,7 @@ export default function Footer({ navigateTo }: FooterProps) {
             </a>
             <div className="flex items-center gap-2.5">
               <a
-                  href={facebookUrl}
+                href={facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
@@ -57,7 +67,7 @@ export default function Footer({ navigateTo }: FooterProps) {
                 <FacebookIcon />
               </a>
               <a
-                  href={instagramUrl}
+                href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
@@ -70,15 +80,32 @@ export default function Footer({ navigateTo }: FooterProps) {
 
           {/* Links */}
           <div>
-            <h4 className="text-white font-bold text-sm mb-5 uppercase tracking-wide">Weitere Links</h4>
+            <h4 className="text-white font-bold text-sm mb-5 uppercase tracking-wide">
+              Weitere Links
+            </h4>
             <div className="flex flex-col gap-2.5 text-sm">
-              <a href="https://www.spd.de" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              <a
+                href="https://www.spd.de"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
                 SPD Bundesverband
               </a>
-              <a href="https://www.spd-bw.de" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              <a
+                href="https://www.spd-bw.de"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
                 SPD Baden-Württemberg
               </a>
-              <a href="https://www.spd.de/unterstuetzen/mitglied-werden" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              <a
+                href="https://www.spd.de/unterstuetzen/mitglied-werden"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
                 Mitglied werden
               </a>
             </div>
@@ -87,12 +114,20 @@ export default function Footer({ navigateTo }: FooterProps) {
 
         {/* Divider */}
         <div className="border-t border-gray-800/60 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs">
-            © {year} SPD Albstadt. Alle Rechte vorbehalten.
-          </p>
+          <p className="text-xs">© {year} SPD Albstadt. Alle Rechte vorbehalten.</p>
           <div className="flex gap-4 text-xs">
-            <button onClick={() => navigateTo('impressum')} className="hover:text-white transition-colors">Impressum</button>
-            <button onClick={() => navigateTo('datenschutz')} className="hover:text-white transition-colors">Datenschutz</button>
+            <button
+              onClick={() => navigateTo('impressum')}
+              className="hover:text-white transition-colors"
+            >
+              Impressum
+            </button>
+            <button
+              onClick={() => navigateTo('datenschutz')}
+              className="hover:text-white transition-colors"
+            >
+              Datenschutz
+            </button>
           </div>
         </div>
       </div>

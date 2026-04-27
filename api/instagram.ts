@@ -9,10 +9,12 @@ type ApiResponse = {
 }
 
 export default async function handler(req: { url?: string }, res: ApiResponse) {
-  const payload: InstagramFeedResponse = await loadInstagramFeedFromUrl(req.url ?? '/api/instagram', process.env)
+  const payload: InstagramFeedResponse = await loadInstagramFeedFromUrl(
+    req.url ?? '/api/instagram',
+    process.env,
+  )
 
   res.setHeader('Cache-Control', CACHE_CONTROL)
   res.setHeader('Content-Type', 'application/json; charset=utf-8')
   res.status(200).json(payload)
 }
-
