@@ -41,7 +41,7 @@ export default function LoginScreen() {
         if (!token) return {hashError: '', hashToken: null}
         const savedState = sessionStorage.getItem('oauth_state')
         sessionStorage.removeItem('oauth_state')
-        if (savedState && returnedState && returnedState !== savedState) {
+        if (!returnedState || !savedState || returnedState !== savedState) {
             return {hashError: 'Sicherheitsfehler: Ungültige Anfrage.', hashToken: null}
         }
         return {hashError: '', hashToken: decodeURIComponent(token)}
