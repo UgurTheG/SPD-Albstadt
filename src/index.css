@@ -1,0 +1,105 @@
+@import '@fontsource-variable/inter/opsz.css';
+@import '@fontsource-variable/inter/opsz-italic.css';
+@import 'tailwindcss';
+@custom-variant dark (&:where(.dark, .dark *));
+/* Shorthand for compact landscape phones (e.g. iPhone in landscape).
+   Replaces the verbose [@media(orientation:landscape)_and_(max-height:600px)]: prefix. */
+@custom-variant landscape-compact (@media (orientation: landscape) and (max-height: 600px));
+@theme {
+  --color-spd-red: #e3000f;
+  --color-spd-red-dark: #b8000c;
+  --color-spd-red-light: #ff2020;
+  --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #030712;
+}
+html.dark {
+  background-color: #000000;
+}
+body {
+  margin: 0;
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphenate-limit-chars: 6 3 3;
+  background-color: #030712;
+}
+
+/* Form controls should never inherit body's justify/hyphenation — it
+   causes button labels like "Veröffentlichen" to break into "Veröffent-
+   lichen" in narrow containers. */
+button,
+input,
+select,
+textarea,
+label,
+[role='button'] {
+  text-align: start;
+  hyphens: manual;
+  -webkit-hyphens: manual;
+}
+html.dark body {
+  background-color: #000000;
+}
+#root {
+  min-height: 100dvh;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Lightbox caption overrides ─────────────────────────────────── */
+.yarl__slide_description_container {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.85) 0%,
+    rgba(0, 0, 0, 0.5) 60%,
+    transparent 100%
+  ) !important;
+  padding: 32px 20px 20px !important;
+  max-height: 35vh !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.yarl__slide_description {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-style: italic;
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  overflow: visible !important;
+  text-align: center !important;
+}
+
+@media (min-width: 640px) {
+  .yarl__slide_description_container {
+    padding: 40px 40px 28px !important;
+    max-height: 30vh !important;
+  }
+
+  .yarl__slide_description {
+    font-size: 14px !important;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+}
+
+/* ── Elfsight dark-mode overrides (extracted for maintainability) ── */
+@import './elfsight-overrides.css';

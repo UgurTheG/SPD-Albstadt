@@ -1,0 +1,83 @@
+{
+  "beschreibung": "Die SPD-Fraktion im Gemeinderat Albstadt setzt sich mit Engagement und Leidenschaft für eine soziale, gerechte und zukunftsorientierte Stadtpolitik ein. Mit vier Gemeinderäten und einem Kreisrat sind wir eine starke Stimme für die Bürgerinnen und Bürger Albstadts.",
+  "gemeinderaete": [
+    {
+      "name": "Marianne Roth",
+      "beruf": "Arzthelferin",
+      "bildUrl": "/images/gemeinderaete/marianne-roth.webp",
+      "seit": "2003",
+      "address": "Flanderstr. 35",
+      "zipCode": "72458 Albstadt-Ebingen",
+      "email": "jumroth@t-online.de",
+      "ausschuesse": [
+        "Ältestenrat",
+        "Ausschuss Soziales, Kultur, Schule & Sport",
+        "Aufsichtsrat asWohnbau"
+      ],
+      "bio": "Ein solidarisches und gerechtes Zusammenleben aller Albstädter Bürgerinnen und Bürger liegt mir besonders am Herzen. Als Stadträtin seit 2003 habe ich mich mit Leidenschaft für die Belange der Bürger eingebracht. Wer den Bürger verstehen will, muss ihm auf Augenhöhe begegnen.\n\nIn meiner über 20-jährigen Ratstätigkeit habe ich mich besonders für den sozialen Wohnungsbau, die Stärkung von Kitas und Schulen sowie die Verbesserung des öffentlichen Nahverkehrs eingesetzt. Die Talgangbahn ist mir ein persönliches Herzensanliegen – ich kämpfe seit Jahren dafür, dass Albstadt endlich wieder an das Schienennetz angebunden wird.\n\nAls Fraktionsvorsitzende führe ich die SPD-Fraktion seit 2019 und als Stadtverbandsvorsitzende stehe ich der gesamten Partei in Albstadt vor. Gemeinsam mit einem starken Team arbeiten wir täglich daran, Albstadt gerechter, grüner und lebenswerter zu machen."
+    },
+    {
+      "name": "Martin Frohme",
+      "beruf": "Sonderschullehrer i.R.",
+      "bildUrl": "/images/vorstand/martin-frohme.webp",
+      "seit": "1984",
+      "address": "Tieringer Str. 35",
+      "zipCode": "72459 Albstadt-Laufen",
+      "email": "MartinFrohme@t-online.de",
+      "ausschuesse": [
+        "Technik & Umweltausschuss",
+        "Aufsichtsrat Albstadtwerke",
+        "Ferngasgesellschaft Albstadt-Gammertingen"
+      ],
+      "bio": "Als dienstältester Gemeinderat setze ich mich seit über 40 Jahren für Umweltschutz, Energieeinsparung und nachhaltige Stadtentwicklung ein. Innen- vor Außenbebauung und erneuerbare Energien sind meine Kernthemen."
+    },
+    {
+      "name": "Lara Herter",
+      "beruf": "Duale Studentin",
+      "bildUrl": "/images/gemeinderaete/lara-herter.webp",
+      "seit": "2024",
+      "address": "Albert-Sauter-Straße 14",
+      "zipCode": "72461 Albstadt-Onstmettingen",
+      "email": "lara-herter@gmx.de",
+      "ausschuesse": [
+        "Technik & Umweltausschuss",
+        "Beirat Musik- und Kunstschule",
+        "AK Städtepartnerschaft Chambery"
+      ],
+      "bio": "Politik wird halt in Stuttgart und Berlin gemacht? Von wegen! Was zu verändern geht am besten direkt vor der Haustür. Ich setze mich für attraktive Innenstädte, buntes Kulturleben und gute Busverbindungen ein."
+    },
+    {
+      "name": "Frank Hipp",
+      "beruf": "Fachkrankenpfleger, stellv. Gesamtbetriebsratsvorsitzender Zollernalb Klinikum",
+      "bildUrl": "/images/gemeinderaete/frank-hipp.webp",
+      "seit": "2007",
+      "address": "Am Westbahnhof 6",
+      "zipCode": "72458 Albstadt-Ebingen",
+      "email": "f.hipp@t-online.de",
+      "ausschuesse": [
+        "Finanz- und Verwaltungsausschuss",
+        "Abwasserverband Oberes Eyachtal",
+        "Ausschuss VG Albstadt/Bitz"
+      ],
+      "bio": "Seit 2007 Stadtrat in Albstadt. Als Gewerkschaftsmitglied bei Verdi sind mir die Arbeitsbedingungen meiner Kolleginnen sehr wichtig. Die Arbeit in unserer Fraktion macht sehr viel Freude."
+    }
+  ],
+  "kreisraete": [
+    {
+      "name": "Martin Frohme",
+      "beruf": "Sonderschullehrer i.R., Fraktionsvorsitzender SPD Kreistag",
+      "bildUrl": "/images/vorstand/martin-frohme.webp",
+      "seit": "1993",
+      "address": "Tieringer Str. 35",
+      "zipCode": "72459 Albstadt-Laufen",
+      "email": "MartinFrohme@t-online.de",
+      "ausschuesse": [
+        "Ausschuss Umwelt & Technik",
+        "Aufsichtsrat Zollernalb Klinikum",
+        "Bauausschuss Zollernalb Klinikum",
+        "Zweckverband Regionalstadtbahn"
+      ],
+      "bio": "Seit über 30 Jahren Mitglied des Kreistags im Wahlkreis Albstadt. Ich setze mich besonders für den Umweltschutz, den Ausbau der Regionalstadtbahn und die Zentralklinik zwischen Albstadt und Balingen ein. Seit 2019 Fraktionsvorsitzender der SPD im Kreistag."
+    }
+  ]
+}
