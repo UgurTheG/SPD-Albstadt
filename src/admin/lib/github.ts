@@ -57,7 +57,9 @@ export async function validateToken() {
   const repoRes = await ghFetch('GET', repoBase())
   if (!repoRes.ok) {
     if (repoRes.status === 401 || repoRes.status === 403 || repoRes.status === 404)
-      throw new AuthError('Kein Zugriff auf das Repository', repoRes.status)
+      // Always map to 403 — GitHub returns 404 for private repos the user can't access,
+      // but for the UI "Zugriff verweigert" (403) is the correct message, not "Seite nicht gefunden" (404).
+      throw new AuthError('Kein Zugriff auf das Repository', 403)
     throw new Error(`Repository-Zugriff Fehler (${repoRes.status})`)
   }
   return user as { login: string; avatar_url: string }
