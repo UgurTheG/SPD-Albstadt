@@ -10,10 +10,11 @@ import { parseCookies, isAllowedOrigin, ACCESS_TOKEN_COOKIE } from './auth/cooki
  * GitHub API response (status + JSON body) transparently.
  */
 
-const ALLOWED_PATH_PREFIXES = ['/user', '/repos/']
+// Only allow the one specific private repo this app manages, plus /user for token validation.
+const ALLOWED_REPO_PREFIX = '/repos/UgurTheG/SPD-Albstadt/'
 
 function isAllowedPath(path: string): boolean {
-  return ALLOWED_PATH_PREFIXES.some(p => path.startsWith(p))
+  return path === '/user' || path.startsWith('/user/') || path.startsWith(ALLOWED_REPO_PREFIX)
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

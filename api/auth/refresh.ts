@@ -70,16 +70,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       refresh_token?: string
       refresh_token_expires_in?: number
       error?: string
-      error_description?: string
     }
 
     if (!data.access_token) {
-      const msg = data.error_description ?? data.error ?? 'refresh_failed'
-      // If the refresh token itself is bad, clear all cookies to force re-login
-      if (data.error === 'bad_refresh_token') {
-        res.setHeader('Set-Cookie', clearAuthCookies())
-      }
-      return res.status(401).json({ error: msg })
+      // Map raw GitHub error codes to opaque safe codes — do NOT forward
+      // GitHub's error string verbatim as it leaks internal details to the client.
+      const rawError = data.error ?? ''
+      const safeCode =
+        rawError === 'bad_refresh_token' || rawError === 'expired_token'
+          ? 'token_expired'
+          : rawError === 'incorrect_client_credentials'
+            ? 'server_misconfigured'
+            : 'refresh_failed'
+      // Clear all auth cookies on ANY refresh failure — the refresh token is
+      // either expired, revoked, or invalid. Force the user to re-authenticate
+      // rather than leaving them stuck with stale cookies.
+      res.setHeader('Set-Cookie', clearAuthCookies())
+      return res.status(401).json({ error: safeCode })
     }
 
     // Update auth cookies

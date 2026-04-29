@@ -63,9 +63,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (!data.access_token) {
-      const msg = data.error_description ?? data.error ?? 'token_exchange_failed'
+      // Do NOT forward GitHub's error_description verbatim — it leaks internals
+      // into browser history and the URL bar. Map to a fixed opaque code instead.
+      const rawError = data.error ?? ''
+      const safeCode =
+        rawError === 'bad_verification_code'
+          ? 'bad_code'
+          : rawError === 'incorrect_client_credentials'
+            ? 'server_misconfigured'
+            : rawError === 'redirect_uri_mismatch'
+              ? 'server_misconfigured'
+              : 'token_exchange_failed'
       res.setHeader('Set-Cookie', clearStateCookie)
-      return redirect(`auth=error&msg=${encodeURIComponent(msg)}`)
+      return redirect(`auth=error&msg=${safeCode}`)
     }
 
     // Set auth cookies (HttpOnly, Secure, SameSite=Lax) + clear state cookie

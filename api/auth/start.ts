@@ -10,6 +10,7 @@ import { rateLimit, getClientIP } from './rateLimit'
  * and redirects the user to GitHub's OAuth authorize endpoint.
  */
 export default function handler(_req: VercelRequest, res: VercelResponse) {
+  res.setHeader('Cache-Control', 'no-store')
   // Rate limit: 5 login attempts per IP per minute
   const ip = getClientIP(_req.headers as Record<string, string | string[] | undefined>)
   if (!rateLimit(ip, 5, 60_000)) {
