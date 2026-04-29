@@ -46,22 +46,14 @@ export function verifyState(signed: string): string | null {
 
 // ─── Origin allowlist ────────────────────────────────────────────────────────
 
+const ALLOWED_ORIGINS: string[] = [
+  'https://spd-albstadt.vercel.app',
+  'https://spd-albstadt.de',
+  'https://www.spd-albstadt.de',
+]
+
 function getAllowedOrigins(): string[] {
-  const origins: string[] = []
-  // Vercel deployment-specific URL (e.g. spd-albstadt-abc123.vercel.app)
-  if (process.env.VERCEL_URL) origins.push(`https://${process.env.VERCEL_URL}`)
-  // Vercel production domain (custom domain or project.vercel.app)
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL)
-    origins.push(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`)
-  // Vercel branch URL (e.g. spd-albstadt-git-main-user.vercel.app)
-  if (process.env.VERCEL_BRANCH_URL) origins.push(`https://${process.env.VERCEL_BRANCH_URL}`)
-  // Explicit additional origins (comma-separated), e.g. for Hostinger or custom domains
-  if (process.env.ALLOWED_ORIGINS) {
-    for (const o of process.env.ALLOWED_ORIGINS.split(',')) {
-      const trimmed = o.trim()
-      if (trimmed) origins.push(trimmed)
-    }
-  }
+  const origins = [...ALLOWED_ORIGINS]
   if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:5173')
   return origins
 }
