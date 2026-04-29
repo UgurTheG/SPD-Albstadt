@@ -4,18 +4,11 @@ on:
   push:
     branches: [main]
 
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
-
-      - name: Deploy to Production
-        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Trigger Vercel Deploy Hook
+        run: |
+          curl -sf -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}" \
+            || { echo "Deploy hook request failed"; exit 1; }
