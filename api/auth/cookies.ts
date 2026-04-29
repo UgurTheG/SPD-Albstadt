@@ -11,14 +11,17 @@ export const STATE_COOKIE = 'spd_oauth_state'
 // ─── HMAC helpers (state signing) ──────────────────────────────────────────────
 
 function getSecret(): string {
-  // Prefer a dedicated signing secret; fall back to client secret for backwards compat
-  const secret = process.env.STATE_SIGNING_SECRET || process.env.GITHUB_CLIENT_SECRET
-  if (!secret) {
-    throw new Error(
-      'Missing STATE_SIGNING_SECRET or GITHUB_CLIENT_SECRET — cannot sign OAuth state',
+  if (process.env.STATE_SIGNING_SECRET) return process.env.STATE_SIGNING_SECRET
+  // Fallback: warn loudly in logs so the operator knows to set the dedicated secret
+  if (process.env.GITHUB_CLIENT_SECRET) {
+    console.warn(
+      '[auth] STATE_SIGNING_SECRET is not set — falling back to GITHUB_CLIENT_SECRET for ' +
+        'HMAC signing. Set STATE_SIGNING_SECRET as a separate env var to decouple signing ' +
+        'from the OAuth client secret.',
     )
+    return process.env.GITHUB_CLIENT_SECRET
   }
-  return secret
+  throw new Error('Missing STATE_SIGNING_SECRET or GITHUB_CLIENT_SECRET — cannot sign OAuth state')
 }
 
 export function signState(state: string): string {

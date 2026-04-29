@@ -110,7 +110,14 @@ Benötigte Umgebungsvariablen (in Vercel und lokal in `.env`):
 ```bash
 VITE_GITHUB_CLIENT_ID=     # Client-ID der OAuth App (öffentlich, wird im Frontend verwendet)
 GITHUB_CLIENT_SECRET=      # Client-Secret der OAuth App (privat, nur serverseitig)
+OAUTH_REDIRECT_URI=        # Callback-URL (z. B. https://<domain>/api/auth/callback)
+STATE_SIGNING_SECRET=      # Eigener HMAC-Schlüssel für CSRF-State-Signierung (empfohlen)
+ALLOWED_GITHUB_LOGINS=     # Kommagetrennte GitHub-Benutzernamen, die sich einloggen dürfen (optional)
 ```
+
+> **Hinweis:** Ist `STATE_SIGNING_SECRET` nicht gesetzt, wird `GITHUB_CLIENT_SECRET` als Fallback verwendet — mit Warnung im Serverlog. Empfohlen: eigenen Schlüssel generieren mit `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+>
+> **Hinweis:** `ALLOWED_GITHUB_LOGINS` ist optional. Wenn gesetzt, werden nur die aufgelisteten GitHub-Konten zugelassen — als zusätzliche Absicherung neben den GitHub-Repository-Berechtigungen.
 
 ### Instagram-Integration
 
@@ -170,14 +177,16 @@ Die Route `/admin` wird über SPA-Rewrite auf `index.html` geführt; die React-A
 
 ### Login
 
-Der Admin-Editor nutzt GitHub OAuth 2.0:
+Der Admin-Editor nutzt GitHub OAuth 2.0 mit serverseitiger Token-Verwaltung:
 
 1. Auf der Login-Seite „Mit GitHub anmelden" klicken
-2. GitHub-Autorisierungsseite bestätigen
-3. Weiterleitung zurück zur Admin-Seite; Token wird im Browser-`localStorage` unter `spd-admin-token` gespeichert
-4. Bei nachfolgenden Besuchen erfolgt automatischer Login über den gespeicherten Token
+2. Weiterleitung zu `/api/auth/start`, das einen HMAC-signierten CSRF-State erzeugt, in einem HttpOnly-Cookie speichert und zu GitHub weiterleitet
+3. GitHub-Autorisierungsseite bestätigen
+4. GitHub leitet zu `/api/auth/callback` zurück; der Serverless-Endpunkt tauscht den Code gegen ein Access-Token, prüft optional die User-Allowlist und setzt das Token als HttpOnly-Cookie (niemals dem Browser-JavaScript zugänglich)
+5. Weiterleitung zur Admin-Seite; Sitzungsstatus wird über `/api/auth/session` geprüft
+6. Alle GitHub-API-Aufrufe laufen über den serverseitigen Proxy `/api/github` — das Token verlässt den Server nicht
 
-Zugangsberechtigung: Nur GitHub-Konten mit **Push-Zugriff** auf das Repository können sich erfolgreich anmelden. Unbefugte Konten werden auf die entsprechende Fehlerseite weitergeleitet (`/401`, `/403` oder `/404`).
+Zugangsberechtigung: Nur GitHub-Konten mit **Push-Zugriff** auf das Repository können sich erfolgreich anmelden. Optional kann über die Umgebungsvariable `ALLOWED_GITHUB_LOGINS` eine zusätzliche Allowlist konfiguriert werden.
 
 ### Funktionen im Admin-Editor
 
@@ -254,12 +263,46 @@ Der Admin-Editor konvertiert Uploads nach WebP und referenziert sie in den JSON-
 - Liefert normalisierte Feed-Objekte für die Website
 - Bei Fehlern oder fehlender Konfiguration: Fallback-Antwort mit leerer Liste und Profil-Link
 
+### `GET /api/auth/start`
+
+- Erzeugt einen kryptographisch zufälligen CSRF-State, signiert ihn per HMAC-SHA256
+- Speichert den signierten State in einem kurzlebigen HttpOnly-Cookie (10 Min.)
+- Leitet zu GitHubs OAuth-Autorisierungsseite weiter
+- Rate Limit: 5 Anfragen pro IP pro Minute
+
 ### `GET /api/auth/callback`
 
 - OAuth 2.0 Callback-Endpunkt für den Admin-Login
-- Empfängt `code` und `state` von GitHub nach Nutzerbestätigung
-- Tauscht den Code serverseitig gegen ein GitHub Access Token (nutzt `GITHUB_CLIENT_SECRET`)
-- Leitet bei Erfolg zu `/admin#token=...` weiter, bei Fehler zu `/admin#error=...`
+- Validiert den CSRF-State gegen das signierte Cookie (Constant-Time-Vergleich)
+- Tauscht den Code serverseitig gegen ein GitHub Access-Token (nutzt `GITHUB_CLIENT_SECRET`)
+- Prüft optional die User-Allowlist (`ALLOWED_GITHUB_LOGINS`)
+- Setzt Access- und Refresh-Token als HttpOnly/Secure/SameSite=Lax-Cookies
+- Leitet bei Erfolg zu `/admin?auth=ok` weiter, bei Fehler zu `/admin?auth=error&msg=...`
+- Rate Limit: 10 Anfragen pro IP pro Minute
+
+### `GET /api/auth/session`
+
+- Gibt den Authentifizierungsstatus und Token-Ablaufzeitpunkt zurück
+- Das Access-Token selbst wird **nie** an den Client zurückgegeben
+- Origin-Prüfung gegen Allowlist
+
+### `POST /api/auth/refresh`
+
+- Erneuert das Access-Token mittels Refresh-Token (aus HttpOnly-Cookie)
+- Origin-Prüfung, Rate Limit (10/min), erfordert gültiges Access-Token-Cookie
+- Bei fehlgeschlagenem Refresh werden alle Auth-Cookies gelöscht (Force-Logout)
+
+### `POST /api/auth/logout`
+
+- Löscht alle Auth-HttpOnly-Cookies
+- Origin-Prüfung gegen CSRF-Logout-Angriffe (POST only)
+
+### `POST /api/github`
+
+- Serverseitiger Proxy für GitHub-API-Aufrufe
+- Das Access-Token wird aus dem HttpOnly-Cookie gelesen und serverseitig an GitHub weitergeleitet
+- Pfad-Allowlist: nur `/repos/UgurTheG/SPD-Albstadt/` und `/user` sind erlaubt
+- Origin-Prüfung, Methoden-Beschränkung (GET/POST/PUT/PATCH/DELETE)
 
 ## 11. Deployment
 
@@ -279,13 +322,19 @@ npm run preview
 
 ## 12. Sicherheit und Betriebshinweise
 
-- Login erfolgt über GitHub OAuth 2.0 — kein manuelles Token-Management nötig
-- Das GitHub Access Token liegt ausschließlich im Browser-`localStorage`
-- API-Aufrufe für Veröffentlichung laufen direkt gegen `api.github.com`
+- Login erfolgt über GitHub OAuth 2.0 mit serverseitiger Token-Verwaltung
+- Access- und Refresh-Token liegen ausschließlich in **HttpOnly/Secure/SameSite=Lax-Cookies** — JavaScript im Browser hat keinen Zugriff
+- Alle GitHub-API-Aufrufe laufen über den serverseitigen Proxy `/api/github`; das Token verlässt den Server nicht
+- Der Proxy beschränkt API-Pfade auf das eigene Repository (`/repos/UgurTheG/SPD-Albstadt/`) und `/user`
+- CSRF-Schutz im OAuth-Flow: kryptographischer State-Parameter, HMAC-SHA256-signiert, in HttpOnly-Cookie gespeichert, Constant-Time-Vergleich
+- Origin-Allowlist auf allen schreibenden Auth- und Proxy-Endpunkten
+- Rate Limiting auf Login (5/min), Callback (10/min) und Refresh (10/min) pro IP
+- GitHub-Fehlermeldungen werden auf opake Codes gemappt — keine internen Details im Browser
+- Optional: User-Allowlist über `ALLOWED_GITHUB_LOGINS` (zusätzlich zu GitHub-Repository-Berechtigungen)
 - Das OAuth Client-Secret (`GITHUB_CLIENT_SECRET`) ist ausschließlich serverseitig verfügbar
-- `/admin` ist öffentlich erreichbar, aber ohne gültigen Token funktional gesperrt
-- Ungültige Logins (kein Repo-Zugriff, ungültiges Token) werden auf Fehlerseiten weitergeleitet
-- Zugriffskontrolle erfolgt über GitHub-Repository-Kollaboratoren (Settings → Collaborators)
+- `/admin` ist öffentlich erreichbar, aber ohne gültige Auth-Cookies funktional gesperrt
+- Token-Refresh über `/api/auth/refresh`; bei fehlgeschlagenem Refresh werden alle Cookies gelöscht (automatischer Force-Logout)
+- Logout über `POST /api/auth/logout` mit Origin-Prüfung gegen CSRF-Logout-Angriffe
 
 ## 13. Typische Workflows
 
@@ -321,18 +370,20 @@ npm run preview
 
 1. GitHub-Konto der Person als Kollaborator einladen: Repository → Settings → Collaborators
 2. Scope `repo` (Write-Zugriff) vergeben
-3. Person kann sich danach über „Mit GitHub anmelden" einloggen
+3. Optional: GitHub-Benutzernamen in der Umgebungsvariable `ALLOWED_GITHUB_LOGINS` ergänzen (kommagetrennt)
+4. Person kann sich danach über „Mit GitHub anmelden" einloggen
 
 ## 14. Fehlerbehebung
 
-- Admin-Login scheitert mit Fehlerseite 403: GitHub-Konto hat keinen Push-Zugriff auf das Repository — unter Settings → Collaborators prüfen
-- Admin-Login scheitert mit Fehlerseite 401: Token ist ungültig oder abgelaufen — erneut einloggen
+- Admin-Login scheitert mit Fehlerseite 403: GitHub-Konto hat keinen Push-Zugriff auf das Repository — unter Settings → Collaborators prüfen. Falls `ALLOWED_GITHUB_LOGINS` gesetzt ist, Benutzername dort prüfen.
+- Admin-Login scheitert mit Fehlerseite 401: Sitzung ist abgelaufen — erneut einloggen
+- Admin-Login zeigt `unauthorized_user`: GitHub-Konto ist nicht in der `ALLOWED_GITHUB_LOGINS`-Allowlist
 - Änderungen erscheinen nicht: Veröffentlichung im Admin ausführen und kurz auf Redeploy warten
 - Kalender leer: `icsUrl` in `public/data/config.json` prüfen, Erreichbarkeit des ICS-Feeds testen
 - Instagram leer: Feature-Flag und ENV-Variablen prüfen; Fallback ohne Karten ist vorgesehen
 - Kontaktformular ohne Versand: `kontakt.formspreeUrl` in `public/data/config.json` prüfen
 - Admin zeigt „Daten konnten nicht geladen werden": Seite neu laden; Veröffentlichen ist in diesem Zustand gesperrt, um Live-Daten nicht zu überschreiben
-- OAuth funktioniert nicht lokal: `VITE_GITHUB_CLIENT_ID` und `GITHUB_CLIENT_SECRET` in `.env` prüfen; Callback-URL `http://localhost:5173/api/auth/callback` in der GitHub OAuth App eintragen
+- OAuth funktioniert nicht lokal: `VITE_GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` und `OAUTH_REDIRECT_URI` in `.env` prüfen; Callback-URL `http://localhost:5173/api/auth/callback` in der GitHub OAuth App eintragen
 
 ---
 

@@ -1,7 +1,17 @@
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
 import { parseCookies, verifyState, makeAuthCookies, clearCookie, STATE_COOKIE } from './cookies'
+import { rateLimit, getClientIP } from './rateLimit'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  res.setHeader('Cache-Control', 'no-store')
+
+  // Rate limit: 10 callback attempts per IP per minute to prevent code stuffing.
+  const ip = getClientIP(req.headers as Record<string, string | string[] | undefined>)
+  if (!rateLimit(ip, 10, 60_000)) {
+    res.status(429).json({ error: 'too_many_requests' })
+    return
+  }
+
   const q = req.query
   const code = Array.isArray(q.code) ? q.code[0] : q.code
   const state = Array.isArray(q.state) ? q.state[0] : q.state
@@ -76,6 +86,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               : 'token_exchange_failed'
       res.setHeader('Set-Cookie', clearStateCookie)
       return redirect(`auth=error&msg=${safeCode}`)
+    }
+
+    // ── User allowlist check ─────────────────────────────────────────────────────
+    // If ALLOWED_GITHUB_LOGINS is set, only those exact GitHub usernames may log in.
+    // This is a defence-in-depth measure on top of GitHub's own repo-access control.
+    const allowedLogins = process.env.ALLOWED_GITHUB_LOGINS
+    if (allowedLogins) {
+      const allowed = allowedLogins
+        .split(',')
+        .map(l => l.trim().toLowerCase())
+        .filter(Boolean)
+
+      let login = ''
+      try {
+        const userRes = await fetch('https://api.github.com/user', {
+          headers: {
+            Authorization: `Bearer ${data.access_token}`,
+            Accept: 'application/json',
+          },
+        })
+        if (userRes.ok) {
+          const userJson = (await userRes.json()) as { login?: string }
+          login = (userJson.login ?? '').toLowerCase()
+        }
+      } catch {
+        // Network error fetching /user — fail closed
+      }
+
+      if (!login || !allowed.includes(login)) {
+        res.setHeader('Set-Cookie', clearStateCookie)
+        return redirect('auth=error&msg=unauthorized_user')
+      }
     }
 
     // Set auth cookies (HttpOnly, Secure, SameSite=Lax) + clear state cookie

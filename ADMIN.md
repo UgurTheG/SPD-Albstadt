@@ -17,38 +17,50 @@ GitHub API, and the live website updates automatically within approximately 1 mi
 ### Login Flow
 
 1. The user clicks **„Mit GitHub anmelden"** on the login screen.
-2. The browser redirects to GitHub's OAuth authorization page (`https://github.com/login/oauth/authorize`).
+2. The browser is redirected to `GET /api/auth/start`, which generates a cryptographically random CSRF state, signs it with HMAC-SHA256, stores the signed value in a short-lived HttpOnly cookie, and redirects to GitHub's OAuth authorization page.
 3. After the user grants access, GitHub redirects to `/api/auth/callback?code=...&state=...`.
-4. The serverless function (`api/auth/callback.ts`) exchanges the code for an access token using the `GITHUB_CLIENT_SECRET`.
-5. The browser is redirected to `/admin#token=...`.
-6. The React app reads the token from the URL hash, validates it against the GitHub API, and stores it in `localStorage` under `spd-admin-token`.
-7. On subsequent visits, **auto-login** is attempted using the stored token.
+4. The serverless function (`api/auth/callback.ts`) validates the CSRF state against the signed cookie (constant-time comparison), exchanges the code for an access token using `GITHUB_CLIENT_SECRET`, and optionally checks the user against the `ALLOWED_GITHUB_LOGINS` allowlist.
+5. On success, authentication cookies (access token, refresh token, expiry timestamps) are set as **HttpOnly / Secure / SameSite=Lax** cookies — the token is **never** exposed to browser JavaScript.
+6. The browser is redirected to `/admin?auth=ok`.
+7. The React app checks session status via `GET /api/auth/session` (which returns `{ authenticated, expires_at }` without ever revealing the token).
+8. All subsequent GitHub API calls go through the server-side proxy at `POST /api/github`, which reads the token from the HttpOnly cookie and forwards it to `api.github.com`.
+
+### Token Refresh
+
+- When the access token nears expiry, the frontend calls `POST /api/auth/refresh`.
+- The server reads the refresh token from its HttpOnly cookie and exchanges it at GitHub for a new access/refresh token pair.
+- On any refresh failure (expired, revoked, invalid), **all auth cookies are cleared** and the user must re-authenticate.
 
 ### Access Control
 
-Only GitHub accounts with **push access** to the repository can log in. Unauthorized logins are redirected:
+Only GitHub accounts with **push access** to the repository can log in successfully.
 
-| Situation               | Redirect |
-| ----------------------- | -------- |
-| Token invalid / revoked | `/401`   |
-| No repository access    | `/403`   |
-| Repository not found    | `/404`   |
+Additionally, if the `ALLOWED_GITHUB_LOGINS` environment variable is set (comma-separated GitHub usernames), only those exact accounts may log in — as a defence-in-depth measure on top of GitHub's own repo-level permissions.
 
-Access is managed via GitHub repository collaborators: **Settings → Collaborators**.
+| Situation               | Behavior                                              |
+| ----------------------- | ----------------------------------------------------- |
+| Token invalid / revoked | Redirect to error page                                |
+| No repository access    | GitHub API returns 403/404                            |
+| User not in allowlist   | Redirect to `/admin?auth=error&msg=unauthorized_user` |
 
 ### Required Environment Variables
 
-| Variable                | Where           | Purpose                                             |
-| ----------------------- | --------------- | --------------------------------------------------- |
-| `VITE_GITHUB_CLIENT_ID` | Vercel + `.env` | OAuth App Client ID (public)                        |
-| `GITHUB_CLIENT_SECRET`  | Vercel + `.env` | OAuth App Client Secret (private, server-side only) |
+| Variable                | Where           | Purpose                                                         |
+| ----------------------- | --------------- | --------------------------------------------------------------- |
+| `VITE_GITHUB_CLIENT_ID` | Vercel + `.env` | OAuth App Client ID (public, embedded in frontend)              |
+| `GITHUB_CLIENT_SECRET`  | Vercel + `.env` | OAuth App Client Secret (private, server-side only)             |
+| `OAUTH_REDIRECT_URI`    | Vercel + `.env` | Callback URL (e.g. `https://<domain>/api/auth/callback`)        |
+| `STATE_SIGNING_SECRET`  | Vercel + `.env` | Dedicated HMAC key for CSRF state signing (recommended)         |
+| `ALLOWED_GITHUB_LOGINS` | Vercel + `.env` | Comma-separated GitHub usernames permitted to log in (optional) |
+
+> **Note:** If `STATE_SIGNING_SECRET` is not set, `GITHUB_CLIENT_SECRET` is used as a fallback (with a warning in server logs). Generate a dedicated secret with: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 
 OAuth App setup: https://github.com/settings/developers  
 Callback URLs: `https://<domain>/api/auth/callback` and `http://localhost:5173/api/auth/callback` (dev)
 
 ### Logout
 
-Clicking the logout button removes the token from `localStorage` and returns to the login screen.
+Clicking the logout button calls `POST /api/auth/logout`, which clears all HttpOnly auth cookies. The endpoint requires a valid Origin header to prevent cross-site CSRF logout attacks.
 
 ---
 
@@ -56,29 +68,36 @@ Clicking the logout button removes the token from `localStorage` and returns to 
 
 ### Technology Stack
 
-| Layer            | Technology                                     |
-| ---------------- | ---------------------------------------------- |
-| Frontend         | React 19, TypeScript                           |
-| Build            | Vite                                           |
-| Styling          | Tailwind CSS v4                                |
-| Animations       | Framer Motion                                  |
-| State Management | Zustand                                        |
-| Icons            | Lucide React                                   |
-| Drag & Drop      | `@dnd-kit`                                     |
-| Notifications    | `sonner`                                       |
-| Backend          | GitHub REST API (Contents API + Git Trees API) |
-| Hosting          | Vercel                                         |
-| Auth             | GitHub OAuth 2.0 (`api/auth/callback.ts`)      |
-| Data Format      | JSON files in `public/data/`                   |
+| Layer            | Technology                                                           |
+| ---------------- | -------------------------------------------------------------------- |
+| Frontend         | React 19, TypeScript                                                 |
+| Build            | Vite                                                                 |
+| Styling          | Tailwind CSS v4                                                      |
+| Animations       | Framer Motion                                                        |
+| State Management | Zustand                                                              |
+| Icons            | Lucide React                                                         |
+| Drag & Drop      | `@dnd-kit`                                                           |
+| Notifications    | `sonner`                                                             |
+| Backend          | GitHub REST API (Contents API + Git Trees API)                       |
+| Hosting          | Vercel                                                               |
+| Auth             | GitHub OAuth 2.0 (server-side token management via HttpOnly cookies) |
+| Data Format      | JSON files in `public/data/`                                         |
 
 ### Key Files
 
 - `src/admin/AdminApp.tsx` — main shell, sidebar, routing between tabs
 - `src/admin/store.ts` — Zustand store: auth state, editor state, publish logic
-- `src/admin/components/LoginScreen.tsx` — OAuth login UI and callback token handling
-- `src/admin/lib/github.ts` — GitHub API wrapper (`validateToken`, `commitTree`, etc.)
+- `src/admin/components/LoginScreen.tsx` — OAuth login UI
+- `src/admin/lib/github.ts` — GitHub API wrapper (`validateToken`, `commitTree`, etc.) — calls via `/api/github` proxy
 - `src/admin/config/tabs.ts` — tab definitions
-- `api/auth/callback.ts` — Vercel serverless function for OAuth code exchange
+- `api/auth/start.ts` — generates CSRF state and redirects to GitHub
+- `api/auth/callback.ts` — OAuth code exchange, user allowlist check, sets auth cookies
+- `api/auth/session.ts` — returns authentication status (never exposes token)
+- `api/auth/refresh.ts` — refreshes access token using refresh token
+- `api/auth/logout.ts` — clears all auth cookies
+- `api/auth/cookies.ts` — HMAC signing, cookie serialisation, origin allowlist
+- `api/auth/rateLimit.ts` — in-memory rate limiter
+- `api/github.ts` — server-side proxy for all GitHub API calls (path-restricted)
 
 ### GitHub Configuration
 
@@ -92,7 +111,7 @@ const BRANCH = 'main'
 
 1. **Data edits** are held in the Zustand store until the user clicks "Veröffentlichen".
 2. **Image uploads** are queued in `pendingUploads` and committed together with data changes.
-3. All changes are committed atomically via the **Git Trees API** (`api/git/trees`) — one commit per publish action.
+3. All changes are committed atomically via the **Git Trees API** — one commit per publish action. API calls go through the server-side proxy (`/api/github`).
 4. Text content (JSON) is UTF-8 → Base64 encoded. Binary files (images, PDFs) use raw Base64.
 
 ---
@@ -260,8 +279,15 @@ Before publishing, the editor compares images referenced in the original state v
 
 ## Security
 
-- The GitHub access token is stored **only in the browser's `localStorage`** — never sent to the application server.
-- The OAuth `GITHUB_CLIENT_SECRET` is **only available server-side** (`api/auth/callback.ts`) and is never exposed to the browser.
-- All GitHub API calls for publishing go directly from the browser to `api.github.com` over HTTPS.
-- CSRF protection via `state` parameter in the OAuth flow (stored in `sessionStorage`, validated on callback).
-- Invalid/expired tokens are automatically cleared from storage on failed auto-login.
+- The GitHub access token is stored **only in HttpOnly / Secure / SameSite=Lax cookies** — browser JavaScript has no access to the token at any point.
+- All GitHub API calls go through the **server-side proxy** at `POST /api/github`, which reads the token from the cookie and forwards it. The token never leaves the server.
+- The proxy restricts API paths to the one managed repository (`/repos/UgurTheG/SPD-Albstadt/`) and the `/user` identity endpoint — even a compromised token cannot access other repos via the app.
+- **CSRF protection** in the OAuth flow: cryptographic state parameter, HMAC-SHA256-signed, stored in a short-lived HttpOnly cookie (10 min), validated with constant-time comparison.
+- **Origin allowlist** on all mutating auth and proxy endpoints (`/api/auth/refresh`, `/api/auth/logout`, `/api/github`).
+- **Rate limiting** on login (5/min), callback (10/min), and refresh (10/min) per IP address.
+- **User allowlist** (optional): the `ALLOWED_GITHUB_LOGINS` env var restricts login to specific GitHub accounts, as a defence-in-depth measure on top of GitHub's own repository permissions.
+- GitHub error messages are mapped to **opaque safe error codes** — internal details are never exposed in the browser URL bar or history.
+- The OAuth `GITHUB_CLIENT_SECRET` is **only available server-side** and is never exposed to the browser.
+- Invalid/expired tokens trigger automatic cookie cleanup and force re-authentication.
+- Token refresh via `POST /api/auth/refresh`; on any refresh failure, all auth cookies are cleared (force-logout).
+- Logout via `POST /api/auth/logout` with origin check to prevent cross-site CSRF logout attacks.

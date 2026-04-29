@@ -40,9 +40,15 @@ export default function handler(_req: VercelRequest, res: VercelResponse) {
   )
 
   const params = new URLSearchParams({
+    // VITE_GITHUB_CLIENT_ID is intentionally public — it's embedded in the frontend
+    // bundle by LoginScreen.tsx and is not a secret (GitHub OAuth client IDs are public).
     client_id: clientId,
     redirect_uri: redirectUri,
     state,
+    // 'repo' is the minimum scope required to access a private repository via a
+    // GitHub OAuth App.  Fine-grained per-repo permissions are only available with
+    // GitHub Apps (not OAuth Apps).  The server-side proxy in /api/github mitigates
+    // the broad scope by restricting calls to this one repo and the /user endpoint.
     scope: 'read:user repo',
   })
 
