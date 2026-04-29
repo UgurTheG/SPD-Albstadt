@@ -119,23 +119,33 @@ export function makeAuthCookies(data: {
   const cookies: string[] = []
   const maxAge = data.expires_in ?? 8 * 3600 // default 8h
 
-  cookies.push(serializeCookie(ACCESS_TOKEN_COOKIE, { value: data.access_token, maxAge }))
+  // Path must be /api (not /api/auth) so that the /api/github proxy
+  // receives the access-token cookie from the browser.
+  cookies.push(
+    serializeCookie(ACCESS_TOKEN_COOKIE, { value: data.access_token, maxAge, path: '/api' }),
+  )
   cookies.push(
     serializeCookie(TOKEN_EXPIRES_COOKIE, {
       value: String(Date.now() + maxAge * 1000),
       maxAge,
+      path: '/api',
     }),
   )
 
   if (data.refresh_token) {
     const refreshMax = data.refresh_token_expires_in ?? 6 * 30 * 24 * 3600 // ~6 months
     cookies.push(
-      serializeCookie(REFRESH_TOKEN_COOKIE, { value: data.refresh_token, maxAge: refreshMax }),
+      serializeCookie(REFRESH_TOKEN_COOKIE, {
+        value: data.refresh_token,
+        maxAge: refreshMax,
+        path: '/api',
+      }),
     )
     cookies.push(
       serializeCookie(REFRESH_EXPIRES_COOKIE, {
         value: String(Date.now() + refreshMax * 1000),
         maxAge: refreshMax,
+        path: '/api',
       }),
     )
   }
@@ -146,9 +156,9 @@ export function makeAuthCookies(data: {
 /** Cookie strings that clear all auth cookies. */
 export function clearAuthCookies(): string[] {
   return [
-    clearCookie(ACCESS_TOKEN_COOKIE),
-    clearCookie(TOKEN_EXPIRES_COOKIE),
-    clearCookie(REFRESH_TOKEN_COOKIE),
-    clearCookie(REFRESH_EXPIRES_COOKIE),
+    clearCookie(ACCESS_TOKEN_COOKIE, '/api'),
+    clearCookie(TOKEN_EXPIRES_COOKIE, '/api'),
+    clearCookie(REFRESH_TOKEN_COOKIE, '/api'),
+    clearCookie(REFRESH_EXPIRES_COOKIE, '/api'),
   ]
 }
