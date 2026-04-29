@@ -30,10 +30,6 @@
       name="description"
       content="SPD Albstadt – Sozialdemokratische Partei Deutschlands, Ortsverein Albstadt. Aktuelle Nachrichten, Termine, Gemeinderat und Geschichte der SPD in Albstadt."
     />
-    <meta
-      name="keywords"
-      content="SPD Albstadt, Sozialdemokraten, Gemeinderat Albstadt, SPD Ortsverein, Stadtpolitik Albstadt, Ebingen"
-    />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://www.spd-albstadt.de/" />
     <link rel="alternate" hreflang="de" href="https://www.spd-albstadt.de/" />
@@ -51,6 +47,8 @@
       content="https://www.spd-albstadt.de/images/kontakt/gruppenbild.webp"
     />
     <meta property="og:image:alt" content="SPD Albstadt – Gruppenbild" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="de_DE" />
     <meta property="og:site_name" content="SPD Albstadt" />
 
@@ -140,9 +138,25 @@
   </head>
   <body>
     <noscript>
-      <p style="padding:2rem;text-align:center;font-family:system-ui,sans-serif">
-        Bitte aktivieren Sie JavaScript, um diese Seite zu nutzen.
-      </p>
+      <div style="padding:2rem;max-width:640px;margin:0 auto;font-family:system-ui,sans-serif;line-height:1.6">
+        <h1 style="color:#E3000F;margin-bottom:0.5rem">SPD Albstadt</h1>
+        <p>Sozialdemokratische Partei Deutschlands, Ortsverein Albstadt – Für eine gerechte Stadtpolitik.</p>
+        <p>Bitte aktivieren Sie JavaScript, um diese Seite vollständig zu nutzen.</p>
+        <nav>
+          <ul style="list-style:none;padding:0">
+            <li><a href="/">Startseite</a></li>
+            <li><a href="/aktuelles">Aktuelles</a></li>
+            <li><a href="/partei">Partei</a></li>
+            <li><a href="/fraktion">Fraktion</a></li>
+            <li><a href="/kommunalpolitik">Kommunalpolitik</a></li>
+            <li><a href="/historie">Historie</a></li>
+            <li><a href="/kontakt">Kontakt</a></li>
+            <li><a href="/datenschutz">Datenschutz</a></li>
+            <li><a href="/impressum">Impressum</a></li>
+          </ul>
+        </nav>
+        <p>Kontakt: <a href="mailto:info@spd-albstadt.de">info@spd-albstadt.de</a> | Stadtgarten 1, 72458 Albstadt</p>
+      </div>
     </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

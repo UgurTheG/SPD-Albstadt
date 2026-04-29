@@ -5,6 +5,8 @@ import path from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 import { serveIcsProxy } from './plugins/serveIcsProxy'
 import { serveOAuthCallback } from './plugins/serveOAuthCallback'
+import { generateSitemap } from './plugins/generateSitemap'
+import { prerenderRoutes } from './plugins/prerenderRoutes'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -38,6 +40,8 @@ export default defineConfig(({ mode }) => {
           ],
         },
       }),
+      generateSitemap(),
+      prerenderRoutes(),
     ],
   }
 })

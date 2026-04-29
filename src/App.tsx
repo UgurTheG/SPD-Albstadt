@@ -7,6 +7,7 @@ import Hero from './components/Hero'
 import PageLayout from './components/PageLayout'
 import ErrorBoundary from './components/ErrorBoundary'
 import LoadingSpinner from './components/LoadingSpinner'
+import SEOHead from './components/SEOHead'
 import { useDarkMode } from './hooks/useDarkMode'
 import { ROUTES, CATCH_ALL_ROUTE, PAGE_TITLES, DEPTH } from './routeConfig'
 
@@ -23,11 +24,6 @@ export default function App() {
     const prev = prevPathRef.current
     setDirection((DEPTH[location.pathname] ?? 1) >= (DEPTH[prev] ?? 0) ? 1 : -1)
     prevPathRef.current = location.pathname
-  }, [location.pathname])
-
-  // Dynamic page title
-  useEffect(() => {
-    document.title = PAGE_TITLES[location.pathname] ?? PAGE_TITLES['/']
   }, [location.pathname])
 
   // Scroll to top on route change
@@ -54,6 +50,8 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+      <SEOHead />
+
       {/* Skip to content — visible only on keyboard focus */}
       <a
         href="#main-content"

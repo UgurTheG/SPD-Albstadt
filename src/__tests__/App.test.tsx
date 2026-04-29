@@ -1,14 +1,17 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
+import { HelmetProvider } from 'react-helmet-async'
 import App from '../App'
 
 describe('App - Accessibility', () => {
   it('renders a skip-to-content link', () => {
     render(
-      <MemoryRouter initialEntries={['/']}>
-        <App />
-      </MemoryRouter>,
+      <HelmetProvider>
+        <MemoryRouter initialEntries={['/']}>
+          <App />
+        </MemoryRouter>
+      </HelmetProvider>,
     )
 
     const skipLink = screen.getByText('Zum Inhalt springen')
@@ -18,9 +21,11 @@ describe('App - Accessibility', () => {
 
   it('renders a <main> landmark with id', () => {
     const { container } = render(
-      <MemoryRouter initialEntries={['/']}>
-        <App />
-      </MemoryRouter>,
+      <HelmetProvider>
+        <MemoryRouter initialEntries={['/']}>
+          <App />
+        </MemoryRouter>
+      </HelmetProvider>,
     )
 
     const main = container.querySelector('main#main-content')
@@ -29,9 +34,11 @@ describe('App - Accessibility', () => {
 
   it('renders an aria-live region for route announcements', () => {
     const { container } = render(
-      <MemoryRouter initialEntries={['/']}>
-        <App />
-      </MemoryRouter>,
+      <HelmetProvider>
+        <MemoryRouter initialEntries={['/']}>
+          <App />
+        </MemoryRouter>
+      </HelmetProvider>,
     )
 
     const liveRegion = container.querySelector('[aria-live="polite"]')
@@ -41,9 +48,11 @@ describe('App - Accessibility', () => {
 
   it('updates aria-live region on route change', () => {
     const { container } = render(
-      <MemoryRouter initialEntries={['/aktuelles']}>
-        <App />
-      </MemoryRouter>,
+      <HelmetProvider>
+        <MemoryRouter initialEntries={['/aktuelles']}>
+          <App />
+        </MemoryRouter>
+      </HelmetProvider>,
     )
 
     const liveRegion = container.querySelector('[aria-live="polite"]')
@@ -54,20 +63,24 @@ describe('App - Accessibility', () => {
 describe('App - Routing', () => {
   it('renders the home page at /', () => {
     render(
-      <MemoryRouter initialEntries={['/']}>
-        <App />
-      </MemoryRouter>,
+      <HelmetProvider>
+        <MemoryRouter initialEntries={['/']}>
+          <App />
+        </MemoryRouter>
+      </HelmetProvider>,
     )
 
     // Hero is rendered on home
-    expect(document.title).toBe('SPD Albstadt')
+    expect(document.title).toBe('SPD Albstadt – Für eine gerechte Stadtpolitik')
   })
 
   it('renders 404 page for unknown routes', async () => {
     const { container } = render(
-      <MemoryRouter initialEntries={['/nonexistent']}>
-        <App />
-      </MemoryRouter>,
+      <HelmetProvider>
+        <MemoryRouter initialEntries={['/nonexistent']}>
+          <App />
+        </MemoryRouter>
+      </HelmetProvider>,
     )
 
     // The catch-all route renders ErrorPage — title fallback is home title
