@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@v10
         with:
           stale-issue-message: >
             Dieses Issue ist seit 60 Tagen inaktiv. Es wird in 14 Tagen
