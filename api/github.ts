@@ -16,7 +16,11 @@ import { parseCookies, isAllowedOrigin, ACCESS_TOKEN_COOKIE } from './auth/cooki
 const ALLOWED_REPO_PREFIX = '/repos/UgurTheG/SPD-Albstadt/'
 
 function isAllowedPath(path: string): boolean {
-  return path === '/user' || path.startsWith(ALLOWED_REPO_PREFIX)
+  return (
+    path === '/user' ||
+    path === ALLOWED_REPO_PREFIX.slice(0, -1) ||
+    path.startsWith(ALLOWED_REPO_PREFIX)
+  )
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
