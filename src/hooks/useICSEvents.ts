@@ -8,6 +8,14 @@ interface UseICSEventsResult {
 }
 
 /**
+ * Base URL for API calls. When deployed on Hostinger (no serverless),
+ * set VITE_API_BASE_URL to your Vercel deployment (e.g. "https://spd-albstadt.vercel.app")
+ * so that /api/ics requests are proxied through Vercel.
+ * On Vercel itself this can be left empty (defaults to same-origin).
+ */
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
+
+/**
  * Fetches and parses the ICS calendar feed from /api/ics.
  * Handles loading / error state and cancels stale fetches on unmount.
  */
@@ -23,7 +31,7 @@ export function useICSEvents(): UseICSEventsResult {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch('/api/ics')
+        const res = await fetch(`${API_BASE}/api/ics`)
         if (!res.ok) {
           if (!cancelled) setError(`Fehler beim Laden: HTTP ${res.status}`)
           return

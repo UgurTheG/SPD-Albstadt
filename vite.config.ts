@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import { serveIcsProxy } from './plugins/serveIcsProxy'
-import { serveInstagramApi } from './plugins/serveInstagramApi'
 import { serveOAuthCallback } from './plugins/serveOAuthCallback'
 
 // https://vite.dev/config/
@@ -14,12 +13,6 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: { '@': path.resolve(__dirname, 'src') },
     },
-    plugins: [
-      serveIcsProxy(),
-      serveInstagramApi(env),
-      serveOAuthCallback(env),
-      react(),
-      tailwindcss(),
-    ],
+    plugins: [serveIcsProxy(), serveOAuthCallback(env), react(), tailwindcss()],
   }
 })

@@ -149,7 +149,7 @@ export default function PreviewModal({ tabKey, onClose }: Props) {
                 provider: () => new Map(),
                 // Use a fetcher that first checks the fallback, so components
                 // that fetch URLs we have in admin state get the admin data.
-                // For other URLs (e.g. /api/instagram), fall through to real fetch.
+                // For other URLs (e.g. /api/ics), fall through to real fetch.
                 fetcher: async (url: string) => {
                   if (swrFallback[url] !== undefined) {
                     return swrFallback[url]

@@ -22,6 +22,10 @@ function getIcsUrl(): string {
 }
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
+  // Allow cross-origin requests so the frontend on Hostinger can call this endpoint.
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+
   try {
     const icsUrl = getIcsUrl()
 
