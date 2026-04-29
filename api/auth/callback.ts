@@ -1,5 +1,12 @@
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
-import { parseCookies, verifyState, makeAuthCookies, clearCookie, STATE_COOKIE } from './cookies.js'
+import {
+  parseCookies,
+  verifyState,
+  makeAuthCookies,
+  clearCookie,
+  STATE_COOKIE,
+  PKCE_COOKIE,
+} from './cookies.js'
 import { rateLimit, getClientIP } from './rateLimit.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -27,24 +34,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const cookies = parseCookies(req.headers.cookie)
   const signedState = cookies[STATE_COOKIE]
 
-  // Always clear the one-time state cookie
+  // Always clear the one-time state and PKCE cookies
   const clearStateCookie = clearCookie(STATE_COOKIE)
+  const clearPkceCookie = clearCookie(PKCE_COOKIE)
+  const clearOAuthCookies = [clearStateCookie, clearPkceCookie]
 
   if (!state || !signedState) {
-    res.setHeader('Set-Cookie', clearStateCookie)
+    res.setHeader('Set-Cookie', clearOAuthCookies)
     return redirect('auth=error&msg=invalid_state')
   }
 
   // Bail early if the signing secret is unavailable (prevents unhandled throw from verifyState)
   if (!process.env.STATE_SIGNING_SECRET && !process.env.GITHUB_CLIENT_SECRET) {
-    res.setHeader('Set-Cookie', clearStateCookie)
+    res.setHeader('Set-Cookie', clearOAuthCookies)
     return redirect('auth=error&msg=server_misconfigured')
   }
 
   const expectedState = verifyState(signedState)
   if (!expectedState || expectedState !== state) {
-    res.setHeader('Set-Cookie', clearStateCookie)
+    res.setHeader('Set-Cookie', clearOAuthCookies)
     return redirect('auth=error&msg=invalid_state')
+  }
+
+  // ── Validate PKCE code_verifier ──────────────────────────────────────────────
+  const codeVerifier = cookies[PKCE_COOKIE]
+  if (!codeVerifier) {
+    res.setHeader('Set-Cookie', clearOAuthCookies)
+    return redirect('auth=error&msg=missing_pkce')
   }
 
   // ── Exchange code for tokens ─────────────────────────────────────────────────
@@ -53,7 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const redirectUri = process.env.OAUTH_REDIRECT_URI
 
   if (!clientId || !clientSecret) {
-    res.setHeader('Set-Cookie', clearStateCookie)
+    res.setHeader('Set-Cookie', clearOAuthCookies)
     return redirect('auth=error&msg=server_misconfigured')
   }
 
@@ -65,6 +81,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         client_id: clientId,
         client_secret: clientSecret,
         code,
+        code_verifier: codeVerifier,
         ...(redirectUri ? { redirect_uri: redirectUri } : {}),
       }),
     })
@@ -90,7 +107,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             : rawError === 'redirect_uri_mismatch'
               ? 'server_misconfigured'
               : 'token_exchange_failed'
-      res.setHeader('Set-Cookie', clearStateCookie)
+      res.setHeader('Set-Cookie', clearOAuthCookies)
       return redirect(`auth=error&msg=${safeCode}`)
     }
 
@@ -121,22 +138,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       if (!login || !allowed.includes(login)) {
-        res.setHeader('Set-Cookie', clearStateCookie)
+        res.setHeader('Set-Cookie', clearOAuthCookies)
         return redirect('auth=error&msg=unauthorized_user')
       }
     }
 
-    // Set auth cookies (HttpOnly, Secure, SameSite=Lax) + clear state cookie
+    // Set auth cookies (HttpOnly, Secure, SameSite=Lax) + clear OAuth cookies
     const authCookies = makeAuthCookies({
       access_token: data.access_token!,
       expires_in: data.expires_in,
       refresh_token: data.refresh_token,
       refresh_token_expires_in: data.refresh_token_expires_in,
     })
-    res.setHeader('Set-Cookie', [clearStateCookie, ...authCookies])
+    res.setHeader('Set-Cookie', [...clearOAuthCookies, ...authCookies])
     return redirect('auth=ok')
   } catch {
-    res.setHeader('Set-Cookie', clearStateCookie)
+    res.setHeader('Set-Cookie', clearOAuthCookies)
     return redirect('auth=error&msg=token_exchange_failed')
   }
 }

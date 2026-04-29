@@ -7,6 +7,7 @@ export const TOKEN_EXPIRES_COOKIE = 'spd_token_expires_at'
 export const REFRESH_TOKEN_COOKIE = 'spd_refresh_token'
 export const REFRESH_EXPIRES_COOKIE = 'spd_refresh_expires_at'
 export const STATE_COOKIE = 'spd_oauth_state'
+export const PKCE_COOKIE = 'spd_pkce_verifier'
 
 // ─── HMAC helpers (state signing) ──────────────────────────────────────────────
 
