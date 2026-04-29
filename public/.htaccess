@@ -6,6 +6,9 @@
   RewriteEngine On
   RewriteBase /
 
+  # Admin is only available on Vercel — redirect to the Vercel admin
+  RewriteRule ^admin(/.*)?$ https://spd-albstadt.vercel.app/admin$1 [R=302,L]
+
   # If the request is for an existing file or directory, serve it directly
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
@@ -25,15 +28,6 @@
     Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
     Header set Pragma "no-cache"
   </FilesMatch>
-</IfModule>
-
-# No cache for the admin SPA shell
-<IfModule mod_headers.c>
-  <If "%{REQUEST_URI} =~ m#^/admin#">
-    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
-    Header set Pragma "no-cache"
-    Header set Expires "0"
-  </If>
 </IfModule>
 
 # ─── CORS for ICS proxy (when frontend calls Vercel API cross-origin) ────────
