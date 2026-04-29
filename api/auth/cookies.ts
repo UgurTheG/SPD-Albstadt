@@ -34,6 +34,23 @@ export function verifyState(signed: string): string | null {
   return mismatch === 0 ? state : null
 }
 
+// ─── Origin allowlist ────────────────────────────────────────────────────────
+
+function getAllowedOrigins(): string[] {
+  return [
+    ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+    ...(process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`]
+      : []),
+    'http://localhost:5173',
+  ]
+}
+
+/** Check whether the given origin is in the allowed list (prefix match). */
+export function isAllowedOrigin(origin: string): boolean {
+  return getAllowedOrigins().some(a => origin.startsWith(a))
+}
+
 // ─── Cookie serialisation helpers ──────────────────────────────────────────────
 
 interface CookieOpts {

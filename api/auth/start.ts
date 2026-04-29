@@ -15,10 +15,14 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  // Determine redirect_uri from the request
-  const proto = req.headers['x-forwarded-proto'] || 'https'
-  const host = req.headers['x-forwarded-host'] || req.headers['host'] || 'localhost'
-  const redirectUri = `${proto}://${host}/api/auth/callback`
+  // Determine redirect_uri — prefer explicit env var to prevent header injection
+  const redirectUri =
+    process.env.OAUTH_REDIRECT_URI ??
+    (() => {
+      const proto = req.headers['x-forwarded-proto'] || 'https'
+      const host = req.headers['x-forwarded-host'] || req.headers['host'] || 'localhost'
+      return `${proto}://${host}/api/auth/callback`
+    })()
 
   // Generate and sign CSRF state
   const state = randomBytes(16).toString('hex')

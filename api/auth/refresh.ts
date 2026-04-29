@@ -3,6 +3,7 @@ import {
   parseCookies,
   makeAuthCookies,
   clearAuthCookies,
+  isAllowedOrigin,
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
   REFRESH_EXPIRES_COOKIE,
@@ -17,14 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Guard against cross-origin abuse of the refresh endpoint
   const origin = req.headers['origin'] ?? req.headers['referer'] ?? ''
-  const allowed = [
-    ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
-    ...(process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`]
-      : []),
-    'http://localhost:5173',
-  ]
-  if (!allowed.some(a => origin.startsWith(a))) {
+  if (!isAllowedOrigin(origin)) {
     return res.status(403).json({ error: 'forbidden_origin' })
   }
 
