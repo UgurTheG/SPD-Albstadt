@@ -11,8 +11,9 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'method_not_allowed' })
   }
 
-  // Guard against cross-origin CSRF logout
-  const origin = req.headers['origin'] ?? req.headers['referer'] ?? ''
+  // Guard against cross-origin CSRF logout.
+  // Use Origin when available; fall back to Referer (extractOrigin handles full URLs).
+  const origin = (req.headers['origin'] || req.headers['referer'] || '') as string
   if (!isAllowedOrigin(origin)) {
     return res.status(403).json({ error: 'forbidden_origin' })
   }

@@ -243,21 +243,31 @@ describe('authSlice — ensureFreshToken token refresh without expires_in', () =
 
   it('handles missing expires_in in refresh response', async () => {
     const pastExp = Date.now() - 1000
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        access_token: 'new-token',
-        // No expires_in
-      }),
-    } as Response)
+    // Stub: 1st call = refresh endpoint, 2nd call = session endpoint
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          // No expires_in
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          access_token: 'new-token',
+          expires_at: Date.now() + 8 * 3600 * 1000,
+        }),
+      } as Response)
     resetStore({
       token: 'expired',
       tokenExpiresAt: pastExp,
     })
     const tok = await useAdminStore.getState().ensureFreshToken()
     expect(tok).toBe('new-token')
-    // newExpiresAt should be 0 when no expires_in
-    expect(useAdminStore.getState().tokenExpiresAt).toBe(0)
+    // newExpiresAt comes from session.expires_at when no expires_in
+    expect(useAdminStore.getState().tokenExpiresAt).toBeGreaterThan(0)
     fetchSpy.mockRestore()
   })
 })

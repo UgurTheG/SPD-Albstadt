@@ -8,21 +8,13 @@ import { signState, serializeCookie, STATE_COOKIE } from './cookies'
  * Generates a signed CSRF state, stores it in an HttpOnly cookie,
  * and redirects the user to GitHub's OAuth authorize endpoint.
  */
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default function handler(_req: VercelRequest, res: VercelResponse) {
   const clientId = process.env.VITE_GITHUB_CLIENT_ID
-  if (!clientId) {
+  const redirectUri = process.env.OAUTH_REDIRECT_URI
+  if (!clientId || !redirectUri) {
     res.status(500).json({ error: 'server_misconfigured' })
     return
   }
-
-  // Determine redirect_uri — prefer explicit env var to prevent header injection
-  const redirectUri =
-    process.env.OAUTH_REDIRECT_URI ??
-    (() => {
-      const proto = req.headers['x-forwarded-proto'] || 'https'
-      const host = req.headers['x-forwarded-host'] || req.headers['host'] || 'localhost'
-      return `${proto}://${host}/api/auth/callback`
-    })()
 
   // Generate and sign CSRF state
   const state = randomBytes(16).toString('hex')

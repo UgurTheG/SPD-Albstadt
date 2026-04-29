@@ -145,14 +145,23 @@ describe('authSlice — ensureFreshToken', () => {
   it('exchanges refresh token for a new access token via server', async () => {
     const pastExp = Date.now() - 1000
 
-    // Stub the fetch call made by ensureFreshToken
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        access_token: 'new-access-token',
-        expires_in: 3600,
-      }),
-    } as Response)
+    // Stub: 1st call = refresh endpoint, 2nd call = session endpoint
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          expires_in: 3600,
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          access_token: 'new-access-token',
+          expires_at: Date.now() + 3600 * 1000,
+        }),
+      } as Response)
 
     resetStore({
       token: 'expired-token',

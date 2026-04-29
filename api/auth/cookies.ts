@@ -11,7 +11,8 @@ export const STATE_COOKIE = 'spd_oauth_state'
 // ─── HMAC helpers (state signing) ──────────────────────────────────────────────
 
 function getSecret(): string {
-  return process.env.GITHUB_CLIENT_SECRET || ''
+  // Prefer a dedicated signing secret; fall back to client secret for backwards compat
+  return process.env.STATE_SIGNING_SECRET || process.env.GITHUB_CLIENT_SECRET || ''
 }
 
 export function signState(state: string): string {
@@ -46,9 +47,24 @@ function getAllowedOrigins(): string[] {
   ]
 }
 
-/** Check whether the given origin is in the allowed list (prefix match). */
-export function isAllowedOrigin(origin: string): boolean {
-  return getAllowedOrigins().some(a => origin.startsWith(a))
+/**
+ * Extract the origin (scheme + host) from a URL or Origin header.
+ * Returns '' if parsing fails. Handles both bare origins and full URLs (Referer).
+ */
+export function extractOrigin(raw: string): string {
+  try {
+    const url = new URL(raw)
+    return url.origin // e.g. "https://example.com"
+  } catch {
+    return ''
+  }
+}
+
+/** Check whether the given origin/URL is in the allowed list (exact origin match). */
+export function isAllowedOrigin(rawOriginOrUrl: string): boolean {
+  const origin = extractOrigin(rawOriginOrUrl)
+  if (!origin) return false
+  return getAllowedOrigins().some(a => origin === a.replace(/\/+$/, ''))
 }
 
 // ─── Cookie serialisation helpers ──────────────────────────────────────────────

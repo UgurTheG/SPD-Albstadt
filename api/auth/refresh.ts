@@ -16,8 +16,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'method_not_allowed' })
   }
 
-  // Guard against cross-origin abuse of the refresh endpoint
-  const origin = req.headers['origin'] ?? req.headers['referer'] ?? ''
+  // Guard against cross-origin abuse of the refresh endpoint.
+  // Use Origin when available; fall back to Referer (extractOrigin handles full URLs).
+  const origin = (req.headers['origin'] || req.headers['referer'] || '') as string
   if (!isAllowedOrigin(origin)) {
     return res.status(403).json({ error: 'forbidden_origin' })
   }
@@ -88,8 +89,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }),
     )
 
+    // Don't return the raw access_token — it's already in the HttpOnly cookie.
+    // The session endpoint will provide it on next fetch.
     return res.status(200).json({
-      access_token: data.access_token,
+      ok: true,
       expires_in: data.expires_in,
     })
   } catch {

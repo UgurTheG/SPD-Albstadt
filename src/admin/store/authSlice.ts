@@ -157,11 +157,17 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
       throw new AuthError('Sitzung abgelaufen — bitte neu anmelden.', 401)
     }
     const data = (await res.json()) as {
-      access_token: string
+      ok: boolean
       expires_in?: number
     }
-    const newToken = data.access_token
-    const newExpiresAt = data.expires_in ? Date.now() + data.expires_in * 1000 : 0
+    // The new access token is in the HttpOnly cookie — fetch it via session endpoint
+    const session = await fetchSession()
+    if (!session.access_token) {
+      get().logout()
+      throw new AuthError('Sitzung abgelaufen — bitte neu anmelden.', 401)
+    }
+    const newToken = session.access_token
+    const newExpiresAt = data.expires_in ? Date.now() + data.expires_in * 1000 : session.expires_at
     set({
       token: newToken,
       tokenExpiresAt: newExpiresAt,
