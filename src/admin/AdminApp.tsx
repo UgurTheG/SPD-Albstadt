@@ -25,7 +25,6 @@ export default function AdminApp() {
 
   // State slices: each selector only causes a re-render when its own value changes.
   const user = useAdminStore(s => s.user)
-  const token = useAdminStore(s => s.token)
   const activeTab = useAdminStore(s => s.activeTab)
   const darkMode = useAdminStore(s => s.darkMode)
   const publishing = useAdminStore(s => s.publishing)
@@ -95,7 +94,7 @@ export default function AdminApp() {
     else toast(statusMessage)
   }, [statusMessage, statusType, statusCounter])
 
-  if (!token || !user) return <LoginScreen />
+  if (!user) return <LoginScreen />
 
   const currentTab = TABS.find(t => t.key === activeTab) ?? TABS[0]
 

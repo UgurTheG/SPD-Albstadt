@@ -33,7 +33,7 @@ export interface HaushaltsredenEditorState {
 }
 
 export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
-  const token = useAdminStore(s => s.token)
+  const ensureAuthenticated = useAdminStore(s => s.ensureAuthenticated)
   const setStatus = useAdminStore(s => s.setStatus)
 
   const [existingMap, setExistingMap] = useState<Record<number, string>>({})
@@ -65,8 +65,8 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
       const { silent = false, signal } = opts
       try {
         const [files, config] = await Promise.all([
-          listDirectory(token, 'public/documents/fraktion/haushaltsreden'),
-          getFileContent(token, 'public/data/haushaltsreden.json'),
+          listDirectory('public/documents/fraktion/haushaltsreden'),
+          getFileContent('public/data/haushaltsreden.json'),
         ])
         if (signal?.cancelled) return
         const map: Record<number, string> = {}
@@ -92,7 +92,7 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
         }
       }
     },
-    [token, setStatus],
+    [setStatus],
   )
 
   useEffect(() => {
@@ -113,18 +113,14 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
   // ─── Save config ─────────────────────────────────────────────────────────────
 
   // Memoized so toggleYear's useCallback dependency stays stable across renders.
-  const saveConfig = useCallback(
-    async (disabled: Set<number>) => {
-      const body = { disabledYears: [...disabled].sort((a, b) => a - b) }
-      await commitFile(
-        token,
-        'public/data/haushaltsreden.json',
-        JSON.stringify(body, null, 2) + '\n',
-        'admin: Haushaltsreden-Konfiguration aktualisiert',
-      )
-    },
-    [token],
-  )
+  const saveConfig = useCallback(async (disabled: Set<number>) => {
+    const body = { disabledYears: [...disabled].sort((a, b) => a - b) }
+    await commitFile(
+      'public/data/haushaltsreden.json',
+      JSON.stringify(body, null, 2) + '\n',
+      'admin: Haushaltsreden-Konfiguration aktualisiert',
+    )
+  }, [])
 
   // ─── Actions ─────────────────────────────────────────────────────────────────
 
@@ -163,8 +159,8 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
     async (year: number, file: File) => {
       setBusy(year)
       try {
+        await ensureAuthenticated()
         const result = await commitBinaryFile(
-          token,
           `public/documents/fraktion/haushaltsreden/${year}.pdf`,
           await fileToBase64(file),
           `admin: Haushaltsrede ${year}.pdf hochgeladen`,
@@ -179,15 +175,15 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
         setBusy(null)
       }
     },
-    [token, load, setStatus],
+    [ensureAuthenticated, load, setStatus],
   )
 
   const deletePdf = useCallback(
     async (year: number) => {
       setBusy(year)
       try {
+        await ensureAuthenticated()
         await deleteFile(
-          token,
           `public/documents/fraktion/haushaltsreden/${year}.pdf`,
           `admin: Haushaltsrede ${year}.pdf gelöscht`,
         )
@@ -204,7 +200,7 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
         setBusy(null)
       }
     },
-    [token, load, setStatus],
+    [ensureAuthenticated, load, setStatus],
   )
 
   // Intent-based delete dialog actions — hides the raw state setter from callers.

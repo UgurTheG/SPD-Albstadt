@@ -7,7 +7,7 @@ import { DRAFT_KEY, PENDING_KEY, resetPersistenceState } from './persistence'
 // ─── Slice interface ───────────────────────────────────────────────────────────
 
 export interface AuthSlice {
-  token: string
+  authenticated: boolean
   tokenExpiresAt: number
   user: GHUser | null
   loginError: string
@@ -17,23 +17,23 @@ export interface AuthSlice {
   login: () => Promise<void>
   tryAutoLogin: () => Promise<void>
   logout: () => void
-  ensureFreshToken: () => Promise<string>
+  ensureAuthenticated: () => Promise<void>
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Fetch the current access token from the server-side HttpOnly cookie via the session endpoint. */
-async function fetchSession(): Promise<{ access_token: string | null; expires_at: number }> {
+/** Check whether a valid auth session cookie exists (without exposing the token). */
+async function fetchSession(): Promise<{ authenticated: boolean; expires_at: number }> {
   const res = await fetch('/api/auth/session', { credentials: 'include' })
-  if (!res.ok) return { access_token: null, expires_at: 0 }
+  if (!res.ok) return { authenticated: false, expires_at: 0 }
   const data = await res.json()
-  return data ?? { access_token: null, expires_at: 0 }
+  return data ?? { authenticated: false, expires_at: 0 }
 }
 
 // ─── Slice creator ────────────────────────────────────────────────────────────
 
 export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set, get) => ({
-  token: '',
+  authenticated: false,
   tokenExpiresAt: 0,
   user: null,
   loginError: '',
@@ -44,15 +44,14 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
     set({ loginLoading: true, loginError: '', loginAuthStatus: null })
     try {
       const session = await fetchSession()
-      if (!session.access_token) {
+      if (!session.authenticated) {
         set({ loginError: 'Keine gültige Sitzung gefunden.', loginLoading: false })
         return
       }
-      const token = session.access_token
       const expiresAt = session.expires_at
-      const user = await validateToken(token)
+      const user = await validateToken()
       set({
-        token,
+        authenticated: true,
         tokenExpiresAt: expiresAt,
         user: user as GHUser,
         loginLoading: false,
@@ -69,35 +68,32 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
 
   tryAutoLogin: async () => {
     // Try to recover session from HttpOnly cookies
-    let session: { access_token: string | null; expires_at: number }
+    let session: { authenticated: boolean; expires_at: number }
     try {
       session = await fetchSession()
     } catch {
       return // Network error — don't invalidate
     }
-    if (!session.access_token) return
+    if (!session.authenticated) return
 
-    const token = session.access_token
     const expiresAt = session.expires_at
+
+    // Hydrate the store with the session state before checking freshness
+    // so ensureAuthenticated can read the correct expiry from the store.
+    set({ authenticated: true, tokenExpiresAt: expiresAt })
 
     // Check if token needs refreshing
     if (expiresAt && Date.now() > expiresAt - 5 * 60 * 1000) {
       try {
-        const freshToken = await get().ensureFreshToken()
-        set({ token: freshToken })
+        await get().ensureAuthenticated()
       } catch {
         return
       }
-    } else {
-      set({ token, tokenExpiresAt: expiresAt })
     }
-
-    const currentToken = get().token
-    if (!currentToken) return
 
     let user: GHUser
     try {
-      user = (await validateToken(currentToken)) as GHUser
+      user = (await validateToken()) as GHUser
     } catch (e) {
       if (e instanceof AuthError) {
         get().logout()
@@ -123,7 +119,7 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
     void fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
 
     set({
-      token: '',
+      authenticated: false,
       tokenExpiresAt: 0,
       user: null,
       // Reset editor state
@@ -137,20 +133,16 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
     })
   },
 
-  ensureFreshToken: async () => {
-    const { token, tokenExpiresAt } = get()
-    // No expiry info (classic OAuth token) — use as-is
-    if (!tokenExpiresAt) return token
-    // Valid for more than 5 minutes — use as-is
-    if (Date.now() < tokenExpiresAt - 5 * 60 * 1000) return token
+  ensureAuthenticated: async () => {
+    const { tokenExpiresAt } = get()
+    // No expiry info — assume still valid
+    if (!tokenExpiresAt) return
+    // Valid for more than 5 minutes — nothing to do
+    if (Date.now() < tokenExpiresAt - 5 * 60 * 1000) return
     // Need to refresh via server (refresh token is in HttpOnly cookie)
     const res = await fetch('/api/auth/refresh', {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
     })
     if (!res.ok) {
       get().logout()
@@ -160,18 +152,12 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
       ok: boolean
       expires_in?: number
     }
-    // The new access token is in the HttpOnly cookie — fetch it via session endpoint
+    // Fetch updated session to get new expiry
     const session = await fetchSession()
-    if (!session.access_token) {
-      get().logout()
-      throw new AuthError('Sitzung abgelaufen — bitte neu anmelden.', 401)
-    }
-    const newToken = session.access_token
     const newExpiresAt = data.expires_in ? Date.now() + data.expires_in * 1000 : session.expires_at
     set({
-      token: newToken,
+      authenticated: true,
       tokenExpiresAt: newExpiresAt,
     })
-    return newToken
   },
 })

@@ -81,7 +81,7 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     undoStacks: {},
     redoStacks: {},
     publishing: false,
-    token: 'test-token',
+    authenticated: true,
     tokenExpiresAt: Date.now() + 3600000,
     user: { login: 'testuser', avatar_url: '' },
     loginError: '',
@@ -666,7 +666,7 @@ import LoginScreen from '../../admin/components/LoginScreen'
 describe('LoginScreen — uncovered branches', () => {
   beforeEach(() => {
     // Reset to logged-out state
-    useAdminStore.setState({ token: '', user: null })
+    useAdminStore.setState({ authenticated: false, user: null })
   })
 
   it('line 131: renders CLIENT_ID missing warning when not configured', () => {
@@ -1160,7 +1160,7 @@ import AdminApp from '../../admin/AdminApp'
 describe('AdminApp — OrphanModal and sidebar interaction coverage', () => {
   function authSetup(extra: Record<string, unknown> = {}) {
     resetStore({
-      token: 'tok',
+      authenticated: true,
       tokenExpiresAt: Date.now() + 3600000,
       user: { login: 'testuser', avatar_url: '' },
       dataLoaded: true,
@@ -1824,12 +1824,7 @@ describe('github.ts — uncovered branches', () => {
       text: () => Promise.resolve('{}'),
     })
     try {
-      await vi.mocked(commitFile)(
-        'test-token',
-        'test content',
-        'public/data/test.json',
-        'test update',
-      )
+      await vi.mocked(commitFile)('public/data/test.json', 'test content', 'test update')
     } catch {
       // May fail due to other mocked functions but the line is covered
     }
@@ -1844,7 +1839,7 @@ describe('github.ts — uncovered branches', () => {
       json: () => Promise.resolve({ sha: 'tree-sha', commit: { sha: 'blob-sha' } }),
     })
     try {
-      await vi.mocked(commitTree)('test-token', 'test commit', [
+      await vi.mocked(commitTree)('test commit', [
         { path: 'public/images/test.webp', base64Content: 'dGVzdA==' },
         { path: 'public/data/test.json', content: '{}' },
       ])

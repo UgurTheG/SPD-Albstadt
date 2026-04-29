@@ -77,6 +77,24 @@ function clearAuthCookies(): string[] {
   ]
 }
 
+/** Read the full request body as JSON. */
+function readJsonBody(req: import('http').IncomingMessage): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    let data = ''
+    req.on('data', (chunk: Buffer) => {
+      data += chunk.toString()
+    })
+    req.on('end', () => {
+      try {
+        resolve(JSON.parse(data))
+      } catch {
+        reject(new Error('invalid_json'))
+      }
+    })
+    req.on('error', reject)
+  })
+}
+
 // ─── Plugin ────────────────────────────────────────────────────────────────────
 
 export function serveOAuthCallback(env: Record<string, string>): Plugin {
@@ -195,7 +213,8 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
           res.setHeader('Content-Type', 'application/json')
           res.setHeader('Cache-Control', 'no-store')
           res.statusCode = 200
-          res.end(JSON.stringify({ access_token: token, expires_at: expiresAt }))
+          // Don't expose the token — only return authentication status
+          res.end(JSON.stringify({ authenticated: !!token, expires_at: token ? expiresAt : 0 }))
           return
         }
 
@@ -213,14 +232,13 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
         if (req.url?.startsWith('/api/auth/refresh') && req.method === 'POST') {
           const cookies = parseCookies(req.headers.cookie)
           const refreshToken = cookies[REFRESH_TOKEN_COOKIE]
-          const authHeader = req.headers['authorization'] ?? ''
-          const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
           const cookieToken = cookies[ACCESS_TOKEN_COOKIE] ?? ''
 
           res.setHeader('Content-Type', 'application/json')
           res.setHeader('Cache-Control', 'no-store')
 
-          if (!bearerToken || bearerToken !== cookieToken) {
+          // Just verify an access token cookie exists (proof of prior auth)
+          if (!cookieToken) {
             res.statusCode = 401
             res.end(JSON.stringify({ error: 'unauthorized' }))
             return
@@ -281,13 +299,74 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
                 }),
               )
               res.statusCode = 200
-              res.end(
-                JSON.stringify({ access_token: data.access_token, expires_in: data.expires_in }),
-              )
+              res.end(JSON.stringify({ ok: true, expires_in: data.expires_in }))
             })
             .catch(() => {
               res.statusCode = 500
               res.end(JSON.stringify({ error: 'refresh_failed' }))
+            })
+          return
+        }
+
+        // ── POST /api/github (proxy) ──────────────────────────────────────────
+        if (req.url?.startsWith('/api/github') && req.method === 'POST') {
+          const cookies = parseCookies(req.headers.cookie)
+          const accessToken = cookies[ACCESS_TOKEN_COOKIE]
+
+          res.setHeader('Content-Type', 'application/json')
+          res.setHeader('Cache-Control', 'no-store')
+
+          if (!accessToken) {
+            res.statusCode = 401
+            res.end(JSON.stringify({ error: 'unauthorized' }))
+            return
+          }
+
+          void readJsonBody(req)
+            .then(async parsed => {
+              const { method, path, body } = parsed as {
+                method?: string
+                path?: string
+                body?: unknown
+              }
+
+              if (!method || !path) {
+                res.statusCode = 400
+                res.end(JSON.stringify({ error: 'missing_method_or_path' }))
+                return
+              }
+
+              if (!path.startsWith('/user') && !path.startsWith('/repos/')) {
+                res.statusCode = 400
+                res.end(JSON.stringify({ error: 'path_not_allowed' }))
+                return
+              }
+
+              const ghHeaders: Record<string, string> = {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'If-None-Match': '',
+              }
+
+              const fetchOpts: RequestInit = {
+                method: method.toUpperCase(),
+                headers: ghHeaders,
+                cache: 'no-store',
+              }
+
+              if (body !== undefined && method.toUpperCase() !== 'GET') {
+                fetchOpts.body = JSON.stringify(body)
+              }
+
+              const ghRes = await fetch(`https://api.github.com${path}`, fetchOpts)
+              const data = await ghRes.json()
+              res.statusCode = ghRes.status
+              res.end(JSON.stringify(data))
+            })
+            .catch(() => {
+              res.statusCode = 502
+              res.end(JSON.stringify({ error: 'github_request_failed' }))
             })
           return
         }

@@ -54,7 +54,7 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     undoStacks: {},
     redoStacks: {},
     publishing: false,
-    token: 'test-token',
+    authenticated: true,
     tokenExpiresAt: 0,
     user: { login: 'testuser', avatar_url: '' },
     loginError: '',
@@ -82,7 +82,7 @@ beforeEach(() => {
       if (u.includes('/api/auth/session')) {
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ access_token: null, expires_at: 0 }),
+          json: () => Promise.resolve({ authenticated: false, expires_at: 0 }),
         } as Response)
       }
       if (u.includes('/api/auth/logout')) {
@@ -1472,7 +1472,7 @@ vi.mock('sonner', () => ({
 
 describe('AdminApp', () => {
   it('renders login screen when not authenticated', async () => {
-    resetStore({ token: '', user: null })
+    resetStore({ authenticated: false, user: null })
     const { container } = render(
       <MemoryRouter>
         <AdminApp />
@@ -1486,7 +1486,7 @@ describe('AdminApp', () => {
 
   it('renders editor when authenticated and loaded', async () => {
     resetStore({
-      token: 'tok',
+      authenticated: true,
       user: { login: 'testuser', avatar_url: '' },
       dataLoaded: true,
       state: { news: [] },
@@ -1505,7 +1505,7 @@ describe('AdminApp', () => {
 
   it('renders skeleton while loading data', async () => {
     resetStore({
-      token: 'tok',
+      authenticated: true,
       user: { login: 'testuser', avatar_url: '' },
       dataLoaded: false,
     })
@@ -1520,7 +1520,7 @@ describe('AdminApp', () => {
 
   it('shows warning banner on dataLoadErrors', async () => {
     resetStore({
-      token: 'tok',
+      authenticated: true,
       user: { login: 'testuser', avatar_url: '' },
       dataLoaded: true,
       state: { news: [] },

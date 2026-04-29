@@ -29,7 +29,7 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
     if (!tab?.ghPath) return
     set({ publishing: true })
     try {
-      const token = await get().ensureFreshToken()
+      await get().ensureAuthenticated()
       const changes: TreeFileChange[] = []
       const currentPaths = collectImagePaths(tab as TabConfig, s[tabKey] as Record<string, unknown>)
 
@@ -56,7 +56,7 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       const fileName = tab.file?.split('/').pop() ?? tab.key
       changes.push({ path: tab.ghPath, content: json })
 
-      await commitTree(token, `admin: ${fileName} aktualisiert`, changes)
+      await commitTree(`admin: ${fileName} aktualisiert`, changes)
 
       get().resetOriginal(tabKey)
       set({ pendingUploads: otherUploads })
@@ -114,7 +114,7 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
 
     set({ publishing: true })
     try {
-      const token = await get().ensureFreshToken()
+      await get().ensureAuthenticated()
       // Build a descriptive commit message from file names
       const fileNames = dirtyKeys.map(k => {
         const tab = TABS.find(t => t.key === k)
@@ -122,7 +122,7 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       })
       const message = `admin: ${fileNames.join(', ')} aktualisiert`
 
-      await commitTree(token, message, changes)
+      await commitTree(message, changes)
 
       for (const tabKey of dirtyKeys) {
         get().resetOriginal(tabKey)

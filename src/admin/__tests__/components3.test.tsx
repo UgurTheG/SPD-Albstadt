@@ -67,7 +67,7 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     undoStacks: {},
     redoStacks: {},
     publishing: false,
-    token: 'test-token',
+    authenticated: true,
     tokenExpiresAt: 0,
     user: { login: 'testuser', avatar_url: '' },
     loginError: '',
@@ -95,7 +95,7 @@ describe('AdminApp — modals and sidebar interactions', () => {
   function authSetup(extra: Record<string, unknown> = {}) {
     const newsData = [{ titel: 'Test', datum: '2024-01-01' }]
     resetStore({
-      token: 'tok',
+      authenticated: true,
       user: { login: 'testuser', avatar_url: '' },
       dataLoaded: true,
       state: { news: newsData },

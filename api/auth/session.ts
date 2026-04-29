@@ -4,14 +4,14 @@ import { parseCookies, isAllowedOrigin, ACCESS_TOKEN_COOKIE, TOKEN_EXPIRES_COOKI
 /**
  * GET /api/auth/session
  *
- * Returns the current access token and expiry from HttpOnly cookies.
- * The client calls this on page load to hydrate the Zustand store
- * (since tokens are no longer stored in localStorage).
+ * Returns whether the user is authenticated and the token expiry timestamp.
+ * The access token itself is NEVER returned — it stays in the HttpOnly cookie
+ * and is only used server-side (by the /api/github proxy).
  */
 export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
 
-  // Only allow same-origin requests to read the token
+  // Only allow same-origin requests
   const origin = req.headers['origin'] ?? ''
   // For same-origin GET requests the browser may omit the Origin header,
   // so we allow empty origin (cookie SameSite=Lax already blocks cross-site).
@@ -24,8 +24,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   const expiresAt = Number(cookies[TOKEN_EXPIRES_COOKIE] || 0)
 
   if (!token) {
-    return res.status(200).json({ access_token: null, expires_at: 0 })
+    return res.status(200).json({ authenticated: false, expires_at: 0 })
   }
 
-  return res.status(200).json({ access_token: token, expires_at: expiresAt })
+  return res.status(200).json({ authenticated: true, expires_at: expiresAt })
 }

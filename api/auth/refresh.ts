@@ -6,8 +6,8 @@ import {
   isAllowedOrigin,
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
-  REFRESH_EXPIRES_COOKIE,
 } from './cookies'
+import { rateLimit, getClientIP } from './rateLimit'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
@@ -16,19 +16,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'method_not_allowed' })
   }
 
+  // Rate limit: 10 refresh attempts per IP per minute
+  const ip = getClientIP(req.headers as Record<string, string | string[] | undefined>)
+  if (!rateLimit(ip, 10, 60_000)) {
+    return res.status(429).json({ error: 'too_many_requests' })
+  }
+
   // Guard against cross-origin abuse of the refresh endpoint.
-  // Use Origin when available; fall back to Referer (extractOrigin handles full URLs).
   const origin = (req.headers['origin'] || req.headers['referer'] || '') as string
   if (!isAllowedOrigin(origin)) {
     return res.status(403).json({ error: 'forbidden_origin' })
   }
 
-  // Require a valid (possibly expired) access token as an authorization check
-  const authHeader = req.headers['authorization'] ?? ''
-  const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+  // Require a valid access token cookie to be present (proof of prior auth)
   const cookies = parseCookies(req.headers.cookie)
   const cookieToken = cookies[ACCESS_TOKEN_COOKIE] ?? ''
-  if (!bearerToken || bearerToken !== cookieToken) {
+  if (!cookieToken) {
     return res.status(401).json({ error: 'unauthorized' })
   }
 
@@ -41,16 +44,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Read refresh token from HttpOnly cookie
   const refreshToken = cookies[REFRESH_TOKEN_COOKIE]
-  const refreshTokenExpiresAt = Number(cookies[REFRESH_EXPIRES_COOKIE] || 0)
 
   if (!refreshToken) {
     return res.status(400).json({ error: 'missing_refresh_token' })
   }
 
-  if (refreshTokenExpiresAt && Date.now() > refreshTokenExpiresAt) {
-    res.setHeader('Set-Cookie', clearAuthCookies())
-    return res.status(401).json({ error: 'refresh_token_expired' })
-  }
+  // Don't trust client-supplied cookie timestamps — let GitHub decide if
+  // the refresh token is expired and reject it server-side.
 
   try {
     const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
@@ -75,6 +75,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!data.access_token) {
       const msg = data.error_description ?? data.error ?? 'refresh_failed'
+      // If the refresh token itself is bad, clear all cookies to force re-login
+      if (data.error === 'bad_refresh_token') {
+        res.setHeader('Set-Cookie', clearAuthCookies())
+      }
       return res.status(401).json({ error: msg })
     }
 
@@ -89,8 +93,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }),
     )
 
-    // Don't return the raw access_token — it's already in the HttpOnly cookie.
-    // The session endpoint will provide it on next fetch.
     return res.status(200).json({
       ok: true,
       expires_in: data.expires_in,

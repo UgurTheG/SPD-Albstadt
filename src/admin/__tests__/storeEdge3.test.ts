@@ -48,7 +48,7 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     undoStacks: {},
     redoStacks: {},
     publishing: false,
-    token: 'test-token',
+    authenticated: true,
     tokenExpiresAt: 0,
     user: { login: 'testuser', avatar_url: '' },
     loginError: '',
@@ -79,25 +79,25 @@ describe('uiSlice — darkMode init from localStorage', () => {
 
 // ── authSlice — tryAutoLogin catch block (expired token, no refresh) ──────────
 
-describe('authSlice — tryAutoLogin ensureFreshToken throws', () => {
+describe('authSlice — tryAutoLogin ensureAuthenticated throws', () => {
   beforeEach(() => resetStore())
 
-  it('catches ensureFreshToken throw and returns without user', async () => {
+  it('catches ensureAuthenticated throw and returns without user', async () => {
     const pastExp = Date.now() - 1000
-    // Mock fetchSession to return an expired token, then ensureFreshToken's refresh call fails
+    // Mock fetchSession to return an authenticated+expired session, then refresh fails
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'expired', expires_at: pastExp }),
+        json: async () => ({ authenticated: true, expires_at: pastExp }),
       } as Response)
       .mockResolvedValueOnce({
         ok: false,
       } as Response)
-    resetStore({ token: '', tokenExpiresAt: 0, user: null })
+    resetStore({ authenticated: false, tokenExpiresAt: 0, user: null })
     await useAdminStore.getState().tryAutoLogin()
-    // After failed refresh → logout, token should be cleared
-    expect(useAdminStore.getState().token).toBe('')
+    // After failed refresh → logout, authenticated should be false
+    expect(useAdminStore.getState().authenticated).toBe(false)
     expect(useAdminStore.getState().user).toBeNull()
     fetchSpy.mockRestore()
   })
@@ -357,8 +357,7 @@ describe('publishSlice — publishTab with orphansToDelete', () => {
   it('includes orphan deletion in the commit', async () => {
     await useAdminStore.getState().publishTab('news', ['/images/news/old.webp'])
     expect(commitTree).toHaveBeenCalledTimes(1)
-    const [, , changes] = vi.mocked(commitTree).mock.calls[0] as [
-      string,
+    const [, changes] = vi.mocked(commitTree).mock.calls[0] as [
       string,
       { path: string; delete?: boolean }[],
     ]
@@ -384,11 +383,7 @@ describe('publishSlice — publishTab with orphansToDelete', () => {
       ],
     })
     await useAdminStore.getState().publishTab('news')
-    const [, , changes] = vi.mocked(commitTree).mock.calls[0] as [
-      string,
-      string,
-      { path: string }[],
-    ]
+    const [, changes] = vi.mocked(commitTree).mock.calls[0] as [string, { path: string }[]]
     expect(changes.some(c => c.path === 'public/images/news/photo.webp')).toBe(true)
   })
 })
@@ -407,8 +402,7 @@ describe('publishSlice — publishAll with orphansToDelete', () => {
 
   it('includes orphan deletions in the commit', async () => {
     await useAdminStore.getState().publishAll(['/images/old.webp'])
-    const [, , changes] = vi.mocked(commitTree).mock.calls[0] as [
-      string,
+    const [, changes] = vi.mocked(commitTree).mock.calls[0] as [
       string,
       { path: string; delete?: boolean }[],
     ]
@@ -429,11 +423,7 @@ describe('publishSlice — publishAll with orphansToDelete', () => {
       ],
     })
     await useAdminStore.getState().publishAll()
-    const [, , changes] = vi.mocked(commitTree).mock.calls[0] as [
-      string,
-      string,
-      { path: string }[],
-    ]
+    const [, changes] = vi.mocked(commitTree).mock.calls[0] as [string, { path: string }[]]
     expect(changes.some(c => c.path === 'public/images/news/x.webp')).toBe(true)
   })
 

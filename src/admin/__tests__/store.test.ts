@@ -50,7 +50,7 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     undoStacks: {},
     redoStacks: {},
     publishing: false,
-    token: 'test-token',
+    authenticated: true,
     tokenExpiresAt: 0,
     user: { login: 'testuser', avatar_url: '' },
     loginError: '',
@@ -330,11 +330,7 @@ describe('publishSlice — publishAll dataLoadErrors guard', () => {
     await useAdminStore.getState().publishAll()
 
     expect(commitTree).toHaveBeenCalledTimes(1)
-    const [, , changes] = vi.mocked(commitTree).mock.calls[0] as [
-      string,
-      string,
-      { path: string }[],
-    ]
+    const [, changes] = vi.mocked(commitTree).mock.calls[0] as [string, { path: string }[]]
     const paths = changes.map(c => c.path)
     expect(paths).not.toContain('public/data/news.json')
     expect(paths).toContain('public/data/startseite.json')

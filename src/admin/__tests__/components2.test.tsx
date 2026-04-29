@@ -58,7 +58,7 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     undoStacks: {},
     redoStacks: {},
     publishing: false,
-    token: 'test-token',
+    authenticated: true,
     tokenExpiresAt: 0,
     user: { login: 'testuser', avatar_url: '' },
     loginError: '',
@@ -85,7 +85,7 @@ beforeEach(() => {
       if (u.includes('/api/auth/session')) {
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ access_token: null, expires_at: 0 }),
+          json: () => Promise.resolve({ authenticated: false, expires_at: 0 }),
         } as Response)
       }
       if (u.includes('/api/auth/logout')) {
@@ -236,9 +236,9 @@ describe('fileToWebpBase64', () => {
   })
 })
 
-// ─── authSlice — ensureFreshToken without refresh_token_expires_in ────────────
+// ─── authSlice — ensureAuthenticated without refresh_token_expires_in ────────────
 
-describe('authSlice — ensureFreshToken token refresh without expires_in', () => {
+describe('authSlice — ensureAuthenticated token refresh without expires_in', () => {
   beforeEach(() => resetStore())
 
   it('handles missing expires_in in refresh response', async () => {
@@ -256,16 +256,16 @@ describe('authSlice — ensureFreshToken token refresh without expires_in', () =
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          access_token: 'new-token',
+          authenticated: true,
           expires_at: Date.now() + 8 * 3600 * 1000,
         }),
       } as Response)
     resetStore({
-      token: 'expired',
+      authenticated: true,
       tokenExpiresAt: pastExp,
     })
-    const tok = await useAdminStore.getState().ensureFreshToken()
-    expect(tok).toBe('new-token')
+    await useAdminStore.getState().ensureAuthenticated()
+    expect(useAdminStore.getState().authenticated).toBe(true)
     // newExpiresAt comes from session.expires_at when no expires_in
     expect(useAdminStore.getState().tokenExpiresAt).toBeGreaterThan(0)
     fetchSpy.mockRestore()
@@ -460,7 +460,7 @@ describe('LoginScreen — query param auth and error flows', () => {
   it('renders with auth=ok query param and calls login', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ access_token: 'tok', expires_at: Date.now() + 3600000 }),
+      json: async () => ({ authenticated: true, expires_at: Date.now() + 3600000 }),
     } as Response)
     window.history.pushState({}, '', '/admin?auth=ok')
     const replaceStateSpy = vi.spyOn(window.history, 'replaceState')
@@ -1042,7 +1042,7 @@ import AdminApp from '../../admin/AdminApp'
 describe('AdminApp — additional coverage paths', () => {
   it('handles hashchange event to sync tab', async () => {
     resetStore({
-      token: 'tok',
+      authenticated: true,
       user: { login: 'testuser', avatar_url: '' },
       dataLoaded: true,
       state: { news: [] },
@@ -1066,7 +1066,7 @@ describe('AdminApp — additional coverage paths', () => {
 
   it('triggers beforeunload warning when dirty', async () => {
     resetStore({
-      token: 'tok',
+      authenticated: true,
       user: { login: 'testuser', avatar_url: '' },
       dataLoaded: true,
       state: { news: [{ titel: 'edited' }] },

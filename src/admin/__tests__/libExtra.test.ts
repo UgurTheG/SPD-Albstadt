@@ -574,7 +574,7 @@ describe('validateToken', () => {
         json: async () => ({ login: 'user', avatar_url: 'url' }),
       } as Response)
       .mockResolvedValueOnce({ ok: true, json: async () => ({}) } as Response)
-    const user = await validateToken('tok')
+    const user = await validateToken()
     expect(user.login).toBe('user')
   })
 
@@ -583,7 +583,7 @@ describe('validateToken', () => {
       ok: false,
       status: 401,
     } as Response)
-    await expect(validateToken('bad')).rejects.toBeInstanceOf(AuthError)
+    await expect(validateToken()).rejects.toBeInstanceOf(AuthError)
   })
 
   it('throws AuthError on 403', async () => {
@@ -591,7 +591,7 @@ describe('validateToken', () => {
       ok: false,
       status: 403,
     } as Response)
-    await expect(validateToken('bad')).rejects.toBeInstanceOf(AuthError)
+    await expect(validateToken()).rejects.toBeInstanceOf(AuthError)
   })
 
   it('throws generic Error on non-auth HTTP error', async () => {
@@ -599,7 +599,7 @@ describe('validateToken', () => {
       ok: false,
       status: 500,
     } as Response)
-    await expect(validateToken('bad')).rejects.toThrow('GitHub API Fehler')
+    await expect(validateToken()).rejects.toThrow('GitHub API Fehler')
   })
 
   it('throws AuthError when repo check returns 404', async () => {
@@ -609,7 +609,7 @@ describe('validateToken', () => {
         json: async () => ({ login: 'u', avatar_url: '' }),
       } as Response)
       .mockResolvedValueOnce({ ok: false, status: 404 } as Response)
-    await expect(validateToken('tok')).rejects.toBeInstanceOf(AuthError)
+    await expect(validateToken()).rejects.toBeInstanceOf(AuthError)
   })
 
   it('throws generic Error when repo check fails with 500', async () => {
@@ -619,7 +619,7 @@ describe('validateToken', () => {
         json: async () => ({ login: 'u', avatar_url: '' }),
       } as Response)
       .mockResolvedValueOnce({ ok: false, status: 500 } as Response)
-    await expect(validateToken('tok')).rejects.toThrow('Repository-Zugriff Fehler')
+    await expect(validateToken()).rejects.toThrow('Repository-Zugriff Fehler')
   })
 })
 
@@ -633,7 +633,7 @@ describe('commitFile', () => {
         ok: true,
         json: async () => ({ content: { sha: 'newsha' } }),
       } as Response)
-    await expect(commitFile('tok', 'path/file.json', '{}', 'msg')).resolves.not.toThrow()
+    await expect(commitFile('path/file.json', '{}', 'msg')).resolves.not.toThrow()
   })
 
   it('commits file with existing SHA', async () => {
@@ -643,21 +643,21 @@ describe('commitFile', () => {
         ok: true,
         json: async () => ({ content: { sha: 'newsha' } }),
       } as Response)
-    await expect(commitFile('tok', 'path/file.json', '{}', 'msg')).resolves.not.toThrow()
+    await expect(commitFile('path/file.json', '{}', 'msg')).resolves.not.toThrow()
   })
 
   it('throws on commit failure', async () => {
     vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce({ ok: false } as Response)
       .mockResolvedValueOnce({ ok: false, json: async () => ({ message: 'Conflict' }) } as Response)
-    await expect(commitFile('tok', 'f', '{}', 'm')).rejects.toThrow('Conflict')
+    await expect(commitFile('f', '{}', 'm')).rejects.toThrow('Conflict')
   })
 
   it('throws fallback message when no message in error body', async () => {
     vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce({ ok: false } as Response)
       .mockResolvedValueOnce({ ok: false, json: async () => ({}) } as Response)
-    await expect(commitFile('tok', 'f', '{}', 'm')).rejects.toThrow('Fehler beim Speichern')
+    await expect(commitFile('f', '{}', 'm')).rejects.toThrow('Fehler beim Speichern')
   })
 })
 
@@ -668,28 +668,28 @@ describe('commitBinaryFile', () => {
     vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce({ ok: true, json: async () => ({ sha: 'sha1' }) } as Response)
       .mockResolvedValueOnce({ ok: true, json: async () => ({ content: {} }) } as Response)
-    await expect(commitBinaryFile('tok', 'img.webp', 'base64', 'msg')).resolves.not.toThrow()
+    await expect(commitBinaryFile('img.webp', 'base64', 'msg')).resolves.not.toThrow()
   })
 
   it('commits binary file without SHA', async () => {
     vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce({ ok: false } as Response)
       .mockResolvedValueOnce({ ok: true, json: async () => ({}) } as Response)
-    await expect(commitBinaryFile('tok', 'img.webp', 'base64', 'msg')).resolves.not.toThrow()
+    await expect(commitBinaryFile('img.webp', 'base64', 'msg')).resolves.not.toThrow()
   })
 
   it('throws on failure', async () => {
     vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce({ ok: false } as Response)
       .mockResolvedValueOnce({ ok: false, json: async () => ({ message: 'err' }) } as Response)
-    await expect(commitBinaryFile('tok', 'f', 'b64', 'm')).rejects.toThrow('err')
+    await expect(commitBinaryFile('f', 'b64', 'm')).rejects.toThrow('err')
   })
 
   it('throws fallback message when no message in error body', async () => {
     vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce({ ok: false } as Response)
       .mockResolvedValueOnce({ ok: false, json: async () => ({}) } as Response)
-    await expect(commitBinaryFile('tok', 'f', 'b64', 'm')).rejects.toThrow('Fehler beim Hochladen')
+    await expect(commitBinaryFile('f', 'b64', 'm')).rejects.toThrow('Fehler beim Hochladen')
   })
 })
 
@@ -698,7 +698,7 @@ describe('deleteFile', () => {
 
   it('is a no-op when file does not exist', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({ ok: false } as Response)
-    await expect(deleteFile('tok', 'f', 'm')).resolves.toBeUndefined()
+    await expect(deleteFile('f', 'm')).resolves.toBeUndefined()
     expect(fetchSpy).toHaveBeenCalledTimes(1)
   })
 
@@ -707,7 +707,7 @@ describe('deleteFile', () => {
       .spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce({ ok: true, json: async () => ({ sha: 'abc' }) } as Response)
       .mockResolvedValueOnce({ ok: true } as Response)
-    await deleteFile('tok', 'f', 'm')
+    await deleteFile('f', 'm')
     expect(fetchSpy).toHaveBeenCalledTimes(2)
   })
 })
@@ -732,15 +732,13 @@ describe('commitTree', () => {
 
   it('returns early when no changes', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
-    await commitTree('tok', 'msg', [])
+    await commitTree('msg', [])
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
   it('commits text file', async () => {
     mockSuccess()
-    await expect(
-      commitTree('tok', 'msg', [{ path: 'f.json', content: '{}' }]),
-    ).resolves.not.toThrow()
+    await expect(commitTree('msg', [{ path: 'f.json', content: '{}' }])).resolves.not.toThrow()
   })
 
   it('commits binary file (base64Content)', async () => {
@@ -755,20 +753,18 @@ describe('commitTree', () => {
       .mockResolvedValueOnce({ ok: true, json: async () => ({ sha: 'newcommit' }) } as Response)
       .mockResolvedValueOnce({ ok: true, json: async () => ({}) } as Response)
     await expect(
-      commitTree('tok', 'msg', [{ path: 'img.webp', base64Content: 'abc' }]),
+      commitTree('msg', [{ path: 'img.webp', base64Content: 'abc' }]),
     ).resolves.not.toThrow()
   })
 
   it('commits delete entry', async () => {
     mockSuccess()
-    await expect(
-      commitTree('tok', 'msg', [{ path: 'old.jpg', delete: true }]),
-    ).resolves.not.toThrow()
+    await expect(commitTree('msg', [{ path: 'old.jpg', delete: true }])).resolves.not.toThrow()
   })
 
   it('throws when ref fetch fails', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({ ok: false } as Response)
-    await expect(commitTree('tok', 'msg', [{ path: 'f', content: '{}' }])).rejects.toThrow(
+    await expect(commitTree('msg', [{ path: 'f', content: '{}' }])).rejects.toThrow(
       'Branch nicht gefunden',
     )
   })
@@ -780,7 +776,7 @@ describe('commitTree', () => {
         json: async () => ({ object: { sha: 'c1' } }),
       } as Response)
       .mockResolvedValueOnce({ ok: false } as Response)
-    await expect(commitTree('tok', 'msg', [{ path: 'f', content: '{}' }])).rejects.toThrow(
+    await expect(commitTree('msg', [{ path: 'f', content: '{}' }])).rejects.toThrow(
       'Commit nicht gefunden',
     )
   })
@@ -793,9 +789,9 @@ describe('commitTree', () => {
       } as Response)
       .mockResolvedValueOnce({ ok: true, json: async () => ({ tree: { sha: 't1' } }) } as Response)
       .mockResolvedValueOnce({ ok: false } as Response) // blob fail
-    await expect(
-      commitTree('tok', 'msg', [{ path: 'img.webp', base64Content: 'abc' }]),
-    ).rejects.toThrow('Blob-Erstellung fehlgeschlagen')
+    await expect(commitTree('msg', [{ path: 'img.webp', base64Content: 'abc' }])).rejects.toThrow(
+      'Blob-Erstellung fehlgeschlagen',
+    )
   })
 
   it('throws when tree creation fails', async () => {
@@ -808,7 +804,7 @@ describe('commitTree', () => {
       } as Response)
       .mockResolvedValueOnce({ ok: true, json: async () => ({ tree: { sha: 't1' } }) } as Response)
       .mockResolvedValueOnce({ ok: false } as Response) // tree fail
-    await expect(commitTree('tok', 'msg', [{ path: 'f.json', content: '{}' }])).rejects.toThrow(
+    await expect(commitTree('msg', [{ path: 'f.json', content: '{}' }])).rejects.toThrow(
       'Tree-Erstellung fehlgeschlagen',
     )
   })
@@ -822,7 +818,7 @@ describe('commitTree', () => {
       .mockResolvedValueOnce({ ok: true, json: async () => ({ tree: { sha: 't1' } }) } as Response)
       .mockResolvedValueOnce({ ok: true, json: async () => ({ sha: 'newtree' }) } as Response)
       .mockResolvedValueOnce({ ok: false } as Response) // commit fail
-    await expect(commitTree('tok', 'msg', [{ path: 'f.json', content: '{}' }])).rejects.toThrow(
+    await expect(commitTree('msg', [{ path: 'f.json', content: '{}' }])).rejects.toThrow(
       'Commit-Erstellung fehlgeschlagen',
     )
   })
@@ -837,7 +833,7 @@ describe('commitTree', () => {
       .mockResolvedValueOnce({ ok: true, json: async () => ({ sha: 'newtree' }) } as Response)
       .mockResolvedValueOnce({ ok: true, json: async () => ({ sha: 'newcommit' }) } as Response)
       .mockResolvedValueOnce({ ok: false } as Response) // update ref fail
-    await expect(commitTree('tok', 'msg', [{ path: 'f.json', content: '{}' }])).rejects.toThrow(
+    await expect(commitTree('msg', [{ path: 'f.json', content: '{}' }])).rejects.toThrow(
       'Branch-Update fehlgeschlagen',
     )
   })
@@ -851,14 +847,14 @@ describe('listDirectory', () => {
       ok: true,
       json: async () => [{ name: 'f.pdf', sha: 'abc' }],
     } as Response)
-    const result = await listDirectory('tok', 'dir')
+    const result = await listDirectory('dir')
     expect(result).toHaveLength(1)
     expect(result[0].name).toBe('f.pdf')
   })
 
   it('returns empty array on failure', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({ ok: false } as Response)
-    expect(await listDirectory('tok', 'dir')).toEqual([])
+    expect(await listDirectory('dir')).toEqual([])
   })
 
   it('returns empty array when response is not an array', async () => {
@@ -866,7 +862,7 @@ describe('listDirectory', () => {
       ok: true,
       json: async () => ({ message: 'not an array' }),
     } as Response)
-    expect(await listDirectory('tok', 'dir')).toEqual([])
+    expect(await listDirectory('dir')).toEqual([])
   })
 })
 
@@ -875,7 +871,7 @@ describe('getFileContent', () => {
 
   it('returns null on failure', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({ ok: false } as Response)
-    expect(await getFileContent('tok', 'file.json')).toBeNull()
+    expect(await getFileContent('file.json')).toBeNull()
   })
 
   it('decodes base64 content', async () => {
@@ -885,7 +881,7 @@ describe('getFileContent', () => {
       ok: true,
       json: async () => ({ content: b64 }),
     } as Response)
-    const result = await getFileContent('tok', 'file.json')
+    const result = await getFileContent('file.json')
     expect(result).toEqual({ key: 'val' })
   })
 })

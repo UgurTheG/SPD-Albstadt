@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
 import { signState, serializeCookie, STATE_COOKIE } from './cookies'
+import { rateLimit, getClientIP } from './rateLimit'
 
 /**
  * GET /api/auth/start
@@ -9,6 +10,13 @@ import { signState, serializeCookie, STATE_COOKIE } from './cookies'
  * and redirects the user to GitHub's OAuth authorize endpoint.
  */
 export default function handler(_req: VercelRequest, res: VercelResponse) {
+  // Rate limit: 5 login attempts per IP per minute
+  const ip = getClientIP(_req.headers as Record<string, string | string[] | undefined>)
+  if (!rateLimit(ip, 5, 60_000)) {
+    res.status(429).json({ error: 'too_many_requests' })
+    return
+  }
+
   const clientId = process.env.VITE_GITHUB_CLIENT_ID
   const redirectUri = process.env.OAUTH_REDIRECT_URI
   if (!clientId || !redirectUri) {

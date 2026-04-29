@@ -59,7 +59,7 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     undoStacks: {},
     redoStacks: {},
     publishing: false,
-    token: 'test-token',
+    authenticated: true,
     tokenExpiresAt: 0,
     user: { login: 'testuser', avatar_url: '' },
     loginError: '',
@@ -1336,7 +1336,7 @@ describe('LoginScreen — hash error path', () => {
       writable: true,
       value: { ...window.location, hash: '#error=access_denied&error_description=Not%20allowed' },
     })
-    resetStore({ token: null, user: null })
+    resetStore({ authenticated: false, user: null })
     const { container } = render(
       <MemoryRouter>
         <LoginScreen />
@@ -1771,7 +1771,7 @@ describe('github.ts — commitTree branch coverage', () => {
     const { commitTree } = await import('../../admin/lib/github')
     vi.mocked(commitTree).mockResolvedValue({})
     // Just verify we can call it
-    await commitTree('token', 'msg', [{ path: 'test.json', content: '{}' }])
+    await commitTree('msg', [{ path: 'test.json', content: '{}' }])
     expect(commitTree).toHaveBeenCalled()
   })
 })

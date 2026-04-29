@@ -14,14 +14,6 @@ const REPO_OWNER = 'UgurTheG'
 const REPO_NAME = 'SPD-Albstadt'
 const BRANCH = 'main'
 
-function headers(token: string) {
-  return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
-}
-
-function apiBase() {
-  return `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`
-}
-
 /** Encode a UTF-8 string to base64 safely (handles all Unicode). */
 function utf8ToBase64(str: string): string {
   const bytes = new TextEncoder().encode(str)
@@ -33,17 +25,36 @@ function utf8ToBase64(str: string): string {
 // Cache of known SHAs from recent commits, avoids stale GitHub API cache
 const shaCache = new Map<string, string>()
 
-export async function validateToken(token: string) {
-  const res = await fetch('https://api.github.com/user', {
-    headers: headers(token),
-    cache: 'no-store',
+// ─── Proxy helper ──────────────────────────────────────────────────────────────
+
+/**
+ * Send a GitHub API request through the server-side proxy.
+ * The access token is attached server-side from the HttpOnly cookie —
+ * it never appears in client-side JavaScript.
+ */
+async function ghFetch(method: string, path: string, body?: unknown): Promise<Response> {
+  return fetch('/api/github', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ method, path, ...(body !== undefined ? { body } : {}) }),
   })
+}
+
+function repoBase() {
+  return `/repos/${REPO_OWNER}/${REPO_NAME}`
+}
+
+// ─── Public API (token-free) ───────────────────────────────────────────────────
+
+export async function validateToken() {
+  const res = await ghFetch('GET', '/user')
   if (!res.ok) {
     if (res.status === 401 || res.status === 403) throw new AuthError('Token ungültig', res.status)
     throw new Error(`GitHub API Fehler (${res.status})`)
   }
   const user = await res.json()
-  const repoRes = await fetch(`${apiBase()}`, { headers: headers(token), cache: 'no-store' })
+  const repoRes = await ghFetch('GET', repoBase())
   if (!repoRes.ok) {
     if (repoRes.status === 401 || repoRes.status === 403 || repoRes.status === 404)
       throw new AuthError('Kein Zugriff auf das Repository', repoRes.status)
@@ -52,21 +63,12 @@ export async function validateToken(token: string) {
   return user as { login: string; avatar_url: string }
 }
 
-export async function commitFile(
-  token: string,
-  filePath: string,
-  content: string,
-  message: string,
-) {
-  const h = headers(token)
+export async function commitFile(filePath: string, content: string, message: string) {
   let sha: string | undefined = shaCache.get(filePath)
   if (!sha) {
-    const existing = await fetch(
-      `${apiBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`,
-      {
-        headers: { ...h, 'If-None-Match': '' },
-        cache: 'no-store',
-      },
+    const existing = await ghFetch(
+      'GET',
+      `${repoBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`,
     )
     if (existing.ok) sha = (await existing.json()).sha
   }
@@ -76,11 +78,7 @@ export async function commitFile(
     branch: BRANCH,
   }
   if (sha) body.sha = sha
-  const res = await fetch(`${apiBase()}/contents/${filePath}`, {
-    method: 'PUT',
-    headers: h,
-    body: JSON.stringify(body),
-  })
+  const res = await ghFetch('PUT', `${repoBase()}/contents/${filePath}`, body)
   if (!res.ok) {
     const err = await res.json()
     throw new Error(err.message || 'Fehler beim Speichern')
@@ -90,26 +88,16 @@ export async function commitFile(
   return result
 }
 
-export async function commitBinaryFile(
-  token: string,
-  filePath: string,
-  base64Content: string,
-  message: string,
-) {
-  const h = headers(token)
-  const existing = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`, {
-    headers: { ...h, 'If-None-Match': '' },
-    cache: 'no-store',
-  })
+export async function commitBinaryFile(filePath: string, base64Content: string, message: string) {
+  const existing = await ghFetch(
+    'GET',
+    `${repoBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`,
+  )
   let sha: string | undefined
   if (existing.ok) sha = (await existing.json()).sha
   const body: Record<string, unknown> = { message, content: base64Content, branch: BRANCH }
   if (sha) body.sha = sha
-  const res = await fetch(`${apiBase()}/contents/${filePath}`, {
-    method: 'PUT',
-    headers: h,
-    body: JSON.stringify(body),
-  })
+  const res = await ghFetch('PUT', `${repoBase()}/contents/${filePath}`, body)
   if (!res.ok) {
     const err = await res.json()
     throw new Error(err.message || 'Fehler beim Hochladen')
@@ -117,19 +105,14 @@ export async function commitBinaryFile(
   return res.json()
 }
 
-export async function deleteFile(token: string, filePath: string, message: string) {
-  const h = headers(token)
-  const existing = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`, {
-    headers: { ...h, 'If-None-Match': '' },
-    cache: 'no-store',
-  })
+export async function deleteFile(filePath: string, message: string) {
+  const existing = await ghFetch(
+    'GET',
+    `${repoBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`,
+  )
   if (!existing.ok) return
   const { sha } = await existing.json()
-  await fetch(`${apiBase()}/contents/${filePath}`, {
-    method: 'DELETE',
-    headers: h,
-    body: JSON.stringify({ message, sha, branch: BRANCH }),
-  })
+  await ghFetch('DELETE', `${repoBase()}/contents/${filePath}`, { message, sha, branch: BRANCH })
 }
 
 export interface TreeFileChange {
@@ -143,25 +126,18 @@ export interface TreeFileChange {
  * Create a single commit with multiple file changes using the Git Trees API.
  * This replaces multiple individual commits with one atomic commit.
  */
-export async function commitTree(token: string, message: string, changes: TreeFileChange[]) {
+export async function commitTree(message: string, changes: TreeFileChange[]) {
   if (changes.length === 0) return
-  const h = headers(token)
-  const base = apiBase()
+  const base = repoBase()
 
   // 1. Get the latest commit SHA on the branch
-  const refRes = await fetch(`${base}/git/ref/heads/${BRANCH}?t=${Date.now()}`, {
-    headers: { ...h, 'If-None-Match': '' },
-    cache: 'no-store',
-  })
+  const refRes = await ghFetch('GET', `${base}/git/ref/heads/${BRANCH}?t=${Date.now()}`)
   if (!refRes.ok) throw new Error('Branch nicht gefunden')
   const refData = await refRes.json()
   const latestCommitSha: string = refData.object.sha
 
   // 2. Get the tree SHA of that commit
-  const commitRes = await fetch(`${base}/git/commits/${latestCommitSha}`, {
-    headers: h,
-    cache: 'no-store',
-  })
+  const commitRes = await ghFetch('GET', `${base}/git/commits/${latestCommitSha}`)
   if (!commitRes.ok) throw new Error('Commit nicht gefunden')
   const commitData = await commitRes.json()
   const baseTreeSha: string = commitData.tree.sha
@@ -170,10 +146,9 @@ export async function commitTree(token: string, message: string, changes: TreeFi
   const binaryChanges = changes.filter(c => !c.delete && c.base64Content)
   const blobShas = await Promise.all(
     binaryChanges.map(async change => {
-      const blobRes = await fetch(`${base}/git/blobs`, {
-        method: 'POST',
-        headers: h,
-        body: JSON.stringify({ content: change.base64Content, encoding: 'base64' }),
+      const blobRes = await ghFetch('POST', `${base}/git/blobs`, {
+        content: change.base64Content,
+        encoding: 'base64',
       })
       if (!blobRes.ok) throw new Error(`Blob-Erstellung fehlgeschlagen für ${change.path}`)
       const blobData = await blobRes.json()
@@ -200,59 +175,46 @@ export async function commitTree(token: string, message: string, changes: TreeFi
   }
 
   // 4. Create new tree
-  const treeRes = await fetch(`${base}/git/trees`, {
-    method: 'POST',
-    headers: h,
-    body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries }),
+  const treeRes = await ghFetch('POST', `${base}/git/trees`, {
+    base_tree: baseTreeSha,
+    tree: treeEntries,
   })
   if (!treeRes.ok) throw new Error('Tree-Erstellung fehlgeschlagen')
   const treeData = await treeRes.json()
 
   // 5. Create commit
-  const newCommitRes = await fetch(`${base}/git/commits`, {
-    method: 'POST',
-    headers: h,
-    body: JSON.stringify({
-      message,
-      tree: treeData.sha,
-      parents: [latestCommitSha],
-    }),
+  const newCommitRes = await ghFetch('POST', `${base}/git/commits`, {
+    message,
+    tree: treeData.sha,
+    parents: [latestCommitSha],
   })
   if (!newCommitRes.ok) throw new Error('Commit-Erstellung fehlgeschlagen')
   const newCommitData = await newCommitRes.json()
 
   // 6. Update branch reference
-  const updateRefRes = await fetch(`${base}/git/refs/heads/${BRANCH}`, {
-    method: 'PATCH',
-    headers: h,
-    body: JSON.stringify({ sha: newCommitData.sha }),
+  const updateRefRes = await ghFetch('PATCH', `${base}/git/refs/heads/${BRANCH}`, {
+    sha: newCommitData.sha,
   })
   if (!updateRefRes.ok) throw new Error('Branch-Update fehlgeschlagen')
 
   return newCommitData
 }
 
-export async function listDirectory(token: string, dirPath: string) {
-  const res = await fetch(`${apiBase()}/contents/${dirPath}?ref=${BRANCH}&t=${Date.now()}`, {
-    headers: {
-      ...headers(token),
-      'If-None-Match': '',
-    },
-    cache: 'no-store',
-  })
+export async function listDirectory(dirPath: string) {
+  const res = await ghFetch(
+    'GET',
+    `${repoBase()}/contents/${dirPath}?ref=${BRANCH}&t=${Date.now()}`,
+  )
   if (!res.ok) return []
   const data = await res.json()
   return Array.isArray(data) ? (data as { name: string; sha: string }[]) : []
 }
 
-export async function getFileContent(token: string, filePath: string) {
-  const res = await fetch(`${apiBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`, {
-    headers: {
-      ...headers(token),
-      'If-None-Match': '',
-    },
-    cache: 'no-store',
-  })
+export async function getFileContent(filePath: string) {
+  const res = await ghFetch(
+    'GET',
+    `${repoBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`,
+  )
   if (!res.ok) return null
   const data = await res.json()
   // Decode base64 → bytes → UTF-8 string (atob alone breaks on multi-byte chars like ä/ö/ü/ß)
