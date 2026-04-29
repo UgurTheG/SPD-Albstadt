@@ -35,4 +35,3 @@ jobs:
           uploadArtifacts: true
           temporaryPublicStorage: true
           configPath: .github/lighthouse/lighthouserc.json
-

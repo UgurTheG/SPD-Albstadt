@@ -54,4 +54,3 @@ jobs:
             echo "::error::Total gzipped JS bundle exceeds 500 kB ($total_gz_kb kB)"
             exit 1
           fi
-

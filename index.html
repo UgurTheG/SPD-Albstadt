@@ -11,7 +11,10 @@
     <script>
       ;(function () {
         var s = localStorage.getItem('spd-darkmode')
-        if (s === 'true' || (s === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (
+          s === 'true' ||
+          (s === null && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        ) {
           document.documentElement.classList.add('dark')
         }
       })()
@@ -116,7 +119,10 @@
           removeElfsightUI()
         }
         function stop() {
-          if (observer) { observer.disconnect(); observer = null }
+          if (observer) {
+            observer.disconnect()
+            observer = null
+          }
         }
         function check() {
           if (location.pathname === '/aktuelles') start()
@@ -138,12 +144,23 @@
   </head>
   <body>
     <noscript>
-      <div style="padding:2rem;max-width:640px;margin:0 auto;font-family:system-ui,sans-serif;line-height:1.6">
-        <h1 style="color:#E3000F;margin-bottom:0.5rem">SPD Albstadt</h1>
-        <p>Sozialdemokratische Partei Deutschlands, Ortsverein Albstadt – Für eine gerechte Stadtpolitik.</p>
+      <div
+        style="
+          padding: 2rem;
+          max-width: 640px;
+          margin: 0 auto;
+          font-family: system-ui, sans-serif;
+          line-height: 1.6;
+        "
+      >
+        <h1 style="color: #e3000f; margin-bottom: 0.5rem">SPD Albstadt</h1>
+        <p>
+          Sozialdemokratische Partei Deutschlands, Ortsverein Albstadt – Für eine gerechte
+          Stadtpolitik.
+        </p>
         <p>Bitte aktivieren Sie JavaScript, um diese Seite vollständig zu nutzen.</p>
         <nav>
-          <ul style="list-style:none;padding:0">
+          <ul style="list-style: none; padding: 0">
             <li><a href="/">Startseite</a></li>
             <li><a href="/aktuelles">Aktuelles</a></li>
             <li><a href="/partei">Partei</a></li>
@@ -155,7 +172,10 @@
             <li><a href="/impressum">Impressum</a></li>
           </ul>
         </nav>
-        <p>Kontakt: <a href="mailto:info@spd-albstadt.de">info@spd-albstadt.de</a> | Stadtgarten 1, 72458 Albstadt</p>
+        <p>
+          Kontakt: <a href="mailto:info@spd-albstadt.de">info@spd-albstadt.de</a> | Stadtgarten 1,
+          72458 Albstadt
+        </p>
       </div>
     </noscript>
     <div id="root"></div>
