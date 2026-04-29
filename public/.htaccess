@@ -1,0 +1,46 @@
+# ─── SPA fallback for Apache (Hostinger) ────────────────────────────────────
+# Rewrite all non-file requests to index.html so React Router handles routing.
+# On Vercel this file is ignored — vercel.json handles rewrites instead.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # If the request is for an existing file or directory, serve it directly
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+
+  # Don't rewrite requests for known static asset extensions
+  RewriteCond %{REQUEST_URI} !\.(js|css|png|jpg|jpeg|webp|svg|ico|gif|pdf|woff2?|ttf|eot|map|json|txt|xml)$ [NC]
+
+  # Rewrite everything else to index.html
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# ─── Caching ─────────────────────────────────────────────────────────────────
+
+# No cache for JSON data files (keep content fresh)
+<IfModule mod_headers.c>
+  <FilesMatch "\.json$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+  </FilesMatch>
+</IfModule>
+
+# No cache for the admin SPA shell
+<IfModule mod_headers.c>
+  <If "%{REQUEST_URI} =~ m#^/admin#">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </If>
+</IfModule>
+
+# ─── CORS for ICS proxy (when frontend calls Vercel API cross-origin) ────────
+# Not strictly needed on the static host, but keeps headers consistent.
+
+# ─── Compression ──────────────────────────────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
