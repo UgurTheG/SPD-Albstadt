@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from './vercel.d.ts'
-import { parseCookies, isAllowedOrigin, ACCESS_TOKEN_COOKIE } from './auth/cookies'
+import { parseCookies, isAllowedOrigin, ACCESS_TOKEN_COOKIE } from './auth/cookies.js'
 
 /**
  * POST /api/github

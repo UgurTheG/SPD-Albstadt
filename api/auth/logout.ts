@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
-import { clearAuthCookies, isAllowedOrigin } from './cookies'
+import { clearAuthCookies, isAllowedOrigin } from './cookies.js'
 
 /**
  * POST /api/auth/logout

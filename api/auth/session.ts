@@ -1,5 +1,10 @@
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
-import { parseCookies, isAllowedOrigin, ACCESS_TOKEN_COOKIE, TOKEN_EXPIRES_COOKIE } from './cookies'
+import {
+  parseCookies,
+  isAllowedOrigin,
+  ACCESS_TOKEN_COOKIE,
+  TOKEN_EXPIRES_COOKIE,
+} from './cookies.js'
 
 /**
  * GET /api/auth/session

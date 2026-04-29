@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
-import { signState, serializeCookie, STATE_COOKIE } from './cookies'
-import { rateLimit, getClientIP } from './rateLimit'
+import { signState, serializeCookie, STATE_COOKIE } from './cookies.js'
+import { rateLimit, getClientIP } from './rateLimit.js'
 
 /**
  * GET /api/auth/start

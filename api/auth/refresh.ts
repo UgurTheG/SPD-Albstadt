@@ -6,8 +6,8 @@ import {
   isAllowedOrigin,
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
-} from './cookies'
-import { rateLimit, getClientIP } from './rateLimit'
+} from './cookies.js'
+import { rateLimit, getClientIP } from './rateLimit.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')

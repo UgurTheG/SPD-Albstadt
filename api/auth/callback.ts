@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
-import { parseCookies, verifyState, makeAuthCookies, clearCookie, STATE_COOKIE } from './cookies'
-import { rateLimit, getClientIP } from './rateLimit'
+import { parseCookies, verifyState, makeAuthCookies, clearCookie, STATE_COOKIE } from './cookies.js'
+import { rateLimit, getClientIP } from './rateLimit.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
