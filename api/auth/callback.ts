@@ -35,6 +35,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return redirect('auth=error&msg=invalid_state')
   }
 
+  // Bail early if the signing secret is unavailable (prevents unhandled throw from verifyState)
+  if (!process.env.STATE_SIGNING_SECRET && !process.env.GITHUB_CLIENT_SECRET) {
+    res.setHeader('Set-Cookie', clearStateCookie)
+    return redirect('auth=error&msg=server_misconfigured')
+  }
+
   const expectedState = verifyState(signedState)
   if (!expectedState || expectedState !== state) {
     res.setHeader('Set-Cookie', clearStateCookie)

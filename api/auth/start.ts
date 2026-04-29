@@ -20,7 +20,8 @@ export default function handler(_req: VercelRequest, res: VercelResponse) {
 
   const clientId = process.env.VITE_GITHUB_CLIENT_ID
   const redirectUri = process.env.OAUTH_REDIRECT_URI
-  if (!clientId || !redirectUri) {
+  const hasSigningSecret = !!(process.env.STATE_SIGNING_SECRET || process.env.GITHUB_CLIENT_SECRET)
+  if (!clientId || !redirectUri || !hasSigningSecret) {
     res.status(500).json({ error: 'server_misconfigured' })
     return
   }
