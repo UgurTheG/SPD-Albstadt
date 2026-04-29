@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
 import { clearAuthCookies, isAllowedOrigin, parseCookies, ACCESS_TOKEN_COOKIE } from './cookies.js'
+import { rateLimit, getClientIP } from './rateLimit.js'
 
 /**
  * POST /api/auth/logout
@@ -9,6 +10,12 @@ import { clearAuthCookies, isAllowedOrigin, parseCookies, ACCESS_TOKEN_COOKIE } 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'method_not_allowed' })
+  }
+
+  // Rate limit: 10 logout attempts per IP per minute
+  const ip = getClientIP(req.headers as Record<string, string | string[] | undefined>)
+  if (!rateLimit(ip, 10, 60_000)) {
+    return res.status(429).json({ error: 'too_many_requests' })
   }
 
   // Guard against cross-origin CSRF logout.

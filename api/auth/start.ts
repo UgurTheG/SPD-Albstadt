@@ -1,6 +1,6 @@
-import { randomBytes, createHash } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
-import { signState, serializeCookie, STATE_COOKIE, PKCE_COOKIE } from './cookies.js'
+import { signState, serializeCookie, STATE_COOKIE } from './cookies.js'
 import { rateLimit, getClientIP } from './rateLimit.js'
 
 /**
@@ -30,19 +30,10 @@ export default function handler(_req: VercelRequest, res: VercelResponse) {
   const state = randomBytes(16).toString('hex')
   const signed = signState(state)
 
-  // Generate PKCE code_verifier and S256 code_challenge
-  const codeVerifier = randomBytes(32).toString('base64url')
-  const codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url')
-
-  // Set state + PKCE cookies (short-lived, 10 minutes)
+  // Set state cookie (short-lived, 10 minutes)
   res.setHeader('Set-Cookie', [
     serializeCookie(STATE_COOKIE, {
       value: signed,
-      maxAge: 600,
-      path: '/api/auth',
-    }),
-    serializeCookie(PKCE_COOKIE, {
-      value: codeVerifier,
       maxAge: 600,
       path: '/api/auth',
     }),
@@ -54,8 +45,6 @@ export default function handler(_req: VercelRequest, res: VercelResponse) {
     client_id: clientId,
     redirect_uri: redirectUri,
     state,
-    code_challenge: codeChallenge,
-    code_challenge_method: 'S256',
   })
 
   res.setHeader('Location', `https://github.com/login/oauth/authorize?${params}`)
