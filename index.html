@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
+    <!-- Preconnect to external origins -->
+    <link rel="preconnect" href="https://static.elfsight.com" crossorigin />
+
+    <!-- Dark-mode FOUC prevention (runs synchronously before paint) -->
+    <script>
+      ;(function () {
+        var s = localStorage.getItem('spd-darkmode')
+        if (s === 'true' || (s === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark')
+        }
+      })()
+    </script>
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -23,6 +36,7 @@
     />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://www.spd-albstadt.de/" />
+    <link rel="alternate" hreflang="de" href="https://www.spd-albstadt.de/" />
 
     <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
     <meta property="og:type" content="website" />
@@ -84,9 +98,10 @@
       }
     </script>
 
-    <!-- Elfsight branding removal (script itself is loaded lazily on /aktuelles) -->
+    <!-- Elfsight branding removal (only active on /aktuelles where the widget loads) -->
     <script>
       ;(function () {
+        var observer
         function removeElfsightUI() {
           document
             .querySelectorAll(
@@ -96,13 +111,39 @@
               el.remove()
             })
         }
-        const observer = new MutationObserver(removeElfsightUI)
-        observer.observe(document.documentElement, { childList: true, subtree: true })
-        removeElfsightUI()
+        function start() {
+          if (observer) return
+          observer = new MutationObserver(removeElfsightUI)
+          observer.observe(document.documentElement, { childList: true, subtree: true })
+          removeElfsightUI()
+        }
+        function stop() {
+          if (observer) { observer.disconnect(); observer = null }
+        }
+        function check() {
+          if (location.pathname === '/aktuelles') start()
+          else stop()
+        }
+        check()
+        window.addEventListener('popstate', check)
+        // Patch pushState/replaceState for SPA navigation detection
+        ;['pushState', 'replaceState'].forEach(function (m) {
+          var orig = history[m]
+          history[m] = function () {
+            var result = orig.apply(this, arguments)
+            check()
+            return result
+          }
+        })
       })()
     </script>
   </head>
   <body>
+    <noscript>
+      <p style="padding:2rem;text-align:center;font-family:system-ui,sans-serif">
+        Bitte aktivieren Sie JavaScript, um diese Seite zu nutzen.
+      </p>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

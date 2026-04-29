@@ -25,7 +25,7 @@ function parseCookies(header: string | undefined): Record<string, string> {
   if (!header) return cookies
   for (const pair of header.split(';')) {
     const [rawName, ...rest] = pair.split('=')
-    const name = rawName.trim()
+    const name = rawName?.trim()
     if (!name) continue
     cookies[name] = decodeURIComponent(rest.join('=').trim())
   }

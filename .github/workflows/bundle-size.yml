@@ -1,0 +1,57 @@
+name: Bundle Size
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: bundle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bundle-size:
+    name: Check Bundle Size
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build PR
+        run: npm run build
+
+      - name: Measure PR bundle size
+        run: |
+          echo "## 📦 Bundle Size Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Size | Gzipped |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|---------|" >> $GITHUB_STEP_SUMMARY
+          for f in dist/assets/*.js; do
+            size=$(wc -c < "$f" | xargs)
+            gzip_size=$(gzip -c "$f" | wc -c | xargs)
+            name=$(basename "$f")
+            size_kb=$(echo "scale=1; $size/1024" | bc)
+            gzip_kb=$(echo "scale=1; $gzip_size/1024" | bc)
+            echo "| \`$name\` | ${size_kb} kB | ${gzip_kb} kB |" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          total=$(find dist/assets -name '*.js' -exec cat {} + | wc -c | xargs)
+          total_kb=$(echo "scale=1; $total/1024" | bc)
+          total_gz=$(find dist/assets -name '*.js' -exec cat {} + | gzip -c | wc -c | xargs)
+          total_gz_kb=$(echo "scale=1; $total_gz/1024" | bc)
+          echo "**Total JS:** ${total_kb} kB (${total_gz_kb} kB gzipped)" >> $GITHUB_STEP_SUMMARY
+          # Fail if total gzipped JS exceeds 500 kB
+          if [ "$total_gz" -gt 512000 ]; then
+            echo "::error::Total gzipped JS bundle exceeds 500 kB ($total_gz_kb kB)"
+            exit 1
+          fi
+

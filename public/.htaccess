@@ -20,7 +20,23 @@
   RewriteRule ^ index.html [L]
 </IfModule>
 
+# ─── Security Headers ─────────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.elfsight.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self'; frame-src https://static.elfsight.com;"
+</IfModule>
+
 # ─── Caching ─────────────────────────────────────────────────────────────────
+
+# Long-term cache for hashed build assets (immutable)
+<IfModule mod_headers.c>
+  <FilesMatch "\.[a-f0-9]{8,}\.(js|css|woff2?)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
 
 # No cache for JSON data files (keep content fresh)
 <IfModule mod_headers.c>

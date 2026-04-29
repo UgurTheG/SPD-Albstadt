@@ -22,7 +22,10 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl shadow-lg shadow-black/5 dark:shadow-black/30">
+    <nav
+      aria-label="Hauptnavigation"
+      className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl shadow-lg shadow-black/5 dark:shadow-black/30"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: logo + optional back button */}
@@ -84,6 +87,7 @@ export default function Navbar() {
                   <button
                     key={item.id}
                     onClick={() => handleNav(item.id)}
+                    aria-current={activePage === item.id ? 'page' : undefined}
                     className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                       activePage === item.id
                         ? 'text-spd-red bg-spd-red/5'
@@ -117,7 +121,8 @@ export default function Navbar() {
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="md:hidden p-2.5 rounded-xl transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                aria-label="Menü öffnen"
+                aria-label={menuOpen ? 'Menü schließen' : 'Menü öffnen'}
+                aria-expanded={menuOpen}
               >
                 {menuOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
@@ -136,12 +141,13 @@ export default function Navbar() {
             transition={{ duration: 0.25, ease: 'easeInOut' }}
             className="md:hidden overflow-hidden bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t border-gray-100 dark:border-gray-800"
           >
-            <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1">
+            <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1" role="menu">
               {!isHome && (
                 <motion.button
                   initial={{ opacity: 0, x: -16 }}
                   animate={{ opacity: 1, x: 0 }}
                   onClick={() => handleNav('home')}
+                  role="menuitem"
                   className="text-left flex items-center gap-2 font-medium py-3 px-4 rounded-xl text-gray-500 dark:text-gray-400 hover:text-spd-red hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                 >
                   <ChevronLeft size={15} />
@@ -155,6 +161,8 @@ export default function Navbar() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
                   onClick={() => handleNav(item.id)}
+                  role="menuitem"
+                  aria-current={activePage === item.id ? 'page' : undefined}
                   className={`text-left font-medium py-3 px-4 rounded-xl transition-colors ${
                     activePage === item.id
                       ? 'text-spd-red bg-spd-red/5'

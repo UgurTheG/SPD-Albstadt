@@ -21,7 +21,7 @@ export default defineConfig({
     setupFiles: ['./src/__tests__/setup.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/admin/**', 'src/components/**', 'src/utils/**'],
+      include: ['src/admin/**', 'src/components/**', 'src/utils/**', 'src/hooks/**'],
       exclude: ['src/**/__tests__/**', 'src/**/*.test.*', 'src/admin/components/CropOverlay.tsx'],
     },
   },

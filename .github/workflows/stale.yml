@@ -1,0 +1,40 @@
+name: Stale Issues & PRs
+
+on:
+  schedule:
+    # Run daily at 03:00 UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Close Stale Issues & PRs
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/stale@v9
+        with:
+          stale-issue-message: >
+            Dieses Issue ist seit 60 Tagen inaktiv. Es wird in 14 Tagen
+            automatisch geschlossen, falls keine weitere Aktivität erfolgt.
+          stale-pr-message: >
+            Dieser Pull Request ist seit 30 Tagen inaktiv. Er wird in 14 Tagen
+            automatisch geschlossen, falls keine weitere Aktivität erfolgt.
+          close-issue-message: >
+            Dieses Issue wurde wegen Inaktivität geschlossen.
+            Bei Bedarf kann es jederzeit wieder geöffnet werden.
+          close-pr-message: >
+            Dieser Pull Request wurde wegen Inaktivität geschlossen.
+          days-before-issue-stale: 60
+          days-before-pr-stale: 30
+          days-before-issue-close: 14
+          days-before-pr-close: 14
+          stale-issue-label: stale
+          stale-pr-label: stale
+          exempt-issue-labels: pinned,security,bug
+          exempt-pr-labels: pinned,security
+

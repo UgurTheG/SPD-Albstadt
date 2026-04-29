@@ -54,6 +54,19 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+      {/* Skip to content — visible only on keyboard focus */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:bg-spd-red focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"
+      >
+        Zum Inhalt springen
+      </a>
+
+      {/* Aria-live region for screen-reader route announcements */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {PAGE_TITLES[location.pathname] ?? PAGE_TITLES['/']}
+      </div>
+
       {isHome ? (
         <button
           onClick={toggleDarkMode}
@@ -66,45 +79,47 @@ export default function App() {
         <Navbar />
       )}
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0, y: direction > 0 ? 36 : -28 }}
-          animate={{ opacity: 1, y: 0, transition: { duration: 0.46, ease: 'easeOut' } }}
-          exit={{
-            opacity: 0,
-            y: direction > 0 ? -24 : 36,
-            transition: { duration: 0.26, ease: 'easeIn' },
-          }}
-          className="relative min-h-screen flex flex-col"
-        >
-          <ErrorBoundary>
-            <Suspense fallback={<LoadingSpinner className="min-h-[60vh]" />}>
-              <Routes location={location}>
-                <Route
-                  path="/"
-                  element={
-                    <PageLayout>
-                      <Hero />
-                    </PageLayout>
-                  }
-                />
-                {ROUTES.map(route => (
+      <main id="main-content">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: direction > 0 ? 36 : -28 }}
+            animate={{ opacity: 1, y: 0, transition: { duration: 0.46, ease: 'easeOut' } }}
+            exit={{
+              opacity: 0,
+              y: direction > 0 ? -24 : 36,
+              transition: { duration: 0.26, ease: 'easeIn' },
+            }}
+            className="relative min-h-screen flex flex-col"
+          >
+            <ErrorBoundary>
+              <Suspense fallback={<LoadingSpinner className="min-h-[60vh]" />}>
+                <Routes location={location}>
                   <Route
-                    key={route.path}
-                    path={route.path}
-                    element={<PageLayout>{route.element}</PageLayout>}
+                    path="/"
+                    element={
+                      <PageLayout>
+                        <Hero />
+                      </PageLayout>
+                    }
                   />
-                ))}
-                <Route
-                  path={CATCH_ALL_ROUTE.path}
-                  element={<PageLayout>{CATCH_ALL_ROUTE.element}</PageLayout>}
-                />
-              </Routes>
-            </Suspense>
-          </ErrorBoundary>
-        </motion.div>
-      </AnimatePresence>
+                  {ROUTES.map(route => (
+                    <Route
+                      key={route.path}
+                      path={route.path}
+                      element={<PageLayout>{route.element}</PageLayout>}
+                    />
+                  ))}
+                  <Route
+                    path={CATCH_ALL_ROUTE.path}
+                    element={<PageLayout>{CATCH_ALL_ROUTE.element}</PageLayout>}
+                  />
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
+          </motion.div>
+        </AnimatePresence>
+      </main>
 
       {/* Scroll to top */}
       <AnimatePresence>

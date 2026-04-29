@@ -40,6 +40,8 @@ export default function Hero() {
         <svg
           className="absolute inset-0 w-full h-full opacity-[0.05]"
           xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          role="presentation"
         >
           <defs>
             <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -108,7 +110,7 @@ export default function Hero() {
               whileHover={{ scale: 1.06, backgroundColor: 'rgba(255,255,255,0.22)' }}
               whileTap={{ scale: 0.96 }}
               onClick={() => navigateTo(item.id)}
-              className="bg-white/12 backdrop-blur-sm border border-white/25 text-white font-medium px-5 py-2.5 rounded-full text-sm transition-all cursor-pointer hover:border-white/50 hover:shadow-lg"
+              className="bg-white/12 backdrop-blur-sm border border-white/25 text-white font-medium px-5 py-2.5 min-h-[44px] min-w-[44px] rounded-full text-sm transition-all cursor-pointer hover:border-white/50 hover:shadow-lg"
             >
               {item.label}
             </motion.button>
@@ -137,7 +139,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.9, ease: 'easeOut' }}
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.97 }}
-          className="inline-flex items-center gap-2 bg-white/12 backdrop-blur-sm border border-white/25 text-white font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-white/20 hover:border-white/40 transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 bg-white/12 backdrop-blur-sm border border-white/25 text-white font-semibold px-6 py-2.5 min-h-[44px] rounded-full text-sm hover:bg-white/20 hover:border-white/40 transition-all cursor-pointer"
         >
           <UserPlus size={15} strokeWidth={2.5} />
           Mitglied werden
@@ -151,7 +153,7 @@ export default function Hero() {
         onClick={() => navigateTo('aktuelles')}
         animate={{ y: [0, 10, 0] }}
         transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/50 hover:text-white transition-colors z-20 cursor-pointer"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/50 hover:text-white transition-colors z-20 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
         aria-label="Zu Aktuelles"
       >
         <ChevronDown size={34} strokeWidth={1.5} />
