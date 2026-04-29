@@ -46,11 +46,6 @@ export default function handler(_req: VercelRequest, res: VercelResponse) {
     client_id: clientId,
     redirect_uri: redirectUri,
     state,
-    // 'repo' is the minimum scope required to access a private repository via a
-    // GitHub OAuth App.  Fine-grained per-repo permissions are only available with
-    // GitHub Apps (not OAuth Apps).  The server-side proxy in /api/github mitigates
-    // the broad scope by restricting calls to this one repo and the /user endpoint.
-    scope: 'read:user repo',
   })
 
   res.setHeader('Location', `https://github.com/login/oauth/authorize?${params}`)
