@@ -18,66 +18,32 @@ function GitHubMark({ size = 18 }: { size?: number }) {
 
 const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID as string | undefined
 
-function generateState(): string {
-  const arr = new Uint8Array(16)
-  crypto.getRandomValues(arr)
-  return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('')
-}
-
 export default function LoginScreen() {
   const { login, loginError, loginLoading, loginAuthStatus } = useAdminStore()
   const navigate = useNavigate()
 
-  // Parse the OAuth callback hash once at mount — avoids setState inside an effect
-  const [{ hashError, hashToken, hashExpiresAt, hashRefreshToken, hashRefreshTokenExpiresAt }] =
-    useState(() => {
-      const empty = {
-        hashError: '',
-        hashToken: null as string | null,
-        hashExpiresAt: 0,
-        hashRefreshToken: '',
-        hashRefreshTokenExpiresAt: 0,
-      }
-      const hash = window.location.hash.slice(1)
-      if (!hash) return empty
-      const params = new URLSearchParams(hash)
-      window.history.replaceState(null, '', window.location.pathname + window.location.search)
-      const error = params.get('error')
-      if (error)
-        return { ...empty, hashError: `Anmeldung fehlgeschlagen: ${decodeURIComponent(error)}` }
-      const token = params.get('token')
-      const returnedState = params.get('state')
-      if (!token) return empty
-      const savedState = sessionStorage.getItem('oauth_state')
-      sessionStorage.removeItem('oauth_state')
-      if (!returnedState || !savedState || returnedState !== savedState) {
-        return { ...empty, hashError: 'Sicherheitsfehler: Ungültige Anfrage.' }
-      }
-      const expiresIn = params.get('expires_in')
-      const refreshToken = params.get('refresh_token')
-      const refreshTokenExpiresIn = params.get('refresh_token_expires_in')
-      return {
-        hashError: '',
-        hashToken: decodeURIComponent(token),
-        hashExpiresAt: expiresIn ? Date.now() + parseInt(expiresIn, 10) * 1000 : 0,
-        hashRefreshToken: refreshToken ? decodeURIComponent(refreshToken) : '',
-        hashRefreshTokenExpiresAt: refreshTokenExpiresIn
-          ? Date.now() + parseInt(refreshTokenExpiresIn, 10) * 1000
-          : 0,
-      }
-    })
+  // Parse the OAuth callback query params once at mount
+  const [authResult] = useState(() => {
+    const params = new URLSearchParams(window.location.search)
+    const auth = params.get('auth')
+    if (!auth) return { error: '', ok: false }
+    // Clean URL immediately
+    window.history.replaceState(null, '', window.location.pathname)
+    if (auth === 'error') {
+      const msg = params.get('msg') || 'unknown_error'
+      return { error: `Anmeldung fehlgeschlagen: ${decodeURIComponent(msg)}`, ok: false }
+    }
+    return { error: '', ok: auth === 'ok' }
+  })
 
-  const [oauthError, setOauthError] = useState(hashError)
+  const [oauthError, setOauthError] = useState(authResult.error)
 
+  // When callback succeeded, fetch session from server and login
   useEffect(() => {
-    if (hashToken)
-      login({
-        token: hashToken,
-        expiresAt: hashExpiresAt,
-        refreshToken: hashRefreshToken,
-        refreshTokenExpiresAt: hashRefreshTokenExpiresAt,
-      })
-  }, [hashToken, login, hashExpiresAt, hashRefreshToken, hashRefreshTokenExpiresAt])
+    if (authResult.ok) {
+      login()
+    }
+  }, [authResult.ok, login])
 
   useEffect(() => {
     if (loginAuthStatus === 401 || loginAuthStatus === 403 || loginAuthStatus === 404) {
@@ -88,14 +54,8 @@ export default function LoginScreen() {
   const handleGitHubLogin = () => {
     if (!CLIENT_ID) return
     setOauthError('')
-    const state = generateState()
-    sessionStorage.setItem('oauth_state', state)
-    const params = new URLSearchParams({
-      client_id: CLIENT_ID,
-      redirect_uri: `${window.location.origin}/api/auth/callback`,
-      state,
-    })
-    window.location.href = `https://github.com/login/oauth/authorize?${params}`
+    // Redirect to server-side start endpoint which handles state, scope & cookies
+    window.location.href = '/api/auth/start'
   }
 
   const errorMsg = loginError || oauthError
@@ -164,7 +124,7 @@ export default function LoginScreen() {
 
           <div className="mt-6 flex items-center gap-2 justify-center text-[10px] text-gray-400">
             <Shield size={10} />
-            <span>OAuth 2.0 · Nur GitHub API · Lokal gespeichert</span>
+            <span>OAuth 2.0 · Nur GitHub API · HttpOnly Cookies</span>
           </div>
         </div>
       </motion.div>

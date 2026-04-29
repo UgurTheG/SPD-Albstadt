@@ -45,8 +45,6 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     publishing: false,
     token: 'test-token',
     tokenExpiresAt: 0,
-    refreshToken: '',
-    refreshTokenExpiresAt: 0,
     user: { login: 'testuser', avatar_url: '' },
     loginError: '',
     loginLoading: false,
@@ -84,12 +82,17 @@ describe('authSlice — logout', () => {
     expect(useAdminStore.getState().pendingUploads).toHaveLength(0)
   })
 
-  it('removes auth keys from localStorage', () => {
-    localStorage.setItem('spd-admin-token', 'tok')
-    localStorage.setItem('spd-admin-refresh', 'ref')
+  it('calls logout endpoint to clear auth cookies', () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ok: true }),
+    } as Response)
     useAdminStore.getState().logout()
-    expect(localStorage.getItem('spd-admin-token')).toBeNull()
-    expect(localStorage.getItem('spd-admin-refresh')).toBeNull()
+    expect(fetchSpy).toHaveBeenCalledWith(
+      '/api/auth/logout',
+      expect.objectContaining({ method: 'POST' }),
+    )
+    fetchSpy.mockRestore()
   })
 })
 
@@ -111,55 +114,18 @@ describe('authSlice — ensureFreshToken', () => {
     expect(tok).toBe('fresh-token')
   })
 
-  it('logs out and throws when token is expired and there is no refresh token', async () => {
+  it('logs out and throws when token is expired and refresh endpoint fails', async () => {
     const pastExp = Date.now() - 1000
-    resetStore({ token: 'old-token', tokenExpiresAt: pastExp, refreshToken: '' })
-    await expect(useAdminStore.getState().ensureFreshToken()).rejects.toThrow()
-    expect(useAdminStore.getState().token).toBe('')
-  })
-
-  it('logs out and throws when refresh token itself is expired', async () => {
-    const pastExp = Date.now() - 1000
-    resetStore({
-      token: 'old-token',
-      tokenExpiresAt: pastExp,
-      refreshToken: 'ref-tok',
-      refreshTokenExpiresAt: pastExp,
-    })
-    await expect(useAdminStore.getState().ensureFreshToken()).rejects.toThrow()
-    expect(useAdminStore.getState().token).toBe('')
-  })
-
-  it('exchanges refresh token for a new access token', async () => {
-    const pastExp = Date.now() - 1000
-    const futureRefreshExp = Date.now() + 60 * 60 * 1000
-
-    // Stub the fetch call made by ensureFreshToken
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        access_token: 'new-access-token',
-        expires_in: 3600,
-        refresh_token: 'new-refresh-token',
-        refresh_token_expires_in: 86400,
-      }),
+      ok: false,
     } as Response)
-
-    resetStore({
-      token: 'expired-token',
-      tokenExpiresAt: pastExp,
-      refreshToken: 'valid-refresh',
-      refreshTokenExpiresAt: futureRefreshExp,
-    })
-
-    const tok = await useAdminStore.getState().ensureFreshToken()
-    expect(tok).toBe('new-access-token')
-    expect(useAdminStore.getState().token).toBe('new-access-token')
-
+    resetStore({ token: 'old-token', tokenExpiresAt: pastExp })
+    await expect(useAdminStore.getState().ensureFreshToken()).rejects.toThrow()
+    expect(useAdminStore.getState().token).toBe('')
     fetchSpy.mockRestore()
   })
 
-  it('logs out and throws when the refresh endpoint returns non-ok', async () => {
+  it('logs out and throws when refresh endpoint returns non-ok', async () => {
     const pastExp = Date.now() - 1000
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
       ok: false,
@@ -168,12 +134,34 @@ describe('authSlice — ensureFreshToken', () => {
     resetStore({
       token: 'expired-token',
       tokenExpiresAt: pastExp,
-      refreshToken: 'valid-refresh',
-      refreshTokenExpiresAt: 0,
     })
 
     await expect(useAdminStore.getState().ensureFreshToken()).rejects.toThrow()
     expect(useAdminStore.getState().token).toBe('')
+
+    fetchSpy.mockRestore()
+  })
+
+  it('exchanges refresh token for a new access token via server', async () => {
+    const pastExp = Date.now() - 1000
+
+    // Stub the fetch call made by ensureFreshToken
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        access_token: 'new-access-token',
+        expires_in: 3600,
+      }),
+    } as Response)
+
+    resetStore({
+      token: 'expired-token',
+      tokenExpiresAt: pastExp,
+    })
+
+    const tok = await useAdminStore.getState().ensureFreshToken()
+    expect(tok).toBe('new-access-token')
+    expect(useAdminStore.getState().token).toBe('new-access-token')
 
     fetchSpy.mockRestore()
   })
@@ -188,33 +176,55 @@ describe('authSlice — login', () => {
   })
 
   it('sets user and token on success', async () => {
-    await useAdminStore.getState().login({ token: 'gh_token' })
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ access_token: 'gh_token', expires_at: 0 }),
+    } as Response)
+    await useAdminStore.getState().login()
     const { user, token } = useAdminStore.getState()
     expect(token).toBe('gh_token')
     expect(user?.login).toBe('testuser')
+    fetchSpy.mockRestore()
   })
 
-  it('persists the token in localStorage', async () => {
-    await useAdminStore.getState().login({ token: 'gh_token' })
-    expect(localStorage.getItem('spd-admin-token')).toBe('gh_token')
+  it('sets loginError when session endpoint returns no token', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ access_token: null, expires_at: 0 }),
+    } as Response)
+    await useAdminStore.getState().login()
+    const { loginError, loginLoading } = useAdminStore.getState()
+    expect(loginError).toBeTruthy()
+    expect(loginLoading).toBe(false)
+    fetchSpy.mockRestore()
   })
 
   it('sets loginError and clears loginLoading on AuthError', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ access_token: 'bad_token', expires_at: 0 }),
+    } as Response)
     vi.mocked(validateToken).mockRejectedValueOnce(
       new (AuthError as new (msg: string, status: number) => Error)('Bad credentials', 401),
     )
-    await useAdminStore.getState().login({ token: 'bad_token' })
+    await useAdminStore.getState().login()
     const { loginError, loginLoading, loginAuthStatus } = useAdminStore.getState()
     expect(loginError).toBeTruthy()
     expect(loginLoading).toBe(false)
     expect(loginAuthStatus).toBe(401)
+    fetchSpy.mockRestore()
   })
 
   it('sets loginError on generic error', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ access_token: 'bad_token', expires_at: 0 }),
+    } as Response)
     vi.mocked(validateToken).mockRejectedValueOnce(new Error('Network error'))
-    await useAdminStore.getState().login({ token: 'bad_token' })
+    await useAdminStore.getState().login()
     expect(useAdminStore.getState().loginError).toBe('Network error')
     expect(useAdminStore.getState().loginLoading).toBe(false)
+    fetchSpy.mockRestore()
   })
 })
 
@@ -226,33 +236,53 @@ describe('authSlice — tryAutoLogin', () => {
     vi.mocked(validateToken).mockResolvedValue({ login: 'testuser', avatar_url: '' })
   })
 
-  it('is a no-op when there is no token', async () => {
+  it('is a no-op when session endpoint returns no token', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ access_token: null, expires_at: 0 }),
+    } as Response)
     resetStore({ token: '', user: null })
     await useAdminStore.getState().tryAutoLogin()
     expect(useAdminStore.getState().user).toBeNull()
+    fetchSpy.mockRestore()
   })
 
-  it('sets user when token is valid', async () => {
-    resetStore({ token: 'valid', tokenExpiresAt: 0, user: null })
+  it('sets user when session returns valid token', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ access_token: 'valid', expires_at: 0 }),
+    } as Response)
+    resetStore({ token: '', tokenExpiresAt: 0, user: null })
     await useAdminStore.getState().tryAutoLogin()
     expect(useAdminStore.getState().user?.login).toBe('testuser')
+    fetchSpy.mockRestore()
   })
 
   it('calls logout when validateToken throws AuthError', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ access_token: 'invalid', expires_at: 0 }),
+    } as Response)
     vi.mocked(validateToken).mockRejectedValueOnce(
       new (AuthError as new (msg: string, status: number) => Error)('Unauthorized', 401),
     )
-    resetStore({ token: 'invalid', tokenExpiresAt: 0, user: null })
+    resetStore({ token: '', tokenExpiresAt: 0, user: null })
     await useAdminStore.getState().tryAutoLogin()
     expect(useAdminStore.getState().token).toBe('')
+    fetchSpy.mockRestore()
   })
 
   it('keeps session when validateToken throws a network error (non-AuthError)', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ access_token: 'valid', expires_at: 0 }),
+    } as Response)
     vi.mocked(validateToken).mockRejectedValueOnce(new TypeError('Failed to fetch'))
-    resetStore({ token: 'valid', tokenExpiresAt: 0, user: null })
+    resetStore({ token: '', tokenExpiresAt: 0, user: null })
     await useAdminStore.getState().tryAutoLogin()
-    // Token must NOT be cleared for transient network failures
+    // Token was set from session, and should remain because it's a network error
     expect(useAdminStore.getState().token).toBe('valid')
+    fetchSpy.mockRestore()
   })
 })
 

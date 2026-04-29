@@ -59,8 +59,6 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     publishing: false,
     token: 'test-token',
     tokenExpiresAt: 0,
-    refreshToken: '',
-    refreshTokenExpiresAt: 0,
     user: { login: 'testuser', avatar_url: '' },
     loginError: '',
     loginLoading: false,

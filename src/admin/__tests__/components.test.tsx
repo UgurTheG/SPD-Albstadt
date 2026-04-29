@@ -56,8 +56,6 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     publishing: false,
     token: 'test-token',
     tokenExpiresAt: 0,
-    refreshToken: '',
-    refreshTokenExpiresAt: 0,
     user: { login: 'testuser', avatar_url: '' },
     loginError: '',
     loginLoading: false,
@@ -71,14 +69,33 @@ function resetStore(overrides: Record<string, unknown> = {}) {
 }
 
 // ─── Helper: stub URL API ─────────────────────────────────────────────────────
+const realFetch = globalThis.fetch
 beforeEach(() => {
   vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test')
   vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
   vi.spyOn(window, 'open').mockImplementation(() => null)
+  // Stub fetch to handle auth session/logout endpoints used by tryAutoLogin/logout
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockImplementation((url: string | URL | Request, init?: RequestInit) => {
+      const u = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url
+      if (u.includes('/api/auth/session')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: null, expires_at: 0 }),
+        } as Response)
+      }
+      if (u.includes('/api/auth/logout')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: true }) } as Response)
+      }
+      return realFetch(url, init)
+    }),
+  )
   resetStore()
 })
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 // ─── AdminWarningBanner ───────────────────────────────────────────────────────
@@ -1074,16 +1091,17 @@ describe('LoginScreen', () => {
     expect(container.textContent).toContain('Daten-Editor')
   })
 
-  it('renders with hash error', () => {
-    // Set a hash error in the URL
-    window.location.hash = '#error=access_denied'
+  it('renders with auth error query param', () => {
+    window.history.pushState({}, '', '/admin?auth=error&msg=access_denied')
+    const replaceStateSpy = vi.spyOn(window.history, 'replaceState')
     const { container } = render(
       <MemoryRouter>
         <LoginScreen />
       </MemoryRouter>,
     )
-    window.location.hash = ''
     expect(container.firstChild).toBeTruthy()
+    window.history.pushState({}, '', '/admin')
+    replaceStateSpy.mockRestore()
   })
 })
 

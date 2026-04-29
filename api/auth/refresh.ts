@@ -1,6 +1,42 @@
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
+import {
+  parseCookies,
+  makeAuthCookies,
+  clearAuthCookies,
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  REFRESH_EXPIRES_COOKIE,
+} from './cookies'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  res.setHeader('Cache-Control', 'no-store')
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'method_not_allowed' })
+  }
+
+  // Guard against cross-origin abuse of the refresh endpoint
+  const origin = req.headers['origin'] ?? req.headers['referer'] ?? ''
+  const allowed = [
+    ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+    ...(process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`]
+      : []),
+    'http://localhost:5173',
+  ]
+  if (!allowed.some(a => origin.startsWith(a))) {
+    return res.status(403).json({ error: 'forbidden_origin' })
+  }
+
+  // Require a valid (possibly expired) access token as an authorization check
+  const authHeader = req.headers['authorization'] ?? ''
+  const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+  const cookies = parseCookies(req.headers.cookie)
+  const cookieToken = cookies[ACCESS_TOKEN_COOKIE] ?? ''
+  if (!bearerToken || bearerToken !== cookieToken) {
+    return res.status(401).json({ error: 'unauthorized' })
+  }
+
   const clientId = process.env.VITE_GITHUB_CLIENT_ID
   const clientSecret = process.env.GITHUB_CLIENT_SECRET
 
@@ -8,13 +44,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'server_misconfigured' })
   }
 
-  const q = req.query
-  const refreshToken =
-    req.body?.refresh_token ??
-    (Array.isArray(q.refresh_token) ? q.refresh_token[0] : q.refresh_token)
+  // Read refresh token from HttpOnly cookie
+  const refreshToken = cookies[REFRESH_TOKEN_COOKIE]
+  const refreshTokenExpiresAt = Number(cookies[REFRESH_EXPIRES_COOKIE] || 0)
 
   if (!refreshToken) {
     return res.status(400).json({ error: 'missing_refresh_token' })
+  }
+
+  if (refreshTokenExpiresAt && Date.now() > refreshTokenExpiresAt) {
+    res.setHeader('Set-Cookie', clearAuthCookies())
+    return res.status(401).json({ error: 'refresh_token_expired' })
   }
 
   try {
@@ -43,12 +83,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(401).json({ error: msg })
     }
 
-    res.setHeader('Content-Type', 'application/json')
+    // Update auth cookies
+    res.setHeader(
+      'Set-Cookie',
+      makeAuthCookies({
+        access_token: data.access_token!,
+        expires_in: data.expires_in,
+        refresh_token: data.refresh_token,
+        refresh_token_expires_in: data.refresh_token_expires_in,
+      }),
+    )
+
     return res.status(200).json({
       access_token: data.access_token,
       expires_in: data.expires_in,
-      refresh_token: data.refresh_token,
-      refresh_token_expires_in: data.refresh_token_expires_in,
     })
   } catch {
     return res.status(500).json({ error: 'refresh_failed' })

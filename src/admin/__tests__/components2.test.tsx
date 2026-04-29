@@ -60,8 +60,6 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     publishing: false,
     token: 'test-token',
     tokenExpiresAt: 0,
-    refreshToken: '',
-    refreshTokenExpiresAt: 0,
     user: { login: 'testuser', avatar_url: '' },
     loginError: '',
     loginLoading: false,
@@ -74,14 +72,33 @@ function resetStore(overrides: Record<string, unknown> = {}) {
   })
 }
 
+const realFetch = globalThis.fetch
 beforeEach(() => {
   vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test')
   vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
   vi.spyOn(window, 'open').mockImplementation(() => null)
+  // Stub fetch to handle auth session/logout endpoints used by tryAutoLogin/logout
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockImplementation((url: string | URL | Request, init?: RequestInit) => {
+      const u = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url
+      if (u.includes('/api/auth/session')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ access_token: null, expires_at: 0 }),
+        } as Response)
+      }
+      if (u.includes('/api/auth/logout')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: true }) } as Response)
+      }
+      return realFetch(url, init)
+    }),
+  )
   resetStore()
 })
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 // ─── diff.ts — setAtPath null creation (lines 616-619) ────────────────────────
@@ -230,21 +247,17 @@ describe('authSlice — ensureFreshToken token refresh without expires_in', () =
       ok: true,
       json: async () => ({
         access_token: 'new-token',
-        // No expires_in, no refresh_token, no refresh_token_expires_in
+        // No expires_in
       }),
     } as Response)
     resetStore({
       token: 'expired',
       tokenExpiresAt: pastExp,
-      refreshToken: 'valid-refresh',
-      refreshTokenExpiresAt: Date.now() + 100000,
     })
     const tok = await useAdminStore.getState().ensureFreshToken()
     expect(tok).toBe('new-token')
     // newExpiresAt should be 0 when no expires_in
     expect(useAdminStore.getState().tokenExpiresAt).toBe(0)
-    // newRefreshToken should fall back to existing refresh token
-    expect(useAdminStore.getState().refreshToken).toBe('valid-refresh')
     fetchSpy.mockRestore()
   })
 })
@@ -411,16 +424,15 @@ describe('OrphanModal — checkbox interaction and confirm', () => {
   })
 })
 
-// ─── LoginScreen — hash token, security error, loginAuthStatus redirect ───────
+// ─── LoginScreen — query param auth, loginAuthStatus redirect ─────────────────
 
 import LoginScreen from '../../admin/components/LoginScreen'
 
-describe('LoginScreen — hash parsing and auth flows', () => {
-  it('renders with valid hash token and matching state', async () => {
-    // Set up a hash with a token but mismatched state
-    window.location.hash =
-      '#token=testtoken&state=wrongstate&expires_in=3600&refresh_token=ref&refresh_token_expires_in=86400'
-    sessionStorage.setItem('oauth_state', 'rightstate') // mismatch
+describe('LoginScreen — query param auth and error flows', () => {
+  it('renders with auth=error query param and shows error message', async () => {
+    // Simulate the server redirecting with ?auth=error&msg=invalid_state
+    window.history.pushState({}, '', '/admin?auth=error&msg=invalid_state')
+    const replaceStateSpy = vi.spyOn(window.history, 'replaceState')
     const { container } = render(
       <MemoryRouter>
         <LoginScreen />
@@ -429,15 +441,19 @@ describe('LoginScreen — hash parsing and auth flows', () => {
     await act(async () => {
       await new Promise(r => setTimeout(r, 10))
     })
-    // Should show security error
-    expect(container.textContent).toContain('Sicherheitsfehler')
-    window.location.hash = ''
+    expect(container.textContent).toContain('Anmeldung fehlgeschlagen')
+    // Restore
+    window.history.pushState({}, '', '/admin')
+    replaceStateSpy.mockRestore()
   })
 
-  it('renders with valid hash token and correct state', async () => {
-    window.location.hash =
-      '#token=validtoken&state=correctstate&expires_in=3600&refresh_token=ref&refresh_token_expires_in=86400'
-    sessionStorage.setItem('oauth_state', 'correctstate') // match
+  it('renders with auth=ok query param and calls login', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ access_token: 'tok', expires_at: Date.now() + 3600000 }),
+    } as Response)
+    window.history.pushState({}, '', '/admin?auth=ok')
+    const replaceStateSpy = vi.spyOn(window.history, 'replaceState')
     const { container } = render(
       <MemoryRouter>
         <LoginScreen />
@@ -447,22 +463,9 @@ describe('LoginScreen — hash parsing and auth flows', () => {
       await new Promise(r => setTimeout(r, 10))
     })
     expect(container.firstChild).toBeTruthy()
-    window.location.hash = ''
-  })
-
-  it('renders with hash token but no state (returnedState is null)', async () => {
-    window.location.hash = '#token=validtoken'
-    sessionStorage.setItem('oauth_state', 'savedstate')
-    const { container } = render(
-      <MemoryRouter>
-        <LoginScreen />
-      </MemoryRouter>,
-    )
-    await act(async () => {
-      await new Promise(r => setTimeout(r, 10))
-    })
-    expect(container.textContent).toContain('Sicherheitsfehler')
-    window.location.hash = ''
+    fetchSpy.mockRestore()
+    window.history.pushState({}, '', '/admin')
+    replaceStateSpy.mockRestore()
   })
 
   it('shows loginError', () => {

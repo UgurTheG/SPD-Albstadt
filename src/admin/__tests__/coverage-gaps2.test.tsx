@@ -83,8 +83,6 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     publishing: false,
     token: 'test-token',
     tokenExpiresAt: Date.now() + 3600000,
-    refreshToken: '',
-    refreshTokenExpiresAt: 0,
     user: { login: 'testuser', avatar_url: '' },
     loginError: '',
     loginLoading: false,

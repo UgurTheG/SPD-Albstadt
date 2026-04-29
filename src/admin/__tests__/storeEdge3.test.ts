@@ -50,8 +50,6 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     publishing: false,
     token: 'test-token',
     tokenExpiresAt: 0,
-    refreshToken: '',
-    refreshTokenExpiresAt: 0,
     user: { login: 'testuser', avatar_url: '' },
     loginError: '',
     loginLoading: false,
@@ -86,12 +84,22 @@ describe('authSlice — tryAutoLogin ensureFreshToken throws', () => {
 
   it('catches ensureFreshToken throw and returns without user', async () => {
     const pastExp = Date.now() - 1000
-    resetStore({ token: 'expired', tokenExpiresAt: pastExp, refreshToken: '', user: null })
-    // ensureFreshToken will call logout() and throw — tryAutoLogin must catch and return
+    // Mock fetchSession to return an expired token, then ensureFreshToken's refresh call fails
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'expired', expires_at: pastExp }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+      } as Response)
+    resetStore({ token: '', tokenExpiresAt: 0, user: null })
     await useAdminStore.getState().tryAutoLogin()
-    // After logout, token should be cleared
+    // After failed refresh → logout, token should be cleared
     expect(useAdminStore.getState().token).toBe('')
     expect(useAdminStore.getState().user).toBeNull()
+    fetchSpy.mockRestore()
   })
 })
 
