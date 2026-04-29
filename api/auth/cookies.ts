@@ -12,7 +12,13 @@ export const STATE_COOKIE = 'spd_oauth_state'
 
 function getSecret(): string {
   // Prefer a dedicated signing secret; fall back to client secret for backwards compat
-  return process.env.STATE_SIGNING_SECRET || process.env.GITHUB_CLIENT_SECRET || ''
+  const secret = process.env.STATE_SIGNING_SECRET || process.env.GITHUB_CLIENT_SECRET
+  if (!secret) {
+    throw new Error(
+      'Missing STATE_SIGNING_SECRET or GITHUB_CLIENT_SECRET — cannot sign OAuth state',
+    )
+  }
+  return secret
 }
 
 export function signState(state: string): string {
@@ -38,13 +44,12 @@ export function verifyState(signed: string): string | null {
 // ─── Origin allowlist ────────────────────────────────────────────────────────
 
 function getAllowedOrigins(): string[] {
-  return [
-    ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
-    ...(process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`]
-      : []),
-    'http://localhost:5173',
-  ]
+  const origins: string[] = []
+  if (process.env.VERCEL_URL) origins.push(`https://${process.env.VERCEL_URL}`)
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL)
+    origins.push(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`)
+  if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:5173')
+  return origins
 }
 
 /**

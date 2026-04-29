@@ -34,6 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // ── Exchange code for tokens ─────────────────────────────────────────────────
   const clientId = process.env.VITE_GITHUB_CLIENT_ID
   const clientSecret = process.env.GITHUB_CLIENT_SECRET
+  const redirectUri = process.env.OAUTH_REDIRECT_URI
 
   if (!clientId || !clientSecret) {
     res.setHeader('Set-Cookie', clearStateCookie)
@@ -44,7 +45,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code }),
+      body: JSON.stringify({
+        client_id: clientId,
+        client_secret: clientSecret,
+        code,
+        ...(redirectUri ? { redirect_uri: redirectUri } : {}),
+      }),
     })
 
     const data = (await tokenRes.json()) as {
