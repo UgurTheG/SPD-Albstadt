@@ -4,6 +4,7 @@ import type { PendingUpload, TabConfig } from '../types'
 import type { ChangeEntry } from '../lib/diff'
 import { applyRevert } from '../lib/diff'
 import { collectImagePaths } from '../lib/images'
+import { getBranchSha } from '../lib/github'
 import { TABS } from '../config/tabs'
 import {
   lastUndoPush,
@@ -31,6 +32,9 @@ export interface EditorSlice {
   dataLoadErrors: string[]
   undoStacks: Record<string, unknown[]>
   redoStacks: Record<string, unknown[]>
+  /** The branch tip commit SHA at the time data was last loaded. Used to detect
+   *  concurrent edits by other users before attempting a publish. */
+  baseCommitSha: string
 
   // Computed
   dirtyTabs: () => Set<string>
@@ -63,6 +67,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
   dataLoadErrors: [],
   undoStacks: {},
   redoStacks: {},
+  baseCommitSha: '',
 
   dirtyTabs: () => {
     const { state: s, originalState: os, pendingUploads } = get()
@@ -102,8 +107,11 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
     const failedTabs: string[] = []
     // Admin must always see the latest data — bypass browser/CDN caches
     const bust = `t=${Date.now()}`
-    await Promise.all(
-      TABS.map(async tab => {
+
+    // Fetch the branch SHA and all tab data in parallel
+    const [branchSha] = await Promise.all([
+      getBranchSha().catch(() => ''),
+      ...TABS.map(async tab => {
         if (!tab.file) {
           newState[tab.key] = null
           return
@@ -125,7 +133,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
           failedTabs.push(tab.key)
         }
       }),
-    )
+    ])
     const original = JSON.parse(JSON.stringify(newState))
     // Restore any saved drafts from localStorage
     const merged = restoreDrafts(newState, original)
@@ -137,6 +145,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
         dataLoadErrors: failedTabs,
         undoStacks: {},
         redoStacks: {},
+        baseCommitSha: branchSha,
       })
     } catch {
       // Fallback: mark all file-backed tabs as failed rather than hanging forever

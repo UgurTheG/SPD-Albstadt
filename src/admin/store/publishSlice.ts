@@ -2,7 +2,7 @@ import type { StateCreator } from 'zustand'
 import type { AdminState } from './index'
 import type { PendingUpload, TabConfig } from '../types'
 import type { TreeFileChange } from '../lib/github'
-import { AuthError, commitTree } from '../lib/github'
+import { AuthError, ConflictError, commitTree } from '../lib/github'
 import { collectImagePaths } from '../lib/images'
 import { TABS } from '../config/tabs'
 import { persistPendingUploads } from './persistence'
@@ -21,7 +21,7 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
   publishing: false,
 
   publishTab: async (tabKey, orphansToDelete) => {
-    const { state: s, pendingUploads, publishing, dataLoadErrors } = get()
+    const { state: s, pendingUploads, publishing, dataLoadErrors, baseCommitSha } = get()
     if (publishing) return
     // Internal guard: never publish a tab whose data failed to load
     if (dataLoadErrors.includes(tabKey)) return
@@ -56,13 +56,20 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       const fileName = tab.file?.split('/').pop() ?? tab.key
       changes.push({ path: tab.ghPath, content: json })
 
-      await commitTree(`admin: ${fileName} aktualisiert`, changes)
+      const result = await commitTree(`admin: ${fileName} aktualisiert`, changes, baseCommitSha)
 
       get().resetOriginal(tabKey)
-      set({ pendingUploads: otherUploads })
+      set({ pendingUploads: otherUploads, baseCommitSha: result?.sha ?? baseCommitSha })
       persistPendingUploads(otherUploads)
       get().setStatus('Veröffentlicht! Seite wird in ~1 Min. aktualisiert.', 'success')
     } catch (e) {
+      if (e instanceof ConflictError) {
+        get().setStatus(
+          'Konflikt: Ein anderer Benutzer hat Änderungen veröffentlicht. Bitte die Seite neu laden und Ihre Änderungen erneut eintragen.',
+          'error',
+        )
+        return
+      }
       if (e instanceof AuthError) {
         get().logout()
         get().setStatus('Sitzung abgelaufen — bitte neu anmelden.', 'error')
@@ -75,7 +82,7 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
   },
 
   publishAll: async orphansToDelete => {
-    const { pendingUploads, publishing, dataLoadErrors } = get()
+    const { pendingUploads, publishing, dataLoadErrors, baseCommitSha } = get()
     if (publishing) return
 
     // Collect all changes BEFORE touching publishing state so an empty
@@ -122,15 +129,22 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       })
       const message = `admin: ${fileNames.join(', ')} aktualisiert`
 
-      await commitTree(message, changes)
+      const result = await commitTree(message, changes, baseCommitSha)
 
       for (const tabKey of dirtyKeys) {
         get().resetOriginal(tabKey)
       }
-      set({ pendingUploads: [] })
+      set({ pendingUploads: [], baseCommitSha: result?.sha ?? baseCommitSha })
       persistPendingUploads([])
       get().setStatus(`${dirtyKeys.length} Datei(en) veröffentlicht!`, 'success')
     } catch (e) {
+      if (e instanceof ConflictError) {
+        get().setStatus(
+          'Konflikt: Ein anderer Benutzer hat Änderungen veröffentlicht. Bitte die Seite neu laden und Ihre Änderungen erneut eintragen.',
+          'error',
+        )
+        return
+      }
       if (e instanceof AuthError) {
         get().logout()
         get().setStatus('Sitzung abgelaufen — bitte neu anmelden.', 'error')

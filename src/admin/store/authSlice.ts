@@ -130,6 +130,7 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
       pendingUploads: [],
       undoStacks: {},
       redoStacks: {},
+      baseCommitSha: '',
     })
   },
 

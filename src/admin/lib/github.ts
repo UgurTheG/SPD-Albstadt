@@ -10,6 +10,17 @@ export class AuthError extends Error {
   }
 }
 
+/**
+ * Thrown when another user has pushed changes to the branch since this session
+ * last loaded data. The caller should prompt the user to reload before retrying.
+ */
+export class ConflictError extends Error {
+  constructor(msg = 'Konflikt: Ein anderer Benutzer hat Änderungen veröffentlicht.') {
+    super(msg)
+    this.name = 'ConflictError'
+  }
+}
+
 const REPO_OWNER = 'UgurTheG'
 const REPO_NAME = 'SPD-Albstadt'
 const BRANCH = 'main'
@@ -125,10 +136,29 @@ export interface TreeFileChange {
 }
 
 /**
+ * Fetch the current tip commit SHA of the main branch.
+ * Used to record a "known base" at load time for conflict detection.
+ */
+export async function getBranchSha(): Promise<string> {
+  const res = await ghFetch('GET', `${repoBase()}/git/ref/heads/${BRANCH}?t=${Date.now()}`)
+  if (!res.ok) throw new Error('Branch nicht gefunden')
+  const data = await res.json()
+  return data.object.sha as string
+}
+
+/**
  * Create a single commit with multiple file changes using the Git Trees API.
  * This replaces multiple individual commits with one atomic commit.
+ *
+ * @param expectedBaseSha - If provided, the commit is rejected with ConflictError
+ *   when the branch tip has moved ahead of this SHA (i.e. another user published
+ *   in the meantime). Pass the SHA recorded during the last loadData() call.
  */
-export async function commitTree(message: string, changes: TreeFileChange[]) {
+export async function commitTree(
+  message: string,
+  changes: TreeFileChange[],
+  expectedBaseSha?: string,
+) {
   if (changes.length === 0) return
   const base = repoBase()
 
@@ -137,6 +167,11 @@ export async function commitTree(message: string, changes: TreeFileChange[]) {
   if (!refRes.ok) throw new Error('Branch nicht gefunden')
   const refData = await refRes.json()
   const latestCommitSha: string = refData.object.sha
+
+  // Conflict guard — fail fast before uploading blobs/trees
+  if (expectedBaseSha && latestCommitSha !== expectedBaseSha) {
+    throw new ConflictError()
+  }
 
   // 2. Get the tree SHA of that commit
   const commitRes = await ghFetch('GET', `${base}/git/commits/${latestCommitSha}`)
@@ -197,6 +232,8 @@ export async function commitTree(message: string, changes: TreeFileChange[]) {
   const updateRefRes = await ghFetch('PATCH', `${base}/git/refs/heads/${BRANCH}`, {
     sha: newCommitData.sha,
   })
+  // 422 means another commit landed between step 1 and now — surface as ConflictError
+  if (updateRefRes.status === 422) throw new ConflictError()
   if (!updateRefRes.ok) throw new Error('Branch-Update fehlgeschlagen')
 
   return newCommitData

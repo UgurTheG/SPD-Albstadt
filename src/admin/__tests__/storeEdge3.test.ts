@@ -19,8 +19,15 @@ vi.mock('../../admin/lib/github', () => {
       this.status = status
     }
   }
+  class ConflictError extends Error {
+    constructor(msg = 'Konflikt') {
+      super(msg)
+      this.name = 'ConflictError'
+    }
+  }
   return {
     AuthError,
+    ConflictError,
     commitTree: vi.fn().mockResolvedValue({}),
     validateToken: vi.fn().mockResolvedValue({ login: 'testuser', avatar_url: '' }),
     commitFile: vi.fn().mockResolvedValue({}),
@@ -28,6 +35,7 @@ vi.mock('../../admin/lib/github', () => {
     deleteFile: vi.fn().mockResolvedValue({}),
     getFileContent: vi.fn().mockResolvedValue(null),
     listDirectory: vi.fn().mockResolvedValue([]),
+    getBranchSha: vi.fn().mockResolvedValue('abc123'),
   }
 })
 
