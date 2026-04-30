@@ -110,8 +110,10 @@ export default function AdminApp() {
   const usersOnCurrentTab = presenceUsers.filter(
     u => u.activeTab === activeTab || u.dirtyTabs.includes(activeTab),
   )
-  // Users who have unsaved changes anywhere (used for stale-data banner attribution)
-  const recentPublishers = presenceUsers.map(u => u.login)
+  // Users who have no dirty tabs — they likely just published and reloaded.
+  // This gives a best-effort attribution for the StaleDataBanner; if nobody
+  // qualifies we leave the array empty and the banner says "Ein anderer Benutzer".
+  const recentPublishers = presenceUsers.filter(u => u.dirtyTabs.length === 0).map(u => u.login)
 
   const handlePublishAll = () => setShowPublishConfirm(true)
 

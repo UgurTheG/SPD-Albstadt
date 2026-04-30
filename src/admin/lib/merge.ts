@@ -70,8 +70,27 @@ function mergeValue(
     )
   }
 
-  // For arrays: if both sides changed them differently, record conflict
-  // (conservative — avoids unpredictable splice interactions)
+  // For arrays: attempt item-level merge when all items carry an "id" field.
+  // This handles the common case of two users independently adding/editing
+  // different items in the same array (e.g. two new Gemeinderäte).
+  if (
+    Array.isArray(original) &&
+    Array.isArray(ours) &&
+    Array.isArray(theirs) &&
+    arraysHaveIds(original) &&
+    arraysHaveIds(ours) &&
+    arraysHaveIds(theirs)
+  ) {
+    return mergeArraysById(
+      original as IdObject[],
+      ours as IdObject[],
+      theirs as IdObject[],
+      path,
+      conflicts,
+    )
+  }
+
+  // Conservative fallback for arrays without ids or other types
   conflicts.push({ path, label: pathLabel(path), ours, theirs })
   return theirs // default to their published version
 }
@@ -93,6 +112,70 @@ function mergeObjects(
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+type IdObject = Record<string, unknown> & { id: string | number }
+
+function arraysHaveIds(arr: unknown[]): arr is IdObject[] {
+  return arr.length === 0 || arr.every(item => isPlainObject(item) && 'id' in (item as object))
+}
+
+/**
+ * Merge two arrays whose items each carry a stable "id" field.
+ *
+ * Rules (per id):
+ *   - Only in ours    → keep (we added it)
+ *   - Only in theirs  → keep (they added it)
+ *   - In both, unchanged from original → keep original
+ *   - In both, only one side changed   → take changed side
+ *   - In both, both sides changed differently → deep-merge (recurse)
+ *   - In original but removed by one side → keep the deletion
+ *   - Ordering: preserve theirs' order, append ours-only items at the end
+ */
+function mergeArraysById(
+  original: IdObject[],
+  ours: IdObject[],
+  theirs: IdObject[],
+  path: (string | number)[],
+  conflicts: MergeConflict[],
+): IdObject[] {
+  const origById = new Map(original.map(item => [item.id, item]))
+  const oursById = new Map(ours.map(item => [item.id, item]))
+  const theirsById = new Map(theirs.map(item => [item.id, item]))
+
+  const result: IdObject[] = []
+  const handled = new Set<string | number>()
+
+  // Walk theirs' order first (they published — respect their ordering)
+  for (const theirItem of theirs) {
+    const id = theirItem.id
+    handled.add(id)
+    const orig = origById.get(id)
+    const ourItem = oursById.get(id)
+
+    if (!ourItem) {
+      // We deleted this item; theirs still has it.
+      // If we explicitly removed it (it was in original), keep deletion.
+      // If it was never in original (they added it), keep theirs'.
+      if (!orig) result.push(theirItem) // new item added by them
+      // else: we deleted it — omit (our delete wins)
+    } else {
+      // Both sides have it — recursively merge the object
+      const base = orig ?? ({} as IdObject)
+      const merged = mergeValue(base, ourItem, theirItem, [...path, String(id)], conflicts)
+      result.push(merged as IdObject)
+    }
+  }
+
+  // Append items that only we have (we added them, they didn't touch them)
+  for (const ourItem of ours) {
+    const id = ourItem.id
+    if (!handled.has(id)) {
+      result.push(ourItem)
+    }
+  }
+
+  return result
+}
 
 function deepEq(a: unknown, b: unknown): boolean {
   if (a === b) return true

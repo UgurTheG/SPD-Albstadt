@@ -22,10 +22,12 @@ export interface PresenceSlice {
   remoteSha: string
   /** Polling interval handle */
   _presenceTimer: ReturnType<typeof setInterval> | null
+  /** Currently active poll interval in ms (adapts based on presence) */
+  _presenceInterval: number
 
   /** Send our current state to the server; receive other users' states */
   reportPresence: () => Promise<void>
-  /** Start the 30-second polling loop (called once on login) */
+  /** Start the polling loop (called once on login) */
   startPresencePolling: () => void
   /** Stop polling (called on logout) */
   stopPresencePolling: () => void
@@ -33,7 +35,10 @@ export interface PresenceSlice {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const POLL_INTERVAL_MS = 30_000
+/** Slow interval (ms) used when no other users are active */
+const POLL_INTERVAL_IDLE_MS = 30_000
+/** Fast interval (ms) used when at least one other user is present */
+const POLL_INTERVAL_ACTIVE_MS = 10_000
 
 // ─── Slice creator ────────────────────────────────────────────────────────────
 
@@ -41,6 +46,7 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
   presenceUsers: [],
   remoteSha: '',
   _presenceTimer: null,
+  _presenceInterval: POLL_INTERVAL_IDLE_MS,
 
   reportPresence: async () => {
     const { user, activeTab, dirtyTabs } = get()
@@ -61,7 +67,23 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
       if (!res.ok) return
 
       const data = (await res.json()) as { users: PresenceUser[] }
-      set({ presenceUsers: data.users })
+      const newUsers = data.users
+      set({ presenceUsers: newUsers })
+
+      // Adapt polling speed based on whether other users are present.
+      // Switch between idle (30 s) and active (10 s) intervals without
+      // restarting the whole loop — just reschedule after checking.
+      const desired = newUsers.length > 0 ? POLL_INTERVAL_ACTIVE_MS : POLL_INTERVAL_IDLE_MS
+      const current = get()._presenceInterval
+      if (current !== desired) {
+        // Clear old timer and start a new one at the right frequency.
+        const oldTimer = get()._presenceTimer
+        if (oldTimer) clearInterval(oldTimer)
+        const timer = setInterval(() => {
+          void get().reportPresence()
+        }, desired)
+        set({ _presenceTimer: timer, _presenceInterval: desired })
+      }
     } catch {
       // Network error — silently ignore; presence is best-effort
     }
@@ -88,16 +110,21 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
 
     const timer = setInterval(() => {
       void get().reportPresence()
-    }, POLL_INTERVAL_MS)
+    }, POLL_INTERVAL_IDLE_MS)
 
-    set({ _presenceTimer: timer })
+    set({ _presenceTimer: timer, _presenceInterval: POLL_INTERVAL_IDLE_MS })
   },
 
   stopPresencePolling: () => {
     const { _presenceTimer, user } = get()
     if (_presenceTimer) {
       clearInterval(_presenceTimer)
-      set({ _presenceTimer: null, presenceUsers: [], remoteSha: '' })
+      set({
+        _presenceTimer: null,
+        _presenceInterval: POLL_INTERVAL_IDLE_MS,
+        presenceUsers: [],
+        remoteSha: '',
+      })
     }
     // Best-effort departure notification
     if (user) {
