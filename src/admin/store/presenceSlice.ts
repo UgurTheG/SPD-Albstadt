@@ -20,13 +20,20 @@ export interface PresenceSlice {
   presenceUsers: PresenceUser[]
   /** True when the remote branch SHA has advanced past our baseCommitSha */
   remoteSha: string
-  /** Polling interval handle */
+  /** Polling interval handle (POST heartbeat, always 30 s) */
   _presenceTimer: ReturnType<typeof setInterval> | null
-  /** Currently active poll interval in ms (adapts based on presence) */
+  /** @deprecated kept for compatibility — always POLL_INTERVAL_IDLE_MS now */
   _presenceInterval: number
+  /** Last presence-version received from the server */
+  _lastPresenceVersion: number
+  /** Fast version-check timer handle (500 ms, only while other users are present) */
+  _versionTimer: ReturnType<typeof setInterval> | null
 
   /** Send our current state to the server; receive other users' states */
   reportPresence: () => Promise<void>
+  /** Lightweight GET that checks if the server version has advanced; fetches
+   *  full presence only when something actually changed. */
+  checkPresenceVersion: () => Promise<void>
   /** Start the polling loop (called once on login) */
   startPresencePolling: () => void
   /** Stop polling (called on logout) */
@@ -35,12 +42,11 @@ export interface PresenceSlice {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-/** Slow interval (ms) used when no other users are active */
+/** Heartbeat interval (ms) — keeps our own presence record alive in KV */
 const POLL_INTERVAL_IDLE_MS = 30_000
-/** Fast interval (ms) used when at least one other user is present.
- *  3 s means a tab-switch heartbeat (fired instantly on the sender) is
- *  visible to all other users within ~3 s — near-instant in practice. */
-const POLL_INTERVAL_ACTIVE_MS = 3_000
+/** How often (ms) receivers check whether the server version has changed.
+ *  500 ms means a tab-switch from another user is visible within half a second. */
+const VERSION_POLL_MS = 500
 
 // Module-level storage for the visibility/focus listener cleanup.
 // Kept outside Zustand state to avoid mutating the store object directly,
@@ -55,6 +61,8 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
   remoteSha: '',
   _presenceTimer: null,
   _presenceInterval: POLL_INTERVAL_IDLE_MS,
+  _lastPresenceVersion: 0,
+  _versionTimer: null,
 
   reportPresence: async () => {
     const { user, activeTab, dirtyTabs } = get()
@@ -74,23 +82,20 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
       })
       if (!res.ok) return
 
-      const data = (await res.json()) as { users: PresenceUser[] }
+      const data = (await res.json()) as { version?: number; users: PresenceUser[] }
       const newUsers = data.users
-      set({ presenceUsers: newUsers })
+      const newVersion = data.version ?? get()._lastPresenceVersion
+      set({ presenceUsers: newUsers, _lastPresenceVersion: newVersion })
 
-      // Adapt polling speed based on whether other users are present.
-      // Switch between idle (30 s) and active (10 s) intervals without
-      // restarting the whole loop — just reschedule after checking.
-      const desired = newUsers.length > 0 ? POLL_INTERVAL_ACTIVE_MS : POLL_INTERVAL_IDLE_MS
-      const current = get()._presenceInterval
-      if (current !== desired) {
-        // Clear old timer and start a new one at the right frequency.
-        const oldTimer = get()._presenceTimer
-        if (oldTimer) clearInterval(oldTimer)
-        const timer = setInterval(() => {
-          void get().reportPresence()
-        }, desired)
-        set({ _presenceTimer: timer, _presenceInterval: desired })
+      // Start or stop the fast version-check timer based on whether other
+      // users are currently active. The POST heartbeat always stays at 30 s.
+      const { _versionTimer } = get()
+      if (newUsers.length > 0 && !_versionTimer) {
+        const timer = setInterval(() => void get().checkPresenceVersion(), VERSION_POLL_MS)
+        set({ _versionTimer: timer })
+      } else if (newUsers.length === 0 && _versionTimer) {
+        clearInterval(_versionTimer)
+        set({ _versionTimer: null })
       }
     } catch {
       // Network error — silently ignore; presence is best-effort
@@ -109,6 +114,45 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
     }
   },
 
+  checkPresenceVersion: async () => {
+    const { user, _lastPresenceVersion } = get()
+    if (!user) return
+
+    try {
+      const res = await fetch(`/api/admin-presence?since=${_lastPresenceVersion}`, {
+        credentials: 'include',
+      })
+      if (!res.ok) return
+
+      const data = (await res.json()) as
+        | { version: number; changed: false }
+        | { version: number; changed: true; users: PresenceUser[] }
+
+      if (!data.changed) {
+        // Nothing changed — update version in case server restarted with 0
+        if (data.version !== _lastPresenceVersion) {
+          set({ _lastPresenceVersion: data.version })
+        }
+        return
+      }
+
+      // Something changed — update presence and manage the version timer
+      const newUsers = data.users
+      set({ presenceUsers: newUsers, _lastPresenceVersion: data.version })
+
+      if (newUsers.length === 0) {
+        // All other users left — stop the fast timer
+        const timer = get()._versionTimer
+        if (timer) {
+          clearInterval(timer)
+          set({ _versionTimer: null })
+        }
+      }
+    } catch {
+      // Network error — silently ignore
+    }
+  },
+
   startPresencePolling: () => {
     const { _presenceTimer, reportPresence } = get()
     if (_presenceTimer) return // already running
@@ -116,6 +160,8 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
     // Report immediately on start
     void reportPresence()
 
+    // POST heartbeat every 30 s — keeps our KV entry alive and picks up
+    // any presence changes that the lightweight version check might have missed.
     const timer = setInterval(() => {
       void get().reportPresence()
     }, POLL_INTERVAL_IDLE_MS)
@@ -131,8 +177,6 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
     document.addEventListener('visibilitychange', onVisible)
     window.addEventListener('focus', onFocus)
 
-    // Store cleanup in the module-level variable so stopPresencePolling can
-    // remove the listeners without mutating Zustand state.
     _visibilityCleanup = () => {
       document.removeEventListener('visibilitychange', onVisible)
       window.removeEventListener('focus', onFocus)
@@ -140,20 +184,27 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
   },
 
   stopPresencePolling: () => {
-    const { _presenceTimer, user } = get()
+    const { _presenceTimer, _versionTimer, user } = get()
     if (_presenceTimer) {
       clearInterval(_presenceTimer)
-      // Remove visibility / focus listeners registered in startPresencePolling
       _visibilityCleanup?.()
       _visibilityCleanup = null
+    }
+    if (_versionTimer) {
+      clearInterval(_versionTimer)
+    }
+    if (_presenceTimer || _versionTimer) {
       set({
         _presenceTimer: null,
+        _versionTimer: null,
         _presenceInterval: POLL_INTERVAL_IDLE_MS,
+        _lastPresenceVersion: 0,
         presenceUsers: [],
         remoteSha: '',
       })
     }
-    // Best-effort departure notification
+    // Best-effort departure notification (explicit logout — page is still alive,
+    // so a regular fetch DELETE is reliable here).
     if (user) {
       void fetch('/api/admin-presence', {
         method: 'DELETE',

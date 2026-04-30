@@ -82,9 +82,13 @@ const KV_INDEX_TTL_S = TTL_S * 3
 // KV key prefix and index set for tracking active logins
 const KV_PREFIX = 'spd:presence:'
 const KV_INDEX = 'spd:presence:__index__'
+/** Monotonic version counter — incremented on every write so receivers can
+ *  detect changes with a single cheap GET instead of a full smembers+mget. */
+const KV_VERSION_KEY = 'spd:presence:version'
 
 // In-memory fallback (single-instance / local dev)
 const inMemory = new Map<string, PresenceUser>()
+let inMemoryVersion = 0
 
 function evictExpired() {
   const now = Date.now()
@@ -98,22 +102,23 @@ function isKvEnabled(): boolean {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
 }
 
-async function storageUpsert(user: PresenceUser): Promise<void> {
+async function storageUpsert(user: PresenceUser): Promise<number> {
   if (isKvEnabled()) {
     try {
       const { kv } = await import('@vercel/kv')
-      // Store each user as an individual key with its own TTL so expiry is
-      // automatic and per-user (no stale entries after cold-starts).
       await kv.set(`${KV_PREFIX}${user.login}`, user, { ex: TTL_S })
-      // Maintain an index set so we can list active users without a SCAN.
       await kv.sadd(KV_INDEX, user.login)
       await kv.expire(KV_INDEX, KV_INDEX_TTL_S)
-      return
+      const version = await kv.incr(KV_VERSION_KEY)
+      // Keep the version key alive as long as any user is active
+      await kv.expire(KV_VERSION_KEY, KV_INDEX_TTL_S)
+      return version
     } catch {
       // KV unavailable — fall through to in-memory
     }
   }
   inMemory.set(user.login, user)
+  return ++inMemoryVersion
 }
 
 async function storageRemove(login: string): Promise<void> {
@@ -122,12 +127,26 @@ async function storageRemove(login: string): Promise<void> {
       const { kv } = await import('@vercel/kv')
       await kv.del(`${KV_PREFIX}${login}`)
       await kv.srem(KV_INDEX, login)
+      await kv.incr(KV_VERSION_KEY)
       return
     } catch {
       // fall through
     }
   }
   inMemory.delete(login)
+  ++inMemoryVersion
+}
+
+async function storageGetVersion(): Promise<number> {
+  if (isKvEnabled()) {
+    try {
+      const { kv } = await import('@vercel/kv')
+      return (await kv.get<number>(KV_VERSION_KEY)) ?? 0
+    } catch {
+      // fall through
+    }
+  }
+  return inMemoryVersion
 }
 
 async function storageGetAll(): Promise<PresenceUser[]> {
@@ -164,10 +183,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // ── Rate limiting ──────────────────────────────────────────────────────────
-  // 120 requests / minute per IP — allows fast (3 s) polling for up to 40
-  // concurrent active sessions while still blocking runaway clients.
+  // 180 requests / minute per IP — allows 500 ms version-check polling for up
+  // to ~3 concurrent active sessions (3 users × 2 req/s = 6 req/s) while
+  // still blocking runaway clients.
   const ip = getClientIP(req.headers as Record<string, string | string[] | undefined>)
-  if (!rateLimit(ip, 120, 60_000)) {
+  if (!rateLimit(ip, 180, 60_000)) {
     return res.status(429).json({ error: 'rate_limited' })
   }
 
@@ -189,9 +209,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // ── GET ────────────────────────────────────────────────────────────────────
+  // Supports an optional `?since=<version>` query param for cheap version
+  // checks: if the version hasn't changed the response skips the full KV scan
+  // and returns `{ version, changed: false }` so callers can poll at 500 ms
+  // without the overhead of a full smembers+mget on every tick.
   if (req.method === 'GET') {
+    const since = req.query?.since as string | undefined
+    const version = await storageGetVersion()
+    if (since !== undefined && Number(since) === version) {
+      return res.status(200).json({ version, changed: false })
+    }
     const all = await storageGetAll()
-    return res.status(200).json({ users: all })
+    const others = all.filter(u => u.login !== verifiedLogin)
+    return res.status(200).json({ version, changed: true, users: others })
   }
 
   // ── POST ───────────────────────────────────────────────────────────────────
@@ -234,12 +264,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       lastSeen: Date.now(),
     }
 
-    await storageUpsert(user)
+    const version = await storageUpsert(user)
 
-    // Return everyone except the caller
+    // Return the new version + everyone except the caller so clients can
+    // detect changes in their version-check polling loop.
     const all = await storageGetAll()
     const others = all.filter(u => u.login !== verifiedLogin)
-    return res.status(200).json({ users: others })
+    return res.status(200).json({ version, users: others })
   }
 
   // ── DELETE ─────────────────────────────────────────────────────────────────
