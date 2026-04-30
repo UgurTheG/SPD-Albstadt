@@ -42,6 +42,12 @@ const POLL_INTERVAL_IDLE_MS = 30_000
  *  visible to all other users within ~3 s — near-instant in practice. */
 const POLL_INTERVAL_ACTIVE_MS = 3_000
 
+// Module-level storage for the visibility/focus listener cleanup.
+// Kept outside Zustand state to avoid mutating the store object directly,
+// which bypasses TypeScript types and risks losing the callback if the state
+// reference is replaced before stopPresencePolling runs.
+let _visibilityCleanup: (() => void) | null = null
+
 // ─── Slice creator ────────────────────────────────────────────────────────────
 
 export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice> = (set, get) => ({
@@ -125,13 +131,12 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
     document.addEventListener('visibilitychange', onVisible)
     window.addEventListener('focus', onFocus)
 
-    // Store cleanup callbacks so stopPresencePolling can remove them.
-    // We piggyback on _presenceTimer existing as the "running" sentinel.
-    ;(get() as unknown as { _presenceVisibilityCleanup?: () => void })._presenceVisibilityCleanup =
-      () => {
-        document.removeEventListener('visibilitychange', onVisible)
-        window.removeEventListener('focus', onFocus)
-      }
+    // Store cleanup in the module-level variable so stopPresencePolling can
+    // remove the listeners without mutating Zustand state.
+    _visibilityCleanup = () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onFocus)
+    }
   },
 
   stopPresencePolling: () => {
@@ -139,9 +144,8 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
     if (_presenceTimer) {
       clearInterval(_presenceTimer)
       // Remove visibility / focus listeners registered in startPresencePolling
-      const state = get() as unknown as { _presenceVisibilityCleanup?: () => void }
-      state._presenceVisibilityCleanup?.()
-      delete state._presenceVisibilityCleanup
+      _visibilityCleanup?.()
+      _visibilityCleanup = null
       set({
         _presenceTimer: null,
         _presenceInterval: POLL_INTERVAL_IDLE_MS,

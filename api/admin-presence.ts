@@ -24,6 +24,34 @@ import {
   ACCESS_TOKEN_COOKIE,
   USER_LOGIN_COOKIE,
 } from './auth/cookies.js'
+import { rateLimit, getClientIP } from './auth/rateLimit.js'
+
+// ─── Allowed tab keys (must match src/admin/config/tabs.ts) ──────────────────
+
+const ALLOWED_TAB_KEYS = new Set([
+  'startseite',
+  'news',
+  'party',
+  'fraktion',
+  'kommunalpolitik',
+  'haushaltsreden',
+  'history',
+  'impressum',
+  'datenschutz',
+  'kontakt',
+  'config',
+])
+
+// ─── Startup guard ────────────────────────────────────────────────────────────
+
+if (process.env.NODE_ENV === 'production' && !process.env.KV_REST_API_URL) {
+  console.warn(
+    '[admin-presence] KV_REST_API_URL is not set in production. ' +
+      'Presence state is stored in-memory and will be partitioned across ' +
+      'serverless function instances. Configure Vercel KV for correct ' +
+      'multi-instance behaviour.',
+  )
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -43,6 +71,13 @@ export interface PresenceUser {
 const TTL_MS = 45_000
 /** Redis TTL in seconds (slightly longer than JS TTL so KV never evicts before us) */
 const TTL_S = 50
+/**
+ * Index set TTL: 3× individual key TTL.  The index is refreshed on every
+ * upsert so it stays alive while any user is active.  When all users leave
+ * (no more upserts), it expires within 150 s — far less than the old 10×
+ * (500 s) that caused prolonged stale-entry accumulation.
+ */
+const KV_INDEX_TTL_S = TTL_S * 3
 
 // KV key prefix and index set for tracking active logins
 const KV_PREFIX = 'spd:presence:'
@@ -72,7 +107,7 @@ async function storageUpsert(user: PresenceUser): Promise<void> {
       await kv.set(`${KV_PREFIX}${user.login}`, user, { ex: TTL_S })
       // Maintain an index set so we can list active users without a SCAN.
       await kv.sadd(KV_INDEX, user.login)
-      await kv.expire(KV_INDEX, TTL_S * 10)
+      await kv.expire(KV_INDEX, KV_INDEX_TTL_S)
       return
     } catch {
       // KV unavailable — fall through to in-memory
@@ -128,6 +163,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(403).json({ error: 'forbidden_origin' })
   }
 
+  // ── Rate limiting ──────────────────────────────────────────────────────────
+  // 120 requests / minute per IP — allows fast (3 s) polling for up to 40
+  // concurrent active sessions while still blocking runaway clients.
+  const ip = getClientIP(req.headers as Record<string, string | string[] | undefined>)
+  if (!rateLimit(ip, 120, 60_000)) {
+    return res.status(429).json({ error: 'rate_limited' })
+  }
+
   // Require auth cookie — don't expose presence to unauthenticated callers
   const cookies = parseCookies(req.headers.cookie as string | undefined)
   if (!cookies[ACCESS_TOKEN_COOKIE]) {
@@ -159,12 +202,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       dirtyTabs?: string[]
     }
 
+    // ── Input validation ────────────────────────────────────────────────────
+    // Validate avatar_url: must be a valid https:// URL (GitHub CDN or blank)
+    const rawAvatar = body?.avatar_url ?? ''
+    let safeAvatarUrl = ''
+    if (rawAvatar) {
+      try {
+        const url = new URL(rawAvatar)
+        if (url.protocol === 'https:') safeAvatarUrl = rawAvatar
+      } catch {
+        // Malformed URL — silently drop it
+      }
+    }
+
+    // Validate activeTab against the known tab key list
+    const rawActiveTab = body?.activeTab ?? ''
+    const safeActiveTab = ALLOWED_TAB_KEYS.has(rawActiveTab) ? rawActiveTab : ''
+
+    // Validate dirtyTabs: filter to known keys only; cap at total tab count
+    const rawDirtyTabs = Array.isArray(body?.dirtyTabs) ? body.dirtyTabs : []
+    const safeDirtyTabs = rawDirtyTabs
+      .filter((k): k is string => typeof k === 'string' && ALLOWED_TAB_KEYS.has(k))
+      .slice(0, ALLOWED_TAB_KEYS.size)
+
     const user: PresenceUser = {
       // Identity is bound to the verified cookie — ignore any body.login
       login: verifiedLogin,
-      avatar_url: body?.avatar_url ?? '',
-      activeTab: body?.activeTab ?? '',
-      dirtyTabs: Array.isArray(body?.dirtyTabs) ? body.dirtyTabs : [],
+      avatar_url: safeAvatarUrl,
+      activeTab: safeActiveTab,
+      dirtyTabs: safeDirtyTabs,
       lastSeen: Date.now(),
     }
 
