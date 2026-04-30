@@ -140,7 +140,6 @@ function mergeArraysById(
 ): IdObject[] {
   const origById = new Map(original.map(item => [item.id, item]))
   const oursById = new Map(ours.map(item => [item.id, item]))
-  const theirsById = new Map(theirs.map(item => [item.id, item]))
 
   const result: IdObject[] = []
   const handled = new Set<string | number>()

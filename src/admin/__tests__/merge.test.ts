@@ -127,7 +127,7 @@ describe('threeWayMerge — arrays with id fields', () => {
     const original = [alice]
     const ours = [{ ...alice, name: 'Alicia' }]
     const theirs = [{ ...alice, name: 'Alexandra' }]
-    const { merged, conflicts } = threeWayMerge(original, ours, theirs)
+    const { merged: _merged, conflicts } = threeWayMerge(original, ours, theirs)
     expect(conflicts).toHaveLength(1)
     expect(conflicts[0].ours).toBe('Alicia')
     expect(conflicts[0].theirs).toBe('Alexandra')

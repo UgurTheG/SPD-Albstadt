@@ -52,6 +52,8 @@ Additionally, if the `ALLOWED_GITHUB_LOGINS` environment variable is set (comma-
 | `OAUTH_REDIRECT_URI`    | Vercel + `.env` | Callback URL (e.g. `https://<domain>/api/auth/callback`)        |
 | `STATE_SIGNING_SECRET`  | Vercel + `.env` | Dedicated HMAC key for CSRF state signing (recommended)         |
 | `ALLOWED_GITHUB_LOGINS` | Vercel + `.env` | Comma-separated GitHub usernames permitted to log in (optional) |
+| `KV_REST_API_URL`       | Vercel          | Vercel KV REST URL for shared admin presence state (optional)   |
+| `KV_REST_API_TOKEN`     | Vercel          | Vercel KV REST token (required when `KV_REST_API_URL` is set)   |
 
 > **Note:** If `STATE_SIGNING_SECRET` is not set, `GITHUB_CLIENT_SECRET` is used as a fallback (with a warning in server logs). Generate a dedicated secret with: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 
@@ -98,6 +100,7 @@ Clicking the logout button calls `POST /api/auth/logout`, which clears all HttpO
 - `api/auth/cookies.ts` — HMAC signing, cookie serialisation, origin allowlist
 - `api/auth/rateLimit.ts` — in-memory rate limiter
 - `api/github.ts` — server-side proxy for all GitHub API calls (path-restricted)
+- `api/admin-presence.ts` — real-time admin presence tracking (active tab, dirty tabs)
 
 ### GitHub Configuration
 
@@ -106,6 +109,17 @@ const REPO_OWNER = 'UgurTheG'
 const REPO_NAME = 'SPD-Albstadt'
 const BRANCH = 'main'
 ```
+
+### Admin Presence
+
+The admin panel tracks which users are currently active and which tabs they have open or marked as dirty. This prevents two editors from accidentally overwriting each other's changes.
+
+- **Endpoint:** `GET / POST / DELETE /api/admin-presence`
+- **Storage:** In-memory (single-instance / local dev) or **Vercel KV** (production multi-instance). To enable KV, link a Vercel KV database via the dashboard and set `KV_REST_API_URL` + `KV_REST_API_TOKEN`.
+- **Heartbeat:** The frontend sends a `POST` every 30 seconds with the active tab and dirty-tab list.
+- **Version polling:** A lightweight `GET ?since=<version>` check runs every 500 ms so presence updates are near-real-time without a full KV scan on every tick.
+- **Identity binding:** The user's `login` is always read from the server-side `USER_LOGIN_COOKIE` set during OAuth — client-supplied values are ignored, preventing impersonation.
+- **TTL:** Presence entries expire after 45 s of inactivity (KV TTL: 50 s).
 
 ### How Publishing Works
 
@@ -132,21 +146,33 @@ const BRANCH = 'main'
 
 | Tab                              | Key               | Data File                          | Type                 |
 | -------------------------------- | ----------------- | ---------------------------------- | -------------------- |
+| Startseite                       | `startseite`      | `public/data/startseite.json`      | Object               |
 | Aktuelles (News)                 | `news`            | `public/data/news.json`            | Array                |
 | Partei (Party)                   | `party`           | `public/data/party.json`           | Object with sections |
 | Fraktion (Council Group)         | `fraktion`        | `public/data/fraktion.json`        | Object with sections |
 | Kommunalpolitik                  | `kommunalpolitik` | `public/data/kommunalpolitik.json` | Custom               |
 | Haushaltsreden (Budget Speeches) | `haushaltsreden`  | N/A (PDF manager)                  | Custom               |
 | Historie (History)               | `history`         | `public/data/history.json`         | Object with sections |
-| Impressum                        | `impressum`       | `public/data/impressum.json`       | Object               |
-| Datenschutz                      | `datenschutz`     | `public/data/datenschutz.json`     | Object               |
-| Einstellungen (Settings)         | `config`          | `public/data/config.json`          | Object with sections |
+| Impressum                        | `impressum`       | `public/data/impressum.json`       | Object with sections |
+| Datenschutz                      | `datenschutz`     | `public/data/datenschutz.json`     | Object with sections |
+| Kontakt                          | `kontakt`         | `public/data/kontakt.json`         | Object with sections |
+| Einstellungen (Settings)         | `config`          | `public/data/config.json`          | Object               |
 
 Each tab shows a **red dot badge** when it has unsaved changes.
 
 ---
 
 ## Tab Details
+
+### 0. Startseite
+
+**Type:** Object editor  
+**File:** `public/data/startseite.json`
+
+| Field       | Key          | Type     |
+| ----------- | ------------ | -------- |
+| Hero-Slogan | `heroSlogan` | Textarea |
+| Badge-Text  | `heroBadge`  | Text     |
 
 ### 1. Aktuelles (News)
 
@@ -182,7 +208,7 @@ Each news item has:
 
 **Top-level fields:** `beschreibung` (textarea)
 
-**Sections:** Gemeinderäte, Kreisräte, Fraktions-News
+**Sections:** Gemeinderäte, Kreisräte
 
 ### 4. Haushaltsreden (Budget Speeches)
 
@@ -203,12 +229,24 @@ Year-based grid (2010 to current year). Each card shows upload, replace, delete,
 
 ### 6. Einstellungen (Settings)
 
-**Type:** Object with top-level fields and sections  
+**Type:** Object  
 **File:** `public/data/config.json`
 
-**Top-level fields:** `icsUrl` (calendar feed URL)
+**Top-level fields:**
 
-**Sections:** Kontaktdaten, Bürozeiten, Social Media
+| Field           | Key             | Type |
+| --------------- | --------------- | ---- |
+| Kalender-URL    | `icsUrl`        | URL  |
+| Elfsight App-ID | `elfsightAppId` | Text |
+
+### 7. Kontakt
+
+**Type:** Object with top-level fields and sections  
+**File:** `public/data/kontakt.json`
+
+**Top-level fields:** `adresse`, `email`, `telefon`, `formspreeUrl`, `gruppenbild`, `footerBeschreibung`, `facebookUrl`, `instagramUrl`
+
+**Sections:** Bürozeiten
 
 ---
 
@@ -252,6 +290,7 @@ Year-based grid (2010 to current year). Each card shows upload, replace, delete,
 | `kreisraete`        | `public/images/kreisraete/`        |
 | `historie`          | `public/images/historie/`          |
 | `persoenlichkeiten` | `public/images/persoenlichkeiten/` |
+| `kontakt`           | `public/images/kontakt/`           |
 
 ### Orphan Image Detection
 

@@ -31,7 +31,7 @@ Umgesetzte Hauptfunktionen:
 - Abschnittsseiten für `Aktuelles`, `Partei`, `Fraktion`, `Historie`, `Kontakt`, `Datenschutz`, `Impressum`
 - News mit Kategorien, Suche und Detailansicht
 - Kalenderansicht auf Basis eines ICS-Feeds über `/api/ics`
-- Optionaler Instagram-Feed über `/api/instagram` mit automatischem Fallback
+- Optionaler Instagram-Feed via Elfsight-Widget (App-ID über Admin-Editor konfigurierbar)
 - Kontaktformular (Formspree-URL über Konfiguration)
 - Admin-Editor mit Login per GitHub OAuth 2.0, Drafts, Undo/Redo, Drag-and-Drop-Sortierung, Bild-Upload, Sammel-Veröffentlichung und Orphan-Bild-Erkennung
 
@@ -49,7 +49,7 @@ Umgesetzte Hauptfunktionen:
 - Bild-Lightbox: `yet-another-react-lightbox`
 - Kalender-Parsing: `ical.js`
 - Deployment-Ziel: Vercel
-- Serverless-Endpunkte: `api/ics.ts`, `api/instagram.ts`, `api/auth/callback.ts`
+- Serverless-Endpunkte: `api/ics.ts`, `api/admin-presence.ts`, `api/auth/callback.ts`
 
 ## 3. Projektstruktur
 
@@ -61,7 +61,6 @@ Wichtige Verzeichnisse:
 - `public/images/`: Bilder
 - `public/documents/`: PDFs und andere Dokumente
 - `api/`: serverseitige Endpunkte (Vercel Functions)
-- `server/`: servernahe Logik (z. B. Instagram-Feed-Aufbereitung)
 - `vercel.json`: Rewrites und Cache-Header
 
 ## 4. Lokale Entwicklung
@@ -113,18 +112,19 @@ GITHUB_CLIENT_SECRET=      # Client-Secret der OAuth App (privat, nur serverseit
 OAUTH_REDIRECT_URI=        # Callback-URL (z. B. https://<domain>/api/auth/callback)
 STATE_SIGNING_SECRET=      # Eigener HMAC-Schlüssel für CSRF-State-Signierung (empfohlen)
 ALLOWED_GITHUB_LOGINS=     # Kommagetrennte GitHub-Benutzernamen, die sich einloggen dürfen (optional)
+KV_REST_API_URL=           # Vercel KV REST URL für gemeinsamen Admin-Presence-State (optional)
+KV_REST_API_TOKEN=         # Vercel KV REST Token (erforderlich wenn KV_REST_API_URL gesetzt)
 ```
 
 > **Hinweis:** Ist `STATE_SIGNING_SECRET` nicht gesetzt, wird `GITHUB_CLIENT_SECRET` als Fallback verwendet — mit Warnung im Serverlog. Empfohlen: eigenen Schlüssel generieren mit `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
 >
 > **Hinweis:** `ALLOWED_GITHUB_LOGINS` ist optional. Wenn gesetzt, werden nur die aufgelisteten GitHub-Konten zugelassen — als zusätzliche Absicherung neben den GitHub-Repository-Berechtigungen.
+>
+> **Hinweis:** `KV_REST_API_URL` und `KV_REST_API_TOKEN` sind optional. Ohne diese Variablen wird der Admin-Presence-State im Arbeitsspeicher gehalten (funktioniert lokal und bei Single-Instance-Deployments; bei mehreren Vercel-Instanzen empfiehlt sich Vercel KV für geteilten Zustand).
 
 ### Instagram-Integration
 
-```bash
-INSTAGRAM_USER_ID=
-INSTAGRAM_ACCESS_TOKEN=
-```
+Der Instagram-Feed wird über den Elfsight-Widget-Service eingebunden. Die Elfsight App-ID wird in `public/data/config.json` unter `elfsightAppId` hinterlegt und kann auch über den Admin-Editor gepflegt werden.
 
 Lokale Einrichtung:
 
@@ -134,16 +134,15 @@ cp .env.example .env
 
 Hinweise:
 
-- Zielprofil ist in `src/shared/instagram.ts` definiert (`spdalbstadt`)
-- Fehlen Variablen oder schlägt die API fehl, wird automatisch ein Fallback ohne Feed-Karten angezeigt (Link zum Profil bleibt sichtbar)
+- Zielprofil und Elfsight App-ID werden in `public/data/config.json` unter `elfsightAppId` konfiguriert
+- Fehlt die App-ID, wird der Instagram-Bereich ausgeblendet
 
 ### Inhaltskonfiguration
 
 Zentrale Laufzeit-Konfiguration erfolgt über `public/data/config.json`, unter anderem:
 
 - `icsUrl` für Kalenderimport
-- `features.instagramFeed` zum Ein-/Ausblenden des Instagram-Feeds
-- `kontakt.formspreeUrl` für Kontaktformular
+- `elfsightAppId` für den Instagram-Feed via Elfsight
 
 ## 6. Homepage nutzen und verstehen
 
@@ -153,6 +152,7 @@ Die Hauptseiten werden clientseitig geroutet:
 
 - `/`
 - `/aktuelles`
+- `/kommunalpolitik`
 - `/partei`
 - `/fraktion`
 - `/historie`
@@ -190,7 +190,7 @@ Zugangsberechtigung: Nur GitHub-Konten mit **Push-Zugriff** auf das Repository k
 
 ### Funktionen im Admin-Editor
 
-- Bearbeiten der Tabs `Aktuelles`, `Partei`, `Fraktion`, `Haushaltsreden`, `Historie`, `Einstellungen`
+- Bearbeiten der Tabs `Startseite`, `Aktuelles`, `Partei`, `Fraktion`, `Kommunalpolitik`, `Haushaltsreden`, `Historie`, `Impressum`, `Datenschutz`, `Kontakt`, `Einstellungen`
 - Ungespeicherte Änderungen pro Tab (Dirty-State mit rotem Indikator)
 - Entwürfe (Drafts) in `localStorage` (`spd-admin-drafts`)
 - Undo/Redo pro Tab (Schaltflächen und Tastaturkürzel Ctrl+Z / Ctrl+Shift+Z bzw. Ctrl+Y)
@@ -219,11 +219,16 @@ Die Commit-Erstellung ist gebündelt (Git Trees API), damit mehrere Dateiänderu
 
 Wichtige Dateien in `public/data/`:
 
-- `config.json`: globale Einstellungen (Features, Kontakt, Bürozeiten, Social, ICS-URL)
+- `config.json`: globale Einstellungen (ICS-URL, Elfsight App-ID)
+- `startseite.json`: Hero-Slogan und Badge-Text der Startseite
 - `news.json`: Beiträge für `Aktuelles`
 - `party.json`: Partei-Bereich, Vorstand, Abgeordnete, Schwerpunkte
 - `fraktion.json`: Fraktionsdaten, Gemeinderäte, Kreisräte
+- `kommunalpolitik.json`: Kommunalpolitik-Bereich
+- `kontakt.json`: Kontaktdaten, E-Mail, Telefon, Formspree-URL, Bürozeiten, Social-Media-Links
 - `history.json`: Historie, Chronik, Persönlichkeiten
+- `impressum.json`: Impressum-Abschnitte
+- `datenschutz.json`: Datenschutz-Abschnitte
 - `haushaltsreden.json`: Konfiguration deaktivierter Jahre (Haushaltsreden)
 
 Datumsformat in Datenobjekten: `YYYY-MM-DD`.
@@ -256,12 +261,22 @@ Der Admin-Editor konvertiert Uploads nach WebP und referenziert sie in den JSON-
 - Holt den Kalender serverseitig und gibt `text/calendar` zurück
 - Fehlerfall: HTTP 502 mit JSON-Fehlerobjekt
 
-### `GET /api/instagram`
+### `GET /api/admin-presence`
 
-- Lädt Instagram-Feed über Meta Graph API (Business Discovery)
-- Nutzt `INSTAGRAM_USER_ID` und `INSTAGRAM_ACCESS_TOKEN`
-- Liefert normalisierte Feed-Objekte für die Website
-- Bei Fehlern oder fehlender Konfiguration: Fallback-Antwort mit leerer Liste und Profil-Link
+- Gibt alle momentan aktiven Admin-Nutzer zurück
+- Unterstützt `?since=<version>` für günstige Versions-Checks: gibt `{ version, changed: false }` zurück, wenn sich nichts geändert hat
+- Erfordert gültiges Access-Token-Cookie
+
+### `POST /api/admin-presence`
+
+- Heartbeat-Endpunkt: aktualisiert das Präsenz-Profil des anfragenden Nutzers (aktiver Tab, Dirty-Tabs, Avatar)
+- Nutzeridentität wird aus dem serverseitigen `USER_LOGIN_COOKIE` gelesen — Client-Angaben werden ignoriert (verhindert Impersonation)
+- Rate Limit: 180 Anfragen pro IP pro Minute
+
+### `DELETE /api/admin-presence`
+
+- Entfernt den anfragenden Nutzer aus der Präsenzliste (z. B. beim Logout)
+- Nutzer können nur ihre eigene Präsenz löschen
 
 ### `GET /api/auth/start`
 
@@ -357,13 +372,13 @@ npm run preview
 ### C) Kontaktformular konfigurieren
 
 1. Formspree-Formular erstellen
-2. URL in `public/data/config.json` unter `kontakt.formspreeUrl` eintragen
+2. URL in `public/data/kontakt.json` unter `formspreeUrl` eintragen (oder über Admin-Editor → Kontakt)
 3. Über `/kontakt` testen
 
-### D) Instagram-Feed aktivieren
+### D) Instagram-Feed (Elfsight) konfigurieren
 
-1. `INSTAGRAM_USER_ID` und `INSTAGRAM_ACCESS_TOKEN` setzen
-2. In `public/data/config.json` `features.instagramFeed` auf `true`
+1. Elfsight-Widget für Instagram erstellen (https://elfsight.com)
+2. App-ID in `public/data/config.json` unter `elfsightAppId` eintragen (oder über Admin-Editor → Einstellungen)
 3. Deployment prüfen und Feed unter `/aktuelles` kontrollieren
 
 ### E) Neuen Admin-Nutzer hinzufügen
@@ -380,8 +395,8 @@ npm run preview
 - Admin-Login zeigt `unauthorized_user`: GitHub-Konto ist nicht in der `ALLOWED_GITHUB_LOGINS`-Allowlist
 - Änderungen erscheinen nicht: Veröffentlichung im Admin ausführen und kurz auf Redeploy warten
 - Kalender leer: `icsUrl` in `public/data/config.json` prüfen, Erreichbarkeit des ICS-Feeds testen
-- Instagram leer: Feature-Flag und ENV-Variablen prüfen; Fallback ohne Karten ist vorgesehen
-- Kontaktformular ohne Versand: `kontakt.formspreeUrl` in `public/data/config.json` prüfen
+- Instagram leer: Elfsight App-ID in `public/data/config.json` unter `elfsightAppId` prüfen
+- Kontaktformular ohne Versand: `formspreeUrl` in `public/data/kontakt.json` prüfen
 - Admin zeigt „Daten konnten nicht geladen werden": Seite neu laden; Veröffentlichen ist in diesem Zustand gesperrt, um Live-Daten nicht zu überschreiben
 - OAuth funktioniert nicht lokal: `VITE_GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` und `OAUTH_REDIRECT_URI` in `.env` prüfen; Callback-URL `http://localhost:5173/api/auth/callback` in der GitHub OAuth App eintragen
 
