@@ -146,6 +146,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
         undoStacks: {},
         redoStacks: {},
         baseCommitSha: branchSha,
+        remoteSha: '', // clear stale-data flag on successful reload
       })
     } catch {
       // Fallback: mark all file-backed tabs as failed rather than hanging forever

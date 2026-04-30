@@ -57,6 +57,7 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
         loginLoading: false,
       })
       await get().loadData()
+      get().startPresencePolling()
     } catch (e) {
       if (e instanceof AuthError) {
         set({ loginError: (e as Error).message, loginLoading: false, loginAuthStatus: e.status })
@@ -103,12 +104,16 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
     set({ user })
     try {
       await get().loadData()
+      get().startPresencePolling()
     } catch {
       /* ignore — UI will remain in loading state */
     }
   },
 
   logout: () => {
+    // Stop presence polling and announce departure before clearing state
+    get().stopPresencePolling()
+
     // Cancel any pending debounced persistence and reset module-level counters
     resetPersistenceState()
 

@@ -2,23 +2,48 @@ import type { StateCreator } from 'zustand'
 import type { AdminState } from './index'
 import type { PendingUpload, TabConfig } from '../types'
 import type { TreeFileChange } from '../lib/github'
-import { AuthError, ConflictError, commitTree } from '../lib/github'
+import { AuthError, ConflictError, commitTree, getFileContent } from '../lib/github'
 import { collectImagePaths } from '../lib/images'
 import { TABS } from '../config/tabs'
 import { persistPendingUploads } from './persistence'
+import { threeWayMerge } from '../lib/merge'
+import type { MergeConflict } from '../lib/merge'
 
 // ─── Slice interface ───────────────────────────────────────────────────────────
 
 export interface PublishSlice {
   publishing: boolean
+  /** Conflicts surfaced after an auto-merge attempt; null = no merge attempted */
+  mergeConflicts: MergeConflict[] | null
+  /** The tab key whose merge conflicts are being shown */
+  mergeConflictTabKey: string | null
   publishTab: (tabKey: string, orphansToDelete?: string[]) => Promise<void>
   publishAll: (orphansToDelete?: string[]) => Promise<void>
+  /** Called by ConflictMergeModal when the user resolves all conflicts */
+  applyMergeResolution: (tabKey: string, resolved: unknown) => void
+  dismissMergeConflicts: () => void
 }
 
 // ─── Slice creator ────────────────────────────────────────────────────────────
 
 export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> = (set, get) => ({
   publishing: false,
+  mergeConflicts: null,
+  mergeConflictTabKey: null,
+
+  applyMergeResolution: (tabKey, resolved) => {
+    // Update state + clear conflicts, then re-trigger publish
+    get().updateState(tabKey, resolved)
+    // Update originalState baseline to the latest published SHA so the retry
+    // doesn't see a divergence (the merge already incorporated their changes).
+    set(prev => ({
+      mergeConflicts: null,
+      mergeConflictTabKey: null,
+      originalState: { ...prev.originalState, [tabKey]: resolved },
+    }))
+  },
+
+  dismissMergeConflicts: () => set({ mergeConflicts: null, mergeConflictTabKey: null }),
 
   publishTab: async (tabKey, orphansToDelete) => {
     const { state: s, pendingUploads, publishing, dataLoadErrors, baseCommitSha } = get()
@@ -64,6 +89,47 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       get().setStatus('Veröffentlicht! Seite wird in ~1 Min. aktualisiert.', 'success')
     } catch (e) {
       if (e instanceof ConflictError) {
+        // ── Auto-merge attempt ─────────────────────────────────────────────
+        const tab = TABS.find(t => t.key === tabKey)
+        if (tab?.ghPath && tab?.file) {
+          try {
+            const latest = await getFileContent(tab.ghPath)
+            if (latest !== null) {
+              const { merged, conflicts } = threeWayMerge(
+                get().originalState[tabKey],
+                get().state[tabKey],
+                latest,
+              )
+              if (conflicts.length === 0) {
+                // Clean merge — update state baseline and retry
+                get().updateState(tabKey, merged)
+                const { getBranchSha } = await import('../lib/github')
+                const freshSha = await getBranchSha()
+                set(prev => ({
+                  originalState: { ...prev.originalState, [tabKey]: latest },
+                  baseCommitSha: freshSha,
+                }))
+                await get().publishTab(tabKey, orphansToDelete)
+                return
+              } else {
+                // Conflicts — surface merge modal with partially-merged draft
+                get().updateState(tabKey, merged)
+                set(prev => ({
+                  originalState: { ...prev.originalState, [tabKey]: latest },
+                  mergeConflicts: conflicts,
+                  mergeConflictTabKey: tabKey,
+                }))
+                get().setStatus(
+                  `${conflicts.length} Konflikt(e) erkannt — bitte die markierten Felder manuell auflösen.`,
+                  'error',
+                )
+                return
+              }
+            }
+          } catch {
+            // Fall through to the generic error
+          }
+        }
         get().setStatus(
           'Konflikt: Ein anderer Benutzer hat Änderungen veröffentlicht. Bitte die Seite neu laden und Ihre Änderungen erneut eintragen.',
           'error',
@@ -139,10 +205,15 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       get().setStatus(`${dirtyKeys.length} Datei(en) veröffentlicht!`, 'success')
     } catch (e) {
       if (e instanceof ConflictError) {
+        // For publishAll, fall back to per-tab publishing so each tab gets its own auto-merge
+        set({ publishing: false })
         get().setStatus(
-          'Konflikt: Ein anderer Benutzer hat Änderungen veröffentlicht. Bitte die Seite neu laden und Ihre Änderungen erneut eintragen.',
-          'error',
+          'Konflikt erkannt — versuche automatische Zusammenführung pro Datei…',
+          'info',
         )
+        for (const tabKey of dirtyKeys) {
+          await get().publishTab(tabKey, undefined)
+        }
         return
       }
       if (e instanceof AuthError) {

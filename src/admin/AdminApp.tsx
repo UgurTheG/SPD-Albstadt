@@ -11,6 +11,9 @@ import PublishConfirmModal from './components/PublishConfirmModal'
 import OrphanModal from './components/OrphanModal'
 import AdminWarningBanner from './components/AdminWarningBanner'
 import AdminSidebar from './components/AdminSidebar'
+import StaleDataBanner from './components/StaleDataBanner'
+import ConflictMergeModal from './components/ConflictMergeModal'
+import PresenceBadge from './components/PresenceBadge'
 import { getTabIcon } from './lib/tabIcons'
 import AdminSkeleton from './components/AdminSkeleton'
 
@@ -33,6 +36,11 @@ export default function AdminApp() {
   const statusCounter = useAdminStore(s => s.statusCounter)
   const dataLoaded = useAdminStore(s => s.dataLoaded)
   const dataLoadErrors = useAdminStore(s => s.dataLoadErrors)
+  const presenceUsers = useAdminStore(s => s.presenceUsers)
+  const remoteSha = useAdminStore(s => s.remoteSha)
+  const mergeConflicts = useAdminStore(s => s.mergeConflicts)
+  const mergeConflictTabKey = useAdminStore(s => s.mergeConflictTabKey)
+  const dismissMergeConflicts = useAdminStore(s => s.dismissMergeConflicts)
 
   // Dirty set as a stable string — AdminApp only re-renders when the *set of dirty
   // tab keys* changes, not on every keystroke inside a tab that is already dirty.
@@ -98,6 +106,13 @@ export default function AdminApp() {
 
   const currentTab = TABS.find(t => t.key === activeTab) ?? TABS[0]
 
+  // Users who have the current tab open (viewing or dirty)
+  const usersOnCurrentTab = presenceUsers.filter(
+    u => u.activeTab === activeTab || u.dirtyTabs.includes(activeTab),
+  )
+  // Users who have unsaved changes anywhere (used for stale-data banner attribution)
+  const recentPublishers = presenceUsers.map(u => u.login)
+
   const handlePublishAll = () => setShowPublishConfirm(true)
 
   const handlePublishAllConfirmed = () => {
@@ -136,6 +151,13 @@ export default function AdminApp() {
           onCancel={() => setGlobalOrphans(null)}
         />
       )}
+      {mergeConflicts && mergeConflictTabKey && (
+        <ConflictMergeModal
+          tabKey={mergeConflictTabKey}
+          conflicts={mergeConflicts}
+          onClose={dismissMergeConflicts}
+        />
+      )}
 
       {/* Sidebar */}
       <AdminSidebar
@@ -146,6 +168,7 @@ export default function AdminApp() {
         publishing={publishing}
         dataLoadErrors={dataLoadErrors}
         user={user}
+        presenceUsers={presenceUsers}
         onClose={() => setSidebarOpen(false)}
         onSelectTab={key => {
           setActiveTab(key)
@@ -183,6 +206,17 @@ export default function AdminApp() {
 
         {/* Content */}
         <main className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
+          {/* Stale data banner — another user published since we loaded */}
+          {remoteSha && (
+            <StaleDataBanner
+              publishedBy={recentPublishers}
+              onReload={() => {
+                // loadData clears remoteSha via baseCommitSha refresh
+                loadData()
+              }}
+            />
+          )}
+
           {/* Data load error banner */}
           {dataLoadErrors.length > 0 && (
             <div className="mb-6">
@@ -223,7 +257,33 @@ export default function AdminApp() {
                     Direkt-Bearbeitung — Veröffentlichung per Klick
                   </p>
                 </div>
+                {/* Other users on this tab */}
+                {usersOnCurrentTab.length > 0 && (
+                  <div className="ml-auto flex items-center gap-2">
+                    <PresenceBadge users={usersOnCurrentTab} />
+                    <span className="text-[10px] text-gray-400 hidden sm:block">
+                      {usersOnCurrentTab.map(u => u.login).join(', ')} bearbeitet gerade
+                    </span>
+                  </div>
+                )}
               </div>
+              {/* Tab locked warning */}
+              {usersOnCurrentTab.some(u => u.dirtyTabs.includes(activeTab)) && (
+                <div className="mb-4">
+                  <AdminWarningBanner
+                    title="Tab wird von anderem Benutzer bearbeitet"
+                    iconSize={13}
+                  >
+                    {usersOnCurrentTab
+                      .filter(u => u.dirtyTabs.includes(activeTab))
+                      .map(u => u.login)
+                      .join(', ')}{' '}
+                    hat ungespeicherte Änderungen in diesem Tab. Ihre Änderungen könnten beim
+                    Veröffentlichen in Konflikt geraten — das System versucht automatisch, die
+                    Änderungen zusammenzuführen.
+                  </AdminWarningBanner>
+                </div>
+              )}
             </motion.div>
           </div>
 

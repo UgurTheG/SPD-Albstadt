@@ -2,9 +2,11 @@ import { useCallback, useRef } from 'react'
 import { FileSearch, Loader2, LogOut, Moon, Rocket, Sun, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { GHUser } from '../types'
+import type { PresenceUser } from '../store/presenceSlice'
 import { TABS } from '../config/tabs'
 import { getTabIcon } from '../lib/tabIcons'
 import Avatar from '../../components/Avatar'
+import PresenceBadge from './PresenceBadge'
 
 interface AdminSidebarProps {
   open: boolean
@@ -14,6 +16,8 @@ interface AdminSidebarProps {
   publishing: boolean
   dataLoadErrors: string[]
   user: GHUser
+  /** Other users currently active — optional so existing call-sites / tests don't break */
+  presenceUsers?: PresenceUser[]
   onClose: () => void
   onSelectTab: (key: string) => void
   onShowGlobalDiff: () => void
@@ -30,6 +34,7 @@ export default function AdminSidebar({
   publishing,
   dataLoadErrors,
   user,
+  presenceUsers = [],
   onClose,
   onSelectTab,
   onShowGlobalDiff,
@@ -104,6 +109,11 @@ export default function AdminSidebar({
             {TABS.map(tab => {
               const isActive = activeTab === tab.key
               const isDirty = dirty.has(tab.key)
+              // Other users who are viewing or have dirty edits in this tab
+              const othersOnTab = presenceUsers.filter(
+                u => u.activeTab === tab.key || u.dirtyTabs.includes(tab.key),
+              )
+              const lockedByOther = presenceUsers.some(u => u.dirtyTabs.includes(tab.key))
               return (
                 <button
                   key={tab.key}
@@ -128,9 +138,18 @@ export default function AdminSidebar({
                     {getTabIcon(tab.key)}
                   </span>
                   <span className="truncate">{tab.label}</span>
-                  {isDirty && (
-                    <span className="ml-auto w-2 h-2 bg-spd-red rounded-full animate-pulse" />
-                  )}
+                  <span className="ml-auto flex items-center gap-1">
+                    {/* Presence avatars for this tab */}
+                    {othersOnTab.length > 0 && <PresenceBadge users={othersOnTab} max={2} />}
+                    {/* Locked indicator */}
+                    {lockedByOther && (
+                      <span
+                        title="Wird von anderem Benutzer bearbeitet"
+                        className="w-1.5 h-1.5 rounded-full bg-amber-400"
+                      />
+                    )}
+                    {isDirty && <span className="w-2 h-2 bg-spd-red rounded-full animate-pulse" />}
+                  </span>
                 </button>
               )
             })}
@@ -138,6 +157,15 @@ export default function AdminSidebar({
 
           {/* Bottom section */}
           <div className="p-4 border-t border-gray-200/60 dark:border-gray-800/60 space-y-3">
+            {/* Other online users */}
+            {presenceUsers.length > 0 && (
+              <div className="flex items-center gap-2 px-1">
+                <PresenceBadge users={presenceUsers} max={4} />
+                <p className="text-[10px] text-gray-400 truncate">
+                  {presenceUsers.map(u => u.login).join(', ')} online
+                </p>
+              </div>
+            )}
             {/* Global changes + Publish all — keyed so AnimatePresence can animate exit */}
             <AnimatePresence>
               {dirty.size > 0 && (
