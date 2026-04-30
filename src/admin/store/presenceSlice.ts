@@ -103,11 +103,20 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
 
     // Also check if the remote branch SHA has moved (someone else published)
     try {
-      const { getBranchSha } = await import('../lib/github')
+      const { getBranchSha, hasDataChanges } = await import('../lib/github')
       const remoteSha = await getBranchSha()
       const { baseCommitSha: base } = get()
       if (remoteSha && base && remoteSha !== base) {
-        set({ remoteSha })
+        // Only show the "reload" banner when actual data files changed.
+        // Other commits (CI runs, Vercel deploy bots, code-style fixes, …) must
+        // NOT trigger the banner.  If no public/data file was touched we silently
+        // advance baseCommitSha so the same commits aren't re-checked next poll.
+        const dataChanged = await hasDataChanges(base, remoteSha)
+        if (dataChanged) {
+          set({ remoteSha })
+        } else {
+          set({ baseCommitSha: remoteSha })
+        }
       }
     } catch {
       // Ignore — conflict guard at publish time is the hard guarantee

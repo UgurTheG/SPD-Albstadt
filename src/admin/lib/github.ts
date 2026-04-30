@@ -147,6 +147,27 @@ export async function getBranchSha(): Promise<string> {
 }
 
 /**
+ * Returns true if any commit between baseSha (exclusive) and headSha (inclusive)
+ * modified a file under `public/data/`.
+ *
+ * Used to suppress the "reload" banner when the branch tip advanced only because
+ * of CI runs, Vercel deploy commits, dependency bumps, code-style fixes, etc.
+ * Falls back to `true` (show the banner) on any API error so we never silently
+ * miss a real data change.
+ */
+export async function hasDataChanges(baseSha: string, headSha: string): Promise<boolean> {
+  if (baseSha === headSha) return false
+  try {
+    const res = await ghFetch('GET', `${repoBase()}/compare/${baseSha}...${headSha}`)
+    if (!res.ok) return true // safe fallback: treat as changed
+    const data = (await res.json()) as { files?: { filename: string }[] }
+    return (data.files ?? []).some(f => f.filename.startsWith('public/data/'))
+  } catch {
+    return true // safe fallback
+  }
+}
+
+/**
  * Create a single commit with multiple file changes using the Git Trees API.
  * This replaces multiple individual commits with one atomic commit.
  *
