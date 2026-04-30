@@ -7,7 +7,7 @@
  * the "Veröffentlichen" button becomes available.
  */
 import { useState } from 'react'
-import { AlertTriangle, CheckCircle2, GitMerge } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, GitMerge, User } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { MergeConflict } from '../lib/merge'
 import { summarizeValue } from '../lib/diff'
@@ -25,6 +25,11 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
   const publishTab = useAdminStore(s => s.publishTab)
   const state = useAdminStore(s => s.state)
   const publishing = useAdminStore(s => s.publishing)
+  const presenceUsers = useAdminStore(s => s.presenceUsers)
+
+  // Users who likely published the conflicting version:
+  // they are present but no longer have this tab dirty (they published and reset).
+  const conflictAuthors = presenceUsers.filter(u => !u.dirtyTabs.includes(tabKey)).map(u => u.login)
 
   // Track which value the user picks for each conflict: 'ours' | 'theirs'
   const [choices, setChoices] = useState<Record<number, 'ours' | 'theirs'>>({})
@@ -85,6 +90,15 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
             jeden Konflikt, welche Version Sie behalten möchten. Danach wird automatisch
             veröffentlicht.
           </p>
+          {conflictAuthors.length > 0 && (
+            <p className="mt-1.5 text-[11px] text-amber-600 dark:text-amber-500 flex items-center gap-1.5">
+              <User size={11} className="shrink-0" />
+              <span>
+                Veröffentlicht von:{' '}
+                <strong className="font-semibold">{conflictAuthors.join(', ')}</strong>
+              </span>
+            </p>
+          )}
         </div>
 
         {/* Conflicts list */}
@@ -144,7 +158,9 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
                       }`}
                     >
                       <p className="font-semibold text-blue-600 dark:text-blue-400 mb-1 text-[10px] uppercase tracking-wide">
-                        Veröffentlichte Version
+                        {conflictAuthors.length > 0
+                          ? `Version von ${conflictAuthors.join(', ')}`
+                          : 'Veröffentlichte Version'}
                       </p>
                       <p className="text-gray-700 dark:text-gray-300 break-words">
                         {summarizeValue(c.theirs, undefined, false) || '—'}

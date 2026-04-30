@@ -111,9 +111,14 @@ export default function AdminApp() {
     u => u.activeTab === activeTab || u.dirtyTabs.includes(activeTab),
   )
   // Users who have no dirty tabs — they likely just published and reloaded.
-  // This gives a best-effort attribution for the StaleDataBanner; if nobody
-  // qualifies we leave the array empty and the banner says "Ein anderer Benutzer".
-  const recentPublishers = presenceUsers.filter(u => u.dirtyTabs.length === 0).map(u => u.login)
+  // Fall back to all known presence users if none match, so the StaleDataBanner
+  // always shows someone rather than "Ein anderer Benutzer" when users are present.
+  const recentPublishers = (() => {
+    const cleanUsers = presenceUsers.filter(u => u.dirtyTabs.length === 0).map(u => u.login)
+    if (cleanUsers.length > 0) return cleanUsers
+    // If everyone still has dirty tabs, at least surface their names
+    return presenceUsers.map(u => u.login)
+  })()
 
   const handlePublishAll = () => setShowPublishConfirm(true)
 
