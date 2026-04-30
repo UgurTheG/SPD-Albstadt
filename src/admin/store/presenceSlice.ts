@@ -113,12 +113,33 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
     }, POLL_INTERVAL_IDLE_MS)
 
     set({ _presenceTimer: timer, _presenceInterval: POLL_INTERVAL_IDLE_MS })
+
+    // Re-report immediately when the user returns to this browser tab so
+    // presence data is never stale after backgrounding.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void get().reportPresence()
+    }
+    const onFocus = () => void get().reportPresence()
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onFocus)
+
+    // Store cleanup callbacks so stopPresencePolling can remove them.
+    // We piggyback on _presenceTimer existing as the "running" sentinel.
+    ;(get() as unknown as { _presenceVisibilityCleanup?: () => void })._presenceVisibilityCleanup =
+      () => {
+        document.removeEventListener('visibilitychange', onVisible)
+        window.removeEventListener('focus', onFocus)
+      }
   },
 
   stopPresencePolling: () => {
     const { _presenceTimer, user } = get()
     if (_presenceTimer) {
       clearInterval(_presenceTimer)
+      // Remove visibility / focus listeners registered in startPresencePolling
+      const state = get() as unknown as { _presenceVisibilityCleanup?: () => void }
+      state._presenceVisibilityCleanup?.()
+      delete state._presenceVisibilityCleanup
       set({
         _presenceTimer: null,
         _presenceInterval: POLL_INTERVAL_IDLE_MS,

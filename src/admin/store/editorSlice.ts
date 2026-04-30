@@ -154,7 +154,12 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
     }
   },
 
-  setActiveTab: key => set({ activeTab: key }),
+  setActiveTab: key => {
+    set({ activeTab: key })
+    // Immediately push the new active tab to the presence server so other
+    // users see where we moved without waiting for the next poll tick.
+    void get().reportPresence()
+  },
 
   updateState: (tabKey, data) => {
     const now = Date.now()

@@ -206,14 +206,17 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
     } catch (e) {
       if (e instanceof ConflictError) {
         // For publishAll, fall back to per-tab publishing so each tab gets its own auto-merge.
-        // Run tabs in parallel — each publishTab manages its own publishing flag internally
-        // so we coordinate via allSettled rather than sequencing.
+        // Must be sequential — publishTab checks `if (publishing) return` at entry, so running
+        // them in parallel would cause every call after the first to bail immediately (the first
+        // call sets publishing=true synchronously before its first await).
         set({ publishing: false })
         get().setStatus(
           'Konflikt erkannt — versuche automatische Zusammenführung pro Datei…',
           'info',
         )
-        await Promise.allSettled(dirtyKeys.map(tabKey => get().publishTab(tabKey, undefined)))
+        for (const tabKey of dirtyKeys) {
+          await get().publishTab(tabKey, undefined)
+        }
         return
       }
       if (e instanceof AuthError) {
