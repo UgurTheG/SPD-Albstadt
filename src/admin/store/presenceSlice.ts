@@ -37,8 +37,10 @@ export interface PresenceSlice {
 
 /** Slow interval (ms) used when no other users are active */
 const POLL_INTERVAL_IDLE_MS = 30_000
-/** Fast interval (ms) used when at least one other user is present */
-const POLL_INTERVAL_ACTIVE_MS = 10_000
+/** Fast interval (ms) used when at least one other user is present.
+ *  3 s means a tab-switch heartbeat (fired instantly on the sender) is
+ *  visible to all other users within ~3 s — near-instant in practice. */
+const POLL_INTERVAL_ACTIVE_MS = 3_000
 
 // ─── Slice creator ────────────────────────────────────────────────────────────
 

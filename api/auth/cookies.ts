@@ -7,6 +7,9 @@ export const TOKEN_EXPIRES_COOKIE = 'spd_token_expires_at'
 export const REFRESH_TOKEN_COOKIE = 'spd_refresh_token'
 export const REFRESH_EXPIRES_COOKIE = 'spd_refresh_expires_at'
 export const STATE_COOKIE = 'spd_oauth_state'
+/** Stores the GitHub username server-side so presence endpoints can bind
+ *  identity to the token without trusting client-supplied login values. */
+export const USER_LOGIN_COOKIE = 'spd_user_login'
 
 // ─── HMAC helpers (state signing) ──────────────────────────────────────────────
 
@@ -121,6 +124,9 @@ export function makeAuthCookies(data: {
   expires_in?: number
   refresh_token?: string
   refresh_token_expires_in?: number
+  /** GitHub username — stored server-side so identity can be verified without
+   *  trusting client-supplied values (e.g. in the presence endpoint). */
+  login?: string
 }): string[] {
   const cookies: string[] = []
   const maxAge = data.expires_in ?? 8 * 3600 // default 8h
@@ -137,6 +143,10 @@ export function makeAuthCookies(data: {
       path: '/api',
     }),
   )
+
+  if (data.login) {
+    cookies.push(serializeCookie(USER_LOGIN_COOKIE, { value: data.login, maxAge, path: '/api' }))
+  }
 
   if (data.refresh_token) {
     const refreshMax = data.refresh_token_expires_in ?? 6 * 30 * 24 * 3600 // ~6 months
@@ -166,5 +176,6 @@ export function clearAuthCookies(): string[] {
     clearCookie(TOKEN_EXPIRES_COOKIE, '/api'),
     clearCookie(REFRESH_TOKEN_COOKIE, '/api'),
     clearCookie(REFRESH_EXPIRES_COOKIE, '/api'),
+    clearCookie(USER_LOGIN_COOKIE, '/api'),
   ]
 }

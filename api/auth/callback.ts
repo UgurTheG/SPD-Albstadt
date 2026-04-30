@@ -95,6 +95,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return redirect(`auth=error&msg=${safeCode}`)
     }
 
+    // ── Fetch the authenticated GitHub user ──────────────────────────────────────
+    // We always fetch the login so it can be stored in an HttpOnly cookie and used
+    // server-side (e.g. to bind presence identity to the token without trusting
+    // client-supplied values).
+    let login = ''
+    try {
+      const userRes = await fetch('https://api.github.com/user', {
+        headers: {
+          Authorization: `Bearer ${data.access_token}`,
+          Accept: 'application/json',
+        },
+      })
+      if (userRes.ok) {
+        const userJson = (await userRes.json()) as { login?: string }
+        login = (userJson.login ?? '').toLowerCase()
+      }
+    } catch {
+      // Network error fetching /user — fail closed
+    }
+
     // ── User allowlist check ─────────────────────────────────────────────────────
     // If ALLOWED_GITHUB_LOGINS is set, only those exact GitHub usernames may log in.
     // This is a defence-in-depth measure on top of GitHub's own repo-access control.
@@ -105,26 +125,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .map(l => l.trim().toLowerCase())
         .filter(Boolean)
 
-      let login = ''
-      try {
-        const userRes = await fetch('https://api.github.com/user', {
-          headers: {
-            Authorization: `Bearer ${data.access_token}`,
-            Accept: 'application/json',
-          },
-        })
-        if (userRes.ok) {
-          const userJson = (await userRes.json()) as { login?: string }
-          login = (userJson.login ?? '').toLowerCase()
-        }
-      } catch {
-        // Network error fetching /user — fail closed
-      }
-
       if (!login || !allowed.includes(login)) {
         res.setHeader('Set-Cookie', clearOAuthCookies)
         return redirect('auth=error&msg=unauthorized_user')
       }
+    } else if (!login) {
+      // If we can't verify the user identity at all, reject to be safe
+      res.setHeader('Set-Cookie', clearOAuthCookies)
+      return redirect('auth=error&msg=token_exchange_failed')
     }
 
     // Set auth cookies (HttpOnly, Secure, SameSite=Lax) + clear OAuth cookies
@@ -133,6 +141,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       expires_in: data.expires_in,
       refresh_token: data.refresh_token,
       refresh_token_expires_in: data.refresh_token_expires_in,
+      login,
     })
     res.setHeader('Set-Cookie', [...clearOAuthCookies, ...authCookies])
     return redirect('auth=ok')

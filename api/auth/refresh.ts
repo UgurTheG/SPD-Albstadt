@@ -6,6 +6,7 @@ import {
   isAllowedOrigin,
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
+  USER_LOGIN_COOKIE,
 } from './cookies.js'
 import { rateLimit, getClientIP } from './rateLimit.js'
 
@@ -89,7 +90,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(401).json({ error: safeCode })
     }
 
-    // Update auth cookies
+    // Update auth cookies — carry the existing login cookie forward so the
+    // user identity binding is not lost across token refreshes.
+    const existingLogin = cookies[USER_LOGIN_COOKIE]
     res.setHeader(
       'Set-Cookie',
       makeAuthCookies({
@@ -97,6 +100,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         expires_in: data.expires_in,
         refresh_token: data.refresh_token,
         refresh_token_expires_in: data.refresh_token_expires_in,
+        login: existingLogin,
       }),
     )
 
