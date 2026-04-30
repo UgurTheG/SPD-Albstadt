@@ -399,7 +399,3 @@ npm run preview
 - Kontaktformular ohne Versand: `formspreeUrl` in `public/data/kontakt.json` prüfen
 - Admin zeigt „Daten konnten nicht geladen werden": Seite neu laden; Veröffentlichen ist in diesem Zustand gesperrt, um Live-Daten nicht zu überschreiben
 - OAuth funktioniert nicht lokal: `VITE_GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` und `OAUTH_REDIRECT_URI` in `.env` prüfen; Callback-URL `http://localhost:5173/api/auth/callback` in der GitHub OAuth App eintragen
-
----
-
-Wenn du die Pflegeprozesse für Redaktion oder Deployment teamweit standardisieren möchtest, bietet sich als nächster Schritt eine ergänzende Betriebsdokumentation mit Rollen, Freigabeprozess und Backup-Strategie an.
