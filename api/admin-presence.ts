@@ -177,8 +177,11 @@ async function storageGetAll(): Promise<PresenceUser[]> {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
 
-  const origin = (req.headers['origin'] as string | undefined) ?? ''
-  if (origin && !isAllowedOrigin(origin)) {
+  const origin =
+    (req.headers['origin'] as string | undefined) ||
+    (req.headers['referer'] as string | undefined) ||
+    ''
+  if (!isAllowedOrigin(origin)) {
     return res.status(403).json({ error: 'forbidden_origin' })
   }
 

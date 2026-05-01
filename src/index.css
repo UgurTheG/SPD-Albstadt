@@ -15,7 +15,7 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #030712;
+  background-color: #ffffff;
   color-scheme: light dark;
 }
 
@@ -51,7 +51,7 @@ body {
   hyphens: auto;
   -webkit-hyphens: auto;
   hyphenate-limit-chars: 6 3 3;
-  background-color: #030712;
+  background-color: #ffffff;
 }
 
 /* Form controls should never inherit body's justify/hyphenation — it

@@ -145,8 +145,8 @@ export default function Hero() {
           Mitglied werden
         </motion.a>
       </motion.div>
-      {/* Bottom fade — softens the hard edge into the next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-gray-950 dark:from-gray-950 to-transparent z-10 pointer-events-none" />
+      {/* Bottom fade — dark mode only: blends hero into the dark page background */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t dark:from-gray-950 to-transparent z-10 pointer-events-none" />
 
       {/* Scroll indicator */}
       <motion.button
