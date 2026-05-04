@@ -54,10 +54,14 @@ export function KontaktForm() {
         >
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-700 dark:text-white text-xs font-semibold mb-2 uppercase tracking-wide">
+              <label
+                htmlFor="kontakt-name"
+                className="block text-gray-700 dark:text-white text-xs font-semibold mb-2 uppercase tracking-wide"
+              >
                 Ihr Name *
               </label>
               <input
+                id="kontakt-name"
                 type="text"
                 name="name"
                 value={formData.name}
@@ -68,10 +72,14 @@ export function KontaktForm() {
               />
             </div>
             <div>
-              <label className="block text-gray-700 dark:text-white text-xs font-semibold mb-2 uppercase tracking-wide">
+              <label
+                htmlFor="kontakt-email"
+                className="block text-gray-700 dark:text-white text-xs font-semibold mb-2 uppercase tracking-wide"
+              >
                 E-Mail-Adresse *
               </label>
               <input
+                id="kontakt-email"
                 type="email"
                 name="email"
                 value={formData.email}
@@ -84,11 +92,15 @@ export function KontaktForm() {
           </div>
 
           <div>
-            <label className="block text-gray-700 dark:text-white text-xs font-semibold mb-2 uppercase tracking-wide">
+            <label
+              htmlFor="kontakt-betreff"
+              className="block text-gray-700 dark:text-white text-xs font-semibold mb-2 uppercase tracking-wide"
+            >
               Betreff *
             </label>
             <div className="relative">
               <select
+                id="kontakt-betreff"
                 name="betreff"
                 value={formData.betreff}
                 onChange={handleChange}
@@ -113,10 +125,14 @@ export function KontaktForm() {
           </div>
 
           <div className="flex-1 flex flex-col">
-            <label className="block text-gray-700 dark:text-white text-xs font-semibold mb-2 uppercase tracking-wide">
+            <label
+              htmlFor="kontakt-nachricht"
+              className="block text-gray-700 dark:text-white text-xs font-semibold mb-2 uppercase tracking-wide"
+            >
               Ihre Nachricht *
             </label>
             <textarea
+              id="kontakt-nachricht"
               name="nachricht"
               value={formData.nachricht}
               onChange={handleChange}

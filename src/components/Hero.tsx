@@ -53,7 +53,10 @@ export default function Hero() {
         <div className="absolute -top-32 -right-32 w-125 h-125 rounded-full bg-white/3" />
         <div className="absolute top-1/3 -left-48 w-100 h-100 rounded-full bg-white/3" />
         <div className="absolute -bottom-24 right-1/4 w-75 h-75 rounded-full bg-white/3" />
-        <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none select-none">
+        <div
+          className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none select-none"
+          aria-hidden="true"
+        >
           <span className="text-[20vw] font-black text-white/3 tracking-tighter leading-none">
             SPD
           </span>
@@ -71,7 +74,7 @@ export default function Hero() {
           className="mb-6"
         >
           <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-5 py-2 text-sm font-medium">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" aria-hidden="true" />
             {badge}
           </div>
         </motion.div>
@@ -123,6 +126,7 @@ export default function Hero() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.85 }}
           className="flex items-center gap-3 mb-6 w-56"
+          aria-hidden="true"
         >
           <div className="flex-1 h-px bg-white/15" />
           <span className="text-[11px] text-white/35 font-medium tracking-wide">oder</span>
