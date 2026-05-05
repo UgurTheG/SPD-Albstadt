@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 const SCRIPT_ID = 'elfsight-platform'
-const SCRIPT_SRC = 'https://elfsightcdn.com/platform.js'
+const SCRIPT_SRC = 'https://static.elfsight.com/platform/platform.js'
 
 /**
  * Lazily injects the Elfsight platform script into <head> once per page load.
