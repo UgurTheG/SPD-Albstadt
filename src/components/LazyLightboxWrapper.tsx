@@ -22,7 +22,6 @@ interface LazyLightboxWrapperProps {
   onView: (index: number) => void
   finite: boolean
 }
-
 export default function LazyLightboxWrapper({
   open,
   close,
