@@ -213,7 +213,7 @@ const CalendarView = memo(function CalendarView({
                     type="button"
                     onClick={ev => {
                       ev.stopPropagation()
-                      downloadICS(e)
+                      void downloadICS(e)
                     }}
                     title="Termin speichern"
                     className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center text-gray-300 dark:text-gray-600 hover:text-spd-red hover:bg-spd-red/10 transition-colors"

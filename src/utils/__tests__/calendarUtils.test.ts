@@ -2,6 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { toDateStr, formatEventDate, downloadICS } from '../calendarUtils'
 import type { ICSEvent } from '../icsParser'
 
+// Mock the ics package so the dynamic import inside downloadICS resolves immediately
+vi.mock('ics', () => ({
+  createEvent: (opts: Record<string, unknown>) => ({
+    error: null,
+    value: `BEGIN:VCALENDAR\nSUMMARY:${opts.title}\nEND:VCALENDAR`,
+  }),
+}))
+
 // ─── toDateStr ────────────────────────────────────────────────────────────────
 
 describe('toDateStr', () => {
@@ -95,29 +103,29 @@ describe('downloadICS', () => {
     ...overrides,
   })
 
-  it('triggers a click on the generated anchor', () => {
-    downloadICS(makeEvent())
+  it('triggers a click on the generated anchor', async () => {
+    await downloadICS(makeEvent())
     expect(clickSpy).toHaveBeenCalledTimes(1)
   })
 
-  it('creates a blob URL and revokes it afterwards', () => {
-    downloadICS(makeEvent())
+  it('creates a blob URL and revokes it afterwards', async () => {
+    await downloadICS(makeEvent())
     expect(createObjectURLSpy).toHaveBeenCalledTimes(1)
     expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url')
   })
 
-  it('appends the anchor to body and removes it after click', () => {
-    downloadICS(makeEvent())
+  it('appends the anchor to body and removes it after click', async () => {
+    await downloadICS(makeEvent())
     expect(appendSpy).toHaveBeenCalledTimes(1)
     expect(removeSpy).toHaveBeenCalledTimes(1)
   })
 
-  it('works for all-day events', () => {
-    downloadICS(makeEvent({ ganztaegig: true, uhrzeit: '00:00' }))
+  it('works for all-day events', async () => {
+    await downloadICS(makeEvent({ ganztaegig: true, uhrzeit: '00:00' }))
     expect(clickSpy).toHaveBeenCalledTimes(1)
   })
 
-  it('sanitises special characters in the filename', () => {
+  it('sanitises special characters in the filename', async () => {
     // The downloadICS function sets anchor.download to a sanitised filename.
     // The anchor is the element captured by the existing beforeEach createElement spy:
     // we just verify the click was triggered (which means no hard throw from createEvent)
@@ -127,7 +135,7 @@ describe('downloadICS', () => {
     const sanitised = titel.replace(/[^a-zA-Z0-9 -]/g, '').replace(/\s+/g, '-')
     expect(sanitised).not.toMatch(/[&!()ö]/)
     // Also ensure the full downloadICS path executes without error
-    downloadICS(makeEvent({ titel }))
+    await downloadICS(makeEvent({ titel }))
     expect(clickSpy).toHaveBeenCalled()
   })
 })

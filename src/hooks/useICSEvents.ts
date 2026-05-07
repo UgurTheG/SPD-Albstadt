@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { type ICSEvent, parseICS } from '../utils/icsParser'
+import type { ICSEvent } from '../utils/icsParser'
 
 interface UseICSEventsResult {
   events: ICSEvent[]
@@ -44,6 +44,10 @@ export function useICSEvents(enabled = true): UseICSEventsResult {
           return
         }
         const text = await res.text()
+        // Dynamically import the ICS parser so the ical.js + ics libraries
+        // (calendar chunk) are NOT downloaded until there is actual ICS data
+        // to parse — keeping them off the critical path for initial page paint.
+        const { parseICS } = await import('../utils/icsParser')
         const parsed = parseICS(text)
         if (!cancelled) {
           if (parsed.length === 0) {

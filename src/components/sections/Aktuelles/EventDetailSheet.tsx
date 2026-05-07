@@ -87,7 +87,7 @@ export default function EventDetailSheet({ event }: Props) {
 
       <div className="px-5 sm:px-6 pt-5 pb-6 sm:pb-8">
         <button
-          onClick={() => downloadICS(event)}
+          onClick={() => void downloadICS(event)}
           className="w-full flex items-center justify-center gap-2 bg-spd-red hover:bg-spd-red-dark active:scale-[0.98] text-white text-sm font-bold py-3 px-5 rounded-xl transition-all"
         >
           <CalendarPlus size={16} />

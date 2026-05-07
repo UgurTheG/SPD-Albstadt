@@ -2,7 +2,7 @@
  * Calendar utilities shared between CalendarView, EventDetailSheet,
  * DayPickerSheet and the ICS download button.
  */
-import { createEvent, type DateArray } from 'ics'
+import type { DateArray } from 'ics'
 import type { ICSEvent } from './icsParser'
 
 /** Converts a JS Date to a YYYY-MM-DD string in local time. */
@@ -27,7 +27,7 @@ export function formatEventDate(dateStr: string) {
 }
 
 /** Triggers a browser download of an .ics file for the given event. */
-export function downloadICS(event: ICSEvent): void {
+export async function downloadICS(event: ICSEvent): Promise<void> {
   const d = new Date(event.datum + 'T00:00:00')
 
   const start: DateArray = event.ganztaegig
@@ -38,6 +38,8 @@ export function downloadICS(event: ICSEvent): void {
         return [d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes()]
       })()
 
+  // Dynamic import so the ics library only loads on first calendar download click
+  const { createEvent } = await import('ics')
   const { error, value } = createEvent({
     start,
     startInputType: 'local',
