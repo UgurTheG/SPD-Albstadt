@@ -102,11 +102,10 @@ const ALREADY_PRELOADED_PREFIXES = [
   'vendor-',
   'framer-motion',
   'lucide-',
-  'admin-vendor',
   'index-',
 ]
 // Heavy chunks only loaded on user interaction — never eagerly preload these.
-const NEVER_PRELOAD_PREFIXES = ['lightbox', 'calendar', 'AdminApp', 'admin-']
+const NEVER_PRELOAD_PREFIXES = ['LazyLightboxWrapper', 'calendar', 'AdminApp', 'admin-']
 /**
  * Scans dist/assets/ for the lazy JS chunk matching `chunkName` and returns
  * all filenames (primary + direct static sub-imports) that should be

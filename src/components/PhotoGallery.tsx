@@ -1,13 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import Lightbox from 'yet-another-react-lightbox'
-import Counter from 'yet-another-react-lightbox/plugins/counter'
-import Captions from 'yet-another-react-lightbox/plugins/captions'
-import Zoom from 'yet-another-react-lightbox/plugins/zoom'
-import 'yet-another-react-lightbox/styles.css'
-import 'yet-another-react-lightbox/plugins/counter.css'
-import 'yet-another-react-lightbox/plugins/captions.css'
+
+// Lazy-loaded: fetched only when user opens the fullscreen lightbox (~34 KiB saved on initial load)
+const LazyLightboxWrapper = lazy(() => import('./LazyLightboxWrapper'))
 
 // ── PhotoGallery ─────────────────────────────────────────────────────────────
 
@@ -249,26 +245,19 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
         </div>
       )}
 
-      {/* Fullscreen lightbox */}
-      <Lightbox
-        open={lightboxOpen}
-        close={() => setLightboxOpen(false)}
-        slides={slides}
-        index={active}
-        on={{ view: ({ index }) => setActive(index) }}
-        plugins={[Counter, Captions, Zoom]}
-        captions={{ descriptionTextAlign: 'center' }}
-        carousel={{ finite: total <= 1 }}
-        zoom={{
-          maxZoomPixelRatio: 3,
-          scrollToZoom: true,
-          pinchZoomDistanceFactor: 50,
-        }}
-        controller={{ closeOnBackdropClick: true }}
-        styles={{
-          container: { backgroundColor: 'rgba(0, 0, 0, 0.95)' },
-        }}
-      />
+      {/* Fullscreen lightbox — only loaded when first opened */}
+      {lightboxOpen && (
+        <Suspense fallback={null}>
+          <LazyLightboxWrapper
+            open={lightboxOpen}
+            close={() => setLightboxOpen(false)}
+            slides={slides}
+            index={active}
+            onView={index => setActive(index)}
+            finite={total <= 1}
+          />
+        </Suspense>
+      )}
     </div>
   )
 }

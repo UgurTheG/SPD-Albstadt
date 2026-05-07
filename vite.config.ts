@@ -17,10 +17,10 @@ export default defineConfig(({ mode }) => {
       alias: { '@': path.resolve(__dirname, 'src') },
     },
     build: {
-      // Don't eagerly preload vendor chunks — only preload the direct entry deps.
+      // Don't eagerly preload the admin lazy chunk on public pages.
       modulePreload: {
         resolveDependencies(_url, deps) {
-          return deps.filter(dep => !dep.includes('admin'))
+          return deps.filter(dep => !dep.includes('AdminApp') && !dep.includes('admin-vendor'))
         },
       },
       rollupOptions: {
@@ -31,9 +31,13 @@ export default defineConfig(({ mode }) => {
             // causes Rolldown (Vite 8) to inline all its dependencies (React,
             // framer-motion, etc.) and then re-export them, making the main entry
             // statically import the admin chunk on every page.
-
-            // Admin-only node_modules — never preloaded on non-admin pages.
-            // These are exclusively imported by src/admin/** code.
+            //
+            // Admin-only node_modules: return undefined (no manual chunk) so Rolldown
+            // co-locates them with the lazy AdminApp import instead of pushing them
+            // into the global 'vendor' chunk that loads on every public page.
+            // Returning a named chunk like 'admin-vendor' caused Rolldown (Vite 8)
+            // to put shared React internals into that chunk, creating an unexpected
+            // static import of admin-vendor in the main entry + PhotoGallery.
             if (
               id.includes('node_modules/@dnd-kit/') ||
               id.includes('node_modules/sonner/') ||
@@ -41,10 +45,14 @@ export default defineConfig(({ mode }) => {
               id.includes('node_modules/@reduxjs/') ||
               id.includes('node_modules/immer/')
             )
-              return 'admin-vendor'
-            // Lightbox — only rendered when a Sheet/gallery opens (user interaction).
-            // Keeping it out of vendor prevents it from being eagerly preloaded on all pages.
-            if (id.includes('yet-another-react-lightbox')) return 'lightbox'
+              return undefined
+
+            // Lightbox — same reason as admin-only packages above: naming it
+            // 'lightbox' caused Rolldown to split React scheduler internals into
+            // the lightbox chunk, creating a static import from react-vendor →
+            // lightbox on every page.  Returning undefined lets Rolldown bundle
+            // the lightbox code with its only importer (LazyLightboxWrapper).
+            if (id.includes('yet-another-react-lightbox')) return undefined
             // Calendar libs — only needed on /aktuelles (lazy chunk).
             // ical.js parses ICS feeds; ics generates downloadable ICS files.
             if (id.includes('node_modules/ical.js/') || id.includes('node_modules/ics/'))
