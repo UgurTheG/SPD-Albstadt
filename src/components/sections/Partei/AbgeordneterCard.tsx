@@ -44,13 +44,13 @@ export function AbgeordneterCard({
       {/* Content */}
       <div className="flex-1 min-w-0 flex flex-col justify-between p-4 sm:p-7 landscape-compact:p-4 min-h-45 sm:min-h-65 landscape-compact:min-h-0">
         <div>
-          <p className="text-[11px] font-medium tracking-wide text-gray-400 dark:text-gray-500 mb-0.5">
+          <p className="text-[11px] font-medium tracking-wide text-gray-500 dark:text-gray-400 mb-0.5">
             {a.rolle}
           </p>
           <h4 className="font-extrabold text-gray-900 dark:text-white text-lg sm:text-2xl leading-tight">
             {a.name}
           </h4>
-          <p className="text-[11px] sm:text-xs text-gray-400 dark:text-gray-500 mt-1 sm:mt-1.5">
+          <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1 sm:mt-1.5">
             {a.wahlkreis}
           </p>
           <p className="hidden sm:block landscape-compact:hidden text-sm text-gray-500 dark:text-gray-400 leading-relaxed mt-4 line-clamp-4 whitespace-pre-line">
@@ -69,7 +69,7 @@ export function AbgeordneterCard({
               <ExternalLink size={12} /> Website
             </a>
           )}
-          <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-600 group-hover:text-spd-red transition-colors duration-300 ml-auto">
+          <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 group-hover:text-spd-red transition-colors duration-300 ml-auto">
             Mehr anzeigen →
           </span>
         </div>

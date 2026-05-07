@@ -36,7 +36,7 @@ export default function SubsectionLabel({
       transition={{ duration: 0.5, delay }}
       className={mb}
     >
-      <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+      <h3 className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400">
         {label}
       </h3>
       {title && <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">{title}</p>}
