@@ -1,6 +1,8 @@
-import { useCallback, useMemo, useReducer } from 'react'
+import { useCallback, useEffect, useMemo, useReducer } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useData } from './useData'
 import { useHttpErrorRedirect } from './useHttpErrorRedirect'
+import { slugify } from '../utils/slugify'
 import type {
   HistoryData,
   MergedItem,
@@ -51,21 +53,42 @@ export interface UseHistorieResult {
  * Encapsulates all data-fetching, merging and sheet-state logic for the
  * Historie section so the component stays focused on rendering.
  */
-export function useHistorie(): UseHistorieResult {
+export function useHistorie(jahreSlug?: string): UseHistorieResult {
   const { data, error } = useData<HistoryData>('/data/history.json')
   useHttpErrorRedirect(error)
+  const navigate = useNavigate()
 
   const [sheet, dispatch] = useReducer(sheetReducer, { type: 'none' })
 
+  // Sync URL param → sheet state once data is loaded.
+  useEffect(() => {
+    if (!jahreSlug || !data) return
+    const match = data.timeline.find(e => slugify(e.jahr) === jahreSlug)
+    if (match) {
+      dispatch({ type: 'openEvent', entry: match })
+    } else {
+      navigate('/404', { replace: true })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jahreSlug, data])
+
   const openEvent = useCallback(
-    (entry: TimelineEntry) => dispatch({ type: 'openEvent', entry }),
-    [],
+    (entry: TimelineEntry) => {
+      navigate(`/historie/${slugify(entry.jahr)}`)
+    },
+    [navigate],
   )
+
   const openPerson = useCallback(
     (person: Persoenlichkeit) => dispatch({ type: 'openPerson', person }),
     [],
   )
-  const closeSheet = useCallback(() => dispatch({ type: 'close' }), [])
+
+  const closeSheet = useCallback(() => {
+    dispatch({ type: 'close' })
+    // Only navigate back if we're on a deep-link URL
+    if (jahreSlug) navigate('/historie', { replace: true })
+  }, [jahreSlug, navigate])
 
   const merged = useMemo<MergedItem[]>(
     () =>

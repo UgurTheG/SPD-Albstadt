@@ -34,6 +34,12 @@ export const ROUTES: RouteEntry[] = [
     element: <Aktuelles />,
   },
   { path: '/partei', title: 'SPD Albstadt / Partei', depth: 1, element: <Partei /> },
+  {
+    path: '/partei/:schwerpunktSlug',
+    title: 'SPD Albstadt / Partei',
+    depth: 1,
+    element: <Partei />,
+  },
   { path: '/fraktion', title: 'SPD Albstadt / Fraktion', depth: 1, element: <Fraktion /> },
   {
     path: '/kommunalpolitik',
@@ -42,6 +48,12 @@ export const ROUTES: RouteEntry[] = [
     element: <Kommunalpolitik />,
   },
   { path: '/historie', title: 'SPD Albstadt / Historie', depth: 1, element: <Historie /> },
+  {
+    path: '/historie/:jahreSlug',
+    title: 'SPD Albstadt / Historie',
+    depth: 1,
+    element: <Historie />,
+  },
   { path: '/kontakt', title: 'SPD Albstadt / Kontakt', depth: 1, element: <Kontakt /> },
   {
     path: '/datenschutz',

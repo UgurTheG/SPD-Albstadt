@@ -1,5 +1,6 @@
-import { useRef, useReducer } from 'react'
+import { useRef, useReducer, useEffect } from 'react'
 import { motion, useInView } from 'framer-motion'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useData } from '@/hooks/useData'
 import { useHttpErrorRedirect } from '@/hooks/useHttpErrorRedirect'
 import PersonSheet from '@/components/PersonSheet'
@@ -8,6 +9,7 @@ import { personCardContainerVariants } from '@/components/personCardVariants'
 import SectionHeader from '@/components/SectionHeader'
 import SubsectionLabel from '@/components/SubsectionLabel'
 import { SkeletonGrid } from '@/components/SkeletonGrid'
+import { slugify } from '@/utils/slugify'
 import type { Mitglied, Abgeordneter, PartyData, Schwerpunkt } from './types'
 import { AbgeordneterCard } from './AbgeordneterCard'
 import { SchwerpunktCard } from './SchwerpunktCard'
@@ -43,11 +45,34 @@ function sheetReducer(_: SheetState, action: SheetAction): SheetState {
 // ---------------------------------------------------------------------------
 
 export default function Partei() {
+  const { schwerpunktSlug } = useParams<{ schwerpunktSlug?: string }>()
+  const navigate = useNavigate()
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
   const { data, error } = useData<PartyData>('/data/party.json')
   useHttpErrorRedirect(error)
   const [sheet, dispatch] = useReducer(sheetReducer, { type: 'none' })
+
+  // Sync URL param → sheet state once data is loaded.
+  useEffect(() => {
+    if (!schwerpunktSlug || !data) return
+    const match = data.schwerpunkte.find(s => slugify(s.titel) === schwerpunktSlug)
+    if (match) {
+      dispatch({ type: 'openSchwerpunkt', schwerpunkt: match })
+    } else {
+      navigate('/404', { replace: true })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schwerpunktSlug, data])
+
+  function handleOpenSchwerpunkt(s: Schwerpunkt) {
+    navigate(`/partei/${slugify(s.titel)}`)
+  }
+
+  function handleCloseSchwerpunkt() {
+    dispatch({ type: 'close' })
+    navigate('/partei', { replace: true })
+  }
 
   return (
     <section id="partei" className="py-24 bg-gray-50 dark:bg-gray-900">
@@ -71,11 +96,7 @@ export default function Partei() {
               className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"
             >
               {data?.schwerpunkte.map(s => (
-                <SchwerpunktCard
-                  key={s.titel}
-                  s={s}
-                  onClick={() => dispatch({ type: 'openSchwerpunkt', schwerpunkt: s })}
-                />
+                <SchwerpunktCard key={s.titel} s={s} onClick={() => handleOpenSchwerpunkt(s)} />
               ))}
               {!data && <SkeletonGrid count={6} />}
             </motion.div>
@@ -142,7 +163,7 @@ export default function Partei() {
 
       <SchwerpunktSheet
         item={sheet.type === 'schwerpunkt' ? sheet.schwerpunkt : null}
-        onClose={() => dispatch({ type: 'close' })}
+        onClose={handleCloseSchwerpunkt}
       />
     </section>
   )

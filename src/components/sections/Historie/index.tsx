@@ -1,4 +1,6 @@
 import { useRef } from 'react'
+import { useParams } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { motion, useInView } from 'framer-motion'
 import Sheet from '@/components/Sheet'
 import PersonSheet from '@/components/PersonSheet'
@@ -10,12 +12,37 @@ import { EventSheet } from './EventSheet'
 import { useHistorie } from '@/hooks/useHistorie'
 
 export default function Historie() {
+  const { jahreSlug } = useParams<{ jahreSlug?: string }>()
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
-  const { data, merged, sheet, openEvent, openPerson, closeSheet } = useHistorie()
+  const { data, merged, sheet, openEvent, openPerson, closeSheet } = useHistorie(jahreSlug)
 
   return (
     <section id="historie" className="py-24 bg-gray-50 dark:bg-gray-900">
+      {sheet.type === 'event' && (
+        <Helmet>
+          <title>
+            {sheet.entry.titel} ({sheet.entry.jahr}) – SPD Albstadt
+          </title>
+          <meta name="description" content={sheet.entry.beschreibung.slice(0, 160)} />
+          <link rel="canonical" href={`https://www.spd-albstadt.de/historie/${jahreSlug}`} />
+          <meta property="og:type" content="article" />
+          <meta property="og:url" content={`https://www.spd-albstadt.de/historie/${jahreSlug}`} />
+          <meta
+            property="og:title"
+            content={`${sheet.entry.titel} (${sheet.entry.jahr}) – SPD Albstadt`}
+          />
+          <meta property="og:description" content={sheet.entry.beschreibung.slice(0, 160)} />
+          <meta property="og:locale" content="de_DE" />
+          <meta property="og:site_name" content="SPD Albstadt" />
+          <meta name="twitter:card" content="summary" />
+          <meta
+            name="twitter:title"
+            content={`${sheet.entry.titel} (${sheet.entry.jahr}) – SPD Albstadt`}
+          />
+          <meta name="twitter:description" content={sheet.entry.beschreibung.slice(0, 160)} />
+        </Helmet>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <SectionHeader
