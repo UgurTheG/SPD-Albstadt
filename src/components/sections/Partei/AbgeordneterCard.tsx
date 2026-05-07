@@ -21,6 +21,7 @@ export function AbgeordneterCard({ a, onClick }: { a: Abgeordneter; onClick: () 
           src={a.bildUrl}
           alt={a.name}
           loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.04]"
         />
       </div>
