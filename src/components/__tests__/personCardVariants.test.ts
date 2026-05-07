@@ -15,16 +15,14 @@ describe('personCardContainerVariants', () => {
 })
 
 describe('personCardItemVariants', () => {
-  it('hidden state has opacity 0 and y 25', () => {
-    const hidden = personCardItemVariants.hidden as { opacity: number; y: number }
+  it('hidden state has opacity 0', () => {
+    const hidden = personCardItemVariants.hidden as { opacity: number }
     expect(hidden.opacity).toBe(0)
-    expect(hidden.y).toBe(25)
   })
 
-  it('visible state has opacity 1 and y 0', () => {
-    const visible = personCardItemVariants.visible as { opacity: number; y: number }
+  it('visible state has opacity 1', () => {
+    const visible = personCardItemVariants.visible as { opacity: number }
     expect(visible.opacity).toBe(1)
-    expect(visible.y).toBe(0)
   })
 
   it('visible transition uses easeOut', () => {

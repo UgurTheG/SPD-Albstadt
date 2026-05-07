@@ -98,7 +98,7 @@ export default function Partei() {
               {data?.schwerpunkte.map(s => (
                 <SchwerpunktCard key={s.titel} s={s} onClick={() => handleOpenSchwerpunkt(s)} />
               ))}
-              {!data && <SkeletonGrid count={6} />}
+              {!data && <SkeletonGrid count={6} itemClassName="h-48" />}
             </motion.div>
           </div>
         )}
@@ -123,7 +123,7 @@ export default function Partei() {
                   onClick={() => dispatch({ type: 'openPerson', person: m })}
                 />
               ))}
-              {!data && <SkeletonGrid count={4} itemClassName="h-64" />}
+              {!data && <SkeletonGrid count={9} itemClassName="aspect-3/4" />}
             </motion.div>
           </div>
         )}
