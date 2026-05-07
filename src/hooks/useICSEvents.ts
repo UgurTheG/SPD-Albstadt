@@ -17,14 +17,21 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 
 /**
  * Fetches and parses the ICS calendar feed from /api/ics.
+ * Pass `enabled=false` to skip the fetch entirely (e.g. when no ICS URL is configured).
  * Handles loading / error state and cancels stale fetches on unmount.
  */
-export function useICSEvents(): UseICSEventsResult {
+export function useICSEvents(enabled = true): UseICSEventsResult {
   const [events, setEvents] = useState<ICSEvent[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false)
+      setError(null)
+      return
+    }
+
     let cancelled = false
 
     const fetchICS = async () => {
@@ -60,7 +67,7 @@ export function useICSEvents(): UseICSEventsResult {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [enabled])
 
   return { events, loading, error }
 }

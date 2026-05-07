@@ -21,6 +21,11 @@ interface PersonCardProps {
   /** Small secondary line below the name (e.g. "seit 2019") */
   sublabel?: string
   onClick: () => void
+  /**
+   * When true, loads the image eagerly with high fetch priority (use for the
+   * first above-the-fold card to improve LCP).
+   */
+  priority?: boolean
 }
 
 function Initials({ name }: { name: string }) {
@@ -38,7 +43,14 @@ function Initials({ name }: { name: string }) {
  * Must be placed inside a `motion.div` container that provides
  * `personCardContainerVariants` so the stagger animation works correctly.
  */
-export default function PersonCard({ name, bildUrl, label, sublabel, onClick }: PersonCardProps) {
+export default function PersonCard({
+  name,
+  bildUrl,
+  label,
+  sublabel,
+  onClick,
+  priority,
+}: PersonCardProps) {
   return (
     <motion.div
       variants={personCardItemVariants}
@@ -66,7 +78,9 @@ export default function PersonCard({ name, bildUrl, label, sublabel, onClick }: 
       >
         {bildUrl ? (
           <img
-            loading="lazy"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : undefined}
+            decoding="async"
             src={bildUrl}
             alt={name}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"

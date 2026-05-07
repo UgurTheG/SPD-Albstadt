@@ -49,7 +49,7 @@ export default function Footer() {
             <p className="text-sm leading-relaxed mb-4 max-w-xs">{beschreibung}</p>
             <a
               href={`mailto:${email}`}
-              className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors mb-5"
+              className="inline-flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors mb-5"
             >
               <Mail size={14} />
               {email}
@@ -78,9 +78,9 @@ export default function Footer() {
 
           {/* Links */}
           <div>
-            <h4 className="text-white font-bold text-sm mb-5 uppercase tracking-wide">
+            <p className="text-white font-bold text-sm mb-5 uppercase tracking-wide">
               Weitere Links
-            </h4>
+            </p>
             <div className="flex flex-col gap-2.5 text-sm">
               <a
                 href="https://www.spd.de"

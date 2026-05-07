@@ -16,6 +16,29 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: { '@': path.resolve(__dirname, 'src') },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            // Admin bundle — only loaded on /admin
+            if (id.includes('/src/admin/')) return 'admin'
+            // Heavy animation library
+            if (id.includes('framer-motion')) return 'framer-motion'
+            // Lucide icons (large icon set)
+            if (id.includes('lucide-react')) return 'lucide'
+            // React ecosystem core
+            if (
+              id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/react-router')
+            )
+              return 'react-vendor'
+            // Everything else in node_modules → vendor chunk
+            if (id.includes('node_modules/')) return 'vendor'
+          },
+        },
+      },
+    },
     plugins: [
       serveIcsProxy(),
       serveOAuthCallback(env),
@@ -23,6 +46,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        injectRegister: 'script-defer',
         manifest: false, // use existing public/manifest.json
         workbox: {
           globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'],

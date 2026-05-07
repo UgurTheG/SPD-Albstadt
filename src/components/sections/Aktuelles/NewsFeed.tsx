@@ -131,7 +131,7 @@ export default function NewsFeed({ newsItems, onSelectNews }: Props) {
                     <Tag size={10} className="inline mr-1" />
                     {news.kategorie}
                   </span>
-                  <time className="text-xs text-gray-400 dark:text-gray-500">
+                  <time className="text-xs text-gray-600 dark:text-gray-400">
                     {formatDate(news.datum)}
                   </time>
                 </div>

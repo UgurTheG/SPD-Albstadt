@@ -113,12 +113,13 @@ export default function Partei() {
               animate={isInView ? 'visible' : 'hidden'}
               className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
             >
-              {data?.vorstand.map(m => (
+              {data?.vorstand.map((m, i) => (
                 <PersonCard
                   key={m.name}
                   name={m.name}
                   bildUrl={m.bildUrl}
                   label={m.rolle}
+                  priority={i === 0}
                   onClick={() => dispatch({ type: 'openPerson', person: m })}
                 />
               ))}

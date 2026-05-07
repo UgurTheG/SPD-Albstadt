@@ -5,7 +5,7 @@ export function OfficeHoursPanel({
 }) {
   return (
     <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
-      <h4 className="text-gray-900 dark:text-white font-bold mb-3">Bürozeiten</h4>
+      <h3 className="text-gray-900 dark:text-white font-bold mb-3">Bürozeiten</h3>
       <div className="space-y-2 text-sm">
         {buerozeiten.map((b, index) => (
           <div key={index} className="flex justify-between">

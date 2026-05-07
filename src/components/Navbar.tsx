@@ -33,7 +33,7 @@ export default function Navbar() {
             <button
               onClick={() => handleNav('home')}
               className={`flex items-center gap-2.5 group shrink-0 ${isHome ? 'hidden' : ''}`}
-              aria-label="Startseite"
+              aria-label="SPD Albstadt – Startseite"
             >
               <img
                 src="/spd-logo.svg"

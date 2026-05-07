@@ -93,6 +93,7 @@ export function KontaktForm() {
 
           <div>
             <label
+              id="label-kontakt-betreff"
               htmlFor="kontakt-betreff"
               className="block text-gray-700 dark:text-white text-xs font-semibold mb-2 uppercase tracking-wide"
             >
@@ -101,6 +102,7 @@ export function KontaktForm() {
             <div className="relative">
               <select
                 id="kontakt-betreff"
+                aria-labelledby="label-kontakt-betreff"
                 name="betreff"
                 value={formData.betreff}
                 onChange={handleChange}
@@ -175,7 +177,7 @@ export function KontaktForm() {
             )}
           </motion.button>
 
-          <p className="text-gray-400 dark:text-white/40 text-xs text-center leading-relaxed">
+          <p className="text-gray-600 dark:text-white/40 text-xs text-center leading-relaxed">
             Mit dem Absenden stimmen Sie zu, dass wir Ihre Daten zur Bearbeitung Ihrer Anfrage
             verwenden.
           </p>

@@ -32,6 +32,7 @@ export default function Avatar({ name, imageUrl, size = 'md', className }: Avata
     return (
       <img
         loading="lazy"
+        decoding="async"
         src={imageUrl}
         alt={name}
         className={`${SIZES[size]} rounded-full object-cover shrink-0${

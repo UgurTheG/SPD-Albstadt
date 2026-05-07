@@ -13,7 +13,7 @@ export function ContactInfoPanel({
 }) {
   return (
     <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
-      <h4 className="text-gray-900 dark:text-white font-bold mb-5 text-lg">Kontaktdaten</h4>
+      <h3 className="text-gray-900 dark:text-white font-bold mb-5 text-lg">Kontaktdaten</h3>
       <div className="space-y-4">
         <div className="flex items-start gap-3.5">
           <div className="w-9 h-9 bg-spd-red/10 dark:bg-white/15 rounded-xl flex items-center justify-center shrink-0">

@@ -25,7 +25,7 @@ export default function SubsectionHeading({ icon, title, subtitle, action, mb = 
         <SectionIconBadge>{icon}</SectionIconBadge>
         <div>
           <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-tight">{title}</h3>
-          <p className="text-[11px] text-gray-400 dark:text-gray-500">{subtitle}</p>
+          <p className="text-[11px] text-gray-600 dark:text-gray-400">{subtitle}</p>
         </div>
       </div>
       {action}

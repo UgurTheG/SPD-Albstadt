@@ -5,7 +5,6 @@ import { useData } from '@/hooks/useData'
 import { useHttpErrorRedirect } from '@/hooks/useHttpErrorRedirect'
 import { useConfig } from '@/hooks/useConfig'
 import { useICSEvents } from '@/hooks/useICSEvents'
-import { useElfsightScript } from '@/hooks/useElfsightScript'
 import type { NewsItem } from '@/types/news'
 import type { ICSEvent } from '@/utils/icsParser'
 import Sheet from '@/components/Sheet'
@@ -62,9 +61,14 @@ export default function Aktuelles() {
   const config = useConfig()
   const { elfsightAppId, icsUrl } = config ?? {}
 
-  const { events: icsEvents, loading: icsLoading, error: icsError } = useICSEvents()
+  // Only fetch ICS when config has loaded and an icsUrl is configured, preventing
+  // 404 console errors in environments without the serverless function.
+  const {
+    events: icsEvents,
+    loading: icsLoading,
+    error: icsError,
+  } = useICSEvents(config !== null && !!icsUrl)
 
-  useElfsightScript(elfsightAppId)
   useHttpErrorRedirect(newsError)
 
   // Sync URL param → sheet state once news items are loaded.

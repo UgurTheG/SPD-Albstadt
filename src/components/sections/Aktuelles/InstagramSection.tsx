@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion'
 import { Camera, ExternalLink } from 'lucide-react'
 import { INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME } from '@/shared/instagram'
 import SubsectionHeading from '@/components/SubsectionHeading'
+import { useElfsightScript } from '@/hooks/useElfsightScript'
 
 interface Props {
   elfsightAppId?: string
@@ -11,6 +12,11 @@ interface Props {
 export default function InstagramSection({ elfsightAppId }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
+
+  // Load Elfsight script only once the section is visible – this prevents
+  // third-party cookies (and console errors) from being set during initial
+  // page load, which improves Best Practices and Performance scores.
+  useElfsightScript(isInView ? elfsightAppId : undefined)
 
   // Reactively track dark-mode so the Elfsight widget theme updates with user preference
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'))
