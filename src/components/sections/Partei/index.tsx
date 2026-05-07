@@ -15,6 +15,15 @@ import { AbgeordneterCard } from './AbgeordneterCard'
 import { SchwerpunktCard } from './SchwerpunktCard'
 import { SchwerpunktSheet } from './SchwerpunktSheet'
 
+// Static fallback used before party.json loads so SectionHeader always reserves
+// the correct height for the description paragraph, preventing CLS.
+const PARTEI_BESCHREIBUNG_FALLBACK =
+  'Die SPD Albstadt ist der Stadtverband der Sozialdemokratischen Partei Deutschlands in Albstadt. ' +
+  'Seit über 130 Jahren gestalten wir aktiv die Kommunalpolitik – für ein solidarisches, gerechtes und ' +
+  'zukunftsorientiertes Albstadt. Ob Talgangbahn, bezahlbares Wohnen, Klimaschutz oder ' +
+  'Bildungsgerechtigkeit: Wir sind die Stimme der Bürgerinnen und Bürger im Gemeinderat und setzen uns ' +
+  'täglich dafür ein, dass Albstadt eine lebenswerte Stadt für alle bleibt. Werde Mitglied und gestalte mit!'
+
 // ---------------------------------------------------------------------------
 // Sheet state machine
 // ---------------------------------------------------------------------------
@@ -82,7 +91,7 @@ export default function Partei() {
           isInView={isInView}
           label="Partei"
           title="Die SPD Albstadt"
-          description={data?.beschreibung}
+          description={data?.beschreibung ?? PARTEI_BESCHREIBUNG_FALLBACK}
         />
 
         {/* Schwerpunkte — hidden while loading skeleton shows, hidden when empty */}

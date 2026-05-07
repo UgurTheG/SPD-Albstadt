@@ -11,11 +11,21 @@ import { resolve } from 'path'
  * But for SEO, the <head> is what matters most.
  */
 
+interface ImagePreload {
+  href: string
+  /** Optional responsive srcset (space-separated `url width` pairs). */
+  imagesrcset?: string
+  /** Optional sizes attribute for responsive preloads. */
+  imagesizes?: string
+}
+
 interface RouteSEO {
   path: string
   title: string
   description: string
   canonical: string
+  /** Critical above-the-fold images to preload for this route. */
+  imagePreloads?: ImagePreload[]
 }
 
 const BASE_URL = 'https://www.spd-albstadt.de'
@@ -32,8 +42,9 @@ const ROUTES: RouteSEO[] = [
     path: '/partei',
     title: 'Partei – SPD Albstadt',
     description:
-      'Der SPD Ortsverein Albstadt: Vorstand, Mitglieder und Persönlichkeiten. Lernen Sie die Menschen hinter der sozialdemokratischen Politik in Albstadt kennen.',
+      'Der SPD Ortsverein Albstadt: Vorstand, Mitglieder und Persnlichkeiten. Lernen Sie die Menschen hinter der sozialdemokratischen Politik in Albstadt kennen.',
     canonical: `${BASE_URL}/partei`,
+    imagePreloads: [{ href: '/images/abgeordnete/robin-mesarosch.webp' }],
   },
   {
     path: '/fraktion',
@@ -62,6 +73,14 @@ const ROUTES: RouteSEO[] = [
     description:
       'Kontaktieren Sie die SPD Albstadt: Adresse, Telefonnummer und E-Mail. Wir freuen uns auf Ihre Nachricht und Ihr Engagement.',
     canonical: `${BASE_URL}/kontakt`,
+    imagePreloads: [
+      {
+        href: '/images/kontakt/gruppenbild-640.webp',
+        imagesrcset:
+          '/images/kontakt/gruppenbild-640.webp 640w, /images/kontakt/gruppenbild.webp 1200w',
+        imagesizes: '(max-width: 1024px) 100vw, 40vw',
+      },
+    ],
   },
   {
     path: '/datenschutz',
@@ -124,6 +143,18 @@ function replaceMetaTag(html: string, route: RouteSEO): string {
     /<meta\s+name="twitter:description"[\s\S]*?\/>/,
     `<meta name="twitter:description" content="${route.description}" />`,
   )
+
+  // Inject LCP image preload hints just before </head>
+  if (route.imagePreloads?.length) {
+    const preloadTags = route.imagePreloads
+      .map(p => {
+        const srcsetAttr = p.imagesrcset ? ` imagesrcset="${p.imagesrcset}"` : ''
+        const sizesAttr = p.imagesizes ? ` imagesizes="${p.imagesizes}"` : ''
+        return `  <link rel="preload" as="image" href="${p.href}"${srcsetAttr}${sizesAttr} fetchpriority="high" />`
+      })
+      .join('\n')
+    html = html.replace('</head>', `${preloadTags}\n</head>`)
+  }
 
   return html
 }
