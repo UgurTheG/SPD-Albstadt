@@ -143,10 +143,11 @@ export default function Partei() {
                 animate={isInView ? 'visible' : 'hidden'}
                 className="grid grid-cols-1 gap-5"
               >
-                {data.abgeordnete.map(a => (
+                {data.abgeordnete.map((a, i) => (
                   <AbgeordneterCard
                     key={a.name}
                     a={a}
+                    priority={i === 0}
                     onClick={() => dispatch({ type: 'openPerson', person: a })}
                   />
                 ))}

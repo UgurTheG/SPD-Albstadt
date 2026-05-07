@@ -119,7 +119,9 @@ export default function NewsFeed({ newsItems, onSelectNews }: Props) {
                 <img
                   src={getNewsImages(news).urls[0]}
                   alt={news.titel}
-                  loading="lazy"
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  fetchPriority={i === 0 ? 'high' : undefined}
+                  decoding="async"
                   className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-200 dark:bg-gray-800 object-cover"
                 />
               )}

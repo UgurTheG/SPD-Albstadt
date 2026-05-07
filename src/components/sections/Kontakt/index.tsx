@@ -61,6 +61,9 @@ export default function Kontakt() {
               <img
                 src={kontakt?.gruppenbild || '/images/kontakt/gruppenbild.webp'}
                 alt="SPD Albstadt – Gruppenbild"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
                 className="w-full h-auto block max-h-56 object-cover object-center"
               />
             </div>

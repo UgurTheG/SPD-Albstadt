@@ -3,7 +3,15 @@ import { motion } from 'framer-motion'
 import { personCardItemVariants } from '@/components/personCardVariants'
 import type { Abgeordneter } from './types'
 
-export function AbgeordneterCard({ a, onClick }: { a: Abgeordneter; onClick: () => void }) {
+export function AbgeordneterCard({
+  a,
+  onClick,
+  priority,
+}: {
+  a: Abgeordneter
+  onClick: () => void
+  priority?: boolean
+}) {
   return (
     <motion.div
       variants={personCardItemVariants}
@@ -20,7 +28,8 @@ export function AbgeordneterCard({ a, onClick }: { a: Abgeordneter; onClick: () 
         <img
           src={a.bildUrl}
           alt={a.name}
-          loading="lazy"
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : undefined}
           decoding="async"
           className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.04]"
         />

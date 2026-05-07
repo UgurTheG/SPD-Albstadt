@@ -164,6 +164,8 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
               src={images[active]}
               alt={`${alt} – Foto ${active + 1}`}
               loading={active === 0 ? 'eager' : 'lazy'}
+              fetchPriority={active === 0 ? 'high' : undefined}
+              decoding="async"
               className="absolute inset-0 w-full h-full object-contain"
               custom={direction}
               variants={slideVariants}
