@@ -27,6 +27,12 @@ const ERROR_CODES = [400, 401, 403, 405, 408, 429, 500, 502, 503, 504] as const
 
 export const ROUTES: RouteEntry[] = [
   { path: '/aktuelles', title: 'SPD Albstadt / Aktuelles', depth: 1, element: <Aktuelles /> },
+  {
+    path: '/aktuelles/:newsId',
+    title: 'SPD Albstadt / Aktuelles',
+    depth: 1,
+    element: <Aktuelles />,
+  },
   { path: '/partei', title: 'SPD Albstadt / Partei', depth: 1, element: <Partei /> },
   { path: '/fraktion', title: 'SPD Albstadt / Fraktion', depth: 1, element: <Fraktion /> },
   {

@@ -9,7 +9,8 @@
     "bildUrl": "/images/news/gemeinderat2024.webp",
     "bildUrls": [],
     "bildBeschreibung": "",
-    "bildBeschreibungen": []
+    "bildBeschreibungen": [],
+    "uuid": "89e3cd97-1c45-4946-a03a-e0d3637eba07"
   },
   {
     "id": "1",
@@ -18,7 +19,8 @@
     "zusammenfassung": "Die SPD Albstadt präsentiert ihre Gemeinderatsliste für die Kommunalwahl 2024 – eine junge wie erfahrene Gruppe von Kandidatinnen und Kandidaten.",
     "inhalt": "Die SPD Albstadt ist stolz darauf, eine Mischung aus erfahrenen Kommunalpolitikerinnen und engagierten Nachwuchskräften für den Gemeinderat aufgestellt zu haben. Informieren Sie sich über unsere Kandidatinnen und Kandidaten, die sich mit Leidenschaft für die Belange unserer Stadt einsetzen werden.",
     "kategorie": "Wahl",
-    "bildUrl": "/images/news/gemeinderat2024.webp"
+    "bildUrl": "/images/news/gemeinderat2024.webp",
+    "uuid": "81f67f70-925f-43c0-9715-2d821b7b040e"
   },
   {
     "id": "2",
@@ -27,7 +29,8 @@
     "zusammenfassung": "Die SPD Albstadt präsentiert stolz ihre Kreistagsliste für die Kommunalwahl 2024 – junge und profilierte Kandidatinnen und Kandidaten für die Zukunft des Kreises.",
     "inhalt": "Die SPD Albstadt präsentiert stolz ihre Kreistagsliste für die Kommunalwahl 2024! Unsere Liste besteht aus jungen und profilierten Kandidatinnen und Kandidaten, die bereit sind, sich für die Zukunft unseres Kreises einzusetzen.",
     "kategorie": "Wahl",
-    "bildUrl": "/images/news/kreistag2024.webp"
+    "bildUrl": "/images/news/kreistag2024.webp",
+    "uuid": "51f96cf9-359d-4821-999e-8614ca686204"
   },
   {
     "id": "3",
@@ -36,7 +39,8 @@
     "zusammenfassung": "SPD-Fraktionsvorsitzende Marianne Roth hält die Haushaltsrede 2024 und betont die Bedeutung ausgewogener Finanzplanung für Albstadt.",
     "inhalt": "Marianne Roth fasste in ihrer Haushaltsrede zusammen, wofür die SPD einsteht: Ja zur Bekämpfung des Klimawandels, zum ÖPNV und zur Talgangbahn, zu Kultur, zur Sicherheit und zur sozialen Politik. Sie machte auf die Herausforderungen aufmerksam und zeigte Chancen für Albstadts Zukunft auf.",
     "kategorie": "Gemeinderat",
-    "bildUrl": "/images/news/HHR2024.webp"
+    "bildUrl": "/images/news/HHR2024.webp",
+    "uuid": "89056c2d-9cf0-4c1c-9dc2-175823a09db7"
   },
   {
     "id": "4",
@@ -45,7 +49,8 @@
     "zusammenfassung": "Die SPD Albstadt nimmt Stellung zur vorübergehenden Nutzung der Kreissporthalle Ebingen für geflüchtete Menschen und ruft zur Solidarität auf.",
     "inhalt": "Am Dienstagabend, dem 24.10.23, wurde von Landrat Günther-Martin Pauli und OB Roland Tralmer über die Zweckentfremdung der Kreissporthalle in Albstadt-Ebingen informiert. Die SPD war vor Ort, um sich ein Bild der aktuellen Lage zu machen. Klar ist: Die Vereins- und Bildungsangebote der Stadt sind auf diese Halle angewiesen. Aber auch die Menschen, die zu uns kommen, benötigen eine Unterkunft. Wir bitten: Wenn Sie Unterbringungsmöglichkeiten für geflüchtete Menschen kennen, melden Sie sich beim Landratsamt Zollernalb. Nur gemeinsam und solidarisch können wir diese Situation bewältigen. Zusammen mit SPD-Kreisverband und Juso-Kreisverband Zollernalb verurteilen wir aufs Schärfste die Aktionen am 26.10.23 rund um die Albstädter Kreissporthalle.",
     "kategorie": "Ortsverein",
-    "bildUrl": "/images/news/Kreisporthalle_Katja_Weiger_Schick.webp"
+    "bildUrl": "/images/news/Kreisporthalle_Katja_Weiger_Schick.webp",
+    "uuid": "6a7cfd97-311d-4b80-bc22-349281b04bca"
   },
   {
     "id": "5",
@@ -54,7 +59,8 @@
     "zusammenfassung": "Beim 'Tag der SPD' auf dem Ebinger Wochenmarkt feierten wir gemeinsam mit Bürgerinnen und Bürgern und verarbeiteten Streuobstäpfel zu Apfelsaft.",
     "inhalt": "Sowohl kleine als auch grosse Besucher konnten mit Streuobstpädagogen Karl Götz Äpfel von regionalen Wiesen zu leckerem Apfelsaft verarbeiten. Kinder und Erwachsene waren sich einig: Dieser Apfelsaft war der beste, den sie je getrunken hatten. Jeder konnte sich eine Flasche davon mit nach Hause nehmen und sogar ein selbstgestaltetes Etikett anbringen. Die Organisatorin Carmen Soudani war genauso zufrieden wie das Vorstandsduo Marianne Roth und Nils Maute. Für alle war klar: Wir theoretisieren nicht über regionale Produkte und Nachhaltigkeit – wir praktizieren sie.",
     "kategorie": "Veranstaltung",
-    "bildUrl": "/images/news/Apfelpressen_Nils_Maute.webp"
+    "bildUrl": "/images/news/Apfelpressen_Nils_Maute.webp",
+    "uuid": "c01a53ef-d0f5-4334-9389-a5d512b01e8f"
   },
   {
     "id": "6",
@@ -63,7 +69,8 @@
     "zusammenfassung": "Die SPD Albstadt blickt auf den Wahlkampf zur OB-Wahl 2023 zurück und gratuliert Roland Tralmer zum Wahlsieg.",
     "inhalt": "In der Zeit zwischen dem ersten und zweiten Wahlgang der Albstädter Oberbürgermeisterwahl 2023 unterstützten wir den unabhängigen Kandidaten Udo Hollaür bei seinem Wahlkampf. Die SPD-Mitglieder und Amtsträger halfen bei der Durchführung des Wahlkampfs und verbesserten die Präsenz Hollaürs auf den Albstädter Märkten und in sozialen Netzwerken. Gemeinsam wurde kurz vor der Wahl eine gut besuchte Wahlkampfveranstaltung im Brauhaus in Ebingen organisiert. Zwar wurde die Wahl nicht gewonnen, jedoch konnte mit Hilfe von Freien Wählern, Teilen der Grünen und uns ein besseres Ergebnis als beim ersten Wahlgang erzielt werden. Wir wünschen dem Wahlsieger eine gute Amtszeit und hoffen auf eine produktive, zukunftsorientierte Zusammenarbeit. Herzlichen Glückwunsch an Roland Tralmer zum Wahlsieg am 19.03.23 von der SPD Albstadt!",
     "kategorie": "Ortsverein",
-    "bildUrl": "/images/news/rathaus.webp"
+    "bildUrl": "/images/news/rathaus.webp",
+    "uuid": "d72d9da3-9233-428b-b013-f778689907ef"
   },
   {
     "id": "7",
@@ -72,7 +79,8 @@
     "zusammenfassung": "Zusammen mit den Freien Wählern und Teilen der Grünen unterstützt die SPD Albstadt den parteilosen Kandidaten Udo Hollaür im Albstädter OB-Wahlkampf.",
     "inhalt": "Zusammen mit den Freien Wählern und Teilen der Grünen unterstützt die SPD Albstadt den parteilosen Kandidaten Udo Hollaür im Albstädter OB-Wahlkampf. Grund war die schockierende Wahlbeteiligung von nur 34,75 %. Dem SPD-Vorstand und der Gemeinderatsfraktion war klar, dass sie sich trotz fehlender SPD-Kandidatur beteiligen müssen. Hollaür überzeugt die Genossinnen und Genossen mit seiner jahrelangen Erfahrung in verschiedenen Positionen in den Verwaltungen der Städte Albstadt und Mekirch sowie durch die souveräne Arbeit als Baubürgermeister der Stadt Albstadt.",
     "kategorie": "Ortsverein",
-    "bildUrl": "/images/news/rathaus.webp"
+    "bildUrl": "/images/news/rathaus.webp",
+    "uuid": "dba0f353-f26d-44a8-a750-1705f8d26604"
   },
   {
     "id": "8",
@@ -81,7 +89,8 @@
     "zusammenfassung": "Der SPD-Stadtverband Albstadt teilt mit, dass der geplante Kandidat für die OB-Wahl 2023 aus gesundheitlichen Gründen abgesagt hat.",
     "inhalt": "Der SPD-Stadtverband und die Gemeinderatsfraktion arbeiten täglich daran, ihrer kommunalpolitischen Verantwortung gerecht zu werden. Daher haben wir lange nach einem geeigneten Kandidaten für die OB-Kandidatur 2023 gesucht. Seit Anfang Dezember hatten wir die Zusage eines guten Kandidaten, welcher vom Alter, der Ausbildung sowie dem beruflichen Werdegang für den Albstädter Chefsessel geeignet war. Leider hat er uns aus gesundheitlichen Gründen am vergangenen Wochenende endgültig abgesagt. Dies bedaürt die Albstädter SPD sehr. Marianne Roth, SPD-Gemeinderatsfraktion und Stadtverbandsvorsitzende. Nils Maute, SPD-Stadtverbandsvorsitzender.",
     "kategorie": "Ortsverein",
-    "bildUrl": "/images/news/rathaus.webp"
+    "bildUrl": "/images/news/rathaus.webp",
+    "uuid": "5877fe74-f616-4f0f-b58c-c6e76ea40e1b"
   },
   {
     "id": "9",
@@ -90,7 +99,8 @@
     "zusammenfassung": "SPD-Fraktionsvorsitzende Marianne Roth hält die Haushaltsrede 2023 und betont das klare Ja der SPD zu Klimaschutz, ÖPNV und sozialer Politik.",
     "inhalt": "Unsere SPD-Fraktionsvorsitzende Marianne Roth hat am 15.12.2022 ihre Haushaltsrede im Gemeinderat Albstadt gehalten. Dort hat sie zusammengefasst, wofür die SPD-Gemeinderatsfraktion einsteht: Ja zur Bekämpfung des Klimawandels. Ja zum ÖPNV und zur Talgangbahn. Ja zu Kultur. Ja zum Masterplan Sicherheit und Ordnung. Ja zur sozialen Politik dieser Stadt. Ja zum Image der Stadt. Hier wird nochmals deutlich, dass die SPD-Fraktion Albstadt im Bereich Umweltpolitik eine Vorreiterrolle einnimmt.",
     "kategorie": "Gemeinderat",
-    "bildUrl": "/images/news/marianne.webp"
+    "bildUrl": "/images/news/marianne.webp",
+    "uuid": "48fea5e4-a987-4d80-a80a-eec1aea2c2f9"
   },
   {
     "id": "10",
@@ -99,7 +109,8 @@
     "zusammenfassung": "Die SPD Albstadt lädt zur Diskussion über Energie und Energiepreise mit MdB Robin Mesarosch in der Festhalle Ebingen ein.",
     "inhalt": "Die Stadtverbandsvorsitzenden Marianne Roth und Nils Maute begrüßten Mitglieder der SPD Albstadt, Messtetten und Zollernalb zusammen mit MdB Robin Mesarosch zu einer Diskussion über Energie und Energiepreise im Konferenzraum der Festhalle Ebingen. Mesarosch, Mitglied im Ausschuss für Klimaschutz und Energie, erklärte die aktuellen Abläufe in Berlin, um die Krise abzufedern. Die Bundesregierung habe 15 Mrd. Euro in die Hand genommen und weltweit Gas eingekauft, um den Ausfall russischer Gaslieferungen zu kompensieren. Für die Zukunft forderte Mesarosch, stark auf den Ausbau erneuerbarer Energien zu setzen, da nur so sinkende Strompreise zu erwarten seien.",
     "kategorie": "Veranstaltung",
-    "bildUrl": "/images/news/IMG_2887.webp"
+    "bildUrl": "/images/news/IMG_2887.webp",
+    "uuid": "7ff30655-3022-4483-9166-2faa1e7fb441"
   },
   {
     "id": "11",
@@ -108,7 +119,8 @@
     "zusammenfassung": "Mit Marianne Roth und Nils Maute wurde ein Führungsduo ohne Gegenstimme gewählt – eine Verbindung von Erfahrung und jugendlichem Schwung.",
     "inhalt": "Alt und Jung, Erfahrung und Enthusiasmus: Die SPD Albstadt wählt Marianne Roth und Nils Maute als Doppelspitze. Roth beschreibt es treffend: 'Kein Gegensatz, sondern eine gegenseitige Ergänzung.' Gemeinsam wollen sie für ein engagiertes und nachhaltiges Arbeiten für die SPD Albstadt stehen.",
     "kategorie": "Ortsverein",
-    "bildUrl": "/images/news/DSC_9723.webp"
+    "bildUrl": "/images/news/DSC_9723.webp",
+    "uuid": "0255c6ac-b740-498c-8810-8c73afb4bfc5"
   },
   {
     "id": "12",
@@ -117,6 +129,7 @@
     "zusammenfassung": "Martin Frohme begründet die Zustimmung der SPD-Fraktion zur Reaktivierung der Talgangbahn als wichtigen Schritt in die Verkehrswende.",
     "inhalt": "Jetzt ist klar: Die Talgangbahn kann kommen. Die SPD-Fraktion stimmt einer Interimslösung zu. Für die Reaktivierung der Bahnstrecke stellt der Bund 90 % Förderung in Aussicht, das Land noch 5 % dazu. Die SPD-Fraktion stimmt bei den überwiegenden Vorteilen und aus grundsätzlichen Erwägungen zum Einstieg in die Verkehrswende dem vorzeitigen Bau der Talgangbahn zu. Für Albstadt und die Region ist dies der Einstieg in die Verkehrswende mit positiven Folgen für den Klimaschutz. Die Stadt Albstadt und wir als Gemeinderätinnen und Gemeinderate setzen heute ein Zeichen für die kommenden Generationen. Martin Frohme, SPD-Fraktion.",
     "kategorie": "Gemeinderat",
-    "bildUrl": "/images/news/bild_talbahn.webp"
+    "bildUrl": "/images/news/bild_talbahn.webp",
+    "uuid": "74eba692-e793-4ba3-930c-e8ee06cb944e"
   }
 ]

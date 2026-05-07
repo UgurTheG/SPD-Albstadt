@@ -62,7 +62,9 @@ export default function App() {
 
       {/* Aria-live region for screen-reader route announcements */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
-        {PAGE_TITLES[location.pathname] ?? PAGE_TITLES['/']}
+        {PAGE_TITLES[location.pathname] ??
+          PAGE_TITLES['/' + location.pathname.split('/')[1]] ??
+          PAGE_TITLES['/']}
       </div>
 
       {isHome ? (
@@ -80,7 +82,7 @@ export default function App() {
       <main id="main-content">
         <AnimatePresence mode="wait">
           <motion.div
-            key={location.pathname}
+            key={'/' + location.pathname.split('/')[1]}
             initial={{ opacity: 0, y: direction > 0 ? 36 : -28 }}
             animate={{ opacity: 1, y: 0, transition: { duration: 0.46, ease: 'easeOut' } }}
             exit={{

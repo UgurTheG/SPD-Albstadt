@@ -5,6 +5,8 @@
 
 export interface NewsItem {
   id: string
+  /** Stable UUID used as the deep-link identifier (/aktuelles/:uuid). */
+  uuid?: string
   datum: string
   titel: string
   zusammenfassung: string

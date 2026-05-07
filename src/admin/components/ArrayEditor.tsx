@@ -78,6 +78,10 @@ export default function ArrayEditor({ fields, data, tabKey, onStructureChange }:
     if (data.length > 0 && data[0] && 'id' in data[0]) {
       newItem.id = crypto.randomUUID?.() ?? String(Date.now())
     }
+    // Auto-assign a stable UUID for deep-linking (separate from the order-number id)
+    if (data.length > 0 && data[0] && 'uuid' in data[0]) {
+      newItem.uuid = crypto.randomUUID?.() ?? String(Date.now())
+    }
     commitArray([...data, newItem])
   }
 

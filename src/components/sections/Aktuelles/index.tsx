@@ -1,5 +1,6 @@
-import { useRef, useReducer } from 'react'
+import { useRef, useReducer, useEffect } from 'react'
 import { useInView } from 'framer-motion'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useData } from '@/hooks/useData'
 import { useHttpErrorRedirect } from '@/hooks/useHttpErrorRedirect'
 import { useConfig } from '@/hooks/useConfig'
@@ -50,6 +51,8 @@ function sheetReducer(_: SheetState, action: SheetAction): SheetState {
 // ---------------------------------------------------------------------------
 
 export default function Aktuelles() {
+  const { newsId } = useParams<{ newsId?: string }>()
+  const navigate = useNavigate()
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
 
@@ -63,6 +66,28 @@ export default function Aktuelles() {
 
   useElfsightScript(elfsightAppId)
   useHttpErrorRedirect(newsError)
+
+  // Sync URL param → sheet state once news items are loaded.
+  // The URL param is now a UUID; fall back to id for legacy items without uuid.
+  useEffect(() => {
+    if (!newsId || !newsItems) return
+    const item = newsItems.find(n => (n.uuid ?? n.id) === newsId)
+    if (item) {
+      dispatch({ type: 'openNews', item })
+    } else {
+      navigate('/404', { replace: true })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newsId, newsItems])
+
+  function handleOpenNews(item: NewsItem) {
+    navigate(`/aktuelles/${item.uuid ?? item.id}`)
+  }
+
+  function handleCloseNewsSheet() {
+    dispatch({ type: 'close' })
+    navigate('/aktuelles', { replace: true })
+  }
 
   return (
     <section id="aktuelles" className="py-24 bg-white dark:bg-gray-950">
@@ -81,10 +106,7 @@ export default function Aktuelles() {
           descriptionClassName="max-w-2xl"
         />
 
-        <NewsFeed
-          newsItems={newsItems}
-          onSelectNews={item => dispatch({ type: 'openNews', item })}
-        />
+        <NewsFeed newsItems={newsItems} onSelectNews={handleOpenNews} />
 
         <CalendarSection
           events={icsEvents}
@@ -99,7 +121,7 @@ export default function Aktuelles() {
       </div>
 
       {/* News detail sheet */}
-      <Sheet open={sheet.type === 'news'} onClose={() => dispatch({ type: 'close' })} size="lg">
+      <Sheet open={sheet.type === 'news'} onClose={handleCloseNewsSheet} size="lg">
         {sheet.type === 'news' && <NewsDetailSheet news={sheet.item} />}
       </Sheet>
 
