@@ -77,7 +77,7 @@ const ROUTES: RouteSEO[] = [
       {
         href: '/images/kontakt/gruppenbild-640.webp',
         imagesrcset:
-          '/images/kontakt/gruppenbild-640.webp 640w, /images/kontakt/gruppenbild.webp 1200w',
+          '/images/kontakt/gruppenbild-640.webp 640w, /images/kontakt/gruppenbild-800.webp 800w, /images/kontakt/gruppenbild.webp 1200w',
         imagesizes: '(max-width: 1024px) 100vw, 40vw',
       },
     ],

@@ -42,6 +42,13 @@ export default defineConfig(({ mode }) => {
               id.includes('node_modules/immer/')
             )
               return 'admin-vendor'
+            // Lightbox — only rendered when a Sheet/gallery opens (user interaction).
+            // Keeping it out of vendor prevents it from being eagerly preloaded on all pages.
+            if (id.includes('yet-another-react-lightbox')) return 'lightbox'
+            // Calendar libs — only needed on /aktuelles (lazy chunk).
+            // ical.js parses ICS feeds; ics generates downloadable ICS files.
+            if (id.includes('node_modules/ical.js/') || id.includes('node_modules/ics/'))
+              return 'calendar'
             // Heavy animation library
             if (id.includes('framer-motion')) return 'framer-motion'
             // Lucide icons (large icon set)
