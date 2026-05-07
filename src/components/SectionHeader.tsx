@@ -44,8 +44,8 @@ export default function SectionHeader({
   return (
     <motion.div
       ref={sectionRef}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      initial={{ y: 30 }}
+      animate={isInView ? { y: 0 } : {}}
       transition={{ duration: 0.6 }}
       className={`relative ${mb}`}
     >

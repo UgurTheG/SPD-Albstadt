@@ -79,8 +79,8 @@ export default function Hero() {
           </div>
         </motion.div>
         <motion.h1
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ y: 40 }}
+          animate={{ y: 0 }}
           transition={{ duration: 0.8, delay: 0.15, ease: 'easeOut' }}
           className="text-6xl sm:text-8xl lg:text-[10rem] font-black leading-none tracking-tighter mb-4"
         >
