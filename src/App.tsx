@@ -80,7 +80,7 @@ export default function App() {
       )}
 
       <main id="main-content">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={'/' + location.pathname.split('/')[1]}
             initial={{ opacity: 0, y: direction > 0 ? 36 : -28 }}
