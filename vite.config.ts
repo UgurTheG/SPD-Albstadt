@@ -17,6 +17,13 @@ export default defineConfig(({ mode }) => {
       alias: { '@': path.resolve(__dirname, 'src') },
     },
     build: {
+      // Don't eagerly preload the admin chunk (453 KB) on every non-admin page.
+      // It is lazily imported and will be fetched on demand when the user navigates to /admin.
+      modulePreload: {
+        resolveDependencies(_url, deps) {
+          return deps.filter(dep => !dep.includes('admin'))
+        },
+      },
       rollupOptions: {
         output: {
           manualChunks(id) {
