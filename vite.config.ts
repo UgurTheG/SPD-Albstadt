@@ -17,8 +17,7 @@ export default defineConfig(({ mode }) => {
       alias: { '@': path.resolve(__dirname, 'src') },
     },
     build: {
-      // Don't eagerly preload the admin chunk (453 KB) on every non-admin page.
-      // It is lazily imported and will be fetched on demand when the user navigates to /admin.
+      // Don't eagerly preload vendor chunks — only preload the direct entry deps.
       modulePreload: {
         resolveDependencies(_url, deps) {
           return deps.filter(dep => !dep.includes('admin'))
@@ -27,8 +26,22 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            // Admin bundle — only loaded on /admin
-            if (id.includes('/src/admin/')) return 'admin'
+            // NOTE: Do NOT manually chunk /src/admin/ here — let Rolldown create
+            // a natural dynamic-import chunk for it. Forcing it into a named chunk
+            // causes Rolldown (Vite 8) to inline all its dependencies (React,
+            // framer-motion, etc.) and then re-export them, making the main entry
+            // statically import the admin chunk on every page.
+
+            // Admin-only node_modules — never preloaded on non-admin pages.
+            // These are exclusively imported by src/admin/** code.
+            if (
+              id.includes('node_modules/@dnd-kit/') ||
+              id.includes('node_modules/sonner/') ||
+              id.includes('node_modules/zustand/') ||
+              id.includes('node_modules/@reduxjs/') ||
+              id.includes('node_modules/immer/')
+            )
+              return 'admin-vendor'
             // Heavy animation library
             if (id.includes('framer-motion')) return 'framer-motion'
             // Lucide icons (large icon set)
@@ -57,6 +70,9 @@ export default defineConfig(({ mode }) => {
         manifest: false, // use existing public/manifest.json
         workbox: {
           globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'],
+          // Don't precache admin JS — it's a large lazy chunk only needed on /admin.
+          // It will be cached on first access to /admin via the navigation handler.
+          globIgnores: ['**/AdminApp*.js', '**/admin*.js'],
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api\//, /^\/data\//, /^\/admin/],
           runtimeCaching: [
