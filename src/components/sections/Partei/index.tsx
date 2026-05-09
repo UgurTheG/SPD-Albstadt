@@ -127,7 +127,6 @@ export default function Partei() {
                   key={m.name}
                   name={m.name}
                   bildUrl={m.bildUrl}
-                  label={m.rolle}
                   priority={i === 0}
                   onClick={() => dispatch({ type: 'openPerson', person: m })}
                 />
