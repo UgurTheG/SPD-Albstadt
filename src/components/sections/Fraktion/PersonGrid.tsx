@@ -51,7 +51,6 @@ export function PersonGrid({
             key={m.name}
             name={m.name}
             bildUrl={m.bildUrl}
-            label={m.beruf}
             sublabel={`seit ${m.seit}`}
             onClick={() => onSelect(m)}
           />
