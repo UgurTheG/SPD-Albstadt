@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { Check, Share2 } from 'lucide-react'
 import type { NewsItem } from '@/types/news'
 import { CATEGORY_COLORS, getNewsImages } from '@/types/news'
 import { formatDate } from '@/utils/formatDate'
@@ -18,6 +20,27 @@ export default function NewsDetailSheet({ news }: Props) {
       : `${BASE_URL}${urls[0]}`
     : undefined
   const deepId = news.uuid ?? news.id
+  const shareUrl = `${BASE_URL}/aktuelles/${deepId}`
+
+  const [copied, setCopied] = useState(false)
+
+  async function handleShare() {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${news.titel} – SPD Albstadt`,
+          text: news.zusammenfassung,
+          url: shareUrl,
+        })
+      } catch {
+        // user cancelled or error — no action needed
+      }
+    } else {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   return (
     <div>
@@ -54,6 +77,16 @@ export default function NewsDetailSheet({ news }: Props) {
         <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base whitespace-pre-line">
           {news.inhalt}
         </p>
+        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+          <button
+            type="button"
+            onClick={handleShare}
+            className="w-full flex items-center justify-center gap-2 bg-spd-red/10 hover:bg-spd-red text-spd-red hover:text-white text-sm font-bold py-3 px-5 rounded-xl transition-all duration-200 active:scale-[0.98]"
+          >
+            {copied ? <Check size={16} /> : <Share2 size={16} />}
+            {copied ? 'Link kopiert!' : 'Beitrag teilen'}
+          </button>
+        </div>
       </div>
     </div>
   )
