@@ -62,13 +62,21 @@ export default function NewsDetailSheet({ news }: Props) {
       </Helmet>
       {urls.length > 0 && <PhotoGallery images={urls} captions={captions} alt={news.titel} />}
       <div className="p-6 sm:p-8">
-        <div className="flex items-center gap-3 mb-3 flex-wrap">
+        <div className="flex items-center gap-3 mb-3">
           <span
             className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORY_COLORS[news.kategorie]}`}
           >
             {news.kategorie}
           </span>
-          <time className="text-sm text-gray-400">{formatDate(news.datum)}</time>
+          <time className="text-sm text-gray-400 flex-1">{formatDate(news.datum)}</time>
+          <button
+            type="button"
+            onClick={handleShare}
+            aria-label="Beitrag teilen"
+            className="w-8 h-8 rounded-lg bg-spd-red/10 hover:bg-spd-red flex items-center justify-center text-spd-red hover:text-white transition-all duration-200 active:scale-[0.95] shrink-0"
+          >
+            {copied ? <Check size={15} /> : <Share2 size={15} />}
+          </button>
         </div>
         <h3 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white leading-tight mb-4">
           {news.titel}
@@ -77,16 +85,6 @@ export default function NewsDetailSheet({ news }: Props) {
         <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base whitespace-pre-line">
           {news.inhalt}
         </p>
-        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
-          <button
-            type="button"
-            onClick={handleShare}
-            className="w-full flex items-center justify-center gap-2 bg-spd-red/10 hover:bg-spd-red text-spd-red hover:text-white text-sm font-bold py-3 px-5 rounded-xl transition-all duration-200 active:scale-[0.98]"
-          >
-            {copied ? <Check size={16} /> : <Share2 size={16} />}
-            {copied ? 'Link kopiert!' : 'Beitrag teilen'}
-          </button>
-        </div>
       </div>
     </div>
   )
