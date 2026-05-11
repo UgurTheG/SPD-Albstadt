@@ -98,7 +98,9 @@ export default function AdminSidebar({
                 <h1 className="font-extrabold text-sm dark:text-white tracking-tight leading-none mb-0.5">
                   Daten-Editor
                 </h1>
-                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">SPD Albstadt</p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+                  SPD Albstadt
+                </p>
               </div>
               <button
                 type="button"

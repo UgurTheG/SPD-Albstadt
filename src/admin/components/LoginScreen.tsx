@@ -56,7 +56,6 @@ export default function LoginScreen() {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row text-left [hyphens:none]">
-
       {/* ── Left branding panel (desktop only) ─────────────────────────── */}
       <div className="hidden lg:flex lg:w-[420px] xl:w-[480px] shrink-0 flex-col justify-between p-10 xl:p-14 relative overflow-hidden bg-gray-950">
         {/* Grid pattern */}
@@ -79,10 +78,13 @@ export default function LoginScreen() {
           </div>
 
           <h1 className="text-4xl xl:text-5xl font-black text-white tracking-tight leading-[1.05] mb-4">
-            Daten-<br />Editor
+            Daten-
+            <br />
+            Editor
           </h1>
           <p className="text-gray-400 text-sm leading-relaxed max-w-[260px]">
-            Inhalte bearbeiten, Fotos hochladen und Änderungen direkt auf spd-albstadt.de veröffentlichen.
+            Inhalte bearbeiten, Fotos hochladen und Änderungen direkt auf spd-albstadt.de
+            veröffentlichen.
           </p>
         </div>
 
@@ -127,7 +129,9 @@ export default function LoginScreen() {
               </div>
             </div>
             <div>
-              <p className="font-extrabold text-sm text-gray-900 dark:text-white tracking-tight">Daten-Editor</p>
+              <p className="font-extrabold text-sm text-gray-900 dark:text-white tracking-tight">
+                Daten-Editor
+              </p>
               <p className="text-[10px] text-gray-400">SPD Albstadt</p>
             </div>
           </div>

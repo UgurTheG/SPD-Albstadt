@@ -17,7 +17,10 @@ interface PersonGridProps<T extends PersonBase> {
   animationDelay: number
   onSelect: (m: T, i: number) => void
   /** Extra PersonCard props per member. Use for label, sublabel, priority, etc. */
-  renderCardProps?: (member: T, index: number) => { label?: string; sublabel?: string; priority?: boolean }
+  renderCardProps?: (
+    member: T,
+    index: number,
+  ) => { label?: string; sublabel?: string; priority?: boolean }
   skeletonCount?: number
   skeletonClassName?: string
 }

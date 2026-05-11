@@ -62,7 +62,6 @@ export default function KommunalpolitikEditor() {
       onRedo={redo}
       onReloadData={loadData}
     >
-
       {/* Sichtbar toggle */}
       <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/40 rounded-2xl p-5 mb-6">
         <div className="flex items-center justify-between gap-4">
@@ -342,7 +341,6 @@ export default function KommunalpolitikEditor() {
           })}
         </AnimatePresence>
       </div>
-
     </TabEditorShell>
   )
 }
