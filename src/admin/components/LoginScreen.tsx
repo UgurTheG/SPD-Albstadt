@@ -22,12 +22,10 @@ export default function LoginScreen() {
   const { login, loginError, loginLoading, loginAuthStatus } = useAdminStore()
   const navigate = useNavigate()
 
-  // Parse the OAuth callback query params once at mount
   const [authResult] = useState(() => {
     const params = new URLSearchParams(window.location.search)
     const auth = params.get('auth')
     if (!auth) return { error: '', ok: false }
-    // Clean URL immediately
     window.history.replaceState(null, '', window.location.pathname)
     if (auth === 'error') {
       const msg = params.get('msg') || 'unknown_error'
@@ -38,11 +36,8 @@ export default function LoginScreen() {
 
   const [oauthError, setOauthError] = useState(authResult.error)
 
-  // When callback succeeded, fetch session from server and login
   useEffect(() => {
-    if (authResult.ok) {
-      login()
-    }
+    if (authResult.ok) login()
   }, [authResult.ok, login])
 
   useEffect(() => {
@@ -54,38 +49,87 @@ export default function LoginScreen() {
   const handleGitHubLogin = () => {
     if (!CLIENT_ID) return
     setOauthError('')
-    // Redirect to server-side start endpoint which handles state, scope & cookies
     window.location.href = '/api/auth/start'
   }
 
   const errorMsg = loginError || oauthError
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-linear-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 relative overflow-hidden text-left [hyphens:none]">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-spd-red/5 dark:bg-spd-red/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-spd-red/3 dark:bg-spd-red/5 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen flex flex-col lg:flex-row text-left [hyphens:none]">
 
-      <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="relative"
-      >
-        <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-2xl rounded-3xl shadow-2xl dark:shadow-black/40 p-8 sm:p-10 w-full max-w-md text-center border border-white/50 dark:border-gray-700/50">
-          <div className="relative mx-auto mb-8 w-fit">
-            <div className="absolute inset-0 bg-spd-red/20 rounded-3xl blur-xl scale-150" />
-            <div className="relative w-16 h-16 rounded-2xl shadow-xl shadow-spd-red/30 overflow-hidden">
-              <img src="/spd-logo.svg" alt="SPD" className="w-full h-full" />
+      {/* ── Left branding panel (desktop only) ─────────────────────────── */}
+      <div className="hidden lg:flex lg:w-[420px] xl:w-[480px] shrink-0 flex-col justify-between p-10 xl:p-14 relative overflow-hidden bg-gray-950">
+        {/* Grid pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:36px_36px]" />
+        {/* Radial glows */}
+        <div className="absolute -top-32 -right-32 w-[500px] h-[500px] bg-spd-red/15 rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 -left-32 w-[400px] h-[400px] bg-spd-red/8 rounded-full blur-3xl" />
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-spd-red via-spd-red/60 to-transparent" />
+        {/* Right edge fade */}
+        <div className="absolute top-0 right-0 bottom-0 w-px bg-gradient-to-b from-transparent via-white/5 to-transparent" />
+
+        {/* Top: logo + wordmark */}
+        <div className="relative z-10">
+          <div className="relative w-fit mb-10">
+            <div className="absolute inset-0 bg-spd-red/25 rounded-3xl blur-2xl scale-[2.5]" />
+            <div className="relative w-16 h-16 rounded-2xl overflow-hidden shadow-2xl shadow-spd-red/40 ring-1 ring-white/10">
+              <img src="/spd-logo.svg" alt="SPD Albstadt" className="w-full h-full" />
             </div>
           </div>
 
-          <h1 className="text-2xl font-extrabold mb-1 dark:text-white tracking-tight">
-            Daten-Editor
+          <h1 className="text-4xl xl:text-5xl font-black text-white tracking-tight leading-[1.05] mb-4">
+            Daten-<br />Editor
           </h1>
+          <p className="text-gray-400 text-sm leading-relaxed max-w-[260px]">
+            Inhalte bearbeiten, Fotos hochladen und Änderungen direkt auf spd-albstadt.de veröffentlichen.
+          </p>
+        </div>
+
+        {/* Bottom: version / org */}
+        <div className="relative z-10 flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-spd-red/60" />
+          <p className="text-[11px] text-gray-600 font-medium tracking-wide uppercase">
+            SPD Ortsverein Albstadt
+          </p>
+        </div>
+      </div>
+
+      {/* ── Right login panel ───────────────────────────────────────────── */}
+      <div className="flex-1 flex items-center justify-center px-6 py-16 relative overflow-hidden bg-white dark:bg-gray-950">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-50/80 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900" />
+        <div className="absolute -top-48 -right-48 w-[600px] h-[600px] bg-spd-red/[0.04] dark:bg-spd-red/[0.08] rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-spd-red/[0.02] dark:bg-spd-red/[0.05] rounded-full blur-3xl" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 18, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="relative w-full max-w-sm"
+        >
+          {/* Mobile logo (hidden on desktop) */}
+          <div className="flex items-center gap-3 mb-10 lg:hidden">
+            <div className="relative">
+              <div className="absolute inset-0 bg-spd-red/20 rounded-xl blur-md" />
+              <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-spd-red/20 ring-1 ring-spd-red/10">
+                <img src="/spd-logo.svg" alt="SPD" className="w-full h-full" />
+              </div>
+            </div>
+            <div>
+              <p className="font-extrabold text-sm dark:text-white tracking-tight">Daten-Editor</p>
+              <p className="text-[10px] text-gray-400">SPD Albstadt</p>
+            </div>
+          </div>
+
+          <p className="text-xs font-semibold text-spd-red uppercase tracking-widest mb-2">
+            Administration
+          </p>
+          <h2 className="text-3xl font-extrabold dark:text-white tracking-tight mb-1.5">
+            Willkommen zurück
+          </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
-            Melden Sie sich mit Ihrem GitHub-Konto an, um Inhalte zu bearbeiten.
+            Melden Sie sich mit Ihrem GitHub-Konto an, um Inhalte zu verwalten.
           </p>
 
           {!CLIENT_ID ? (
@@ -94,12 +138,12 @@ export default function LoginScreen() {
               <code className="font-mono">VITE_GITHUB_CLIENT_ID</code> ist nicht gesetzt.
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {errorMsg && (
                 <motion.p
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-500 text-left bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-xl"
+                  className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 px-3 py-2.5 rounded-xl border border-red-100 dark:border-red-900/40"
                 >
                   {errorMsg}
                 </motion.p>
@@ -109,25 +153,26 @@ export default function LoginScreen() {
                 type="button"
                 onClick={handleGitHubLogin}
                 disabled={loginLoading}
-                className="w-full bg-gray-900 dark:bg-white/10 hover:bg-gray-800 dark:hover:bg-white/15 text-white font-bold py-4 rounded-2xl hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:hover:shadow-none disabled:hover:scale-100"
+                className="w-full group relative bg-gray-950 dark:bg-white/8 hover:bg-gray-800 dark:hover:bg-white/12 text-white font-bold py-3.5 rounded-2xl transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:pointer-events-none shadow-lg shadow-black/10 dark:shadow-black/30 hover:shadow-xl hover:shadow-black/15 hover:scale-[1.01] active:scale-[0.99]"
               >
                 {loginLoading ? (
                   <Loader2 size={18} className="animate-spin" />
                 ) : (
                   <>
-                    <GitHubMark size={18} /> Mit GitHub anmelden
+                    <GitHubMark size={18} />
+                    <span>Mit GitHub anmelden</span>
                   </>
                 )}
               </button>
             </div>
           )}
 
-          <div className="mt-6 flex items-center gap-2 justify-center text-[10px] text-gray-400">
-            <Shield size={10} />
+          <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800/60 flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-600">
+            <Shield size={10} className="shrink-0" />
             <span>OAuth 2.0 · Nur GitHub API · HttpOnly Cookies</span>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   )
 }
