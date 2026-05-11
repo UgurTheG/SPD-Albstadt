@@ -43,7 +43,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src="/spd-logo.svg" alt="SPD" className="w-10 h-10 rounded-xl shadow-lg" />
+              <img src="/spd-logo.svg" alt="SPD" className="w-10 h-10 shadow-lg" />
               <span className="font-black text-white text-xl tracking-tight">Albstadt</span>
             </div>
             <p className="text-sm leading-relaxed mb-4 max-w-xs">{beschreibung}</p>

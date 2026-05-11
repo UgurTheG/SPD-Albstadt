@@ -38,7 +38,7 @@ export default function Navbar() {
               <img
                 src="/spd-logo.svg"
                 alt="SPD"
-                className="w-9 h-9 rounded-lg shadow-md group-hover:scale-105 transition-transform"
+                className="w-9 h-9 shadow-md group-hover:scale-105 transition-transform"
               />
               {!isHome && (
                 <span className="font-bold text-lg tracking-tight transition-colors duration-300 text-gray-900 dark:text-white">
