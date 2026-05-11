@@ -1,4 +1,4 @@
-import { useRef, useReducer, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import { useInView } from 'framer-motion'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useData } from '@/hooks/useData'
@@ -7,6 +7,7 @@ import { useConfig } from '@/hooks/useConfig'
 import { useICSEvents } from '@/hooks/useICSEvents'
 import type { NewsItem } from '@/types/news'
 import type { ICSEvent } from '@/utils/icsParser'
+import { useSheetState } from '@/hooks/useSheetState'
 import Sheet from '@/components/Sheet'
 import SectionHeader from '@/components/SectionHeader'
 import NewsFeed from './NewsFeed'
@@ -16,34 +17,11 @@ import NewsDetailSheet from './NewsDetailSheet'
 import EventDetailSheet from './EventDetailSheet'
 import DayPickerSheet from './DayPickerSheet'
 
-// ---------------------------------------------------------------------------
-// Sheet state machine
-// ---------------------------------------------------------------------------
-
 type SheetState =
   | { type: 'none' }
   | { type: 'news'; item: NewsItem }
   | { type: 'event'; event: ICSEvent }
   | { type: 'dayPicker'; events: ICSEvent[] }
-
-type SheetAction =
-  | { type: 'openNews'; item: NewsItem }
-  | { type: 'openEvent'; event: ICSEvent }
-  | { type: 'openDayPicker'; events: ICSEvent[] }
-  | { type: 'close' }
-
-function sheetReducer(_: SheetState, action: SheetAction): SheetState {
-  switch (action.type) {
-    case 'openNews':
-      return { type: 'news', item: action.item }
-    case 'openEvent':
-      return { type: 'event', event: action.event }
-    case 'openDayPicker':
-      return { type: 'dayPicker', events: action.events }
-    case 'close':
-      return { type: 'none' }
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -55,7 +33,7 @@ export default function Aktuelles() {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
 
-  const [sheet, dispatch] = useReducer(sheetReducer, { type: 'none' })
+  const { state: sheet, set: setSheet, close: closeSheet } = useSheetState<SheetState>({ type: 'none' })
 
   const { data: newsItems, error: newsError } = useData<NewsItem[]>('/data/news.json')
   const config = useConfig()
@@ -77,7 +55,7 @@ export default function Aktuelles() {
     if (!newsId || !newsItems) return
     const item = newsItems.find(n => (n.uuid ?? n.id) === newsId)
     if (item) {
-      dispatch({ type: 'openNews', item })
+      setSheet({ type: 'news', item })
     } else {
       navigate('/404', { replace: true })
     }
@@ -89,7 +67,7 @@ export default function Aktuelles() {
   }
 
   function handleCloseNewsSheet() {
-    dispatch({ type: 'close' })
+    closeSheet()
     navigate('/aktuelles', { replace: true })
   }
 
@@ -117,8 +95,8 @@ export default function Aktuelles() {
           loading={icsLoading}
           error={icsError}
           icsUrl={icsUrl}
-          onSelectEvent={event => dispatch({ type: 'openEvent', event })}
-          onSelectDayEvents={events => dispatch({ type: 'openDayPicker', events })}
+          onSelectEvent={event => setSheet({ type: 'event', event })}
+          onSelectDayEvents={events => setSheet({ type: 'dayPicker', events })}
         />
 
         <InstagramSection elfsightAppId={elfsightAppId} />
@@ -132,18 +110,18 @@ export default function Aktuelles() {
       {/* Day picker sheet (multiple events on the same day) */}
       <Sheet
         open={sheet.type === 'dayPicker' && sheet.events.length > 0}
-        onClose={() => dispatch({ type: 'close' })}
+        onClose={closeSheet}
       >
         {sheet.type === 'dayPicker' && (
           <DayPickerSheet
             events={sheet.events}
-            onSelect={event => dispatch({ type: 'openEvent', event })}
+            onSelect={event => setSheet({ type: 'event', event })}
           />
         )}
       </Sheet>
 
       {/* Event detail sheet */}
-      <Sheet open={sheet.type === 'event'} onClose={() => dispatch({ type: 'close' })}>
+      <Sheet open={sheet.type === 'event'} onClose={closeSheet}>
         {sheet.type === 'event' && <EventDetailSheet event={sheet.event} />}
       </Sheet>
     </section>
