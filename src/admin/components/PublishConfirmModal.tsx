@@ -35,7 +35,7 @@ export default function PublishConfirmModal({ tabKey, onConfirm, onCancel }: Pro
     const result: { tab: TabConfig; entries: ChangeEntry[]; groups: ChangeGroup[] }[] = []
     const tabs = tabKey ? TABS.filter(t => t.key === tabKey) : TABS
     for (const tab of tabs) {
-      if (!tab.file || tab.type === 'haushaltsreden') continue
+      if (!tab.file) continue
       const entries = diffTab(
         tab as TabConfig,
         originalState[tab.key],

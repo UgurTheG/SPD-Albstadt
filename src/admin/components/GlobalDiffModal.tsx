@@ -40,7 +40,7 @@ export default function GlobalDiffModal({ onClose }: Props) {
     const pendingImagePaths = new Set(pendingUploads.map(u => u.ghPath.replace(/^public/, '')))
     const result: TabChanges[] = []
     for (const tab of TABS) {
-      if (!tab.file || tab.type === 'haushaltsreden') continue
+      if (!tab.file) continue
       const entries = diffTab(
         tab as TabConfig,
         originalState[tab.key],
