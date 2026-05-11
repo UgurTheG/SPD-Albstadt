@@ -53,9 +53,7 @@ export default function PublishConfirmModal({ tabKey, onConfirm, onCancel }: Pro
     >
       <div className="space-y-5 mb-6">
         {tabChanges.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-4">
-            Keine Änderungen mehr vorhanden.
-          </p>
+          <p className="text-sm text-gray-400 text-center py-4">Keine Änderungen mehr vorhanden.</p>
         ) : (
           tabChanges.map(tc => (
             <div key={tc.tab.key}>

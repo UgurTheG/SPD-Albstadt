@@ -465,7 +465,9 @@ describe('useHaushaltsredenEditor', () => {
     expect(result.current.existingMap[2024]).toBe('sha24')
   })
 
-  it('sets disabledYears from config', async () => {
+  it('sets disabledYears from store state', async () => {
+    // disabledYears now comes from the admin store, not directly from getFileContent
+    resetStore({ state: { haushaltsreden: { disabledYears: [2020] } } })
     const { result } = renderHook(() => useHaushaltsredenEditor())
     await act(async () => {
       await new Promise(r => setTimeout(r, 10))
@@ -542,18 +544,21 @@ describe('useHaushaltsredenEditor', () => {
     expect(result.current.disabledYears.has(2023)).toBe(false)
   })
 
-  it('toggleYear handles save error', async () => {
-    vi.mocked(commitFile).mockRejectedValueOnce(new Error('Save failed'))
+  it('toggleYear updates store state without immediate commit', async () => {
     const { result } = renderHook(() => useHaushaltsredenEditor())
     await act(async () => {
       await new Promise(r => setTimeout(r, 10))
     })
     await act(async () => {
       result.current.toggleYear(2023)
-      await new Promise(r => setTimeout(r, 30))
+      await new Promise(r => setTimeout(r, 20))
     })
-    // Should have reverted disabled state and set error status
-    expect(useAdminStore.getState().statusType).toBe('error')
+    // toggleYear marks the tab dirty via the store — no immediate GitHub commit
+    const stored = useAdminStore.getState().state['haushaltsreden'] as {
+      disabledYears?: number[]
+    }
+    expect(stored?.disabledYears).toContain(2023)
+    expect(vi.mocked(commitFile)).not.toHaveBeenCalled()
   })
 
   it('uploadPdf uploads and updates existingMap', async () => {

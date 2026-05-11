@@ -11,7 +11,14 @@ interface ModalFrameProps {
   children: ReactNode
 }
 
-export default function ModalFrame({ onClose, icon, iconBg, title, subtitle, children }: ModalFrameProps) {
+export default function ModalFrame({
+  onClose,
+  icon,
+  iconBg,
+  title,
+  subtitle,
+  children,
+}: ModalFrameProps) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()

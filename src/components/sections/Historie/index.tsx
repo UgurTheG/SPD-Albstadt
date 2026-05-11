@@ -1,7 +1,7 @@
-import { useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { motion, useInView } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { useSectionView } from '@/hooks/useSectionView'
 import Sheet from '@/components/Sheet'
 import PersonSheet from '@/components/PersonSheet'
 import SectionHeader from '@/components/SectionHeader'
@@ -13,8 +13,7 @@ import { useHistorie } from '@/hooks/useHistorie'
 
 export default function Historie() {
   const { jahreSlug } = useParams<{ jahreSlug?: string }>()
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-80px' })
+  const { ref, isInView } = useSectionView()
   const { data, merged, sheet, openEvent, openPerson, closeSheet } = useHistorie(jahreSlug)
 
   return (

@@ -8,11 +8,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAdminStore } from '../store'
-import {
-  commitBinaryFile,
-  deleteFile,
-  listDirectory,
-} from '../lib/github'
+import { commitBinaryFile, deleteFile, listDirectory } from '../lib/github'
 import { fileToBase64 } from '../lib/images'
 
 export interface HaushaltsredenEditorState {
@@ -57,10 +53,7 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
   )
 
   // Derive disabledYears from store state so dirty-tracking and revert work automatically.
-  const disabledYears = useMemo(
-    () => new Set<number>(storeData?.disabledYears ?? []),
-    [storeData],
-  )
+  const disabledYears = useMemo(() => new Set<number>(storeData?.disabledYears ?? []), [storeData])
 
   // ─── Load ────────────────────────────────────────────────────────────────────
   // Only fetches the PDF directory list — the config JSON is loaded by the store.

@@ -1,7 +1,5 @@
-import { useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
-import { useData } from '@/hooks/useData'
-import { useHttpErrorRedirect } from '@/hooks/useHttpErrorRedirect'
+import { motion } from 'framer-motion'
+import { useSectionPage } from '@/hooks/useSectionPage'
 import { useHaushaltsredenPagination } from '@/hooks/useHaushaltsredenPagination'
 import { useSheetState } from '@/hooks/useSheetState'
 import PersonSheet from '@/components/PersonSheet'
@@ -13,11 +11,12 @@ import { HaushaltsredeCard, HaushaltsredePlaceholder } from './HaushaltsredeCard
 import { HaushaltsredenPagination } from './HaushaltsredenPagination'
 
 export default function Fraktion() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-80px' })
-  const { data, error } = useData<FraktionData>('/data/fraktion.json')
-  useHttpErrorRedirect(error)
-  const { state: selectedMember, set: openMember, close: closeMember } = useSheetState<Gemeinderat | null>(null)
+  const { ref, isInView, data } = useSectionPage<FraktionData>('/data/fraktion.json')
+  const {
+    state: selectedMember,
+    set: openMember,
+    close: closeMember,
+  } = useSheetState<Gemeinderat | null>(null)
 
   const {
     paginatedJahre,
@@ -95,11 +94,7 @@ export default function Fraktion() {
         </motion.div>
       </div>
 
-      <PersonSheet
-        open={selectedMember !== null}
-        onClose={closeMember}
-        person={selectedMember}
-      />
+      <PersonSheet open={selectedMember !== null} onClose={closeMember} person={selectedMember} />
     </section>
   )
 }

@@ -1,8 +1,7 @@
-import { useRef, useEffect } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useData } from '@/hooks/useData'
-import { useHttpErrorRedirect } from '@/hooks/useHttpErrorRedirect'
+import { useSectionPage } from '@/hooks/useSectionPage'
 import { useSheetState } from '@/hooks/useSheetState'
 import PersonSheet from '@/components/PersonSheet'
 import PersonCard from '@/components/PersonCard'
@@ -37,11 +36,12 @@ type SheetState =
 export default function Partei() {
   const { schwerpunktSlug } = useParams<{ schwerpunktSlug?: string }>()
   const navigate = useNavigate()
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-80px' })
-  const { data, error } = useData<PartyData>('/data/party.json')
-  useHttpErrorRedirect(error)
-  const { state: sheet, set: setSheet, close: closeSheet } = useSheetState<SheetState>({ type: 'none' })
+  const { ref, isInView, data } = useSectionPage<PartyData>('/data/party.json')
+  const {
+    state: sheet,
+    set: setSheet,
+    close: closeSheet,
+  } = useSheetState<SheetState>({ type: 'none' })
 
   // Sync URL param → sheet state once data is loaded.
   useEffect(() => {
