@@ -10,6 +10,7 @@ import type { ICSEvent } from '@/utils/icsParser'
 import { useSheetState } from '@/hooks/useSheetState'
 import Sheet from '@/components/Sheet'
 import SectionHeader from '@/components/SectionHeader'
+import SectionPage from '@/components/SectionPage'
 import NewsFeed from './NewsFeed'
 import CalendarSection from './CalendarSection'
 import InstagramSection from './InstagramSection'
@@ -72,8 +73,8 @@ export default function Aktuelles() {
   }
 
   return (
-    <section id="aktuelles" className="py-24 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
+      <SectionPage id="aktuelles">
         <SectionHeader
           sectionRef={ref}
           isInView={isInView}
@@ -100,14 +101,12 @@ export default function Aktuelles() {
         />
 
         <InstagramSection elfsightAppId={elfsightAppId} />
-      </div>
+      </SectionPage>
 
-      {/* News detail sheet */}
       <Sheet open={sheet.type === 'news'} onClose={handleCloseNewsSheet} size="lg">
         {sheet.type === 'news' && <NewsDetailSheet news={sheet.item} />}
       </Sheet>
 
-      {/* Day picker sheet (multiple events on the same day) */}
       <Sheet
         open={sheet.type === 'dayPicker' && sheet.events.length > 0}
         onClose={closeSheet}
@@ -120,10 +119,9 @@ export default function Aktuelles() {
         )}
       </Sheet>
 
-      {/* Event detail sheet */}
       <Sheet open={sheet.type === 'event'} onClose={closeSheet}>
         {sheet.type === 'event' && <EventDetailSheet event={sheet.event} />}
       </Sheet>
-    </section>
+    </>
   )
 }

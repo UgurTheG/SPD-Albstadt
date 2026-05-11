@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { useConfig } from '@/hooks/useConfig'
 import SectionHeader from '@/components/SectionHeader'
+import SectionPage from '@/components/SectionPage'
 import { GridBackground } from '@/components/GridBackground'
 import { toTelLink } from '@/utils/formatPhone'
 import { ContactInfoPanel } from './ContactInfoPanel'
@@ -22,11 +23,12 @@ export default function Kontakt() {
   const telefonLink = toTelLink(telefon)
 
   return (
-    <section id="kontakt" className="py-24 bg-gray-50 dark:bg-red-950 relative overflow-hidden">
-      {/* Background decoration */}
-      <GridBackground id="kontakt-grid" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <SectionPage
+      id="kontakt"
+      className="dark:bg-red-950 relative overflow-hidden"
+      innerClassName="relative z-10"
+      before={<GridBackground id="kontakt-grid" />}
+    >
         <SectionHeader
           sectionRef={ref}
           isInView={isInView}
@@ -82,7 +84,6 @@ export default function Kontakt() {
             <OfficeHoursPanel buerozeiten={buerozeiten} />
           </motion.div>
         </div>
-      </div>
-    </section>
+    </SectionPage>
   )
 }

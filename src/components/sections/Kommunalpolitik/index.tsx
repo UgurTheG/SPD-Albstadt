@@ -3,10 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { motion, useInView } from 'framer-motion'
 import { useData } from '@/hooks/useData'
 import { useHttpErrorRedirect } from '@/hooks/useHttpErrorRedirect'
+import { useSheetState } from '@/hooks/useSheetState'
 import PersonSheet from '@/components/PersonSheet'
 import type { PersonSheetData } from '@/types/person'
 import { PersonGrid } from '@/components/PersonGrid'
 import SectionHeader from '@/components/SectionHeader'
+import SectionPage from '@/components/SectionPage'
 import type { KommunalpolitikData, KommunalpolitikPerson } from './types'
 import { DokumentCard } from './DokumentCard'
 
@@ -17,7 +19,7 @@ export default function Kommunalpolitik() {
   const location = useLocation()
   const { data, error } = useData<KommunalpolitikData>('/data/kommunalpolitik.json')
   useHttpErrorRedirect(error)
-  const [selectedPerson, setSelectedPerson] = useState<PersonSheetData | null>(null)
+  const { state: selectedPerson, set: setSelectedPerson, close: closeSelectedPerson } = useSheetState<PersonSheetData | null>(null)
 
   useEffect(() => {
     if (data?.sichtbar === false && !location.pathname.startsWith('/admin')) {
@@ -35,8 +37,8 @@ export default function Kommunalpolitik() {
   const hasContent = gemeinderaete.length > 0 || kreisraete.length > 0 || dokumente.length > 0
 
   return (
-    <section id="kommunalpolitik" className="py-24 bg-white dark:bg-gray-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
+      <SectionPage id="kommunalpolitik" className="bg-white dark:bg-gray-950">
         <SectionHeader
           sectionRef={ref}
           isInView={isInView}
@@ -138,13 +140,13 @@ export default function Kommunalpolitik() {
             ))}
           </div>
         )}
-      </div>
+      </SectionPage>
 
       <PersonSheet
         open={!!selectedPerson}
-        onClose={() => setSelectedPerson(null)}
+        onClose={closeSelectedPerson}
         person={selectedPerson}
       />
-    </section>
+    </>
   )
 }

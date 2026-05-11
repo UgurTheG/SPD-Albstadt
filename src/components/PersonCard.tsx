@@ -1,14 +1,6 @@
 import { motion } from 'framer-motion'
 import { personCardItemVariants } from './personCardVariants'
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-}
+import { getInitials } from '@/utils/getInitials'
 
 // ── PersonCard ─────────────────────────────────────────────────────────────────
 

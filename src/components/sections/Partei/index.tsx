@@ -8,6 +8,7 @@ import PersonSheet from '@/components/PersonSheet'
 import PersonCard from '@/components/PersonCard'
 import { personCardContainerVariants } from '@/components/personCardVariants'
 import SectionHeader from '@/components/SectionHeader'
+import SectionPage from '@/components/SectionPage'
 import SubsectionLabel from '@/components/SubsectionLabel'
 import { SkeletonGrid } from '@/components/SkeletonGrid'
 import { slugify } from '@/utils/slugify'
@@ -65,8 +66,8 @@ export default function Partei() {
   }
 
   return (
-    <section id="partei" className="py-24 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
+      <SectionPage id="partei">
         <SectionHeader
           sectionRef={ref}
           isInView={isInView}
@@ -145,7 +146,7 @@ export default function Partei() {
             )}
           </div>
         )}
-      </div>
+      </SectionPage>
 
       <PersonSheet
         open={sheet.type === 'person'}
@@ -157,6 +158,6 @@ export default function Partei() {
         item={sheet.type === 'schwerpunkt' ? sheet.schwerpunkt : null}
         onClose={handleCloseSchwerpunkt}
       />
-    </section>
+    </>
   )
 }

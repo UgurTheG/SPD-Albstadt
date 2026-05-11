@@ -6,6 +6,7 @@ import { useHaushaltsredenPagination } from '@/hooks/useHaushaltsredenPagination
 import { useSheetState } from '@/hooks/useSheetState'
 import PersonSheet from '@/components/PersonSheet'
 import SectionHeader from '@/components/SectionHeader'
+import SectionPage from '@/components/SectionPage'
 import SubsectionLabel from '@/components/SubsectionLabel'
 import { PersonGrid } from '@/components/PersonGrid'
 import type { FraktionData, Gemeinderat } from './types'
@@ -31,8 +32,8 @@ export default function Fraktion() {
   } = useHaushaltsredenPagination()
 
   return (
-    <section id="fraktion" className="py-24 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
+      <SectionPage id="fraktion">
         <SectionHeader
           sectionRef={ref}
           isInView={isInView}
@@ -93,13 +94,13 @@ export default function Fraktion() {
             onLoadLess={loadLessReden}
           />
         </motion.div>
-      </div>
+      </SectionPage>
 
       <PersonSheet
         open={selectedMember !== null}
         onClose={closeMember}
         person={selectedMember}
       />
-    </section>
+    </>
   )
 }
