@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useSectionPage } from '@/hooks/useSectionPage'
+import { useSheetState } from '@/hooks/useSheetState'
 import PersonSheet from '@/components/PersonSheet'
 import type { PersonSheetData } from '@/types/person'
 import { PersonGrid } from '@/components/PersonGrid'
@@ -15,7 +16,7 @@ export default function Kommunalpolitik() {
   const { ref, isInView, data } = useSectionPage<KommunalpolitikData>('/data/kommunalpolitik.json')
   const navigate = useNavigate()
   const location = useLocation()
-  const [selectedPerson, setSelectedPerson] = useState<PersonSheetData | null>(null)
+  const { state: selectedPerson, set: setSelectedPerson, close: closePerson } = useSheetState<PersonSheetData | null>(null)
 
   useEffect(() => {
     if (data?.sichtbar === false && !location.pathname.startsWith('/admin')) {
@@ -135,7 +136,7 @@ export default function Kommunalpolitik() {
 
       <PersonSheet
         open={!!selectedPerson}
-        onClose={() => setSelectedPerson(null)}
+        onClose={closePerson}
         person={selectedPerson}
       />
     </>
