@@ -80,26 +80,33 @@ export default function AdminSidebar({
         onTouchEnd={handleTouchEnd}
         className={`fixed top-0 left-0 h-full w-64 z-50 flex flex-col transition-transform duration-300 lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        <div className="flex flex-col h-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/60 dark:border-gray-800/60">
+        <div className="flex flex-col h-full bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl border-r border-gray-200/60 dark:border-gray-800/60">
           {/* Logo area */}
-          <div className="p-5 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl shadow-lg shadow-spd-red/25 overflow-hidden">
-                <img src="/spd-logo.svg" alt="SPD" className="w-full h-full" />
+          <div className="relative px-5 pt-5 pb-4 overflow-hidden">
+            {/* Accent line at top */}
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-spd-red via-spd-red/50 to-transparent" />
+            {/* Subtle gradient wash */}
+            <div className="absolute inset-0 bg-gradient-to-b from-spd-red/5 dark:from-spd-red/10 to-transparent pointer-events-none" />
+            <div className="relative flex items-center gap-3">
+              <div className="relative shrink-0">
+                <div className="absolute inset-0 bg-spd-red/20 rounded-2xl blur-md" />
+                <div className="relative w-10 h-10 rounded-2xl shadow-lg shadow-spd-red/30 overflow-hidden ring-1 ring-spd-red/10 dark:ring-spd-red/20">
+                  <img src="/spd-logo.svg" alt="SPD" className="w-full h-full" />
+                </div>
               </div>
-              <div>
-                <h1 className="font-extrabold text-sm dark:text-white tracking-tight">
+              <div className="flex-1 min-w-0">
+                <h1 className="font-extrabold text-sm dark:text-white tracking-tight leading-none mb-0.5">
                   Daten-Editor
                 </h1>
-                <p className="text-[10px] text-gray-400 font-medium">SPD Albstadt</p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">SPD Albstadt</p>
               </div>
               <button
                 type="button"
                 onClick={onClose}
                 aria-label="Seitenleiste schließen"
-                className="ml-auto lg:hidden text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="lg:hidden w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
           </div>
