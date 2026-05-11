@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Loader2, Shield } from 'lucide-react'
+import { Loader2, Moon, Shield, Sun } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAdminStore } from '../store'
@@ -19,7 +19,7 @@ function GitHubMark({ size = 18 }: { size?: number }) {
 const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID as string | undefined
 
 export default function LoginScreen() {
-  const { login, loginError, loginLoading, loginAuthStatus } = useAdminStore()
+  const { login, loginError, loginLoading, loginAuthStatus, darkMode, toggleDark } = useAdminStore()
   const navigate = useNavigate()
 
   const [authResult] = useState(() => {
@@ -101,6 +101,16 @@ export default function LoginScreen() {
         <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-50/80 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900" />
         <div className="absolute -top-48 -right-48 w-[600px] h-[600px] bg-spd-red/[0.04] dark:bg-spd-red/[0.08] rounded-full blur-3xl" />
         <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-spd-red/[0.02] dark:bg-spd-red/[0.05] rounded-full blur-3xl" />
+
+        {/* Dark mode toggle */}
+        <button
+          type="button"
+          onClick={toggleDark}
+          aria-label={darkMode ? 'Helles Design aktivieren' : 'Dunkles Design aktivieren'}
+          className="absolute top-4 right-4 w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800/80 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        >
+          {darkMode ? <Sun size={15} /> : <Moon size={15} />}
+        </button>
 
         <motion.div
           initial={{ opacity: 0, y: 18, scale: 0.97 }}
