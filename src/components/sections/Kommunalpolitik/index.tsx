@@ -5,10 +5,9 @@ import { useData } from '@/hooks/useData'
 import { useHttpErrorRedirect } from '@/hooks/useHttpErrorRedirect'
 import PersonSheet from '@/components/PersonSheet'
 import type { PersonSheetData } from '@/types/person'
-import PersonCard from '@/components/PersonCard'
-import { personCardContainerVariants } from '@/components/personCardVariants'
+import { PersonGrid } from '@/components/PersonGrid'
 import SectionHeader from '@/components/SectionHeader'
-import type { KommunalpolitikData } from './types'
+import type { KommunalpolitikData, KommunalpolitikPerson } from './types'
 import { DokumentCard } from './DokumentCard'
 
 export default function Kommunalpolitik() {
@@ -77,75 +76,29 @@ export default function Kommunalpolitik() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
-            {/* Gemeinderäte */}
-            {gemeinderaete.length > 0 && (
-              <div className="mb-20">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={isInView ? { opacity: 1 } : {}}
-                  transition={{ delay: 0.2 }}
-                  className="mb-8"
-                >
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
-                    Gemeinderatswahl {activeJahr.jahr}
-                  </h3>
-                  <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">
-                    {gemeinderaete.length} {gemeinderaete.length === 1 ? 'Kandidat' : 'Kandidaten'}
-                  </p>
-                </motion.div>
-                <motion.div
-                  variants={personCardContainerVariants}
-                  initial="hidden"
-                  animate={isInView ? 'visible' : 'hidden'}
-                  className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
-                >
-                  {gemeinderaete.map((p, i) => (
-                    <PersonCard
-                      key={p.name}
-                      name={p.name}
-                      bildUrl={p.bildUrl}
-                      label={p.rolle ? `Listenplatz ${i + 1} · ${p.rolle}` : `Listenplatz ${i + 1}`}
-                      onClick={() => setSelectedPerson({ ...p, listenplatz: i + 1 })}
-                    />
-                  ))}
-                </motion.div>
-              </div>
-            )}
+            <PersonGrid<KommunalpolitikPerson>
+              label={`Gemeinderatswahl ${activeJahr.jahr}`}
+              countLabel={`${gemeinderaete.length} ${gemeinderaete.length === 1 ? 'Kandidat' : 'Kandidaten'}`}
+              members={gemeinderaete}
+              isInView={isInView}
+              animationDelay={0.2}
+              onSelect={(p, i) => setSelectedPerson({ ...p, listenplatz: i + 1 })}
+              renderCardProps={(p, i) => ({
+                label: p.rolle ? `Listenplatz ${i + 1} · ${p.rolle}` : `Listenplatz ${i + 1}`,
+              })}
+            />
 
-            {/* Kreisräte */}
-            {kreisraete.length > 0 && (
-              <div className="mb-20">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={isInView ? { opacity: 1 } : {}}
-                  transition={{ delay: 0.3 }}
-                  className="mb-8"
-                >
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
-                    Kreistagswahl {activeJahr.jahr}
-                  </h3>
-                  <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">
-                    {kreisraete.length} {kreisraete.length === 1 ? 'Kandidat' : 'Kandidaten'}
-                  </p>
-                </motion.div>
-                <motion.div
-                  variants={personCardContainerVariants}
-                  initial="hidden"
-                  animate={isInView ? 'visible' : 'hidden'}
-                  className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
-                >
-                  {kreisraete.map((p, i) => (
-                    <PersonCard
-                      key={p.name}
-                      name={p.name}
-                      bildUrl={p.bildUrl}
-                      label={p.rolle ? `Listenplatz ${i + 1} · ${p.rolle}` : `Listenplatz ${i + 1}`}
-                      onClick={() => setSelectedPerson({ ...p, listenplatz: i + 1 })}
-                    />
-                  ))}
-                </motion.div>
-              </div>
-            )}
+            <PersonGrid<KommunalpolitikPerson>
+              label={`Kreistagswahl ${activeJahr.jahr}`}
+              countLabel={`${kreisraete.length} ${kreisraete.length === 1 ? 'Kandidat' : 'Kandidaten'}`}
+              members={kreisraete}
+              isInView={isInView}
+              animationDelay={0.3}
+              onSelect={(p, i) => setSelectedPerson({ ...p, listenplatz: i + 1 })}
+              renderCardProps={(p, i) => ({
+                label: p.rolle ? `Listenplatz ${i + 1} · ${p.rolle}` : `Listenplatz ${i + 1}`,
+              })}
+            />
 
             {/* Dokumente */}
             {dokumente.length > 0 && (

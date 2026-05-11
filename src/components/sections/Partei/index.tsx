@@ -1,8 +1,9 @@
-import { useRef, useReducer, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useData } from '@/hooks/useData'
 import { useHttpErrorRedirect } from '@/hooks/useHttpErrorRedirect'
+import { useSheetState } from '@/hooks/useSheetState'
 import PersonSheet from '@/components/PersonSheet'
 import PersonCard from '@/components/PersonCard'
 import { personCardContainerVariants } from '@/components/personCardVariants'
@@ -24,30 +25,10 @@ const PARTEI_BESCHREIBUNG_FALLBACK =
   'Bildungsgerechtigkeit: Wir sind die Stimme der Bürgerinnen und Bürger im Gemeinderat und setzen uns ' +
   'täglich dafür ein, dass Albstadt eine lebenswerte Stadt für alle bleibt. Werde Mitglied und gestalte mit!'
 
-// ---------------------------------------------------------------------------
-// Sheet state machine
-// ---------------------------------------------------------------------------
-
 type SheetState =
   | { type: 'none' }
   | { type: 'person'; person: Mitglied | Abgeordneter }
   | { type: 'schwerpunkt'; schwerpunkt: Schwerpunkt }
-
-type SheetAction =
-  | { type: 'openPerson'; person: Mitglied | Abgeordneter }
-  | { type: 'openSchwerpunkt'; schwerpunkt: Schwerpunkt }
-  | { type: 'close' }
-
-function sheetReducer(_: SheetState, action: SheetAction): SheetState {
-  switch (action.type) {
-    case 'openPerson':
-      return { type: 'person', person: action.person }
-    case 'openSchwerpunkt':
-      return { type: 'schwerpunkt', schwerpunkt: action.schwerpunkt }
-    case 'close':
-      return { type: 'none' }
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -60,14 +41,14 @@ export default function Partei() {
   const isInView = useInView(ref, { once: true, margin: '-80px' })
   const { data, error } = useData<PartyData>('/data/party.json')
   useHttpErrorRedirect(error)
-  const [sheet, dispatch] = useReducer(sheetReducer, { type: 'none' })
+  const { state: sheet, set: setSheet, close: closeSheet } = useSheetState<SheetState>({ type: 'none' })
 
   // Sync URL param → sheet state once data is loaded.
   useEffect(() => {
     if (!schwerpunktSlug || !data) return
     const match = data.schwerpunkte.find(s => slugify(s.titel) === schwerpunktSlug)
     if (match) {
-      dispatch({ type: 'openSchwerpunkt', schwerpunkt: match })
+      setSheet({ type: 'schwerpunkt', schwerpunkt: match })
     } else {
       navigate('/404', { replace: true })
     }
@@ -79,7 +60,7 @@ export default function Partei() {
   }
 
   function handleCloseSchwerpunkt() {
-    dispatch({ type: 'close' })
+    closeSheet()
     navigate('/partei', { replace: true })
   }
 
@@ -129,7 +110,7 @@ export default function Partei() {
                   bildUrl={m.bildUrl}
                   label={m.rolle}
                   priority={i === 0}
-                  onClick={() => dispatch({ type: 'openPerson', person: m })}
+                  onClick={() => setSheet({ type: 'person', person: m })}
                 />
               ))}
               {!data && <SkeletonGrid count={9} itemClassName="aspect-3/4" />}
@@ -157,7 +138,7 @@ export default function Partei() {
                     key={a.name}
                     a={a}
                     priority={i === 0}
-                    onClick={() => dispatch({ type: 'openPerson', person: a })}
+                    onClick={() => setSheet({ type: 'person', person: a })}
                   />
                 ))}
               </motion.div>
@@ -168,7 +149,7 @@ export default function Partei() {
 
       <PersonSheet
         open={sheet.type === 'person'}
-        onClose={() => dispatch({ type: 'close' })}
+        onClose={closeSheet}
         person={sheet.type === 'person' ? sheet.person : null}
       />
 

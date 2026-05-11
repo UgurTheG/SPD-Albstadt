@@ -1,43 +1,23 @@
-import { useRef, useReducer } from 'react'
+import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { useData } from '@/hooks/useData'
 import { useHttpErrorRedirect } from '@/hooks/useHttpErrorRedirect'
 import { useHaushaltsredenPagination } from '@/hooks/useHaushaltsredenPagination'
+import { useSheetState } from '@/hooks/useSheetState'
 import PersonSheet from '@/components/PersonSheet'
 import SectionHeader from '@/components/SectionHeader'
 import SubsectionLabel from '@/components/SubsectionLabel'
+import { PersonGrid } from '@/components/PersonGrid'
 import type { FraktionData, Gemeinderat } from './types'
-import { PersonGrid } from './PersonGrid'
 import { HaushaltsredeCard, HaushaltsredePlaceholder } from './HaushaltsredeCards'
 import { HaushaltsredenPagination } from './HaushaltsredenPagination'
-
-// ---------------------------------------------------------------------------
-// Sheet state machine
-// ---------------------------------------------------------------------------
-
-type SheetState = { type: 'none' } | { type: 'member'; member: Gemeinderat }
-
-type SheetAction = { type: 'openMember'; member: Gemeinderat } | { type: 'close' }
-
-function sheetReducer(_: SheetState, action: SheetAction): SheetState {
-  switch (action.type) {
-    case 'openMember':
-      return { type: 'member', member: action.member }
-    case 'close':
-      return { type: 'none' }
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
 
 export default function Fraktion() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
   const { data, error } = useData<FraktionData>('/data/fraktion.json')
   useHttpErrorRedirect(error)
-  const [sheet, dispatch] = useReducer(sheetReducer, { type: 'none' })
+  const { state: selectedMember, set: openMember, close: closeMember } = useSheetState<Gemeinderat | null>(null)
 
   const {
     paginatedJahre,
@@ -67,7 +47,8 @@ export default function Fraktion() {
           members={data?.gemeinderaete}
           isInView={isInView}
           animationDelay={0.2}
-          onSelect={member => dispatch({ type: 'openMember', member })}
+          onSelect={openMember}
+          renderCardProps={m => ({ sublabel: `seit ${m.seit}` })}
         />
 
         <PersonGrid
@@ -76,7 +57,8 @@ export default function Fraktion() {
           members={data?.kreisraete}
           isInView={isInView}
           animationDelay={0.3}
-          onSelect={member => dispatch({ type: 'openMember', member })}
+          onSelect={openMember}
+          renderCardProps={m => ({ sublabel: `seit ${m.seit}` })}
         />
 
         {/* Haushaltsreden */}
@@ -114,9 +96,9 @@ export default function Fraktion() {
       </div>
 
       <PersonSheet
-        open={sheet.type === 'member'}
-        onClose={() => dispatch({ type: 'close' })}
-        person={sheet.type === 'member' ? sheet.member : null}
+        open={selectedMember !== null}
+        onClose={closeMember}
+        person={selectedMember}
       />
     </section>
   )
