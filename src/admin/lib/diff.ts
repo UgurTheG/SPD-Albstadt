@@ -254,7 +254,45 @@ export function diffTab(
   pendingImagePaths?: Set<string>,
 ): ChangeEntry[] {
   const out: ChangeEntry[] = []
-  if (tab.type === 'haushaltsreden') return out
+  if (tab.type === 'haushaltsreden') {
+    const origYears = new Set<number>(
+      (original as { disabledYears?: number[] } | null)?.disabledYears ?? [],
+    )
+    const currYears = new Set<number>(
+      (current as { disabledYears?: number[] } | null)?.disabledYears ?? [],
+    )
+    for (const year of currYears) {
+      if (!origYears.has(year)) {
+        out.push({
+          id: `disabledYears.${year}:hidden`,
+          path: ['disabledYears'],
+          kind: 'modified',
+          group: 'Sichtbarkeit',
+          fieldKey: 'disabledYears',
+          fieldLabel: String(year),
+          fieldType: 'text',
+          before: 'Sichtbar',
+          after: 'Ausgeblendet',
+        })
+      }
+    }
+    for (const year of origYears) {
+      if (!currYears.has(year)) {
+        out.push({
+          id: `disabledYears.${year}:shown`,
+          path: ['disabledYears'],
+          kind: 'modified',
+          group: 'Sichtbarkeit',
+          fieldKey: 'disabledYears',
+          fieldLabel: String(year),
+          fieldType: 'text',
+          before: 'Ausgeblendet',
+          after: 'Sichtbar',
+        })
+      }
+    }
+    return out
+  }
 
   if (tab.type === 'kommunalpolitik') {
     const orig = (original ?? {}) as Record<string, unknown>
