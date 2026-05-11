@@ -127,7 +127,7 @@ export default function LoginScreen() {
               </div>
             </div>
             <div>
-              <p className="font-extrabold text-sm dark:text-white tracking-tight">Daten-Editor</p>
+              <p className="font-extrabold text-sm text-gray-900 dark:text-white tracking-tight">Daten-Editor</p>
               <p className="text-[10px] text-gray-400">SPD Albstadt</p>
             </div>
           </div>
@@ -135,7 +135,7 @@ export default function LoginScreen() {
           <p className="text-xs font-semibold text-spd-red uppercase tracking-widest mb-2">
             Administration
           </p>
-          <h2 className="text-3xl font-extrabold dark:text-white tracking-tight mb-1.5">
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-1.5">
             Willkommen zurück
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
@@ -177,7 +177,7 @@ export default function LoginScreen() {
             </div>
           )}
 
-          <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800/60 flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-600">
+          <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800/60 flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500">
             <Shield size={10} className="shrink-0" />
             <span>OAuth 2.0 · Nur GitHub API · HttpOnly Cookies</span>
           </div>
