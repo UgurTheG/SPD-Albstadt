@@ -1,8 +1,6 @@
-import { useRef, useEffect } from 'react'
-import { useInView } from 'framer-motion'
+import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useData } from '@/hooks/useData'
-import { useHttpErrorRedirect } from '@/hooks/useHttpErrorRedirect'
+import { useSectionPage } from '@/hooks/useSectionPage'
 import { useConfig } from '@/hooks/useConfig'
 import { useICSEvents } from '@/hooks/useICSEvents'
 import type { NewsItem } from '@/types/news'
@@ -30,12 +28,13 @@ type SheetState =
 export default function Aktuelles() {
   const { newsId } = useParams<{ newsId?: string }>()
   const navigate = useNavigate()
-  const ref = useRef<HTMLDivElement>(null)
-  const isInView = useInView(ref, { once: true, margin: '-80px' })
+  const { ref, isInView, data: newsItems } = useSectionPage<NewsItem[]>('/data/news.json')
+  const {
+    state: sheet,
+    set: setSheet,
+    close: closeSheet,
+  } = useSheetState<SheetState>({ type: 'none' })
 
-  const { state: sheet, set: setSheet, close: closeSheet } = useSheetState<SheetState>({ type: 'none' })
-
-  const { data: newsItems, error: newsError } = useData<NewsItem[]>('/data/news.json')
   const config = useConfig()
   const { elfsightAppId, icsUrl } = config ?? {}
 
@@ -46,8 +45,6 @@ export default function Aktuelles() {
     loading: icsLoading,
     error: icsError,
   } = useICSEvents(config !== null && !!icsUrl)
-
-  useHttpErrorRedirect(newsError)
 
   // Sync URL param → sheet state once news items are loaded.
   // The URL param is now a UUID; fall back to id for legacy items without uuid.
@@ -108,10 +105,7 @@ export default function Aktuelles() {
       </Sheet>
 
       {/* Day picker sheet (multiple events on the same day) */}
-      <Sheet
-        open={sheet.type === 'dayPicker' && sheet.events.length > 0}
-        onClose={closeSheet}
-      >
+      <Sheet open={sheet.type === 'dayPicker' && sheet.events.length > 0} onClose={closeSheet}>
         {sheet.type === 'dayPicker' && (
           <DayPickerSheet
             events={sheet.events}

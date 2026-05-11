@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { motion, useInView } from 'framer-motion'
-import { useData } from '@/hooks/useData'
-import { useHttpErrorRedirect } from '@/hooks/useHttpErrorRedirect'
+import { motion } from 'framer-motion'
+import { useSectionPage } from '@/hooks/useSectionPage'
 import PersonSheet from '@/components/PersonSheet'
 import type { PersonSheetData } from '@/types/person'
 import { PersonGrid } from '@/components/PersonGrid'
@@ -11,12 +10,9 @@ import type { KommunalpolitikData, KommunalpolitikPerson } from './types'
 import { DokumentCard } from './DokumentCard'
 
 export default function Kommunalpolitik() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-80px' })
+  const { ref, isInView, data } = useSectionPage<KommunalpolitikData>('/data/kommunalpolitik.json')
   const navigate = useNavigate()
   const location = useLocation()
-  const { data, error } = useData<KommunalpolitikData>('/data/kommunalpolitik.json')
-  useHttpErrorRedirect(error)
   const [selectedPerson, setSelectedPerson] = useState<PersonSheetData | null>(null)
 
   useEffect(() => {

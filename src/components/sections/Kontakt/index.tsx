@@ -1,5 +1,5 @@
-import { useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { useSectionView } from '@/hooks/useSectionView'
 import { useConfig } from '@/hooks/useConfig'
 import SectionHeader from '@/components/SectionHeader'
 import { GridBackground } from '@/components/GridBackground'
@@ -10,8 +10,7 @@ import { KontaktForm } from './KontaktForm'
 import { DEFAULT_ADRESSE, DEFAULT_EMAIL, DEFAULT_TELEFON, DEFAULT_BUEROZEITEN } from './constants'
 
 export default function Kontakt() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-80px' })
+  const { ref, isInView } = useSectionView()
   const config = useConfig()
 
   const kontakt = config?.kontakt

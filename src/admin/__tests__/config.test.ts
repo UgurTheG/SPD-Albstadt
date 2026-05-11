@@ -24,9 +24,9 @@ describe('TABS config', () => {
     expect(keys).toContain('haushaltsreden')
   })
 
-  it('haushaltsreden has null file and ghPath', () => {
+  it('haushaltsreden has a file and ghPath (publishes via normal flow)', () => {
     const h = TABS.find(t => t.key === 'haushaltsreden')
-    expect(h?.file).toBeNull()
-    expect(h?.ghPath).toBeNull()
+    expect(h?.file).not.toBeNull()
+    expect(h?.ghPath).not.toBeNull()
   })
 })

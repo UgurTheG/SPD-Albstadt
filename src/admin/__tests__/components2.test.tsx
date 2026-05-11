@@ -285,11 +285,9 @@ describe('authSlice — ensureAuthenticated token refresh without expires_in', (
 describe('publishSlice — publishTab skips unknown tab', () => {
   beforeEach(() => resetStore())
 
-  it('returns early when tab has no ghPath', async () => {
-    // haushaltsreden has null ghPath
-    resetStore({ state: { haushaltsreden: null }, originalState: { haushaltsreden: null } })
+  it('returns early when tab key is not in TABS', async () => {
     const { commitTree } = await import('../../admin/lib/github')
-    await useAdminStore.getState().publishTab('haushaltsreden')
+    await useAdminStore.getState().publishTab('nonexistent-tab')
     expect(vi.mocked(commitTree)).not.toHaveBeenCalled()
   })
 })
