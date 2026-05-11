@@ -1,11 +1,11 @@
-import { useEffect, useMemo } from 'react'
-import { Loader2, Rocket, Undo2, X } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { useMemo } from 'react'
+import { Loader2, Rocket, Undo2 } from 'lucide-react'
 import type { TabConfig } from '../types'
 import { useAdminStore } from '../store'
 import { TABS } from '../config/tabs'
 import { diffTab, type ChangeEntry, groupChangeEntries, type ChangeGroup } from '../lib/diff'
 import { FieldChangeDiff } from './DiffDisplay'
+import ModalFrame from './ModalFrame'
 
 interface Props {
   tabKey?: string
@@ -13,22 +13,12 @@ interface Props {
   onCancel: () => void
 }
 
-// ChangeGroup and groupChangeEntries are imported from lib/diff
-
 export default function PublishConfirmModal({ tabKey, onConfirm, onCancel }: Props) {
   const state = useAdminStore(s => s.state)
   const originalState = useAdminStore(s => s.originalState)
   const pendingUploads = useAdminStore(s => s.pendingUploads)
   const publishing = useAdminStore(s => s.publishing)
   const revertChange = useAdminStore(s => s.revertChange)
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel()
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onCancel])
 
   const tabChanges = useMemo(() => {
     const pendingImagePaths = new Set(pendingUploads.map(u => u.ghPath.replace(/^public/, '')))
@@ -51,101 +41,72 @@ export default function PublishConfirmModal({ tabKey, onConfirm, onCancel }: Pro
 
   const totalChanges = tabChanges.reduce((sum, tc) => sum + tc.entries.length, 0)
 
+  const subtitle = `${totalChanges} Änderung${totalChanges !== 1 ? 'en' : ''} in ${tabChanges.length} Tab${tabChanges.length !== 1 ? 's' : ''}`
+
   return (
-    <div
-      className="fixed inset-0 z-9999 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={onCancel}
+    <ModalFrame
+      onClose={onCancel}
+      icon={<Rocket size={18} className="text-spd-red" />}
+      iconBg="bg-spd-red/10 dark:bg-spd-red/20"
+      title="Veröffentlichen bestätigen"
+      subtitle={subtitle}
     >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        transition={{ duration: 0.2 }}
-        className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-3xl p-5 sm:p-7 max-w-lg w-full max-h-[85vh] overflow-y-auto border border-white/50 dark:border-gray-700/50 shadow-2xl"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-spd-red/10 dark:bg-spd-red/20 flex items-center justify-center">
-              <Rocket size={18} className="text-spd-red" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold dark:text-white">Veröffentlichen bestätigen</h3>
-              <p className="text-xs text-gray-400">
-                {totalChanges} Änderung{totalChanges !== 1 ? 'en' : ''} in {tabChanges.length} Tab
-                {tabChanges.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 w-8 h-8 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition-colors"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Changes preview */}
-        <div className="space-y-5 mb-6">
-          {tabChanges.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-4">
-              Keine Änderungen mehr vorhanden.
-            </p>
-          ) : (
-            tabChanges.map(tc => (
-              <div key={tc.tab.key}>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-bold text-gray-900 dark:text-white">
-                    {tc.tab.label}
-                  </span>
-                  <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
-                    {tc.entries.length}
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {tc.groups.map(g => (
-                    <PublishChangeGroup
-                      key={g.key}
-                      group={g}
-                      tabKey={tc.tab.key}
-                      onRevert={revertChange}
-                    />
-                  ))}
-                </div>
+      <div className="space-y-5 mb-6">
+        {tabChanges.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-4">
+            Keine Änderungen mehr vorhanden.
+          </p>
+        ) : (
+          tabChanges.map(tc => (
+            <div key={tc.tab.key}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-bold text-gray-900 dark:text-white">
+                  {tc.tab.label}
+                </span>
+                <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
+                  {tc.entries.length}
+                </span>
               </div>
-            ))
-          )}
-        </div>
+              <div className="space-y-2">
+                {tc.groups.map(g => (
+                  <PublishChangeGroup
+                    key={g.key}
+                    group={g}
+                    tabKey={tc.tab.key}
+                    onRevert={revertChange}
+                  />
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
 
-        {/* Actions */}
-        <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            className="text-xs px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
-            onClick={onCancel}
-          >
-            Abbrechen
-          </button>
-          <button
-            type="button"
-            className="text-xs px-4 py-2.5 rounded-xl bg-spd-red hover:bg-spd-red-dark text-white font-bold shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] transition-colors flex items-center gap-2 disabled:cursor-wait disabled:hover:bg-spd-red disabled:active:scale-100 whitespace-nowrap [hyphens:none]"
-            onClick={onConfirm}
-            disabled={publishing || totalChanges === 0}
-          >
-            {publishing ? (
-              <Loader2 size={14} strokeWidth={2.5} className="animate-spin shrink-0" />
-            ) : (
-              <Rocket size={14} strokeWidth={2.5} className="shrink-0" />
-            )}
-            <span className="whitespace-nowrap">
-              {publishing ? 'Veröffentliche…' : 'Ja, veröffentlichen'}
-            </span>
-          </button>
-        </div>
-      </motion.div>
-    </div>
+      <div className="flex items-center justify-end gap-2">
+        <button
+          type="button"
+          className="text-xs px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
+          onClick={onCancel}
+        >
+          Abbrechen
+        </button>
+        <button
+          type="button"
+          className="text-xs px-4 py-2.5 rounded-xl bg-spd-red hover:bg-spd-red-dark text-white font-bold shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] transition-colors flex items-center gap-2 disabled:cursor-wait disabled:hover:bg-spd-red disabled:active:scale-100 whitespace-nowrap [hyphens:none]"
+          onClick={onConfirm}
+          disabled={publishing || totalChanges === 0}
+        >
+          {publishing ? (
+            <Loader2 size={14} strokeWidth={2.5} className="animate-spin shrink-0" />
+          ) : (
+            <Rocket size={14} strokeWidth={2.5} className="shrink-0" />
+          )}
+          <span className="whitespace-nowrap">
+            {publishing ? 'Veröffentliche…' : 'Ja, veröffentlichen'}
+          </span>
+        </button>
+      </div>
+    </ModalFrame>
   )
 }
 

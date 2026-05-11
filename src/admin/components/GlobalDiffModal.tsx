@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
-import { FileSearch, Undo2, X } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
+import { FileSearch, Undo2 } from 'lucide-react'
 import type { TabConfig } from '../types'
 import { useAdminStore } from '../store'
 import { TABS } from '../config/tabs'
 import { type ChangeEntry, diffTab, groupChangeEntries, type ChangeGroup } from '../lib/diff'
 import { FieldChangeDiff } from './DiffDisplay'
+import ModalFrame from './ModalFrame'
 
 interface Props {
   onClose: () => void
@@ -17,8 +17,6 @@ interface TabChanges {
   groups: ChangeGroup[]
 }
 
-// ChangeGroup and groupChangeEntries are imported from lib/diff
-
 export default function GlobalDiffModal({ onClose }: Props) {
   const state = useAdminStore(s => s.state)
   const originalState = useAdminStore(s => s.originalState)
@@ -27,14 +25,6 @@ export default function GlobalDiffModal({ onClose }: Props) {
   const revertTab = useAdminStore(s => s.revertTab)
   const [confirmRevertTab, setConfirmRevertTab] = useState<string | null>(null)
   const [confirmRevertAll, setConfirmRevertAll] = useState(false)
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
 
   const tabChanges = useMemo<TabChanges[]>(() => {
     const pendingImagePaths = new Set(pendingUploads.map(u => u.ghPath.replace(/^public/, '')))
@@ -56,150 +46,122 @@ export default function GlobalDiffModal({ onClose }: Props) {
 
   const totalChanges = tabChanges.reduce((sum, tc) => sum + tc.entries.length, 0)
 
-  return (
-    <div
-      className="fixed inset-0 z-9998 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        transition={{ duration: 0.2 }}
-        className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-3xl p-5 sm:p-7 max-w-lg w-full max-h-[85vh] overflow-y-auto border border-white/50 dark:border-gray-700/50 shadow-2xl"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-              <FileSearch size={18} className="text-blue-500" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold dark:text-white">Alle Änderungen</h3>
-              <p className="text-xs text-gray-400">
-                {totalChanges} Änderung{totalChanges !== 1 ? 'en' : ''} in {tabChanges.length} Tab
-                {tabChanges.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 w-8 h-8 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition-colors"
-          >
-            <X size={16} />
-          </button>
-        </div>
+  const subtitle = `${totalChanges} Änderung${totalChanges !== 1 ? 'en' : ''} in ${tabChanges.length} Tab${tabChanges.length !== 1 ? 's' : ''}`
 
-        {tabChanges.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-8">Keine Änderungen vorhanden.</p>
-        ) : (
-          <div className="space-y-5">
-            {tabChanges.map(tc => (
-              <div key={tc.tab.key}>
-                {/* Tab header */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-gray-900 dark:text-white">
-                      {tc.tab.label}
-                    </span>
-                    <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
-                      {tc.entries.length}
-                    </span>
-                  </div>
-                  {confirmRevertTab === tc.tab.key ? (
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        className="text-[10px] px-2.5 py-1 rounded-lg bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors"
-                        onClick={() => {
-                          revertTab(tc.tab.key)
-                          setConfirmRevertTab(null)
-                        }}
-                      >
-                        Verwerfen
-                      </button>
-                      <button
-                        type="button"
-                        className="text-[10px] px-2.5 py-1 rounded-lg border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
-                        onClick={() => setConfirmRevertTab(null)}
-                      >
-                        Abbrechen
-                      </button>
-                    </div>
-                  ) : (
+  return (
+    <ModalFrame
+      onClose={onClose}
+      icon={<FileSearch size={18} className="text-blue-500" />}
+      iconBg="bg-blue-50 dark:bg-blue-900/20"
+      title="Alle Änderungen"
+      subtitle={subtitle}
+    >
+      {tabChanges.length === 0 ? (
+        <p className="text-sm text-gray-400 text-center py-8">Keine Änderungen vorhanden.</p>
+      ) : (
+        <div className="space-y-5">
+          {tabChanges.map(tc => (
+            <div key={tc.tab.key}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-gray-900 dark:text-white">
+                    {tc.tab.label}
+                  </span>
+                  <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
+                    {tc.entries.length}
+                  </span>
+                </div>
+                {confirmRevertTab === tc.tab.key ? (
+                  <div className="flex items-center gap-1.5">
                     <button
                       type="button"
-                      onClick={() => setConfirmRevertTab(tc.tab.key)}
-                      className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2.5 py-1 rounded-lg border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1"
+                      className="text-[10px] px-2.5 py-1 rounded-lg bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors"
+                      onClick={() => {
+                        revertTab(tc.tab.key)
+                        setConfirmRevertTab(null)
+                      }}
                     >
-                      <Undo2 size={10} /> Tab komplett zurücksetzen
+                      Verwerfen
                     </button>
-                  )}
-                </div>
-                {/* Changes */}
-                <div className="space-y-2">
-                  {tc.groups.map(g => (
-                    <GlobalChangeGroup
-                      key={g.key}
-                      group={g}
-                      tabKey={tc.tab.key}
-                      onRevert={revertChange}
-                    />
-                  ))}
-                </div>
+                    <button
+                      type="button"
+                      className="text-[10px] px-2.5 py-1 rounded-lg border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
+                      onClick={() => setConfirmRevertTab(null)}
+                    >
+                      Abbrechen
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmRevertTab(tc.tab.key)}
+                    className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2.5 py-1 rounded-lg border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1"
+                  >
+                    <Undo2 size={10} /> Tab komplett zurücksetzen
+                  </button>
+                )}
               </div>
-            ))}
-          </div>
-        )}
+              <div className="space-y-2">
+                {tc.groups.map(g => (
+                  <GlobalChangeGroup
+                    key={g.key}
+                    group={g}
+                    tabKey={tc.tab.key}
+                    onRevert={revertChange}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-        <div className="flex items-center justify-between mt-5 gap-2">
-          {tabChanges.length > 0 ? (
-            confirmRevertAll ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                  Alles verwerfen?
-                </span>
-                <button
-                  type="button"
-                  className="text-xs px-3 py-2 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors flex items-center gap-1.5"
-                  onClick={() => {
-                    for (const tc of tabChanges) revertTab(tc.tab.key)
-                    setConfirmRevertAll(false)
-                  }}
-                >
-                  <Undo2 size={11} /> Ja, alles verwerfen
-                </button>
-                <button
-                  type="button"
-                  className="text-xs px-3 py-2 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
-                  onClick={() => setConfirmRevertAll(false)}
-                >
-                  Abbrechen
-                </button>
-              </div>
-            ) : (
+      <div className="flex items-center justify-between mt-5 gap-2">
+        {tabChanges.length > 0 ? (
+          confirmRevertAll ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                Alles verwerfen?
+              </span>
               <button
                 type="button"
-                className="text-xs font-semibold px-3 py-2 rounded-xl text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1.5"
-                onClick={() => setConfirmRevertAll(true)}
+                className="text-xs px-3 py-2 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors flex items-center gap-1.5"
+                onClick={() => {
+                  for (const tc of tabChanges) revertTab(tc.tab.key)
+                  setConfirmRevertAll(false)
+                }}
               >
-                <Undo2 size={11} /> Alle zurücksetzen
+                <Undo2 size={11} /> Ja, alles verwerfen
               </button>
-            )
+              <button
+                type="button"
+                className="text-xs px-3 py-2 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
+                onClick={() => setConfirmRevertAll(false)}
+              >
+                Abbrechen
+              </button>
+            </div>
           ) : (
-            <div />
-          )}
-          <button
-            type="button"
-            className="text-xs px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
-            onClick={onClose}
-          >
-            Schließen
-          </button>
-        </div>
-      </motion.div>
-    </div>
+            <button
+              type="button"
+              className="text-xs font-semibold px-3 py-2 rounded-xl text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1.5"
+              onClick={() => setConfirmRevertAll(true)}
+            >
+              <Undo2 size={11} /> Alle zurücksetzen
+            </button>
+          )
+        ) : (
+          <div />
+        )}
+        <button
+          type="button"
+          className="text-xs px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
+          onClick={onClose}
+        >
+          Schließen
+        </button>
+      </div>
+    </ModalFrame>
   )
 }
 

@@ -13,13 +13,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAdminStore } from '../store'
 import ArrayEditor from './ArrayEditor'
-import DiffModal from './DiffModal'
-import OrphanModal from './OrphanModal'
-import PreviewModal from './PreviewModal'
-import PublishConfirmModal from './PublishConfirmModal'
-import StickyPublishBar from './StickyPublishBar'
-import AdminActionBar from './AdminActionBar'
-import AdminWarningBanner from './AdminWarningBanner'
+import TabEditorShell from './TabEditorShell'
 import { CollapsibleSectionHeader } from './CollapsibleSection'
 import { fileToBase64 } from '../lib/images'
 import { openPendingFile } from '../lib/fileUtils'
@@ -56,64 +50,18 @@ export default function KommunalpolitikEditor() {
   const loadData = useAdminStore(s => s.loadData)
 
   return (
-    <div className="pb-28">
-      {publisher.orphans && (
-        <OrphanModal
-          orphans={publisher.orphans}
-          onConfirm={publisher.handleOrphanConfirm}
-          onKeep={publisher.handleOrphanKeep}
-          onCancel={publisher.handleOrphanCancel}
-        />
-      )}
-      {publisher.showPreview && (
-        <PreviewModal tabKey="kommunalpolitik" onClose={() => publisher.setShowPreview(false)} />
-      )}
-      {publisher.showPublishConfirm && (
-        <PublishConfirmModal
-          tabKey="kommunalpolitik"
-          onConfirm={publisher.handlePublishConfirmed}
-          onCancel={() => publisher.setShowPublishConfirm(false)}
-        />
-      )}
-      {publisher.showDiff && (
-        <DiffModal
-          tabKey="kommunalpolitik"
-          onClose={() => publisher.setShowDiff(false)}
-          onRevertAll={publisher.handleRevertAndCloseDiff}
-        />
-      )}
-
-      {/* Load-error banner */}
-      {hasLoadError && (
-        <div className="mb-5">
-          <AdminWarningBanner>
-            Daten für diesen Tab konnten nicht geladen werden. Veröffentlichen ist gesperrt —{' '}
-            <button
-              type="button"
-              onClick={loadData}
-              className="underline font-semibold hover:no-underline"
-            >
-              Erneut versuchen
-            </button>
-          </AdminWarningBanner>
-        </div>
-      )}
-
-      {/* Unified action bar */}
-      <AdminActionBar
-        isDirty={isDirty}
-        publishing={publisher.publishing}
-        hasLoadError={hasLoadError}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        previewPath="/kommunalpolitik"
-        onUndo={undo}
-        onRedo={redo}
-        onShowPreview={() => publisher.setShowPreview(true)}
-        onShowDiff={() => publisher.setShowDiff(true)}
-        onDownload={publisher.handleDownload}
-        onPublish={publisher.handlePublish}
-      />
+    <TabEditorShell
+      tabKey="kommunalpolitik"
+      previewPath="/kommunalpolitik"
+      isDirty={isDirty}
+      hasLoadError={hasLoadError}
+      canUndo={canUndo}
+      canRedo={canRedo}
+      publisher={publisher}
+      onUndo={undo}
+      onRedo={redo}
+      onReloadData={loadData}
+    >
 
       {/* Sichtbar toggle */}
       <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/40 rounded-2xl p-5 mb-6">
@@ -395,13 +343,7 @@ export default function KommunalpolitikEditor() {
         </AnimatePresence>
       </div>
 
-      <StickyPublishBar
-        isDirty={isDirty && !hasLoadError}
-        publishing={publisher.publishing}
-        onPublish={publisher.handlePublish}
-        onShowDiff={() => publisher.setShowDiff(true)}
-      />
-    </div>
+    </TabEditorShell>
   )
 }
 

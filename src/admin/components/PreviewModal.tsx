@@ -99,7 +99,7 @@ export default function PreviewModal({ tabKey, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-9999 flex flex-col bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex flex-col bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
