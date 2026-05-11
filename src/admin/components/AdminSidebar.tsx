@@ -89,8 +89,8 @@ export default function AdminSidebar({
             <div className="absolute inset-0 bg-gradient-to-b from-spd-red/5 dark:from-spd-red/10 to-transparent pointer-events-none" />
             <div className="relative flex items-center gap-3">
               <div className="relative shrink-0">
-                <div className="absolute inset-0 bg-spd-red/20 rounded-2xl blur-md" />
-                <div className="relative w-10 h-10 rounded-2xl shadow-lg shadow-spd-red/30 overflow-hidden ring-1 ring-spd-red/10 dark:ring-spd-red/20">
+                <div className="absolute inset-0 bg-spd-red/20 blur-md" />
+                <div className="relative w-10 h-10 shadow-lg shadow-spd-red/30 overflow-hidden ring-1 ring-spd-red/10 dark:ring-spd-red/20">
                   <img src="/spd-logo.svg" alt="SPD" className="w-full h-full" />
                 </div>
               </div>
