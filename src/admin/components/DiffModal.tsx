@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
-import { FileSearch, Plus, Trash2, Undo2, X } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
+import { FileSearch, Plus, Trash2, Undo2 } from 'lucide-react'
 import { useAdminStore } from '../store'
 import { TABS } from '../config/tabs'
 import { type ChangeEntry, diffTab, groupChangeEntries, type ChangeGroup } from '../lib/diff'
 import { FieldChangeDiff } from './DiffDisplay'
 import type { TabConfig } from '../types'
+import ModalFrame from './ModalFrame'
 
 interface Props {
   tabKey: string
@@ -21,14 +21,6 @@ export default function DiffModal({ tabKey, onClose, onRevertAll }: Props) {
   const revertChange = useAdminStore(s => s.revertChange)
   const [confirmRevertAll, setConfirmRevertAll] = useState(false)
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
-
   const entries = useMemo(() => {
     if (!tab) return []
     const pendingImagePaths = new Set(pendingUploads.map(u => u.ghPath.replace(/^public/, '')))
@@ -39,95 +31,69 @@ export default function DiffModal({ tabKey, onClose, onRevertAll }: Props) {
 
   if (!tab) return null
 
+  const subtitle = `${entries.length} Änderung${entries.length !== 1 ? 'en' : ''}${entries.length > 0 ? ' · Einzeln oder alle zurücksetzbar' : ''}`
+
   return (
-    <div
-      className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={onClose}
+    <ModalFrame
+      onClose={onClose}
+      icon={<FileSearch size={18} className="text-blue-500" />}
+      iconBg="bg-blue-50 dark:bg-blue-900/20"
+      title={`Änderungen — ${tab.label}`}
+      subtitle={subtitle}
     >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        transition={{ duration: 0.2 }}
-        className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-3xl p-5 sm:p-7 max-w-lg w-full max-h-[85vh] overflow-y-auto border border-white/50 dark:border-gray-700/50 shadow-2xl"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-              <FileSearch size={18} className="text-blue-500" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold dark:text-white">Änderungen — {tab.label}</h3>
-              <p className="text-xs text-gray-400">
-                {entries.length} Änderung{entries.length !== 1 ? 'en' : ''}
-                {entries.length > 0 && ' · Einzeln oder alle zurücksetzbar'}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 w-8 h-8 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition-colors"
-          >
-            <X size={16} />
-          </button>
+      {groups.length === 0 ? (
+        <p className="text-sm text-gray-400 text-center py-8">Keine Änderungen gefunden.</p>
+      ) : (
+        <div className="space-y-3">
+          {groups.map(g => (
+            <ChangeGroupBlock key={g.key} group={g} onRevert={e => revertChange(tabKey, e)} />
+          ))}
         </div>
+      )}
 
-        {groups.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-8">Keine Änderungen gefunden.</p>
-        ) : (
-          <div className="space-y-3">
-            {groups.map(g => (
-              <ChangeGroupBlock key={g.key} group={g} onRevert={e => revertChange(tabKey, e)} />
-            ))}
-          </div>
-        )}
-
-        <div className="flex items-center justify-between mt-5 gap-2">
-          {entries.length > 0 ? (
-            confirmRevertAll ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                  Alle verwerfen?
-                </span>
-                <button
-                  type="button"
-                  className="text-xs px-3 py-2 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors flex items-center gap-1.5"
-                  onClick={onRevertAll}
-                >
-                  <Undo2 size={11} /> Ja, alle verwerfen
-                </button>
-                <button
-                  type="button"
-                  className="text-xs px-3 py-2 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
-                  onClick={() => setConfirmRevertAll(false)}
-                >
-                  Abbrechen
-                </button>
-              </div>
-            ) : (
+      <div className="flex items-center justify-between mt-5 gap-2">
+        {entries.length > 0 ? (
+          confirmRevertAll ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                Alle verwerfen?
+              </span>
               <button
                 type="button"
-                className="text-xs px-3 py-2 rounded-xl border border-amber-300/60 dark:border-amber-700/40 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors font-medium flex items-center gap-1.5"
-                onClick={() => setConfirmRevertAll(true)}
+                className="text-xs px-3 py-2 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors flex items-center gap-1.5"
+                onClick={onRevertAll}
               >
-                <Undo2 size={11} /> Alle zurücksetzen
+                <Undo2 size={11} /> Ja, alle verwerfen
               </button>
-            )
+              <button
+                type="button"
+                className="text-xs px-3 py-2 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
+                onClick={() => setConfirmRevertAll(false)}
+              >
+                Abbrechen
+              </button>
+            </div>
           ) : (
-            <div />
-          )}
-          <button
-            type="button"
-            className="text-xs px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
-            onClick={onClose}
-          >
-            Schließen
-          </button>
-        </div>
-      </motion.div>
-    </div>
+            <button
+              type="button"
+              className="text-xs px-3 py-2 rounded-xl border border-amber-300/60 dark:border-amber-700/40 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors font-medium flex items-center gap-1.5"
+              onClick={() => setConfirmRevertAll(true)}
+            >
+              <Undo2 size={11} /> Alle zurücksetzen
+            </button>
+          )
+        ) : (
+          <div />
+        )}
+        <button
+          type="button"
+          className="text-xs px-4 py-2.5 rounded-xl border border-gray-200/60 dark:border-gray-700/40 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
+          onClick={onClose}
+        >
+          Schließen
+        </button>
+      </div>
+    </ModalFrame>
   )
 }
 

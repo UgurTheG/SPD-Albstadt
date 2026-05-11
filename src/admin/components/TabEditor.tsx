@@ -2,15 +2,9 @@ import type { SectionConfig, TabConfig } from '../types'
 import { useAdminStore } from '../store'
 import FieldRenderer from './FieldRenderer'
 import ArrayEditor from './ArrayEditor'
-import OrphanModal from './OrphanModal'
-import PreviewModal from './PreviewModal'
-import PublishConfirmModal from './PublishConfirmModal'
-import StickyPublishBar from './StickyPublishBar'
-import DiffModal from './DiffModal'
-import AdminActionBar from './AdminActionBar'
 import HaushaltsredenEditor from './HaushaltsredenEditor'
 import KommunalpolitikEditor from './KommunalpolitikEditor'
-import AdminWarningBanner from './AdminWarningBanner'
+import TabEditorShell from './TabEditorShell'
 import { CollapsibleSection, CollapsibleSectionHeader } from './CollapsibleSection'
 import { useUndoRedoShortcuts } from '../hooks/useUndoRedoShortcuts'
 import { useTabPublisher } from '../hooks/useTabPublisher'
@@ -33,102 +27,37 @@ export default function TabEditor({ tab }: Props) {
 // ─── Generic editor (array / object tabs) ─────────────────────────────────────
 
 function GenericTabEditor({ tab }: Props) {
-  const state = useAdminStore(s => s.state)
   const undo = useAdminStore(s => s.undo)
   const redo = useAdminStore(s => s.redo)
   const undoStacks = useAdminStore(s => s.undoStacks)
   const redoStacks = useAdminStore(s => s.redoStacks)
   const loadData = useAdminStore(s => s.loadData)
-  // Block publishing for this tab if its data failed to load on startup
   const hasLoadError = useAdminStore(s => s.dataLoadErrors.includes(tab.key))
+  const isDirty = useAdminStore(s => s.dirtyTabs().has(tab.key))
+  const data = useAdminStore(s => s.state[tab.key])
 
   const canUndo = (undoStacks[tab.key]?.length ?? 0) > 0
   const canRedo = (redoStacks[tab.key]?.length ?? 0) > 0
 
-  // Keyboard shortcuts for undo/redo
   useUndoRedoShortcuts(tab.key, undo, redo)
 
-  const data = state[tab.key]
-
-  // Must be called before any conditional return to satisfy Rules of Hooks.
-  // Zustand compares the boolean result — component only re-renders when the
-  // dirty flag for this specific tab actually changes.
-  const isDirty = useAdminStore(s => s.dirtyTabs().has(tab.key))
-
-  const filename = tab.file?.split('/').pop()
-  const publisher = useTabPublisher(tab.key, filename)
+  const publisher = useTabPublisher(tab.key, tab.file?.split('/').pop())
 
   if (!data) return <p className="text-gray-400 text-center py-20">Daten werden geladen…</p>
 
   return (
-    <div>
-      {publisher.orphans && (
-        <OrphanModal
-          orphans={publisher.orphans}
-          onConfirm={publisher.handleOrphanConfirm}
-          onKeep={publisher.handleOrphanKeep}
-          onCancel={publisher.handleOrphanCancel}
-        />
-      )}
-
-      {publisher.showPublishConfirm && (
-        <PublishConfirmModal
-          tabKey={tab.key}
-          onConfirm={publisher.handlePublishConfirmed}
-          onCancel={() => publisher.setShowPublishConfirm(false)}
-        />
-      )}
-
-      {publisher.showDiff && (
-        <DiffModal
-          tabKey={tab.key}
-          onClose={() => publisher.setShowDiff(false)}
-          onRevertAll={publisher.handleRevertAndCloseDiff}
-        />
-      )}
-
-      {publisher.showPreview && (
-        <PreviewModal tabKey={tab.key} onClose={() => publisher.setShowPreview(false)} />
-      )}
-
-      {/* Load-error warning — shown inline so it's visible next to the publish button */}
-      {hasLoadError && (
-        <div className="mb-5">
-          <AdminWarningBanner>
-            Daten für diesen Tab konnten nicht geladen werden. Veröffentlichen ist gesperrt —{' '}
-            <button
-              type="button"
-              onClick={loadData}
-              className="underline font-semibold hover:no-underline"
-            >
-              Erneut versuchen
-            </button>
-          </AdminWarningBanner>
-        </div>
-      )}
-
-      <AdminActionBar
-        isDirty={isDirty}
-        publishing={publisher.publishing}
-        hasLoadError={hasLoadError}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        previewPath={tab.previewPath}
-        onUndo={() => undo(tab.key)}
-        onRedo={() => redo(tab.key)}
-        onShowPreview={() => publisher.setShowPreview(true)}
-        onShowDiff={() => publisher.setShowDiff(true)}
-        onDownload={publisher.handleDownload}
-        onPublish={publisher.handlePublish}
-      />
-
-      <StickyPublishBar
-        isDirty={isDirty && !hasLoadError}
-        publishing={publisher.publishing}
-        onPublish={publisher.handlePublish}
-        onShowDiff={() => publisher.setShowDiff(true)}
-      />
-
+    <TabEditorShell
+      tabKey={tab.key}
+      previewPath={tab.previewPath}
+      isDirty={isDirty}
+      hasLoadError={hasLoadError}
+      canUndo={canUndo}
+      canRedo={canRedo}
+      publisher={publisher}
+      onUndo={() => undo(tab.key)}
+      onRedo={() => redo(tab.key)}
+      onReloadData={loadData}
+    >
       {tab.type === 'array' && tab.fields && (
         <ArrayEditor
           fields={tab.fields}
@@ -136,9 +65,8 @@ function GenericTabEditor({ tab }: Props) {
           tabKey={tab.key}
         />
       )}
-
       {tab.type === 'object' && <ObjectEditor tab={tab} data={data as Record<string, unknown>} />}
-    </div>
+    </TabEditorShell>
   )
 }
 
