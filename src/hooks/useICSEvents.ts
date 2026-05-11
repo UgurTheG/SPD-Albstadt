@@ -22,13 +22,11 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
  */
 export function useICSEvents(enabled = true): UseICSEventsResult {
   const [events, setEvents] = useState<ICSEvent[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(enabled)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!enabled) {
-      setLoading(false)
-      setError(null)
       return
     }
 
