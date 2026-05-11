@@ -51,7 +51,7 @@ export default function Fraktion() {
   } = useHaushaltsredenPagination()
 
   return (
-    <section id="fraktion" className="py-24 bg-white dark:bg-gray-950">
+    <section id="fraktion" className="py-24 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader
           sectionRef={ref}
