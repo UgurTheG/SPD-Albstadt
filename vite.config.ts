@@ -89,7 +89,7 @@ export default defineConfig(({ mode }) => {
           // It will be cached on first access to /admin via the navigation handler.
           globIgnores: ['**/AdminApp*.js', '**/admin*.js'],
           navigateFallback: '/index.html',
-          navigateFallbackDenylist: [/^\/api\//, /^\/data\//, /^\/admin/],
+          navigateFallbackDenylist: [/^\/api\//, /^\/data\//, /^\/admin/, /^\/documents\//, /\.pdf$/i],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/static\.elfsight\.com\/.*/i,
