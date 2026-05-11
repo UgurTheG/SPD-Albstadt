@@ -14,6 +14,7 @@ import type { Mitglied, Abgeordneter, PartyData, Schwerpunkt } from './types'
 import { AbgeordneterCard } from './AbgeordneterCard'
 import { SchwerpunktCard } from './SchwerpunktCard'
 import { SchwerpunktSheet } from './SchwerpunktSheet'
+import SectionContainer from '@/components/SectionContainer'
 
 // Static fallback used before party.json loads so SectionHeader always reserves
 // the correct height for the description paragraph, preventing CLS.
@@ -65,8 +66,8 @@ export default function Partei() {
   }
 
   return (
-    <section id="partei" className="py-24 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
+      <SectionContainer id="partei">
         <SectionHeader
           sectionRef={ref}
           isInView={isInView}
@@ -145,7 +146,7 @@ export default function Partei() {
             )}
           </div>
         )}
-      </div>
+      </SectionContainer>
 
       <PersonSheet
         open={sheet.type === 'person'}
@@ -157,6 +158,6 @@ export default function Partei() {
         item={sheet.type === 'schwerpunkt' ? sheet.schwerpunkt : null}
         onClose={handleCloseSchwerpunkt}
       />
-    </section>
+    </>
   )
 }

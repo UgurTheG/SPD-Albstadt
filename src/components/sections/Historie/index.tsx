@@ -6,6 +6,7 @@ import Sheet from '@/components/Sheet'
 import PersonSheet from '@/components/PersonSheet'
 import SectionHeader from '@/components/SectionHeader'
 import { SkeletonGrid } from '@/components/SkeletonGrid'
+import SectionContainer from '@/components/SectionContainer'
 import { TIMELINE_TYPE_META } from './types'
 import { TimelineRow } from './TimelineRow'
 import { EventSheet } from './EventSheet'
@@ -17,7 +18,7 @@ export default function Historie() {
   const { data, merged, sheet, openEvent, openPerson, closeSheet } = useHistorie(jahreSlug)
 
   return (
-    <section id="historie" className="py-24 bg-gray-50 dark:bg-gray-900">
+    <>
       {sheet.type === 'event' && (
         <Helmet>
           <title>
@@ -42,8 +43,8 @@ export default function Historie() {
           <meta name="twitter:description" content={sheet.entry.beschreibung.slice(0, 160)} />
         </Helmet>
       )}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
+
+      <SectionContainer id="historie">
         <SectionHeader
           sectionRef={ref}
           isInView={isInView}
@@ -98,19 +99,17 @@ export default function Historie() {
             <SkeletonGrid count={4} itemClassName="h-24" />
           </div>
         )}
-      </div>
+      </SectionContainer>
 
-      {/* Event detail sheet */}
       <Sheet open={sheet.type === 'event'} onClose={closeSheet} size="lg">
         {sheet.type === 'event' && <EventSheet entry={sheet.entry} />}
       </Sheet>
 
-      {/* Person detail sheet */}
       <PersonSheet
         open={sheet.type === 'person'}
         onClose={closeSheet}
         person={sheet.type === 'person' ? sheet.person : null}
       />
-    </section>
+    </>
   )
 }

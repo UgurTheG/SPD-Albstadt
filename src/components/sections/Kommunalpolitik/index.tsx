@@ -6,6 +6,8 @@ import PersonSheet from '@/components/PersonSheet'
 import type { PersonSheetData } from '@/types/person'
 import { PersonGrid } from '@/components/PersonGrid'
 import SectionHeader from '@/components/SectionHeader'
+import { SkeletonGrid } from '@/components/SkeletonGrid'
+import SectionContainer from '@/components/SectionContainer'
 import type { KommunalpolitikData, KommunalpolitikPerson } from './types'
 import { DokumentCard } from './DokumentCard'
 
@@ -31,8 +33,8 @@ export default function Kommunalpolitik() {
   const hasContent = gemeinderaete.length > 0 || kreisraete.length > 0 || dokumente.length > 0
 
   return (
-    <section id="kommunalpolitik" className="py-24 bg-white dark:bg-gray-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
+      <SectionContainer id="kommunalpolitik" className="bg-white dark:bg-gray-950">
         <SectionHeader
           sectionRef={ref}
           isInView={isInView}
@@ -126,21 +128,16 @@ export default function Kommunalpolitik() {
         {/* Skeleton while loading */}
         {!data && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="bg-gray-100 dark:bg-gray-800 rounded-2xl h-64 animate-pulse"
-              />
-            ))}
+            <SkeletonGrid count={4} itemClassName="h-64" />
           </div>
         )}
-      </div>
+      </SectionContainer>
 
       <PersonSheet
         open={!!selectedPerson}
         onClose={() => setSelectedPerson(null)}
         person={selectedPerson}
       />
-    </section>
+    </>
   )
 }
