@@ -9,6 +9,7 @@ import { PersonGrid } from '@/components/PersonGrid'
 import type { FraktionData, Gemeinderat } from './types'
 import { HaushaltsredeCard, HaushaltsredePlaceholder } from './HaushaltsredeCards'
 import { HaushaltsredenPagination } from './HaushaltsredenPagination'
+import SectionContainer from '@/components/SectionContainer'
 
 export default function Fraktion() {
   const { ref, isInView, data } = useSectionPage<FraktionData>('/data/fraktion.json')
@@ -30,8 +31,8 @@ export default function Fraktion() {
   } = useHaushaltsredenPagination()
 
   return (
-    <section id="fraktion" className="py-24 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
+      <SectionContainer id="fraktion">
         <SectionHeader
           sectionRef={ref}
           isInView={isInView}
@@ -92,9 +93,9 @@ export default function Fraktion() {
             onLoadLess={loadLessReden}
           />
         </motion.div>
-      </div>
+      </SectionContainer>
 
       <PersonSheet open={selectedMember !== null} onClose={closeMember} person={selectedMember} />
-    </section>
+    </>
   )
 }
