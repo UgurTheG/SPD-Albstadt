@@ -208,8 +208,8 @@ export default function AdminApp() {
             </button>
             <div className="flex items-center gap-2.5">
               <div className="relative">
-                <div className="absolute inset-0 bg-spd-red/20 rounded-xl blur-sm" />
-                <div className="relative w-7 h-7 rounded-xl overflow-hidden shadow-sm">
+                <div className="absolute inset-0 bg-spd-red/20 blur-sm" />
+                <div className="relative w-7 h-7 overflow-hidden shadow-sm">
                   <img src="/spd-logo.svg" alt="SPD" className="w-full h-full" />
                 </div>
               </div>

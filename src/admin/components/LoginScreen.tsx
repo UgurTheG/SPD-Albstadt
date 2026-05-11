@@ -72,8 +72,8 @@ export default function LoginScreen() {
         {/* Top: logo + wordmark */}
         <div className="relative z-10">
           <div className="relative w-fit mb-10">
-            <div className="absolute inset-0 bg-spd-red/25 rounded-3xl blur-2xl scale-[2.5]" />
-            <div className="relative w-16 h-16 rounded-2xl overflow-hidden shadow-2xl shadow-spd-red/40 ring-1 ring-white/10">
+            <div className="absolute inset-0 bg-spd-red/25 blur-2xl scale-[2.5]" />
+            <div className="relative w-16 h-16 overflow-hidden shadow-2xl shadow-spd-red/40 ring-1 ring-white/10">
               <img src="/spd-logo.svg" alt="SPD Albstadt" className="w-full h-full" />
             </div>
           </div>
@@ -121,8 +121,8 @@ export default function LoginScreen() {
           {/* Mobile logo (hidden on desktop) */}
           <div className="flex items-center gap-3 mb-10 lg:hidden">
             <div className="relative">
-              <div className="absolute inset-0 bg-spd-red/20 rounded-xl blur-md" />
-              <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-spd-red/20 ring-1 ring-spd-red/10">
+              <div className="absolute inset-0 bg-spd-red/20 blur-md" />
+              <div className="relative w-10 h-10 overflow-hidden shadow-lg shadow-spd-red/20 ring-1 ring-spd-red/10">
                 <img src="/spd-logo.svg" alt="SPD" className="w-full h-full" />
               </div>
             </div>
