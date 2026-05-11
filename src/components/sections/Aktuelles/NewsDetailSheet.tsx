@@ -20,7 +20,7 @@ export default function NewsDetailSheet({ news }: Props) {
       : `${BASE_URL}${urls[0]}`
     : undefined
   const deepId = news.uuid ?? news.id
-  const shareUrl = `${BASE_URL}/aktuelles/${deepId}`
+  const shareUrl = `${window.location.origin}/aktuelles/${deepId}`
 
   const [copied, setCopied] = useState(false)
 
