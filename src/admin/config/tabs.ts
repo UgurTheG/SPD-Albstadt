@@ -154,8 +154,8 @@ export const TABS: TabConfig[] = [
     key: 'haushaltsreden',
     label: 'Haushaltsreden',
     type: 'haushaltsreden',
-    file: null,
-    ghPath: null,
+    file: '/data/haushaltsreden.json',
+    ghPath: 'public/data/haushaltsreden.json',
   },
   {
     key: 'history',
