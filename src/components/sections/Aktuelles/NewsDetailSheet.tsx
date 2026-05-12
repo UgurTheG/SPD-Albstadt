@@ -82,6 +82,9 @@ export default function NewsDetailSheet({ news }: Props) {
           {news.titel}
         </h3>
         <div className="w-10 h-0.5 bg-spd-red rounded-full mb-5" />
+        <p className="border-l-2 border-spd-red pl-4 text-gray-700 dark:text-gray-200 font-medium leading-relaxed text-[0.95rem] sm:text-lg italic mb-6">
+          {news.zusammenfassung}
+        </p>
         <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base whitespace-pre-line">
           {news.inhalt}
         </p>
