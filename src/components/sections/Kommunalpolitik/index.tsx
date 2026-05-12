@@ -16,7 +16,11 @@ export default function Kommunalpolitik() {
   const { ref, isInView, data } = useSectionPage<KommunalpolitikData>('/data/kommunalpolitik.json')
   const navigate = useNavigate()
   const location = useLocation()
-  const { state: selectedPerson, set: setSelectedPerson, close: closePerson } = useSheetState<PersonSheetData | null>(null)
+  const {
+    state: selectedPerson,
+    set: setSelectedPerson,
+    close: closePerson,
+  } = useSheetState<PersonSheetData | null>(null)
 
   useEffect(() => {
     if (data?.sichtbar === false && !location.pathname.startsWith('/admin')) {
@@ -134,11 +138,7 @@ export default function Kommunalpolitik() {
         )}
       </SectionContainer>
 
-      <PersonSheet
-        open={!!selectedPerson}
-        onClose={closePerson}
-        person={selectedPerson}
-      />
+      <PersonSheet open={!!selectedPerson} onClose={closePerson} person={selectedPerson} />
     </>
   )
 }
