@@ -9,10 +9,12 @@ interface HaushaltsredenPaginationProps {
   hasMore: boolean
   onLoadMore: () => void
   onLoadLess: () => void
+  /** Label for the item type shown in the counter (default: "Haushaltsreden"). */
+  itemLabel?: string
 }
 
 /**
- * "Mehr laden / Weniger" pagination bar for the Haushaltsreden grid.
+ * "Mehr laden / Weniger" pagination bar for paginated lists.
  * Only rendered when the total exceeds one page.
  */
 export function HaushaltsredenPagination({
@@ -22,13 +24,14 @@ export function HaushaltsredenPagination({
   hasMore,
   onLoadMore,
   onLoadLess,
+  itemLabel = 'Haushaltsreden',
 }: HaushaltsredenPaginationProps) {
   if (total <= itemsPerPage) return null
 
   return (
     <div className="flex items-center justify-between pt-4">
       <span className="text-xs text-gray-400 dark:text-gray-500">
-        {Math.min(visibleCount, total)} von {total} Haushaltsreden
+        {Math.min(visibleCount, total)} von {total} {itemLabel}
       </span>
       <div className="flex gap-2">
         {visibleCount > itemsPerPage && (

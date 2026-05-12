@@ -2,7 +2,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical } from 'lucide-react'
 import type { FieldConfig } from '../types'
-import ItemCardBody from './ItemCardBody'
+import ItemCardBody, { CARD_BASE_CLS } from './ItemCardBody'
 
 interface Props {
   id: string
@@ -41,7 +41,7 @@ export default function SortableItemCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/40 rounded-2xl p-4 sm:p-6 transition-all duration-300 group/card ${
+      className={`${CARD_BASE_CLS} group/card ${
         isDragging
           ? 'opacity-50 shadow-2xl scale-[1.01] border-spd-red/30'
           : 'hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-black/20 hover:border-gray-300/60 dark:hover:border-gray-600/50'

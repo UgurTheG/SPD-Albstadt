@@ -9,34 +9,7 @@ import { render, fireEvent, act } from '@testing-library/react'
 import { Suspense } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 
-vi.mock('../../admin/lib/github', () => {
-  class AuthError extends Error {
-    status: number
-    constructor(msg: string, status: number) {
-      super(msg)
-      this.name = 'AuthError'
-      this.status = status
-    }
-  }
-  class ConflictError extends Error {
-    constructor(msg = 'Konflikt') {
-      super(msg)
-      this.name = 'ConflictError'
-    }
-  }
-  return {
-    AuthError,
-    ConflictError,
-    getBranchSha: vi.fn().mockResolvedValue('abc123'),
-    commitTree: vi.fn().mockResolvedValue({}),
-    validateToken: vi.fn().mockResolvedValue({ login: 'testuser', avatar_url: '' }),
-    commitFile: vi.fn().mockResolvedValue({}),
-    commitBinaryFile: vi.fn().mockResolvedValue({ content: { sha: 'abc' } }),
-    deleteFile: vi.fn().mockResolvedValue({}),
-    getFileContent: vi.fn().mockResolvedValue(null),
-    listDirectory: vi.fn().mockResolvedValue([]),
-  }
-})
+vi.mock('../../admin/lib/github')
 
 vi.mock('../../admin/lib/icons', async importOriginal => {
   const original = await importOriginal<typeof import('../../admin/lib/icons')>()
@@ -49,7 +22,7 @@ vi.mock('sonner', () => ({
 }))
 
 import { useAdminStore } from '../../admin/store'
-import { resetPersistenceState } from '../../admin/store/persistence'
+import { resetStore } from './testHelpers'
 import AdminApp from '../../admin/AdminApp'
 import TabEditor from '../../admin/components/TabEditor'
 import ArrayEditor from '../../admin/components/ArrayEditor'
@@ -60,34 +33,6 @@ import DiffModal from '../../admin/components/DiffModal'
 import GlobalDiffModal from '../../admin/components/GlobalDiffModal'
 import PublishConfirmModal from '../../admin/components/PublishConfirmModal'
 import { TABS } from '../../admin/config/tabs'
-
-function resetStore(overrides: Record<string, unknown> = {}) {
-  localStorage.clear()
-  sessionStorage.clear()
-  resetPersistenceState()
-  useAdminStore.setState({
-    activeTab: 'news',
-    state: {},
-    originalState: {},
-    pendingUploads: [],
-    dataLoaded: true,
-    dataLoadErrors: [],
-    undoStacks: {},
-    redoStacks: {},
-    publishing: false,
-    authenticated: true,
-    tokenExpiresAt: 0,
-    user: { login: 'testuser', avatar_url: '' },
-    loginError: '',
-    loginLoading: false,
-    loginAuthStatus: null,
-    darkMode: false,
-    statusMessage: '',
-    statusType: 'info',
-    statusCounter: 0,
-    ...overrides,
-  })
-}
 
 beforeEach(() => {
   vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test')

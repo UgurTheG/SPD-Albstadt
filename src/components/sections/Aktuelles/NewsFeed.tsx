@@ -7,6 +7,7 @@ import { useNewsFilter } from '@/hooks/useNewsFilter'
 import { formatDate } from '@/utils/formatDate'
 import SubsectionHeading from '@/components/SubsectionHeading'
 import { SkeletonGrid } from '@/components/SkeletonGrid'
+import { HaushaltsredenPagination } from '@/components/sections/Fraktion/HaushaltsredenPagination'
 
 interface Props {
   newsItems: NewsItem[] | null
@@ -176,33 +177,16 @@ export default function NewsFeed({ newsItems, onSelectNews }: Props) {
         </div>
       )}
 
-      {/* Pagination */}
-      {filteredNews && filteredNews.length > itemsPerPage && (
-        <div className="flex items-center justify-between pt-6">
-          <span className="text-xs text-gray-400 dark:text-gray-500">
-            {Math.min(visibleCount, filteredNews.length)} von {filteredNews.length} Beiträgen
-          </span>
-          <div className="flex gap-2">
-            {visibleCount > itemsPerPage && (
-              <button
-                type="button"
-                onClick={loadLess}
-                className="text-xs font-semibold text-gray-400 hover:text-spd-red transition-colors px-3 py-1.5 rounded-lg hover:bg-spd-red/5"
-              >
-                ↑ Weniger
-              </button>
-            )}
-            {hasMore && (
-              <button
-                type="button"
-                onClick={loadMore}
-                className="text-xs font-semibold text-spd-red border border-spd-red/30 hover:bg-spd-red hover:text-white transition-all px-3 py-1.5 rounded-lg"
-              >
-                Mehr laden ↓
-              </button>
-            )}
-          </div>
-        </div>
+      {filteredNews && (
+        <HaushaltsredenPagination
+          total={filteredNews.length}
+          visibleCount={visibleCount}
+          itemsPerPage={itemsPerPage}
+          hasMore={hasMore}
+          onLoadMore={loadMore}
+          onLoadLess={loadLess}
+          itemLabel="Beiträgen"
+        />
       )}
     </div>
   )

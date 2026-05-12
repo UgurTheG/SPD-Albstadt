@@ -1,6 +1,6 @@
 import { GripVertical } from 'lucide-react'
 import type { FieldConfig } from '../types'
-import ItemCardBody from './ItemCardBody'
+import ItemCardBody, { CARD_BASE_CLS } from './ItemCardBody'
 
 interface Props {
   fields: FieldConfig[]
@@ -23,7 +23,7 @@ export default function ItemCard({
   onMove,
 }: Props) {
   return (
-    <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/40 rounded-2xl p-4 sm:p-6 transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-black/20 hover:border-gray-300/60 dark:hover:border-gray-600/50 group/card">
+    <div className={`${CARD_BASE_CLS} hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-black/20 hover:border-gray-300/60 dark:hover:border-gray-600/50 group/card`}>
       <ItemCardBody
         fields={fields}
         item={item}

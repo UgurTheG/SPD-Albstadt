@@ -8,6 +8,9 @@ import type { FieldConfig } from '../types'
 import { getPreviewText } from '../lib/getPreviewText'
 import FieldRenderer from './FieldRenderer'
 
+export const CARD_BASE_CLS =
+  'bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/40 rounded-2xl p-4 sm:p-6 transition-all duration-300'
+
 export interface ItemCardBodyProps {
   fields: FieldConfig[]
   item: Record<string, unknown>

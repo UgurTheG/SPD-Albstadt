@@ -1,12 +1,4 @@
-/** Returns the two-letter uppercase initials for a full name. */
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-}
+import { getInitials } from '../utils/getInitials'
 
 const SIZES = {
   xs: 'w-7 h-7 text-[10px]',

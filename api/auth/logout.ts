@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
-import { clearAuthCookies, isAllowedOrigin, parseCookies, ACCESS_TOKEN_COOKIE } from './cookies.js'
-import { rateLimit, getClientIP } from './rateLimit.js'
+import { clearAuthCookies, parseCookies, ACCESS_TOKEN_COOKIE } from './cookies.js'
+import { setNoStore, isRateLimited, isOriginForbidden } from './middleware.js'
 
 /**
  * POST /api/auth/logout
@@ -11,19 +11,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'method_not_allowed' })
   }
-
-  // Rate limit: 10 logout attempts per IP per minute
-  const ip = getClientIP(req.headers as Record<string, string | string[] | undefined>)
-  if (!rateLimit(ip, 10, 60_000)) {
-    return res.status(429).json({ error: 'too_many_requests' })
-  }
-
-  // Guard against cross-origin CSRF logout.
-  // Use Origin when available; fall back to Referer (extractOrigin handles full URLs).
-  const origin = (req.headers['origin'] || req.headers['referer'] || '') as string
-  if (!isAllowedOrigin(origin)) {
-    return res.status(403).json({ error: 'forbidden_origin' })
-  }
+  if (isRateLimited(req, res)) return
+  if (isOriginForbidden(req, res)) return
 
   // Best-effort: revoke the token on GitHub's side so it can't be reused if stolen.
   const cookies = parseCookies(req.headers.cookie)
@@ -49,6 +38,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   res.setHeader('Set-Cookie', clearAuthCookies())
-  res.setHeader('Cache-Control', 'no-store')
+  setNoStore(res)
   return res.status(200).json({ ok: true })
 }

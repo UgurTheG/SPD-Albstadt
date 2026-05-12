@@ -20,11 +20,10 @@
 import type { VercelRequest, VercelResponse } from './vercel.d.ts'
 import {
   parseCookies,
-  isAllowedOrigin,
   ACCESS_TOKEN_COOKIE,
   USER_LOGIN_COOKIE,
 } from './auth/cookies.js'
-import { rateLimit, getClientIP } from './auth/rateLimit.js'
+import { setNoStore, isRateLimited, isOriginForbidden } from './auth/middleware.js'
 
 // ─── Allowed tab keys (must match src/admin/config/tabs.ts) ──────────────────
 
@@ -175,21 +174,12 @@ async function storageGetAll(): Promise<PresenceUser[]> {
 // ─── Handler ──────────────────────────────────────────────────────────────────
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Cache-Control', 'no-store')
-
-  const origin = (req.headers['origin'] as string | undefined) ?? ''
-  if (origin && !isAllowedOrigin(origin)) {
-    return res.status(403).json({ error: 'forbidden_origin' })
-  }
-
-  // ── Rate limiting ──────────────────────────────────────────────────────────
+  setNoStore(res)
+  if (req.headers['origin'] && isOriginForbidden(req, res)) return
   // 180 requests / minute per IP — allows 500 ms version-check polling for up
   // to ~3 concurrent active sessions (3 users × 2 req/s = 6 req/s) while
   // still blocking runaway clients.
-  const ip = getClientIP(req.headers as Record<string, string | string[] | undefined>)
-  if (!rateLimit(ip, 180, 60_000)) {
-    return res.status(429).json({ error: 'rate_limited' })
-  }
+  if (isRateLimited(req, res, 180)) return
 
   // Require auth cookie — don't expose presence to unauthenticated callers
   const cookies = parseCookies(req.headers.cookie as string | undefined)

@@ -6,6 +6,7 @@ import { applyRevert } from '../lib/diff'
 import { collectImagePaths } from '../lib/images'
 import { getBranchSha } from '../lib/github'
 import { TABS } from '../config/tabs'
+import { deepClone } from '../../utils/deepClone'
 import {
   lastUndoPush,
   persistDirtyState,
@@ -134,7 +135,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
         }
       }),
     ])
-    const original = JSON.parse(JSON.stringify(newState))
+    const original = deepClone(newState)
     // Restore any saved drafts from localStorage
     const merged = restoreDrafts(newState, original)
     try {
@@ -170,7 +171,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
     if (now - lastPush > UNDO_DEBOUNCE) {
       const stack = [...(prev.undoStacks[tabKey] || [])]
       if (prev.state[tabKey] !== undefined) {
-        stack.push(JSON.parse(JSON.stringify(prev.state[tabKey])))
+        stack.push(deepClone(prev.state[tabKey]))
       }
       if (stack.length > UNDO_LIMIT) stack.shift()
       newUndoStacks = { ...prev.undoStacks, [tabKey]: stack }
@@ -191,7 +192,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
     if (stack.length === 0) return
     const snapshot = stack.pop()!
     const redoStack = [...(prev.redoStacks[tabKey] || [])]
-    redoStack.push(JSON.parse(JSON.stringify(prev.state[tabKey])))
+    redoStack.push(deepClone(prev.state[tabKey]))
     const newState = { ...prev.state, [tabKey]: snapshot }
     set({
       state: newState,
@@ -207,7 +208,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
     if (stack.length === 0) return
     const snapshot = stack.pop()!
     const undoStack = [...(prev.undoStacks[tabKey] || [])]
-    undoStack.push(JSON.parse(JSON.stringify(prev.state[tabKey])))
+    undoStack.push(deepClone(prev.state[tabKey]))
     const newState = { ...prev.state, [tabKey]: snapshot }
     set({
       state: newState,
@@ -231,7 +232,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
     set(prev => ({
       originalState: {
         ...prev.originalState,
-        [tabKey]: JSON.parse(JSON.stringify(prev.state[tabKey])),
+        [tabKey]: deepClone(prev.state[tabKey]),
       },
       undoStacks: { ...prev.undoStacks, [tabKey]: [] },
       redoStacks: { ...prev.redoStacks, [tabKey]: [] },
@@ -246,7 +247,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
       const orig = prev.originalState[tabKey]
       const nextState = {
         ...prev.state,
-        [tabKey]: orig === undefined ? prev.state[tabKey] : JSON.parse(JSON.stringify(orig)),
+        [tabKey]: orig === undefined ? prev.state[tabKey] : deepClone(orig),
       }
       const allPaths = new Set<string>()
       for (const tab of TABS) {
@@ -312,7 +313,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
       persistDirtyState(nextState, prev.originalState)
       // Push current state onto undo stack so the revert itself is undoable
       const undoStack = [...(prev.undoStacks[tabKey] || [])]
-      undoStack.push(JSON.parse(JSON.stringify(prev.state[tabKey])))
+      undoStack.push(deepClone(prev.state[tabKey]))
       if (undoStack.length > UNDO_LIMIT) undoStack.shift()
       return {
         state: nextState,

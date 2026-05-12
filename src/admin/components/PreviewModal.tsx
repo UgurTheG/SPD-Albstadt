@@ -4,6 +4,8 @@ import { Monitor, X } from 'lucide-react'
 import { SWRConfig } from 'swr'
 import { useAdminStore } from '../store'
 import { TABS } from '../config/tabs'
+import { useEscapeKey } from '../../hooks/useEscapeKey'
+import { lockScroll } from '../../utils/scrollLock'
 
 const Aktuelles = lazy(() => import('../../components/sections/Aktuelles'))
 const Partei = lazy(() => import('../../components/sections/Partei'))
@@ -74,23 +76,8 @@ export default function PreviewModal({ tabKey, onClose }: Props) {
     return fallback
   }, [state, uploadUrlMap])
 
-  // Lock body scroll while preview is open
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    document.documentElement.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = ''
-      document.documentElement.style.overflow = ''
-    }
-  }, [])
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
+  useEffect(() => lockScroll(), [])
+  useEscapeKey(onClose)
 
   const entry = TAB_PREVIEW_MAP[tabKey]
   if (!entry) return null

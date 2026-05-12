@@ -1,5 +1,19 @@
-import type { TabConfig } from '../types'
+import type { TabConfig, FieldConfig } from '../types'
 import { NEWS_CATEGORIES } from '../../types/news'
+
+function ratsmitgliederFields(imageDir: string): FieldConfig[] {
+  return [
+    { key: 'name', label: 'Name', type: 'text', required: true },
+    { key: 'beruf', label: 'Beruf', type: 'text' },
+    { key: 'bildUrl', label: 'Bild', type: 'image', imageDir },
+    { key: 'seit', label: 'Im Rat seit', type: 'text' },
+    { key: 'address', label: 'Adresse', type: 'text' },
+    { key: 'zipCode', label: 'PLZ & Ort', type: 'text' },
+    { key: 'email', label: 'E-Mail', type: 'email' },
+    { key: 'ausschuesse', label: 'Ausschüsse', type: 'stringlist' },
+    { key: 'bio', label: 'Biografie', type: 'textarea' },
+  ]
+}
 
 export const TABS: TabConfig[] = [
   // ── Startseite ──────────────────────────────────────────────────────────
@@ -110,36 +124,8 @@ export const TABS: TabConfig[] = [
     previewPath: '/#fraktion',
     topFields: [{ key: 'beschreibung', label: 'Beschreibung', type: 'textarea' }],
     sections: [
-      {
-        key: 'gemeinderaete',
-        label: 'Gemeinderäte',
-        fields: [
-          { key: 'name', label: 'Name', type: 'text', required: true },
-          { key: 'beruf', label: 'Beruf', type: 'text' },
-          { key: 'bildUrl', label: 'Bild', type: 'image', imageDir: 'gemeinderaete' },
-          { key: 'seit', label: 'Im Rat seit', type: 'text' },
-          { key: 'address', label: 'Adresse', type: 'text' },
-          { key: 'zipCode', label: 'PLZ & Ort', type: 'text' },
-          { key: 'email', label: 'E-Mail', type: 'email' },
-          { key: 'ausschuesse', label: 'Ausschüsse', type: 'stringlist' },
-          { key: 'bio', label: 'Biografie', type: 'textarea' },
-        ],
-      },
-      {
-        key: 'kreisraete',
-        label: 'Kreisräte',
-        fields: [
-          { key: 'name', label: 'Name', type: 'text', required: true },
-          { key: 'beruf', label: 'Beruf', type: 'text' },
-          { key: 'bildUrl', label: 'Bild', type: 'image', imageDir: 'kreisraete' },
-          { key: 'seit', label: 'Im Rat seit', type: 'text' },
-          { key: 'address', label: 'Adresse', type: 'text' },
-          { key: 'zipCode', label: 'PLZ & Ort', type: 'text' },
-          { key: 'email', label: 'E-Mail', type: 'email' },
-          { key: 'ausschuesse', label: 'Ausschüsse', type: 'stringlist' },
-          { key: 'bio', label: 'Biografie', type: 'textarea' },
-        ],
-      },
+      { key: 'gemeinderaete', label: 'Gemeinderäte', fields: ratsmitgliederFields('gemeinderaete') },
+      { key: 'kreisraete', label: 'Kreisräte', fields: ratsmitgliederFields('kreisraete') },
     ],
   },
   {

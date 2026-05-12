@@ -1,5 +1,6 @@
 import type { SectionConfig, TabConfig } from '../types'
 import { useAdminStore } from '../store'
+import { deepClone } from '../../utils/deepClone'
 import FieldRenderer from './FieldRenderer'
 import ArrayEditor from './ArrayEditor'
 import HaushaltsredenEditor from './HaushaltsredenEditor'
@@ -76,14 +77,14 @@ function ObjectEditor({ tab, data }: { tab: TabConfig; data: Record<string, unkn
   const updateState = useAdminStore(s => s.updateState)
 
   const updateField = (key: string, value: unknown, extras?: Record<string, unknown>) => {
-    const clone = JSON.parse(JSON.stringify(data))
+    const clone = deepClone(data)
     clone[key] = value
     if (extras) Object.assign(clone, extras)
     updateState(tab.key, clone)
   }
 
   const updateSection = (sectionKey: string, value: unknown) => {
-    const clone = JSON.parse(JSON.stringify(data))
+    const clone = deepClone(data)
     clone[sectionKey] = value
     updateState(tab.key, clone)
   }

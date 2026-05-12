@@ -13,6 +13,7 @@ import type { MergeConflict } from '../lib/merge'
 import { summarizeValue } from '../lib/diff'
 import { useAdminStore } from '../store'
 import { TABS } from '../config/tabs'
+import { deepClone } from '../../utils/deepClone'
 
 interface Props {
   tabKey: string
@@ -41,7 +42,7 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
     if (!allResolved) return
 
     // Apply user choices onto the currently merged draft in store state
-    let resolved = JSON.parse(JSON.stringify(state[tabKey]))
+    let resolved = deepClone(state[tabKey])
     for (let i = 0; i < conflicts.length; i++) {
       const c = conflicts[i]
       const choice = choices[i] === 'ours' ? c.ours : c.theirs

@@ -9,37 +9,10 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 
 // ── Mock github for hooks that use it ──────────────────────────────────────────
-vi.mock('../../admin/lib/github', () => {
-  class AuthError extends Error {
-    status: number
-    constructor(msg: string, status: number) {
-      super(msg)
-      this.name = 'AuthError'
-      this.status = status
-    }
-  }
-  class ConflictError extends Error {
-    constructor(msg = 'Konflikt') {
-      super(msg)
-      this.name = 'ConflictError'
-    }
-  }
-  return {
-    AuthError,
-    ConflictError,
-    getBranchSha: vi.fn().mockResolvedValue('abc123'),
-    commitTree: vi.fn().mockResolvedValue({}),
-    validateToken: vi.fn().mockResolvedValue({ login: 'testuser', avatar_url: '' }),
-    commitFile: vi.fn().mockResolvedValue({}),
-    commitBinaryFile: vi.fn().mockResolvedValue({ content: { sha: 'sha1' } }),
-    deleteFile: vi.fn().mockResolvedValue({}),
-    getFileContent: vi.fn().mockResolvedValue(null),
-    listDirectory: vi.fn().mockResolvedValue([]),
-  }
-})
+vi.mock('../../admin/lib/github')
 
 import { useAdminStore } from '../../admin/store'
-import { resetPersistenceState } from '../../admin/store/persistence'
+import { resetStore } from './testHelpers'
 import { useUndoRedoShortcuts } from '../../admin/hooks/useUndoRedoShortcuts'
 import { useTabPublisher } from '../../admin/hooks/useTabPublisher'
 import { useKommunalpolitikEditor } from '../../admin/hooks/useKommunalpolitikEditor'
@@ -51,33 +24,6 @@ import {
   commitBinaryFile,
   deleteFile,
 } from '../../admin/lib/github'
-
-function resetStore(overrides: Record<string, unknown> = {}) {
-  localStorage.clear()
-  resetPersistenceState()
-  useAdminStore.setState({
-    activeTab: 'news',
-    state: {},
-    originalState: {},
-    pendingUploads: [],
-    dataLoaded: true,
-    dataLoadErrors: [],
-    undoStacks: {},
-    redoStacks: {},
-    publishing: false,
-    authenticated: true,
-    tokenExpiresAt: 0,
-    user: { login: 'testuser', avatar_url: '' },
-    loginError: '',
-    loginLoading: false,
-    loginAuthStatus: null,
-    darkMode: false,
-    statusMessage: '',
-    statusType: 'info',
-    statusCounter: 0,
-    ...overrides,
-  })
-}
 
 // ── useUndoRedoShortcuts ──────────────────────────────────────────────────────
 

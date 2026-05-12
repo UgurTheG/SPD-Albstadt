@@ -5,37 +5,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, fireEvent, act } from '@testing-library/react'
 
-vi.mock('../../admin/lib/github', () => {
-  class AuthError extends Error {
-    status: number
-    constructor(msg: string, status: number) {
-      super(msg)
-      this.name = 'AuthError'
-      this.status = status
-    }
-  }
-  class ConflictError extends Error {
-    constructor(msg = 'Konflikt') {
-      super(msg)
-      this.name = 'ConflictError'
-    }
-  }
-  return {
-    AuthError,
-    ConflictError,
-    getBranchSha: vi.fn().mockResolvedValue('abc123'),
-    commitTree: vi.fn().mockResolvedValue({}),
-    validateToken: vi.fn().mockResolvedValue({ login: 'testuser', avatar_url: '' }),
-    commitFile: vi.fn().mockResolvedValue({}),
-    commitBinaryFile: vi.fn().mockResolvedValue({ content: { sha: 'abc' } }),
-    deleteFile: vi.fn().mockResolvedValue({}),
-    getFileContent: vi.fn().mockResolvedValue({ disabledYears: [2015] }),
-    listDirectory: vi.fn().mockResolvedValue([
-      { name: '2023.pdf', sha: 'sha23' },
-      { name: '2024.pdf', sha: 'sha24' },
-    ]),
-  }
-})
+vi.mock('../../admin/lib/github')
 
 vi.mock('../../admin/lib/icons', async importOriginal => {
   const original = await importOriginal<typeof import('../../admin/lib/icons')>()
@@ -43,34 +13,7 @@ vi.mock('../../admin/lib/icons', async importOriginal => {
 })
 
 import { useAdminStore } from '../../admin/store'
-import { resetPersistenceState } from '../../admin/store/persistence'
-
-function resetStore(overrides: Record<string, unknown> = {}) {
-  localStorage.clear()
-  resetPersistenceState()
-  useAdminStore.setState({
-    activeTab: 'news',
-    state: {},
-    originalState: {},
-    pendingUploads: [],
-    dataLoaded: true,
-    dataLoadErrors: [],
-    undoStacks: {},
-    redoStacks: {},
-    publishing: false,
-    authenticated: true,
-    tokenExpiresAt: 0,
-    user: { login: 'testuser', avatar_url: '' },
-    loginError: '',
-    loginLoading: false,
-    loginAuthStatus: null,
-    darkMode: false,
-    statusMessage: '',
-    statusType: 'info',
-    statusCounter: 0,
-    ...overrides,
-  })
-}
+import { resetStore } from './testHelpers'
 
 beforeEach(() => {
   vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test')

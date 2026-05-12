@@ -3,31 +3,20 @@ import {
   parseCookies,
   makeAuthCookies,
   clearAuthCookies,
-  isAllowedOrigin,
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
   USER_LOGIN_COOKIE,
 } from './cookies.js'
-import { rateLimit, getClientIP } from './rateLimit.js'
+import { setNoStore, isRateLimited, isOriginForbidden } from './middleware.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Cache-Control', 'no-store')
+  setNoStore(res)
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'method_not_allowed' })
   }
-
-  // Rate limit: 10 refresh attempts per IP per minute
-  const ip = getClientIP(req.headers as Record<string, string | string[] | undefined>)
-  if (!rateLimit(ip, 10, 60_000)) {
-    return res.status(429).json({ error: 'too_many_requests' })
-  }
-
-  // Guard against cross-origin abuse of the refresh endpoint.
-  const origin = (req.headers['origin'] || req.headers['referer'] || '') as string
-  if (!isAllowedOrigin(origin)) {
-    return res.status(403).json({ error: 'forbidden_origin' })
-  }
+  if (isRateLimited(req, res)) return
+  if (isOriginForbidden(req, res)) return
 
   // Require a valid access token cookie to be present (proof of prior auth)
   const cookies = parseCookies(req.headers.cookie)

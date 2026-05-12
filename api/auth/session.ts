@@ -1,11 +1,11 @@
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
 import {
   parseCookies,
-  isAllowedOrigin,
   clearAuthCookies,
   ACCESS_TOKEN_COOKIE,
   TOKEN_EXPIRES_COOKIE,
 } from './cookies.js'
+import { setNoStore, isOriginForbidden } from './middleware.js'
 
 /**
  * GET /api/auth/session
@@ -18,13 +18,9 @@ import {
  * tokens are caught immediately rather than trusted until local expiry.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Cache-Control', 'no-store')
-
-  // Only allow same-origin requests
-  const origin = req.headers['origin'] ?? ''
-  if (origin && !isAllowedOrigin(origin)) {
-    return res.status(403).json({ error: 'forbidden_origin' })
-  }
+  setNoStore(res)
+  // Only block when an Origin header is present (cross-origin requests always send one)
+  if (req.headers['origin'] && isOriginForbidden(req, res)) return
 
   const cookies = parseCookies(req.headers.cookie)
   const token = cookies[ACCESS_TOKEN_COOKIE]

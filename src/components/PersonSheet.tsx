@@ -1,17 +1,48 @@
+import { type ReactNode } from 'react'
 import { Building2, ExternalLink, Hash, Mail, MapPin, Phone } from 'lucide-react'
 import Sheet from './Sheet'
 import PhotoGallery from './PhotoGallery'
 import type { PersonSheetData } from '../types/person'
+import { getInitials } from '../utils/getInitials'
 
 export type { PersonSheetData }
 
-const getInitials = (name: string) =>
-  name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
+function ContactRow({
+  icon,
+  label,
+  value,
+  href,
+}: {
+  icon: ReactNode
+  label?: string
+  value: ReactNode
+  href?: string
+}) {
+  const inner = (
+    <>
+      <div className="w-8 h-8 rounded-xl bg-spd-red/8 dark:bg-spd-red/12 flex items-center justify-center shrink-0">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        {label && (
+          <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+            {label}
+          </p>
+        )}
+        <p className="text-sm text-gray-600 dark:text-gray-400">{value}</p>
+      </div>
+    </>
+  )
+  const cls = 'flex items-center gap-3.5 px-4 py-3.5'
+  if (href) {
+    return (
+      <a href={href} className={`${cls} hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors`}>
+        {inner}
+      </a>
+    )
+  }
+  return <div className={cls}>{inner}</div>
+}
 
 interface Props {
   person: PersonSheetData | null
@@ -155,89 +186,51 @@ export default function PersonSheet({ person, open, onClose }: Props) {
                               border border-gray-100 dark:border-gray-800"
               >
                 {person.listenplatz != null && (
-                  <div className="flex items-center gap-3.5 px-4 py-3.5">
-                    <div className="w-8 h-8 rounded-xl bg-spd-red/8 dark:bg-spd-red/12 flex items-center justify-center shrink-0">
-                      <Hash size={14} className="text-spd-red" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                        Listenplatz
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {person.listenplatz}
-                      </p>
-                    </div>
-                  </div>
+                  <ContactRow
+                    icon={<Hash size={14} className="text-spd-red" />}
+                    label="Listenplatz"
+                    value={person.listenplatz}
+                  />
                 )}
                 {person.stadt && (
-                  <div className="flex items-center gap-3.5 px-4 py-3.5">
-                    <div className="w-8 h-8 rounded-xl bg-spd-red/8 dark:bg-spd-red/12 flex items-center justify-center shrink-0">
-                      <Building2 size={14} className="text-spd-red" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                        Stadt / Ortsteil
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{person.stadt}</p>
-                    </div>
-                  </div>
+                  <ContactRow
+                    icon={<Building2 size={14} className="text-spd-red" />}
+                    label="Stadt / Ortsteil"
+                    value={person.stadt}
+                  />
                 )}
                 {person.address && (
-                  <div className="flex items-center gap-3.5 px-4 py-3.5">
-                    <div className="w-8 h-8 rounded-xl bg-spd-red/8 dark:bg-spd-red/12 flex items-center justify-center shrink-0">
-                      <MapPin size={14} className="text-spd-red" />
-                    </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {person.address}
-                    </span>
-                  </div>
+                  <ContactRow
+                    icon={<MapPin size={14} className="text-spd-red" />}
+                    value={person.address}
+                  />
                 )}
                 {(person.place || person.zipCode) && (
-                  <div className="flex items-center gap-3.5 px-4 py-3.5">
-                    <div className="w-8 h-8 rounded-xl bg-spd-red/8 dark:bg-spd-red/12 flex items-center justify-center shrink-0">
-                      <Building2 size={14} className="text-spd-red" />
-                    </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {person.place ?? person.zipCode}
-                    </span>
-                  </div>
+                  <ContactRow
+                    icon={<Building2 size={14} className="text-spd-red" />}
+                    value={person.place ?? person.zipCode}
+                  />
                 )}
                 {person.phone && (
-                  <a
+                  <ContactRow
+                    icon={<Phone size={14} className="text-spd-red" />}
+                    value={person.phone}
                     href={`tel:${person.phone.replace(/\s/g, '')}`}
-                    className="flex items-center gap-3.5 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-xl bg-spd-red/8 dark:bg-spd-red/12 flex items-center justify-center shrink-0">
-                      <Phone size={14} className="text-spd-red" />
-                    </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{person.phone}</span>
-                  </a>
+                  />
                 )}
                 {person.email && (
-                  <a
+                  <ContactRow
+                    icon={<Mail size={14} className="text-spd-red" />}
+                    value={person.email}
                     href={`mailto:${person.email}`}
-                    className="flex items-center gap-3.5 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-xl bg-spd-red/8 dark:bg-spd-red/12 flex items-center justify-center shrink-0">
-                      <Mail size={14} className="text-spd-red" />
-                    </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{person.email}</span>
-                  </a>
+                  />
                 )}
                 {person.website && (
-                  <a
+                  <ContactRow
+                    icon={<ExternalLink size={14} className="text-spd-red" />}
+                    value={person.website.replace(/^https?:\/\//, '')}
                     href={person.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3.5 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-xl bg-spd-red/8 dark:bg-spd-red/12 flex items-center justify-center shrink-0">
-                      <ExternalLink size={14} className="text-spd-red" />
-                    </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {person.website.replace(/^https?:\/\//, '')}
-                    </span>
-                  </a>
+                  />
                 )}
               </div>
             )}

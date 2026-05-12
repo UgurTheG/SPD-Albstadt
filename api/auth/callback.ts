@@ -1,16 +1,10 @@
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
 import { parseCookies, verifyState, makeAuthCookies, clearCookie, STATE_COOKIE } from './cookies.js'
-import { rateLimit, getClientIP } from './rateLimit.js'
+import { setNoStore, isRateLimited } from './middleware.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Cache-Control', 'no-store')
-
-  // Rate limit: 10 callback attempts per IP per minute to prevent code stuffing.
-  const ip = getClientIP(req.headers as Record<string, string | string[] | undefined>)
-  if (!rateLimit(ip, 10, 60_000)) {
-    res.status(429).json({ error: 'too_many_requests' })
-    return
-  }
+  setNoStore(res)
+  if (isRateLimited(req, res)) return
 
   const q = req.query
   const code = Array.isArray(q.code) ? q.code[0] : q.code

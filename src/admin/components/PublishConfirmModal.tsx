@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
-import { Loader2, Rocket, Undo2 } from 'lucide-react'
+import { Loader2, Rocket } from 'lucide-react'
 import type { TabConfig } from '../types'
 import { useAdminStore } from '../store'
 import { TABS } from '../config/tabs'
 import { diffTab, type ChangeEntry, groupChangeEntries, type ChangeGroup } from '../lib/diff'
-import { FieldChangeDiff } from './DiffDisplay'
 import ModalFrame from './ModalFrame'
+import { ChangeGroupBlock } from './ChangeGroupBlock'
 
 interface Props {
   tabKey?: string
@@ -67,11 +67,10 @@ export default function PublishConfirmModal({ tabKey, onConfirm, onCancel }: Pro
               </div>
               <div className="space-y-2">
                 {tc.groups.map(g => (
-                  <PublishChangeGroup
+                  <ChangeGroupBlock
                     key={g.key}
                     group={g}
-                    tabKey={tc.tab.key}
-                    onRevert={revertChange}
+                    onRevert={e => revertChange(tc.tab.key, e)}
                   />
                 ))}
               </div>
@@ -108,88 +107,3 @@ export default function PublishConfirmModal({ tabKey, onConfirm, onCancel }: Pro
   )
 }
 
-function PublishChangeGroup({
-  group,
-  tabKey,
-  onRevert,
-}: {
-  group: ChangeGroup
-  tabKey: string
-  onRevert: (tabKey: string, entry: ChangeEntry) => void
-}) {
-  const isStructural = group.itemKind !== 'modified'
-  const structural = isStructural ? group.entries[0] : undefined
-
-  return (
-    <div className="rounded-xl border border-gray-200/60 dark:border-gray-700/40 overflow-hidden bg-white/50 dark:bg-gray-800/30 text-[11px]">
-      <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 bg-gray-50/80 dark:bg-gray-800/40 border-b border-gray-100 dark:border-gray-700/30">
-        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-          {group.itemKind === 'added' && (
-            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
-              Neu
-            </span>
-          )}
-          {group.itemKind === 'removed' && (
-            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300">
-              Entfernt
-            </span>
-          )}
-          {group.itemKind === 'moved' && (
-            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
-              Verschoben
-            </span>
-          )}
-          <span className="font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-[9px]">
-            {group.group}
-          </span>
-          {group.itemLabel && (
-            <>
-              <span className="text-gray-300 dark:text-gray-600">·</span>
-              <span className="font-semibold text-gray-700 dark:text-gray-200">
-                {group.itemLabel}
-              </span>
-            </>
-          )}
-        </div>
-        {structural && (
-          <button
-            type="button"
-            onClick={() => onRevert(tabKey, structural)}
-            className="shrink-0 font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2 py-0.5 rounded-md border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1"
-          >
-            <Undo2 size={9} />
-            {group.itemKind === 'added'
-              ? 'Verwerfen'
-              : group.itemKind === 'moved'
-                ? 'Zurücksetzen'
-                : 'Wiederherstellen'}
-          </button>
-        )}
-      </div>
-      {group.itemKind === 'moved' && (
-        <div className="px-2.5 py-1.5 text-gray-500 dark:text-gray-400">Reihenfolge geändert</div>
-      )}
-      {!isStructural && (
-        <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-          {group.entries.map(e => (
-            <li key={e.id} className="flex items-center justify-between gap-2 px-2.5 py-1.5">
-              <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-semibold text-gray-700 dark:text-gray-200 mb-0.5">
-                  {e.fieldLabel}
-                </div>
-                <FieldChangeDiff entry={e} />
-              </div>
-              <button
-                type="button"
-                onClick={() => onRevert(tabKey, e)}
-                className="shrink-0 font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2 py-0.5 rounded-md border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1"
-              >
-                <Undo2 size={9} /> Zurücksetzen
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}

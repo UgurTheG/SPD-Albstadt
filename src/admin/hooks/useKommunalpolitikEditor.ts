@@ -7,38 +7,14 @@ import { useAdminStore } from '../store'
 import type { FieldConfig } from '../types'
 import { useUndoRedoShortcuts } from './useUndoRedoShortcuts'
 import { useTabPublisher } from './useTabPublisher'
+import type {
+  KommunalpolitikPerson,
+  KommunalpolitikJahr,
+  KommunalpolitikData,
+  Dokument,
+} from '../../components/sections/Kommunalpolitik/types'
 
-// ─── Domain types ─────────────────────────────────────────────────────────────
-
-export interface KommunalpolitikPerson {
-  name: string
-  rolle?: string
-  bildUrl?: string
-  email?: string
-  bio?: string
-  stadt?: string
-}
-
-export interface Dokument {
-  id: string
-  titel: string
-  url: string
-}
-
-export interface KommunalpolitikJahr {
-  id: string
-  jahr: string
-  aktiv: boolean
-  gemeinderaete: KommunalpolitikPerson[]
-  kreisraete: KommunalpolitikPerson[]
-  dokumente: Dokument[]
-}
-
-export interface KommunalpolitikData {
-  sichtbar: boolean
-  beschreibung: string
-  jahre: KommunalpolitikJahr[]
-}
+export type { KommunalpolitikPerson, KommunalpolitikJahr, KommunalpolitikData, Dokument }
 
 export const PERSON_FIELDS: FieldConfig[] = [
   { key: 'name', label: 'Name', type: 'text', required: true },

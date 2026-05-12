@@ -2,6 +2,7 @@ import { CalendarPlus, Clock, MapPin } from 'lucide-react'
 import type { ICSEvent } from '@/utils/icsParser'
 import { formatEventDate, downloadICS } from '@/utils/calendarUtils'
 import { formatLocation } from '@/utils/formatLocation'
+import { SheetHero } from '@/components/SheetHero'
 
 interface Props {
   event: ICSEvent
@@ -13,24 +14,21 @@ export default function EventDetailSheet({ event }: Props) {
   return (
     <div>
       {/* Hero */}
-      <div className="bg-linear-to-br from-spd-red via-spd-red to-spd-red-dark px-5 sm:px-6 pt-6 sm:pt-8 pb-7 sm:pb-9 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.12),transparent_50%)]" />
+      <SheetHero pb="pb-7 sm:pb-9">
         <span className="absolute -right-3 -bottom-4 text-[90px] sm:text-[120px] font-black text-white/6 leading-none select-none pointer-events-none">
           {day}
         </span>
-        <div className="relative">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-white/15 backdrop-blur-sm rounded-full pl-0.5 pr-3 sm:pl-1 sm:pr-4 py-0.5 sm:py-1 mb-3 sm:mb-5">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white flex flex-col items-center justify-center">
-              <span className="text-xs sm:text-sm font-black text-spd-red leading-none">{day}</span>
-              <span className="text-[6px] sm:text-[7px] font-bold text-spd-red/70 uppercase leading-none">
-                {month}
-              </span>
-            </div>
-            <span className="text-white/90 text-[11px] sm:text-xs font-medium">{full}</span>
+        <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-white/15 backdrop-blur-sm rounded-full pl-0.5 pr-3 sm:pl-1 sm:pr-4 py-0.5 sm:py-1 mb-3 sm:mb-5">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white flex flex-col items-center justify-center">
+            <span className="text-xs sm:text-sm font-black text-spd-red leading-none">{day}</span>
+            <span className="text-[6px] sm:text-[7px] font-bold text-spd-red/70 uppercase leading-none">
+              {month}
+            </span>
           </div>
-          <h3 className="font-black text-white text-lg sm:text-2xl leading-tight">{event.titel}</h3>
+          <span className="text-white/90 text-[11px] sm:text-xs font-medium">{full}</span>
         </div>
-      </div>
+        <h3 className="font-black text-white text-lg sm:text-2xl leading-tight">{event.titel}</h3>
+      </SheetHero>
 
       {/* Details */}
       <div className="px-5 sm:px-6 pt-5 sm:pt-6 space-y-4">

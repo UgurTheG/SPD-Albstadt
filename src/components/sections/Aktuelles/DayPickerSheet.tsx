@@ -1,6 +1,7 @@
 import { ChevronRight, Clock } from 'lucide-react'
 import type { ICSEvent } from '@/utils/icsParser'
 import { formatEventDate } from '@/utils/calendarUtils'
+import { SheetHero } from '@/components/SheetHero'
 
 interface Props {
   events: ICSEvent[]
@@ -12,17 +13,14 @@ export default function DayPickerSheet({ events, onSelect }: Props) {
 
   return (
     <div>
-      <div className="bg-linear-to-br from-spd-red via-spd-red to-spd-red-dark px-5 sm:px-6 pt-6 sm:pt-8 pb-5 sm:pb-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.12),transparent_50%)]" />
-        <div className="relative">
-          <p className="text-white/80 text-xs font-semibold uppercase tracking-wider mb-1">
-            {formatEventDate(events[0].datum).full}
-          </p>
-          <h3 className="font-black text-white text-lg sm:text-xl leading-tight">
-            {events.length} Termine an diesem Tag
-          </h3>
-        </div>
-      </div>
+      <SheetHero pb="pb-5 sm:pb-6">
+        <p className="text-white/80 text-xs font-semibold uppercase tracking-wider mb-1">
+          {formatEventDate(events[0].datum).full}
+        </p>
+        <h3 className="font-black text-white text-lg sm:text-xl leading-tight">
+          {events.length} Termine an diesem Tag
+        </h3>
+      </SheetHero>
 
       <div className="px-3 sm:px-5 py-4 sm:py-5 space-y-2.5">
         {events.map(e => {

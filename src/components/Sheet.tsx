@@ -9,6 +9,7 @@ import {
 } from 'framer-motion'
 import { type ReactNode, useEffect, useRef } from 'react'
 import { lockScroll } from '../utils/scrollLock'
+import { useEscapeKey } from '../hooks/useEscapeKey'
 
 interface SheetProps {
   open: boolean
@@ -30,15 +31,7 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
     }
   }, [open, sheetY])
 
-  // Close on Escape
-  useEffect(() => {
-    if (!open) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [open, onClose])
+  useEscapeKey(onClose, open)
 
   function handleDragEnd(_: unknown, info: PanInfo) {
     if (info.offset.y > 80 || info.velocity.y > 500) {

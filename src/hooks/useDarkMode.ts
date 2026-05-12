@@ -1,13 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-
-const STORAGE_KEY = 'spd-darkmode'
-
-function readPreference(): boolean {
-  const saved = localStorage.getItem(STORAGE_KEY)
-  if (saved === 'true') return true
-  if (saved === 'false') return false
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-}
+import { readDarkModePreference, DARK_MODE_STORAGE_KEY } from '../utils/readDarkModePreference'
 
 /**
  * Single source of truth for dark-mode on the public site.
@@ -15,11 +7,11 @@ function readPreference(): boolean {
  * store uses, so switching between the two keeps the preference in sync.
  */
 export function useDarkMode() {
-  const [darkMode, setDarkMode] = useState(readPreference)
+  const [darkMode, setDarkMode] = useState(readDarkModePreference)
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode)
-    localStorage.setItem(STORAGE_KEY, String(darkMode))
+    localStorage.setItem(DARK_MODE_STORAGE_KEY, String(darkMode))
   }, [darkMode])
 
   const toggleDarkMode = useCallback(() => setDarkMode(prev => !prev), [])

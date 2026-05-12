@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from './vercel.d.ts'
-import { parseCookies, isAllowedOrigin, ACCESS_TOKEN_COOKIE } from './auth/cookies.js'
+import { parseCookies, ACCESS_TOKEN_COOKIE } from './auth/cookies.js'
+import { setNoStore, isOriginForbidden } from './auth/middleware.js'
 
 /**
  * POST /api/github
@@ -24,17 +25,12 @@ function isAllowedPath(path: string): boolean {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Cache-Control', 'no-store')
+  setNoStore(res)
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'method_not_allowed' })
   }
-
-  // Origin check
-  const origin = (req.headers['origin'] || req.headers['referer'] || '') as string
-  if (!isAllowedOrigin(origin)) {
-    return res.status(403).json({ error: 'forbidden_origin' })
-  }
+  if (isOriginForbidden(req, res)) return
 
   // Read access token from HttpOnly cookie
   const cookies = parseCookies(req.headers.cookie)

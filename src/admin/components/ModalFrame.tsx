@@ -1,6 +1,7 @@
-import { type ReactNode, useEffect } from 'react'
+import { type ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useEscapeKey } from '../../hooks/useEscapeKey'
 
 interface ModalFrameProps {
   onClose: () => void
@@ -19,13 +20,7 @@ export default function ModalFrame({
   subtitle,
   children,
 }: ModalFrameProps) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
+  useEscapeKey(onClose)
 
   return (
     <div
