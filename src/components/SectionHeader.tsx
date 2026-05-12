@@ -66,7 +66,7 @@ export default function SectionHeader({
 
       {description && (
         <p
-          className={`mt-4 text-lg ${inverted ? 'text-gray-500 dark:text-white/70' : 'text-gray-500 dark:text-gray-400'} ${descriptionClassName}`}
+          className={`prose-justify mt-4 text-lg ${inverted ? 'text-gray-500 dark:text-white/70' : 'text-gray-500 dark:text-gray-400'} ${descriptionClassName}`}
         >
           {description}
         </p>

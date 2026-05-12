@@ -53,7 +53,7 @@ export function AbgeordneterCard({
           <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1 sm:mt-1.5">
             {a.wahlkreis}
           </p>
-          <p className="hidden sm:block landscape-compact:hidden text-sm text-gray-500 dark:text-gray-400 leading-relaxed mt-4 line-clamp-4 whitespace-pre-line">
+          <p className="prose-justify hidden sm:block landscape-compact:hidden text-sm text-gray-500 dark:text-gray-400 leading-relaxed mt-4 line-clamp-4 whitespace-pre-line">
             {a.bio}
           </p>
         </div>

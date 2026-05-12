@@ -36,6 +36,16 @@ html {
     scroll-behavior: auto !important;
   }
 }
+
+/* Justified text with German hyphenation — applied only to long-form
+   prose paragraphs (detail sheets, bios, event descriptions). */
+.prose-justify {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphenate-limit-chars: 6 3 3;
+}
+
 html.dark {
   background-color: #000000;
 }
@@ -47,26 +57,9 @@ body {
     -apple-system,
     BlinkMacSystemFont,
     sans-serif;
-  text-align: justify;
-  hyphens: auto;
-  -webkit-hyphens: auto;
-  hyphenate-limit-chars: 6 3 3;
   background-color: #030712;
 }
 
-/* Form controls should never inherit body's justify/hyphenation — it
-   causes button labels like "Veröffentlichen" to break into "Veröffent-
-   lichen" in narrow containers. */
-button,
-input,
-select,
-textarea,
-label,
-[role='button'] {
-  text-align: start;
-  hyphens: manual;
-  -webkit-hyphens: manual;
-}
 html.dark body {
   background-color: #000000;
 }

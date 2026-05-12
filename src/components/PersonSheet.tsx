@@ -136,7 +136,7 @@ export default function PersonSheet({ person, open, onClose }: Props) {
 
             {/* Bio / description */}
             {(person.bio || person.beschreibung) && (
-              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+              <p className="prose-justify text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">
                 {person.bio ?? person.beschreibung}
               </p>
             )}

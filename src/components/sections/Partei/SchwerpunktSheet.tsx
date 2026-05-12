@@ -47,7 +47,7 @@ export function SchwerpunktSheet({
           <div className="px-5 sm:px-6 pt-5 pb-8 space-y-4">
             {item.inhalt && (
               <div className="pt-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
+                <p className="prose-justify text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
                   {item.inhalt}
                 </p>
               </div>
