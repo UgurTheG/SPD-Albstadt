@@ -4,6 +4,7 @@ import { Monitor, X } from 'lucide-react'
 import { SWRConfig } from 'swr'
 import { useAdminStore } from '../store'
 import { TABS } from '../config/tabs'
+import LoadingSpinner from '../../components/LoadingSpinner'
 
 const Aktuelles = lazy(() => import('../../components/sections/Aktuelles'))
 const Partei = lazy(() => import('../../components/sections/Partei'))
@@ -167,13 +168,7 @@ export default function PreviewModal({ tabKey, onClose }: Props) {
                 revalidateIfStale: false,
               }}
             >
-              <Suspense
-                fallback={
-                  <div className="flex items-center justify-center py-32">
-                    <div className="w-10 h-10 border-4 border-spd-red/30 border-t-spd-red rounded-full animate-spin" />
-                  </div>
-                }
-              >
+              <Suspense fallback={<LoadingSpinner className="py-32" />}>
                 <Component />
               </Suspense>
             </SWRConfig>

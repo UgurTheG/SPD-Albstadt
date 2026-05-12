@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion'
 import { Calendar } from 'lucide-react'
 import type { ICSEvent } from '@/utils/icsParser'
 import SubsectionHeading from '@/components/SubsectionHeading'
+import { SpinnerRing } from '@/components/LoadingSpinner'
 import CalendarView from './CalendarView'
 import CalendarSubscribeButton from './CalendarSubscribeButton'
 
@@ -45,7 +46,7 @@ export default function CalendarSection({
       {/* Loading */}
       {loading && (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-8 flex items-center justify-center gap-3">
-          <span className="w-5 h-5 border-2 border-spd-red/20 dark:border-spd-red/30 border-t-spd-red rounded-full animate-spin" />
+          <SpinnerRing size="sm" />
           <span className="text-sm text-gray-400 dark:text-gray-500">Termine werden geladen…</span>
         </div>
       )}

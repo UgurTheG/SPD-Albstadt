@@ -1,6 +1,7 @@
 import { Eye, EyeOff, FileUp, RefreshCw, Trash2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import AdminWarningBanner from './AdminWarningBanner'
+import { SpinnerRing } from '../../components/LoadingSpinner'
 import { useHaushaltsredenEditor } from '../hooks/useHaushaltsredenEditor'
 
 export default function HaushaltsredenEditor() {
@@ -107,7 +108,7 @@ export default function HaushaltsredenEditor() {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24">
-          <div className="w-10 h-10 border-[3px] border-spd-red/20 border-t-spd-red rounded-full animate-spin mb-3" />
+          <SpinnerRing size="lg" className="mb-3" />
           <p className="text-xs text-gray-400">Lade Dokumente…</p>
         </div>
       ) : loadError ? null : (
@@ -179,7 +180,7 @@ export default function HaushaltsredenEditor() {
                   <div className="flex gap-1.5">
                     {isBusy ? (
                       <div className="flex-1 flex justify-center py-2">
-                        <div className="w-4 h-4 border-2 border-spd-red/30 border-t-spd-red rounded-full animate-spin" />
+                        <SpinnerRing size="xs" />
                       </div>
                     ) : exists ? (
                       <>

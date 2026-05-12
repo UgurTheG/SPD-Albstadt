@@ -2,6 +2,7 @@ import { type ReactNode, useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { useData } from '@/hooks/useData'
 import { renderTextContent } from '@/utils/renderTextContent'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 interface LegalSection {
   title: string
@@ -72,11 +73,7 @@ export default function LegalPage({
       </section>
 
       <section ref={ref} className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        {loading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-4 border-spd-red/30 border-t-spd-red rounded-full animate-spin" />
-          </div>
-        )}
+        {loading && <LoadingSpinner size="md" className="py-20" />}
         {!loading && sections && (
           <div className="space-y-10">
             {sections.map((section, i) => (
