@@ -18,11 +18,8 @@ import { CollapsibleSectionHeader } from './CollapsibleSection'
 import { fileToBase64 } from '../lib/images'
 import { openPendingFile } from '../lib/fileUtils'
 import { inputCls } from '../lib/inputCls'
-import {
-  useKommunalpolitikEditor,
-  PERSON_FIELDS,
-  type Dokument,
-} from '../hooks/useKommunalpolitikEditor'
+import { useKommunalpolitikEditor, PERSON_FIELDS } from '../hooks/useKommunalpolitikEditor'
+import type { Dokument } from '@/components/sections/Kommunalpolitik/types'
 
 export default function KommunalpolitikEditor() {
   const {

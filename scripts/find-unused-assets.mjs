@@ -19,7 +19,11 @@ function walk(dir) {
 }
 
 function readText(file) {
-  try { return readFileSync(file, 'utf8') } catch { return '' }
+  try {
+    return readFileSync(file, 'utf8')
+  } catch {
+    return ''
+  }
 }
 
 // 1. Collect all asset files on disk (relative public URL form: /images/... /documents/...)
@@ -28,7 +32,7 @@ const docsDir = join(ROOT, 'public/documents')
 
 const assetFiles = new Set()
 for (const f of walk(imageDir)) assetFiles.add('/' + relative(join(ROOT, 'public'), f))
-for (const f of walk(docsDir))  assetFiles.add('/' + relative(join(ROOT, 'public'), f))
+for (const f of walk(docsDir)) assetFiles.add('/' + relative(join(ROOT, 'public'), f))
 
 // 2. Collect all referenced paths from JSON data files
 const referencedPaths = new Set()
@@ -73,7 +77,7 @@ if (unused.length === 0) {
   console.log('No unused assets found.')
 } else {
   const images = unused.filter(f => f.startsWith('/images/'))
-  const docs   = unused.filter(f => f.startsWith('/documents/'))
+  const docs = unused.filter(f => f.startsWith('/documents/'))
   if (images.length) {
     console.log('--- Unused images ---')
     images.forEach(f => console.log(' ', f))
