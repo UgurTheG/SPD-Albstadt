@@ -164,6 +164,28 @@ When the admin needs the same type as a public section (e.g. `KommunalpolitikPer
 - Image uploads go through `ImageField` / `ImageListField`; they convert to WebP before committing
 - Presence state (`src/admin/store/presenceSlice.ts`) uses Vercel KV in production — do not add polling; heartbeats are already on a 30-second interval
 
+### Admin Zustand store
+
+Five slices compose the admin store (`src/admin/store/`):
+
+| Slice           | Responsibility                                        |
+| --------------- | ----------------------------------------------------- |
+| `AuthSlice`     | GitHub token, login state                             |
+| `EditorSlice`   | Per-tab JSON state, undo/redo stacks, pending uploads |
+| `PublishSlice`  | GitHub commit flow state                              |
+| `UISlice`       | Dark mode, toast queue (`setStatus`)                  |
+| `PresenceSlice` | Real-time connected-editor awareness (Vercel KV)      |
+
+Draft persistence: `persistDirtyState()` in `src/admin/store/persistence.ts` debounces localStorage writes at 1 s with a 7-day TTL, keyed by tab. Drafts are hash-validated against the original to prevent stale edits from appearing as unsaved changes.
+
+### Toast notifications
+
+Use `setStatus(message, type)` from `UISlice` for all user-facing feedback inside admin logic — not `console.log`, not direct `toast.*` calls. `AdminApp` watches the queue and maps `'success'` / `'error'` / `'info'` to Sonner toast variants.
+
+### Image conversion
+
+Client-side WebP conversion happens in `fileToWebpBase64()` (`src/admin/lib/images.ts`) via the Canvas API at **0.85 quality**. There is no server-side image processing — do not add a build step or API route for this. The fallback `fileToBase64()` is only used when the Canvas API is unavailable.
+
 ---
 
 ## Content data model
@@ -183,6 +205,8 @@ When the admin needs the same type as a public section (e.g. `KommunalpolitikPer
 | `public/data/haushaltsreden.json`  | Disabled years config                        |
 
 Date format: `YYYY-MM-DD`. Image paths: `/images/<dir>/<file>.webp`. PDF paths: `/documents/<dir>/<file>.pdf`.
+
+Vercel serves `/data/*.json` with `Cache-Control: no-store` — content changes are visible to users immediately after a publish commit, no cache invalidation needed. `/assets/*` are immutable (1-year CDN cache) and content-hashed by Vite. Do not add query-string cache busters to data file fetches.
 
 ---
 
@@ -319,6 +343,25 @@ Only two keys are consumed at runtime — do not add arbitrary keys here:
 | `elfsightAppId` | Elfsight widget UUID for the Instagram feed; if absent, the Instagram section is hidden  |
 
 Both are editable via the admin editor under **Einstellungen**.
+
+---
+
+## Vite build notes
+
+The `manualChunks` function in `vite.config.ts` deliberately returns `undefined` for admin-only libraries (`@dnd-kit`, `sonner`, `zustand`, etc.) so they co-locate with the lazy `AdminApp` chunk and are never bundled into public-page vendor chunks. Do not import admin libraries from public-facing components — it breaks this isolation and ships admin code to every visitor.
+
+Non-render-blocking CSS is loaded via the print-media trick in `index.html` (saves ~300 ms FCP/LCP). Do not change the `media="print"` → `media="all"` `onload` pattern.
+
+---
+
+## Test setup
+
+Tests run under **happy-dom** (not jsdom) — see `vitest.config.ts`. The global setup file (`src/__tests__/setup.ts`) provides:
+
+- A `fetch` stub that intercepts requests to `/` and `localhost` and returns empty JSON, preventing `ECONNREFUSED` errors from SWR calls in unit tests
+- A `window.matchMedia` stub for components that read prefers-color-scheme
+
+When writing tests, mock at the network boundary (intercept `fetch`); never mock `useData`, `useSWR`, or internal hooks directly.
 
 ---
 
