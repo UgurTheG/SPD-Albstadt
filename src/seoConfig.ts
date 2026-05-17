@@ -118,4 +118,3 @@ export const SEO_CONFIG: Record<string, SEOMeta> = {
     priority: 0.3,
   },
 }
-
