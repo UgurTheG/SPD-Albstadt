@@ -1,8 +1,8 @@
 import type { FieldConfig, TabConfig } from '../types'
 
-export type ChangePath = (string | number)[]
+type ChangePath = (string | number)[]
 
-export type ChangeKind = 'modified' | 'added' | 'removed' | 'moved'
+type ChangeKind = 'modified' | 'added' | 'removed' | 'moved'
 
 export interface ChangeEntry {
   id: string

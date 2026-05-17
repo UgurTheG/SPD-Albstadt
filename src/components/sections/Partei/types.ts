@@ -1,5 +1,5 @@
 /** Shared fields between Mitglied and Abgeordneter. */
-export interface PersonBase {
+interface PersonBase {
   name: string
   rolle: string
   email: string

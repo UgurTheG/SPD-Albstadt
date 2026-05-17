@@ -10,7 +10,7 @@ import { useTabPublisher } from './useTabPublisher'
 
 // ─── Domain types ─────────────────────────────────────────────────────────────
 
-export interface KommunalpolitikPerson {
+interface KommunalpolitikPerson {
   name: string
   rolle?: string
   bildUrl?: string
@@ -25,7 +25,7 @@ export interface Dokument {
   url: string
 }
 
-export interface KommunalpolitikJahr {
+interface KommunalpolitikJahr {
   id: string
   jahr: string
   aktiv: boolean
@@ -34,7 +34,7 @@ export interface KommunalpolitikJahr {
   dokumente: Dokument[]
 }
 
-export interface KommunalpolitikData {
+interface KommunalpolitikData {
   sichtbar: boolean
   beschreibung: string
   jahre: KommunalpolitikJahr[]

@@ -3,7 +3,6 @@ import Sheet from './Sheet'
 import PhotoGallery from './PhotoGallery'
 import type { PersonSheetData } from '../types/person'
 
-export type { PersonSheetData }
 
 const getInitials = (name: string) =>
   name
