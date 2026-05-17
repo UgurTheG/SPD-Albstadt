@@ -309,7 +309,7 @@ Every editor tab is declared in `src/admin/config/tabs.ts` as a `TabConfig`. To 
 }
 ```
 
-**`FieldConfig` types:** `text`, `textarea`, `date`, `email`, `url`, `select`, `image`, `imagelist`, `icon-picker`, `stringlist`
+**`FieldConfig` types:** `text`, `textarea`, `date`, `time`, `email`, `url`, `select`, `toggle`, `image`, `imagelist`, `icon-picker`, `stringlist`
 
 For `image` fields, set `imageDir` to the target subdirectory under `public/images/` (e.g. `imageDir: 'vorstand'`).  
 For `imagelist` fields, set `captionsKey` to the companion string-array field if captions are supported.
