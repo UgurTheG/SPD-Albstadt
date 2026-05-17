@@ -16,7 +16,9 @@
     "prepare": "husky",
     "test": "vitest run",
     "test:watch": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "knip": "knip",
+    "find-unused-assets": "node scripts/find-unused-assets.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,css,md}": "prettier --write"
@@ -62,6 +64,7 @@
     "globals": "^17.6.0",
     "happy-dom": "^20.9.0",
     "husky": "^9.1.7",
+    "knip": "^6.14.1",
     "lint-staged": "^17.0.4",
     "prettier": "^3.8.3",
     "tailwindcss": "^4.2.4",

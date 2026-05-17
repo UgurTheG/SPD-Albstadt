@@ -119,5 +119,3 @@ export const SEO_CONFIG: Record<string, SEOMeta> = {
   },
 }
 
-export const SEO_ROUTES = Object.keys(SEO_CONFIG)
-export const BASE_URL_EXPORT = BASE_URL

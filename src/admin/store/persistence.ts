@@ -11,7 +11,7 @@ export const PENDING_KEY = 'spd-admin-pending-uploads'
 // ─── Module-level mutable state (reset on logout) ─────────────────────────────
 
 /** Debounce timer for draft persistence */
-export let saveTimer: ReturnType<typeof setTimeout> | null = null
+let saveTimer: ReturnType<typeof setTimeout> | null = null
 /** Tracks last undo snapshot time per tab to debounce pushes */
 export let lastUndoPush: Record<string, number> = {}
 

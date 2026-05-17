@@ -5,7 +5,7 @@ import ArrayEditor from './ArrayEditor'
 import HaushaltsredenEditor from './HaushaltsredenEditor'
 import KommunalpolitikEditor from './KommunalpolitikEditor'
 import TabEditorShell from './TabEditorShell'
-import { CollapsibleSection, CollapsibleSectionHeader } from './CollapsibleSection'
+import { CollapsibleSection } from './CollapsibleSection'
 import { useUndoRedoShortcuts } from '../hooks/useUndoRedoShortcuts'
 import { useTabPublisher } from '../hooks/useTabPublisher'
 
@@ -115,10 +115,6 @@ function ObjectEditor({ tab, data }: { tab: TabConfig; data: Record<string, unkn
     </div>
   )
 }
-
-// ─── Shared collapsible section header ────────────────────────────────────────
-// Re-exported from CollapsibleSection.tsx — kept here for backwards compat.
-export { CollapsibleSectionHeader }
 
 // ─── Section editor ───────────────────────────────────────────────────────────
 
