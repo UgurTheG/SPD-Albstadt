@@ -186,6 +186,14 @@ Use `setStatus(message, type)` from `UISlice` for all user-facing feedback insid
 
 Client-side WebP conversion happens in `fileToWebpBase64()` (`src/admin/lib/images.ts`) via the Canvas API at **0.85 quality**. There is no server-side image processing — do not add a build step or API route for this. The fallback `fileToBase64()` is only used when the Canvas API is unavailable.
 
+### Publish flow
+
+`publishSlice` (`src/admin/store/publishSlice.ts`) blocks concurrent publishes with an early `if (publishing) return` guard. Never call the GitHub Trees API directly to bypass this — always go through `useTabPublisher`. Auto-generated commit messages follow the pattern `"admin: {filename} aktualisiert"`. Conflict resolution surfaces a `ConflictMergeModal` where the editor picks "Meine Version" or "Version von {login}" per field.
+
+### Drag-and-drop
+
+`ArrayEditor` and `ImageListField` use `@dnd-kit` with `PointerSensor` (activation distance: **8 px**), `closestCenter` collision, and `restrictToVerticalAxis` modifier. When adding a new drag-sortable list, copy this setup from `ArrayEditor.tsx`. Item IDs passed to dnd-kit must be stable UUIDs — never use array index as the ID.
+
 ---
 
 ## Content data model
@@ -262,6 +270,12 @@ return (
 `useSectionPage` composes `useSectionView` (IntersectionObserver ref + `isInView`), `useData` (SWR fetch), and `useHttpErrorRedirect` (redirects on 4xx/5xx). Do not inline these separately — always use `useSectionPage`.
 
 `data` is `undefined` while loading and typed as `T | undefined`. Render skeletons when `!data`; hide sections when the relevant array is empty.
+
+`useData<T>` (`src/hooks/useData.ts`) configures SWR with `cache: 'no-store'` (matches Vercel no-store headers), `revalidateOnFocus: false`, and `dedupingInterval: 60_000`. Errors surface as `HttpError(status, message)`. Do not configure SWR differently in new hooks — `useSectionPage` wires all of this up correctly.
+
+### Sheet component
+
+The shared `<Sheet>` component (`src/components/Sheet.tsx`) accepts `{ open, onClose, children, size?: 'md' | 'lg' }`. Swipe-to-dismiss (threshold: 80 px or >500 px/s), Escape-key close, and safe nested-scroll detection are all built in — do not re-implement them in parent components. Always use `useSheetState` to drive `open`/`onClose`.
 
 ---
 
@@ -352,6 +366,8 @@ The `manualChunks` function in `vite.config.ts` deliberately returns `undefined`
 
 Non-render-blocking CSS is loaded via the print-media trick in `index.html` (saves ~300 ms FCP/LCP). Do not change the `media="print"` → `media="all"` `onload` pattern.
 
+The Workbox config excludes `AdminApp*.js` and `admin*.js` from the service worker precache. If admin chunk names change, update the `globPatterns` exclusions in `vite.config.ts` accordingly — otherwise the service worker will try to precache the large admin bundle for every visitor.
+
 ---
 
 ## Test setup
@@ -373,6 +389,16 @@ Two dependency categories are excluded from knip's unused-dependency check becau
 - `tailwindcss` — consumed by `@tailwindcss/vite` plugin and `@import 'tailwindcss'` in CSS
 
 Do not remove these from `ignoreDependencies` without first verifying knip can trace CSS imports in the version being used.
+
+---
+
+## Accessibility conventions
+
+- **Skip-link** — `<a href="#main-content" className="sr-only focus:not-sr-only">Zum Inhalt springen</a>` lives in `App.tsx`; the main content area has `id="main-content"`. Do not remove either.
+- **Route announcements** — an `aria-live="polite"` region in `App.tsx` announces the page title on every navigation; update `SEO_CONFIG` titles when adding routes so announcements are meaningful.
+- **Icon-only buttons** — every button that renders only an icon must have a German `aria-label`.
+- **Navigation** — the main nav uses `<nav aria-label="Hauptnavigation">` with `aria-current="page"` on the active link. Follow the same pattern for any secondary navigation.
+- All UI text is German — aria labels, toast messages, and error strings must be in German.
 
 ---
 
