@@ -13,7 +13,7 @@ export interface Dokument {
   url: string
 }
 
-interface KommunalpolitikJahr {
+export interface KommunalpolitikJahr {
   id: string
   jahr: string
   aktiv: boolean

@@ -1494,7 +1494,7 @@ describe('HaushaltsredenEditor — silent error handling (line 88/201)', () => {
 // ─── useKommunalpolitikEditor.ts lines 125-166 — all action functions ─────────
 
 import { useKommunalpolitikEditor } from '../../admin/hooks/useKommunalpolitikEditor'
-import type { Dokument as _Dokument } from '../../admin/hooks/useKommunalpolitikEditor'
+import type { Dokument as _Dokument } from '../../components/sections/Kommunalpolitik/types'
 
 function UseKommunalpolitikWrapper() {
   const editor = useKommunalpolitikEditor()
