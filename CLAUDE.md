@@ -163,6 +163,7 @@ When the admin needs the same type as a public section (e.g. `KommunalpolitikPer
 - Undo/redo is per-tab via the Zustand store — use `useUndoRedoShortcuts` for keyboard shortcuts
 - Image uploads go through `ImageField` / `ImageListField`; they convert to WebP before committing
 - Presence state (`src/admin/store/presenceSlice.ts`) uses Vercel KV in production — do not add polling; heartbeats are already on a 30-second interval
+- Dark mode preference is persisted under the localStorage key **`spd-darkmode`** and is shared between the public site (`src/hooks/useDarkMode.ts`) and the admin store (`uiSlice`). If unset it falls back to `prefers-color-scheme`. Do not change the key — it would reset every user's preference.
 
 ### Admin Zustand store
 
@@ -271,6 +272,8 @@ return (
 
 `data` is `undefined` while loading and typed as `T | undefined`. Render skeletons when `!data`; hide sections when the relevant array is empty.
 
+`<SkeletonGrid>` (`src/components/SkeletonGrid.tsx`) renders bare pulse-animated divs with no wrapper element — it must be placed inside a grid container to inherit gap and column layout. Pass `itemClassName` for per-item height (e.g. `h-40`).
+
 `useData<T>` (`src/hooks/useData.ts`) configures SWR with `cache: 'no-store'` (matches Vercel no-store headers), `revalidateOnFocus: false`, and `dedupingInterval: 60_000`. Errors surface as `HttpError(status, message)`. Do not configure SWR differently in new hooks — `useSectionPage` wires all of this up correctly.
 
 ### Sheet component
@@ -378,6 +381,18 @@ Tests run under **happy-dom** (not jsdom) — see `vitest.config.ts`. The global
 - A `window.matchMedia` stub for components that read prefers-color-scheme
 
 When writing tests, mock at the network boundary (intercept `fetch`); never mock `useData`, `useSWR`, or internal hooks directly.
+
+---
+
+## API route conventions (`api/`)
+
+Every Vercel Function in `api/` must follow these rules:
+
+- **`Cache-Control: no-store`** on every response — auth and proxy responses must never be cached by a CDN or browser.
+- **Opaque error codes** — never forward GitHub's raw `error_description` in a redirect or response body; map to short opaque codes (`bad_code`, `server_misconfigured`, `token_exchange_failed`, `unauthorized_user`) to avoid leaking internals into browser history or logs.
+- **Clear OAuth cookies after use** — the CSRF state cookie must be cleared in the callback regardless of success or failure.
+- **Token never leaves the server** — the GitHub access token is stored in an HttpOnly cookie and forwarded to GitHub by the server-side proxy (`api/github.ts`). Client code never sees the raw token.
+- **Path allowlist in proxy** — `api/github.ts` only proxies requests to `/user` and `/repos/UgurTheG/SPD-Albstadt/*`. Any new proxy path must be explicitly added to the allowlist.
 
 ---
 
