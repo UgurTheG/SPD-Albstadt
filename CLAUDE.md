@@ -273,6 +273,19 @@ Every editor tab is declared in `src/admin/config/tabs.ts` as a `TabConfig`. To 
 For `image` fields, set `imageDir` to the target subdirectory under `public/images/` (e.g. `imageDir: 'vorstand'`).  
 For `imagelist` fields, set `captionsKey` to the companion string-array field if captions are supported.
 
+### Changes must appear in Änderungen, Alle Änderungen, and Veröffentlichen
+
+Every field change an editor makes must surface in all three diff/publish UI panels. This is driven by `diffTab()` in `src/admin/lib/diff.ts`, which generates `ChangeEntry[]` for a given tab.
+
+**Standard `object` and `array` tabs** — changes appear automatically. `diffTab` iterates over `tab.topFields`, `tab.sections[*].fields`, and `tab.fields` from the `TabConfig`. Declaring the field in `tabs.ts` is sufficient.
+
+**Custom tab types (`kommunalpolitik`, `haushaltsreden`)** — `diffTab` has hardcoded branches for these types. Adding a new custom tab type requires:
+
+1. A new `type` branch in `diffTab()` (`src/admin/lib/diff.ts`) with explicit field iteration — otherwise the tab appears to have no changes
+2. A new `type` branch in `collectImagePaths()` (`src/admin/lib/images.ts`) — otherwise pending image uploads are not included in the publish confirmation
+
+Never add a custom tab type without implementing both. Verify by editing a field in the admin, then checking that the change appears in the **Änderungen** badge, the **Alle Änderungen** modal, and the **Veröffentlichen** confirm dialog before merging.
+
 ---
 
 ## SEO and sitemap
