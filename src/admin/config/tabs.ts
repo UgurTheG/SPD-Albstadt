@@ -16,12 +16,6 @@ export const TABS: TabConfig[] = [
         type: 'textarea',
         placeholder: 'Gemeinsam für Albstadt — sozial, gerecht und zukunftsorientiert.',
       },
-      {
-        key: 'heroBadge',
-        label: 'Badge-Text (kleiner Text über dem Titel)',
-        type: 'text',
-        placeholder: 'Ortsverein Albstadt · Zollernalb',
-      },
     ],
   },
   {

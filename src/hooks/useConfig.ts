@@ -11,6 +11,7 @@ interface AppFileData {
 interface StartseiteFileData {
   heroSlogan?: string
   heroBadge?: string
+  heroVideo?: string
 }
 
 interface KontaktFileData {
@@ -32,6 +33,7 @@ export interface SiteConfig {
   elfsightAppId?: string
   heroSlogan?: string
   heroBadge?: string
+  heroVideo?: string
   footerBeschreibung?: string
   features?: Record<string, never>
   kontakt?: {
@@ -59,6 +61,7 @@ export function useConfig(): SiteConfig | null {
     ...appData,
     heroSlogan: startseiteData?.heroSlogan,
     heroBadge: startseiteData?.heroBadge,
+    heroVideo: startseiteData?.heroVideo,
     footerBeschreibung: kontaktData?.footerBeschreibung,
     kontakt: kontaktData
       ? {

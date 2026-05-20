@@ -10,6 +10,7 @@ export default function Hero() {
   const config = useConfig()
   const slogan =
     config?.heroSlogan || 'Gemeinsam für Albstadt — sozial, gerecht und zukunftsorientiert.'
+  const videoUrl = config?.heroVideo || ''
   const navItems = useNavItems()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
@@ -27,7 +28,54 @@ export default function Hero() {
     >
       {/* Background layers */}
       <motion.div style={{ scale }} className="absolute inset-0">
-        <div className="absolute inset-0 bg-linear-to-b from-spd-red via-spd-red-dark to-[#8B000A] dark:from-red-950 dark:via-red-950 dark:to-[#1a0000]" />
+        {videoUrl ? (
+          <>
+            {/* Video background */}
+            <video
+              key={videoUrl}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              className="absolute inset-0 w-full h-full object-cover"
+              aria-hidden="true"
+            >
+              <source src={videoUrl} />
+            </video>
+            {/* Dark + red tint overlay so text stays legible */}
+            <div className="absolute inset-0 bg-black/55" />
+            <div className="absolute inset-0 bg-spd-red/30 dark:bg-red-950/40" />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-linear-to-b from-spd-red via-spd-red-dark to-[#8B000A] dark:from-red-950 dark:via-red-950 dark:to-[#1a0000]" />
+            <svg
+              className="absolute inset-0 w-full h-full opacity-[0.05]"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+              role="presentation"
+            >
+              <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#grid)" />
+            </svg>
+            <div className="absolute -top-32 -right-32 w-125 h-125 rounded-full bg-white/3" />
+            <div className="absolute top-1/3 -left-48 w-100 h-100 rounded-full bg-white/3" />
+            <div className="absolute -bottom-24 right-1/4 w-75 h-75 rounded-full bg-white/3" />
+            <div
+              className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none select-none"
+              aria-hidden="true"
+            >
+              <span className="text-[20vw] font-black text-white/3 tracking-tighter leading-none">
+                SPD
+              </span>
+            </div>
+          </>
+        )}
         {/* Radial vignette — darkens edges, keeps center bright */}
         <div
           className="absolute inset-0"
@@ -36,30 +84,6 @@ export default function Hero() {
               'radial-gradient(ellipse 70% 60% at 50% 40%, transparent 0%, rgba(0,0,0,0.35) 100%)',
           }}
         />
-        <svg
-          className="absolute inset-0 w-full h-full opacity-[0.05]"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-          role="presentation"
-        >
-          <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
-        <div className="absolute -top-32 -right-32 w-125 h-125 rounded-full bg-white/3" />
-        <div className="absolute top-1/3 -left-48 w-100 h-100 rounded-full bg-white/3" />
-        <div className="absolute -bottom-24 right-1/4 w-75 h-75 rounded-full bg-white/3" />
-        <div
-          className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none select-none"
-          aria-hidden="true"
-        >
-          <span className="text-[20vw] font-black text-white/3 tracking-tighter leading-none">
-            SPD
-          </span>
-        </div>
       </motion.div>
       {/* Main content with parallax */}
       <motion.div
