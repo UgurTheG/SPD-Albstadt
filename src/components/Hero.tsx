@@ -10,7 +10,6 @@ export default function Hero() {
   const config = useConfig()
   const slogan =
     config?.heroSlogan || 'Gemeinsam für Albstadt — sozial, gerecht und zukunftsorientiert.'
-  const badge = config?.heroBadge || 'Ortsverein Albstadt · Zollernalb'
   const navItems = useNavItems()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
@@ -67,17 +66,6 @@ export default function Hero() {
         style={{ y, opacity }}
         className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4"
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
-          className="mb-6"
-        >
-          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-5 py-2 text-sm font-medium">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" aria-hidden="true" />
-            {badge}
-          </div>
-        </motion.div>
         <motion.h1
           initial={{ y: 40 }}
           animate={{ y: 0 }}
