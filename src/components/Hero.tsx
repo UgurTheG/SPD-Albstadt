@@ -134,10 +134,14 @@ export default function Hero() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45 + i * 0.08 }}
-              whileHover={{ scale: 1.06, backgroundColor: 'rgba(255,255,255,0.22)' }}
+              whileHover={{ scale: 1.06, backgroundColor: 'rgba(255,255,255,0.40)' }}
               whileTap={{ scale: 0.96 }}
               onClick={() => navigateTo(item.id)}
-              className="bg-white/12 backdrop-blur-sm border border-white/25 text-white font-medium px-5 py-2.5 min-h-[44px] min-w-[44px] rounded-full text-sm transition-all cursor-pointer hover:border-white/50 hover:shadow-lg"
+              className={`backdrop-blur-sm border text-white font-medium px-5 py-2.5 min-h-[44px] min-w-[44px] rounded-full text-sm transition-all cursor-pointer hover:shadow-lg ${
+                videoUrl
+                  ? 'bg-white/30 border-white/60 hover:border-white/80 hover:bg-white/40'
+                  : 'bg-white/12 border-white/25 hover:border-white/50'
+              }`}
             >
               {item.label}
             </motion.button>
@@ -167,7 +171,11 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.9, ease: 'easeOut' }}
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.97 }}
-          className="inline-flex items-center gap-2 bg-white/12 backdrop-blur-sm border border-white/25 text-white font-semibold px-6 py-2.5 min-h-[44px] rounded-full text-sm hover:bg-white/20 hover:border-white/40 transition-all cursor-pointer"
+          className={`inline-flex items-center gap-2 backdrop-blur-sm border text-white font-semibold px-6 py-2.5 min-h-[44px] rounded-full text-sm transition-all cursor-pointer ${
+            videoUrl
+              ? 'bg-white/30 border-white/60 hover:bg-white/40 hover:border-white/80'
+              : 'bg-white/12 border-white/25 hover:bg-white/20 hover:border-white/40'
+          }`}
         >
           <UserPlus size={15} strokeWidth={2.5} />
           Mitglied werden
