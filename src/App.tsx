@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowUp, Moon, Sun } from 'lucide-react'
+import { ArrowUp } from 'lucide-react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import PageLayout from './components/PageLayout'
@@ -14,7 +14,7 @@ import { ROUTES, CATCH_ALL_ROUTE, PAGE_TITLES, DEPTH } from './routeConfig'
 const AdminApp = lazy(() => import('./admin/AdminApp'))
 
 export default function App() {
-  const { darkMode, toggleDarkMode } = useDarkMode()
+  const { darkMode } = useDarkMode()
   const [showScrollTop, setShowScrollTop] = useState(false)
   const location = useLocation()
   const prevPathRef = useRef(location.pathname)
@@ -67,17 +67,7 @@ export default function App() {
           PAGE_TITLES['/']}
       </div>
 
-      {isHome ? (
-        <button
-          onClick={toggleDarkMode}
-          className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 p-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-          aria-label="Dark mode umschalten"
-        >
-          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
-      ) : (
-        <Navbar />
-      )}
+      {isHome ? null : <Navbar />}
 
       <main id="main-content">
         <AnimatePresence mode="wait" initial={false}>

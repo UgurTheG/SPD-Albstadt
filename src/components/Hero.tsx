@@ -1,12 +1,14 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { ChevronDown, UserPlus } from 'lucide-react'
+import { ChevronDown, Moon, Sun, UserPlus } from 'lucide-react'
 import { useConfig } from '../hooks/useConfig'
+import { useDarkMode } from '../hooks/useDarkMode'
 import { useNavigateTo } from '../hooks/useNavigateTo'
 import { useNavItems } from '../hooks/useNavItems'
 
 export default function Hero() {
   const navigateTo = useNavigateTo()
+  const { darkMode, toggleDarkMode } = useDarkMode()
   const config = useConfig()
   const slogan =
     config?.heroSlogan || 'Gemeinsam für Albstadt — sozial, gerecht und zukunftsorientiert.'
@@ -24,8 +26,19 @@ export default function Hero() {
     <section
       ref={ref}
       id="hero"
-      className="relative h-screen min-h-150 overflow-hidden bg-spd-red dark:bg-red-950"
+      className={`relative h-screen min-h-150 overflow-hidden ${videoUrl ? 'bg-black' : 'bg-spd-red dark:bg-red-950'}`}
     >
+      {/* Dark mode toggle — only shown when no video is playing */}
+      {!videoUrl && (
+        <button
+          onClick={toggleDarkMode}
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 p-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+          aria-label="Dark mode umschalten"
+        >
+          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
+      )}
+
       {/* Background layers */}
       <motion.div style={{ scale }} className="absolute inset-0">
         {videoUrl ? (
@@ -43,9 +56,8 @@ export default function Hero() {
             >
               <source src={videoUrl} />
             </video>
-            {/* Dark + red tint overlay so text stays legible */}
-            <div className="absolute inset-0 bg-black/55" />
-            <div className="absolute inset-0 bg-spd-red/30 dark:bg-red-950/40" />
+            {/* Dark overlay so text stays legible */}
+            <div className="absolute inset-0 bg-black/50" />
           </>
         ) : (
           <>

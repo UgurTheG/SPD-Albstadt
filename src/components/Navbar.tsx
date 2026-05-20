@@ -21,6 +21,8 @@ export default function Navbar() {
     setMenuOpen(false)
   }
 
+  if (isHome) return null
+
   return (
     <nav
       aria-label="Hauptnavigation"
