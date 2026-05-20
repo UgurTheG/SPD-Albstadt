@@ -8,13 +8,11 @@ import PageLayout from './components/PageLayout'
 import ErrorBoundary from './components/ErrorBoundary'
 import LoadingSpinner from './components/LoadingSpinner'
 import SEOHead from './components/SEOHead'
-import { useDarkMode } from './hooks/useDarkMode'
 import { ROUTES, CATCH_ALL_ROUTE, PAGE_TITLES, DEPTH } from './routeConfig'
 
 const AdminApp = lazy(() => import('./admin/AdminApp'))
 
 export default function App() {
-  const { darkMode } = useDarkMode()
   const [showScrollTop, setShowScrollTop] = useState(false)
   const location = useLocation()
   const prevPathRef = useRef(location.pathname)
