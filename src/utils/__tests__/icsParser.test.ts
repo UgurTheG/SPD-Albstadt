@@ -187,4 +187,79 @@ END:VEVENT`,
     const events = parseICS(ics)
     events.forEach(ev => expect(ev.ganztaegig).toBe(false))
   })
+
+  it('extracts document URLs from description as attachments', () => {
+    const ics = wrapVCalendar(
+      makeVEvent({
+        UID: 'attach@test',
+        DTSTART: '20260701T100000',
+        DTEND: '20260701T110000',
+        SUMMARY: 'Mit Anhang',
+        DESCRIPTION:
+          'Agenda: https://example.com/files/agenda.pdf und Tabelle https://example.com/data.xlsx',
+      }),
+    )
+    const events = parseICS(ics)
+    expect(events).toHaveLength(1)
+    expect(events[0].anhaenge).toHaveLength(2)
+    expect(events[0].anhaenge[0]).toEqual({
+      url: 'https://example.com/files/agenda.pdf',
+      filename: 'agenda.pdf',
+      fmttype: 'application/pdf',
+    })
+    expect(events[0].anhaenge[1]).toEqual({
+      url: 'https://example.com/data.xlsx',
+      filename: 'data.xlsx',
+      fmttype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    })
+  })
+
+  it('returns empty anhaenge when description has no document URLs', () => {
+    const ics = wrapVCalendar(
+      makeVEvent({
+        UID: 'no-attach@test',
+        DTSTART: '20260701T100000',
+        SUMMARY: 'Ohne Anhang',
+        DESCRIPTION: 'Normaler Text ohne Links',
+      }),
+    )
+    const events = parseICS(ics)
+    expect(events[0].anhaenge).toEqual([])
+  })
+
+  it('extracts explicit ATTACH properties', () => {
+    const ics = wrapVCalendar(
+      `BEGIN:VEVENT
+UID:explicit-attach@test
+DTSTART:20260801T100000
+DTEND:20260801T110000
+SUMMARY:Expliziter Anhang
+ATTACH;FMTTYPE=application/pdf:https://example.com/doc.pdf
+END:VEVENT`,
+    )
+    const events = parseICS(ics)
+    expect(events[0].anhaenge).toHaveLength(1)
+    expect(events[0].anhaenge[0].url).toBe('https://example.com/doc.pdf')
+    expect(events[0].anhaenge[0].fmttype).toBe('application/pdf')
+  })
+
+  it('proxies iCloud gateway attachment URLs', () => {
+    const ics = wrapVCalendar(
+      `BEGIN:VEVENT
+UID:icloud-attach@test
+DTSTART:20260801T100000
+DTEND:20260801T110000
+SUMMARY:iCloud Anhang
+ATTACH;FMTTYPE=image/gif;FILENAME=photo.gif:https://gateway.icloud.com/caldav/1_test/attach/photo.gif
+END:VEVENT`,
+    )
+    const events = parseICS(ics)
+    expect(events[0].anhaenge).toHaveLength(1)
+    expect(events[0].anhaenge[0].url).toBe(
+      '/api/ics-attachment?url=' +
+        encodeURIComponent('https://gateway.icloud.com/caldav/1_test/attach/photo.gif'),
+    )
+    expect(events[0].anhaenge[0].filename).toBe('photo.gif')
+    expect(events[0].anhaenge[0].fmttype).toBe('image/gif')
+  })
 })
