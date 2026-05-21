@@ -27,12 +27,6 @@ export function AbgeordneterCard({
       <div className="relative w-32 sm:w-60 landscape-compact:w-32 shrink-0 overflow-hidden bg-gray-950 self-stretch">
         <img
           src={a.bildUrl}
-          srcSet={
-            a.bildUrl?.endsWith('.webp')
-              ? `${a.bildUrl.replace(/\.webp$/, '-sm.webp')} 280w, ${a.bildUrl} 450w`
-              : undefined
-          }
-          sizes="(max-width: 640px) 8rem, 15rem"
           alt={a.name}
           loading={priority ? 'eager' : 'lazy'}
           fetchPriority={priority ? 'high' : undefined}
