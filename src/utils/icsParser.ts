@@ -5,12 +5,6 @@
  */
 import ICAL from 'ical.js'
 
-export interface ICSAttachment {
-  url: string
-  filename?: string
-  fmttype?: string // MIME type, e.g. "application/pdf"
-}
-
 export interface ICSEvent {
   id: string
   datum: string // YYYY-MM-DD
@@ -19,7 +13,6 @@ export interface ICSEvent {
   titel: string
   ort: string
   beschreibung: string
-  anhaenge: ICSAttachment[]
 }
 
 /**
@@ -36,27 +29,6 @@ export function parseICS(icsText: string): ICSEvent[] {
 
   const events: ICSEvent[] = []
   const pad = (n: number) => String(n).padStart(2, '0')
-
-  const MIME_BY_EXT: Record<string, string> = {
-    pdf: 'application/pdf',
-    doc: 'application/msword',
-    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    xls: 'application/vnd.ms-excel',
-    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    ppt: 'application/vnd.ms-powerpoint',
-    pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    odt: 'application/vnd.oasis.opendocument.text',
-    ods: 'application/vnd.oasis.opendocument.spreadsheet',
-    odp: 'application/vnd.oasis.opendocument.presentation',
-    png: 'image/png',
-    jpg: 'image/jpeg',
-    jpeg: 'image/jpeg',
-    webp: 'image/webp',
-    gif: 'image/gif',
-    svg: 'image/svg+xml',
-    zip: 'application/zip',
-    ics: 'text/calendar',
-  }
 
   const now = new Date()
   const horizonStart = ICAL.Time.fromJSDate(
@@ -85,55 +57,6 @@ export function parseICS(icsText: string): ICSEvent[] {
     return Math.max(1, Math.round((endUTC - startUTC) / 86_400_000))
   }
 
-  const extractAttachments = (vevent: ICAL.Component, description: string): ICSAttachment[] => {
-    const attachments: ICSAttachment[] = []
-    const seenUrls = new Set<string>()
-
-    // Proxy iCloud gateway URLs through our API to avoid auth issues
-    const proxyUrl = (raw: string): string => {
-      if (raw.startsWith('https://gateway.icloud.com/caldav/')) {
-        const apiBase =
-          typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_API_BASE_URL ?? '') : ''
-        return `${apiBase}/api/ics-attachment?url=${encodeURIComponent(raw)}`
-      }
-      return raw
-    }
-
-    // 1. Explicit ATTACH properties (URL-valued)
-    const props = vevent.getAllProperties('attach')
-    for (const prop of props) {
-      const value = prop.getFirstValue()
-      if (typeof value === 'string' && value.startsWith('http')) {
-        const rawFilename = prop.getParameter('filename')
-        const rawFmttype = prop.getParameter('fmttype')
-        seenUrls.add(value)
-        attachments.push({
-          url: proxyUrl(value),
-          filename: typeof rawFilename === 'string' ? rawFilename : undefined,
-          fmttype: typeof rawFmttype === 'string' ? rawFmttype : undefined,
-        })
-      }
-    }
-
-    // 2. URLs found in the description (Notes field on iPhone)
-    //    Only pick up links to documents/files, not arbitrary web pages
-    const urlRegex =
-      /https?:\/\/[^\s<>"{}|\\^`[\]]+\.(?:pdf|docx?|xlsx?|pptx?|odt|ods|odp|png|jpe?g|webp|gif|svg|zip|ics)/gi
-    const matches = description.match(urlRegex)
-    if (matches) {
-      for (const url of matches) {
-        if (seenUrls.has(url)) continue
-        seenUrls.add(url)
-        const filename = url.split('/').at(-1)?.split('?')[0]
-        const ext = filename?.split('.').at(-1)?.toLowerCase()
-        const fmttype = ext ? MIME_BY_EXT[ext] : undefined
-        attachments.push({ url: proxyUrl(url), filename, fmttype })
-      }
-    }
-
-    return attachments
-  }
-
   const pushOccurrence = (
     uid: string,
     index: number,
@@ -143,7 +66,6 @@ export function parseICS(icsText: string): ICSEvent[] {
     summary: string,
     location: string,
     description: string,
-    anhaenge: ICSAttachment[],
   ) => {
     // For all-day events DTEND is exclusive, so a single-day event has
     // end = start + 1 day. For timed events we only render on the start day.
@@ -161,7 +83,6 @@ export function parseICS(icsText: string): ICSEvent[] {
         titel: summary || 'Ohne Titel',
         ort: location,
         beschreibung: description,
-        anhaenge,
       })
     }
   }
@@ -176,7 +97,6 @@ export function parseICS(icsText: string): ICSEvent[] {
     const uid = event.uid || `ics-${events.length}`
 
     if (!event.isRecurring()) {
-      const description = event.description || ''
       pushOccurrence(
         uid,
         0,
@@ -185,8 +105,7 @@ export function parseICS(icsText: string): ICSEvent[] {
         startDate.isDate,
         event.summary || '',
         event.location || '',
-        description,
-        extractAttachments(vevent, description),
+        event.description || '',
       )
       continue
     }
@@ -199,7 +118,6 @@ export function parseICS(icsText: string): ICSEvent[] {
       if (next.compare(horizonEnd) > 0) break
       if (next.compare(horizonStart) >= 0) {
         const details = event.getOccurrenceDetails(next)
-        const occDescription = details.item.description || ''
         pushOccurrence(
           uid,
           emitted,
@@ -208,8 +126,7 @@ export function parseICS(icsText: string): ICSEvent[] {
           details.startDate.isDate,
           details.item.summary || '',
           details.item.location || '',
-          occDescription,
-          extractAttachments(vevent, occDescription),
+          details.item.description || '',
         )
         emitted++
       }

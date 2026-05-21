@@ -1,26 +1,10 @@
-import { CalendarPlus, Clock, MapPin, Paperclip } from 'lucide-react'
-import type { ICSEvent, ICSAttachment } from '@/utils/icsParser'
+import { CalendarPlus, Clock, MapPin } from 'lucide-react'
+import type { ICSEvent } from '@/utils/icsParser'
 import { formatEventDate, downloadICS } from '@/utils/calendarUtils'
 import { formatLocation } from '@/utils/formatLocation'
 
 interface Props {
   event: ICSEvent
-}
-
-function AttachmentLink({ anhang }: { anhang: ICSAttachment }) {
-  return (
-    <a
-      href={anhang.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-2 text-sm text-spd-red hover:text-spd-red-dark font-medium transition-colors"
-    >
-      <Paperclip size={14} className="shrink-0" />
-      <span className="truncate">
-        {anhang.filename ?? anhang.url.split('/').at(-1) ?? 'Anhang'}
-      </span>
-    </a>
-  )
 }
 
 export default function EventDetailSheet({ event }: Props) {
@@ -97,21 +81,6 @@ export default function EventDetailSheet({ event }: Props) {
             <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
               {event.beschreibung}
             </p>
-          </div>
-        )}
-
-        {event.anhaenge.length > 0 && (
-          <div>
-            <h4 className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
-              Anhänge
-            </h4>
-            <ul className="space-y-2">
-              {event.anhaenge.map((anhang, i) => (
-                <li key={i}>
-                  <AttachmentLink anhang={anhang} />
-                </li>
-              ))}
-            </ul>
           </div>
         )}
       </div>
