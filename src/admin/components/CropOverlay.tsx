@@ -222,11 +222,22 @@ export default function CropOverlay({ file, onComplete }: Props) {
       if (cancelled) return
       setLoadError(true)
     }
-    const url = URL.createObjectURL(file)
-    img.src = url
+    // Use FileReader instead of URL.createObjectURL so the data URI is
+    // immune to Strict-Mode cleanup revocation and to the missing blob:
+    // source in the img-src CSP directive.
+    const reader = new FileReader()
+    reader.onload = e => {
+      if (cancelled) return
+      img.src = e.target?.result as string
+    }
+    reader.onerror = () => {
+      if (cancelled) return
+      setLoadError(true)
+    }
+    reader.readAsDataURL(file)
     return () => {
       cancelled = true
-      URL.revokeObjectURL(url)
+      reader.abort()
     }
   }, [file])
 

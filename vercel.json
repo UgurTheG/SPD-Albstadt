@@ -23,7 +23,7 @@
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; style-src 'self' 'unsafe-inline' https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self' https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; frame-src https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; media-src 'self' https://*.cdninstagram.com https://cdninstagram.com https://*.fbcdn.net https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com blob:; worker-src 'self' blob:;"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; style-src 'self' 'unsafe-inline' https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; img-src 'self' data: blob: https:; connect-src 'self' https:; font-src 'self' https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; frame-src https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; media-src 'self' https://*.cdninstagram.com https://cdninstagram.com https://*.fbcdn.net https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com blob:; worker-src 'self' blob:;"
         }
       ]
     },
