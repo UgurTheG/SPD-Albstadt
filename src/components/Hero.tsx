@@ -134,7 +134,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45 + i * 0.08 }}
-              whileHover={{ scale: 1.06, backgroundColor: 'rgba(255,255,255,0.40)' }}
+              whileHover={{ scale: 1.06, backgroundColor: 'rgba(255,255,255,0.28)' }}
               whileTap={{ scale: 0.96 }}
               onClick={() => navigateTo(item.id)}
               className={`backdrop-blur-sm border text-white font-medium px-5 py-2.5 min-h-[44px] min-w-[44px] rounded-full text-sm transition-all cursor-pointer hover:shadow-lg ${

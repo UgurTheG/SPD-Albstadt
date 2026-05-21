@@ -82,12 +82,6 @@ export default function PersonCard({
             fetchPriority={priority ? 'high' : undefined}
             decoding="async"
             src={bildUrl}
-            srcSet={
-              bildUrl.endsWith('.webp')
-                ? `${bildUrl.replace(/\.webp$/, '-md.webp')} 340w, ${bildUrl} 450w`
-                : undefined
-            }
-            sizes="(max-width: 640px) calc(50vw - 2rem), (max-width: 1024px) calc(33vw - 2rem), 300px"
             alt={name}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
           />
