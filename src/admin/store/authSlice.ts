@@ -68,6 +68,23 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
   },
 
   tryAutoLogin: async () => {
+    // Dev bypass: set a fake local user without touching the OAuth/cookie flow.
+    // import.meta.env.DEV is statically false in production builds, so Vite
+    // eliminates this entire branch from the production bundle.
+    if (import.meta.env.MODE === 'development' && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true') {
+      set({
+        authenticated: true,
+        tokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
+        user: { login: 'dev', avatar_url: '' },
+      })
+      try {
+        await get().loadData()
+      } catch {
+        /* ignore — UI will show load error banner */
+      }
+      return
+    }
+
     // Try to recover session from HttpOnly cookies
     let session: { authenticated: boolean; expires_at: number }
     try {
