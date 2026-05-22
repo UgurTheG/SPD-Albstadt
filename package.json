@@ -18,7 +18,8 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "knip": "knip",
-    "find-unused-assets": "node scripts/find-unused-assets.mjs"
+    "find-unused-assets": "node scripts/find-unused-assets.mjs",
+    "find-unused-json-fields": "node scripts/find-unused-json-fields.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,css,md}": "prettier --write"

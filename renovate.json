@@ -1,0 +1,52 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "Europe/Berlin",
+  "schedule": ["before 9am on Monday"],
+  "prHourlyLimit": 10,
+  "automerge": true,
+  "automergeType": "pr",
+  "major": {
+    "automerge": false
+  },
+  "packageRules": [
+    {
+      "groupName": "react",
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "react-router-dom",
+        "@types/react",
+        "@types/react-dom"
+      ]
+    },
+    {
+      "groupName": "tailwind",
+      "matchPackageNames": ["/^tailwindcss/", "/^@tailwindcss\\//"]
+    },
+    {
+      "groupName": "framer-motion",
+      "matchPackageNames": ["framer-motion"]
+    },
+    {
+      "groupName": "dnd-kit",
+      "matchPackageNames": ["/^@dnd-kit\\//"]
+    },
+    {
+      "groupName": "eslint",
+      "matchPackageNames": ["/^eslint/", "/^@eslint\\//", "/^typescript-eslint/"]
+    },
+    {
+      "groupName": "vite",
+      "matchPackageNames": ["/^vite/", "/^@vitejs\\//"]
+    },
+    {
+      "groupName": "typescript",
+      "matchPackageNames": ["/^typescript/", "/^@types\\//"]
+    },
+    {
+      "groupName": "github-actions",
+      "matchManagers": ["github-actions"]
+    }
+  ]
+}
