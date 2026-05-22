@@ -6,6 +6,7 @@
   "prHourlyLimit": 10,
   "automerge": true,
   "automergeType": "pr",
+  "automergeStrategy": "squash",
   "major": {
     "automerge": false
   },
