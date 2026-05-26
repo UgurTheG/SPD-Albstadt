@@ -8,7 +8,7 @@
  * purposes, preventing presence spoofing / session takeover.
  *
  * Storage strategy:
- *   • If KV_REST_API_URL is set → uses @vercel/kv (shared across all Vercel
+ *   • If KV_REST_API_URL is set → uses @upstash/redis (shared across all Vercel
  *     function instances, required for multi-instance correctness).
  *   • Otherwise → falls back to an in-memory Map (works for single-instance /
  *     local dev; presence may be partitioned across cold-started instances).
@@ -25,6 +25,7 @@ import {
   USER_LOGIN_COOKIE,
 } from './auth/cookies.js'
 import { rateLimit, getClientIP } from './auth/rateLimit.js'
+import { Redis } from '@upstash/redis'
 
 // ─── Allowed tab keys (must match src/admin/config/tabs.ts) ──────────────────
 
@@ -102,16 +103,29 @@ function isKvEnabled(): boolean {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
 }
 
+/** Lazily-created Redis client (reused across invocations in the same instance). */
+let redis: Redis | undefined
+
+function getRedis(): Redis | undefined {
+  if (!isKvEnabled()) return undefined
+  if (!redis) {
+    redis = new Redis({
+      url: process.env.KV_REST_API_URL!,
+      token: process.env.KV_REST_API_TOKEN!,
+    })
+  }
+  return redis
+}
+
 async function storageUpsert(user: PresenceUser): Promise<number> {
-  if (isKvEnabled()) {
+  const client = getRedis()
+  if (client) {
     try {
-      const { kv } = await import('@vercel/kv')
-      await kv.set(`${KV_PREFIX}${user.login}`, user, { ex: TTL_S })
-      await kv.sadd(KV_INDEX, user.login)
-      await kv.expire(KV_INDEX, KV_INDEX_TTL_S)
-      const version = await kv.incr(KV_VERSION_KEY)
-      // Keep the version key alive as long as any user is active
-      await kv.expire(KV_VERSION_KEY, KV_INDEX_TTL_S)
+      await client.set(`${KV_PREFIX}${user.login}`, user, { ex: TTL_S })
+      await client.sadd(KV_INDEX, user.login)
+      await client.expire(KV_INDEX, KV_INDEX_TTL_S)
+      const version = await client.incr(KV_VERSION_KEY)
+      await client.expire(KV_VERSION_KEY, KV_INDEX_TTL_S)
       return version
     } catch {
       // KV unavailable — fall through to in-memory
@@ -122,12 +136,12 @@ async function storageUpsert(user: PresenceUser): Promise<number> {
 }
 
 async function storageRemove(login: string): Promise<void> {
-  if (isKvEnabled()) {
+  const client = getRedis()
+  if (client) {
     try {
-      const { kv } = await import('@vercel/kv')
-      await kv.del(`${KV_PREFIX}${login}`)
-      await kv.srem(KV_INDEX, login)
-      await kv.incr(KV_VERSION_KEY)
+      await client.del(`${KV_PREFIX}${login}`)
+      await client.srem(KV_INDEX, login)
+      await client.incr(KV_VERSION_KEY)
       return
     } catch {
       // fall through
@@ -138,10 +152,10 @@ async function storageRemove(login: string): Promise<void> {
 }
 
 async function storageGetVersion(): Promise<number> {
-  if (isKvEnabled()) {
+  const client = getRedis()
+  if (client) {
     try {
-      const { kv } = await import('@vercel/kv')
-      return (await kv.get<number>(KV_VERSION_KEY)) ?? 0
+      return (await client.get<number>(KV_VERSION_KEY)) ?? 0
     } catch {
       // fall through
     }
@@ -150,18 +164,18 @@ async function storageGetVersion(): Promise<number> {
 }
 
 async function storageGetAll(): Promise<PresenceUser[]> {
-  if (isKvEnabled()) {
+  const client = getRedis()
+  if (client) {
     try {
-      const { kv } = await import('@vercel/kv')
-      const logins = (await kv.smembers(KV_INDEX)) as string[]
+      const logins = (await client.smembers(KV_INDEX)) as string[]
       if (!logins.length) return []
-      const users = await Promise.all(logins.map(l => kv.get<PresenceUser>(`${KV_PREFIX}${l}`)))
+      const users = await Promise.all(logins.map(l => client.get<PresenceUser>(`${KV_PREFIX}${l}`)))
       // Filter nulls — entries whose TTL expired between the SMEMBERS and GET
       const live = users.filter((u): u is PresenceUser => u !== null)
       // Clean up stale index entries in the background
       const staleLogins = logins.filter((_, i) => users[i] === null)
       if (staleLogins.length) {
-        void kv.srem(KV_INDEX, ...staleLogins).catch(() => {})
+        void client.srem(KV_INDEX, ...staleLogins).catch(() => {})
       }
       return live
     } catch {
