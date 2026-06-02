@@ -5,37 +5,88 @@
       "titel": "Bildung und Jugend",
       "beschreibung": "Gute Bildung für alle Kinder – unabhängig von Herkunft oder Geldbeutel. Wir investieren in Kitas, Schulen und Jugendzentren.",
       "icon": "GraduationCap",
-      "inhalt": "Bildung ist die Grundlage für ein selbstbestimmtes Leben und gleichzeitig der Schlüssel für die Zukunft unserer Stadt. Die SPD Albstadt setzt sich dafür ein, dass jedes Kind – egal aus welcher Familie es stammt – die bestmögliche Förderung erhält.\n\nWir wollen mehr Kitaplätze schaffen, Betreuungszeiten ausweiten und die Qualität der frühkindlichen Bildung verbessern. In den Schulen kämpfen wir für kleinere Klassen, moderne Ausstattung und gut ausgebildetes Personal.\n\nJugendzentren und offene Jugendarbeit sind für uns keine Freiwilligkeit, sondern eine kommunale Pflichtaufgabe. Junge Menschen brauchen Orte, an denen sie sich entfalten, engagieren und gehört fühlen. Wir stehen an ihrer Seite."
+      "status": "In Umsetzung",
+      "inhalt": "Bildung ist die Grundlage für ein selbstbestimmtes Leben und gleichzeitig der Schlüssel für die Zukunft unserer Stadt. Die SPD Albstadt setzt sich dafür ein, dass jedes Kind – egal aus welcher Familie es stammt – die bestmögliche Förderung erhält.\n\nWir wollen mehr Kitaplätze schaffen, Betreuungszeiten ausweiten und die Qualität der frühkindlichen Bildung verbessern. In den Schulen kämpfen wir für kleinere Klassen, moderne Ausstattung und gut ausgebildetes Personal.\n\nJugendzentren und offene Jugendarbeit sind für uns keine Freiwilligkeit, sondern eine kommunale Pflichtaufgabe. Junge Menschen brauchen Orte, an denen sie sich entfalten, engagieren und gehört fühlen. Wir stehen an ihrer Seite.",
+      "forderungen": [
+        "Mehr Kitaplätze in allen Stadtteilen schaffen",
+        "Ganztagsbetreuung für alle Grundschulen einführen",
+        "Schulgebäude modernisieren und barrierefrei gestalten",
+        "Offene Jugendarbeit als kommunale Pflichtaufgabe verankern"
+      ],
+      "zitat": "Kein Kind darf aufgrund seiner Herkunft schlechtere Chancen haben. Gute Bildung ist eine Frage der Gerechtigkeit.",
+      "zitatPerson": "Marianne Roth, Fraktionsvorsitzende",
+      "zitatBildUrl": "/images/gemeinderaete/marianne-roth.webp",
+      "newsSchlagwort": "Bildung"
     },
     {
       "titel": "Soziales und Wohnen",
       "beschreibung": "Bezahlbares Wohnen und starke soziale Absicherung für alle Albstädter Bürgerinnen und Bürger.",
       "icon": "Home",
-      "inhalt": "Wohnen ist ein Grundbedürfnis – und darf kein Luxus sein. Die SPD Albstadt setzt sich für eine aktive kommunale Wohnungspolitik ein: mehr Sozialwohnungen, kommunale Belegungsrechte und ein verantwortungsvoller Umgang mit städtischen Grundstücken.\n\nWir unterstützen Menschen, die auf Hilfe angewiesen sind: ob durch Beratungsangebote, niedrigschwellige Anlaufstellen oder die Stärkung der sozialen Infrastruktur vor Ort. Niemand soll in Albstadt allein gelassen werden.\n\nSolidarität bedeutet für uns nicht nur ein Wort, sondern gelebte Praxis. Deshalb setzen wir uns im Gemeinderat konsequent für Maßnahmen ein, die den Zusammenhalt in unserer Stadt stärken – für alle Generationen."
+      "status": "Im Gemeinderat beantragt",
+      "inhalt": "Wohnen ist ein Grundbedürfnis – und darf kein Luxus sein. Die SPD Albstadt setzt sich für eine aktive kommunale Wohnungspolitik ein: mehr Sozialwohnungen, kommunale Belegungsrechte und ein verantwortungsvoller Umgang mit städtischen Grundstücken.\n\nWir unterstützen Menschen, die auf Hilfe angewiesen sind: ob durch Beratungsangebote, niedrigschwellige Anlaufstellen oder die Stärkung der sozialen Infrastruktur vor Ort. Niemand soll in Albstadt allein gelassen werden.\n\nSolidarität bedeutet für uns nicht nur ein Wort, sondern gelebte Praxis. Deshalb setzen wir uns im Gemeinderat konsequent für Maßnahmen ein, die den Zusammenhalt in unserer Stadt stärken – für alle Generationen.",
+      "forderungen": [
+        "Städtische Grundstücke vorrangig für Sozialwohnungen nutzen",
+        "Kommunale Belegungsrechte bei Neubauprojekten durchsetzen",
+        "Mietpreisbremse auf kommunaler Ebene unterstützen",
+        "Beratungsangebote für von Obdachlosigkeit bedrohte Menschen stärken"
+      ]
     },
     {
       "titel": "Klimaschutz und Umwelt",
       "beschreibung": "Erneuerbare Energien, Windkraft auf Albstädter Höhen, nachhaltige Stadtentwicklung und mehr Grünflächen.",
       "icon": "Leaf",
-      "inhalt": "Der Klimawandel macht auch vor Albstadt nicht halt. Die SPD setzt auf konkrete kommunale Maßnahmen: Windkraft auf den Albstädter Höhen, Ausbau von Photovoltaik auf städtischen Gebäuden und eine klimafreundliche Bauleitplanung.\n\nWir wollen mehr Grünflächen im Stadtgebiet erhalten und neu schaffen – als Lebensraum für Mensch und Tier und als natürlicher Hitzeschutz. Bäume, Parks und begrünte Fassaden sind für uns keine Dekoration, sondern klimapolitische Notwendigkeit.\n\nNachhaltige Stadtentwicklung denkt Klimaschutz und Lebensqualität zusammen. Wir setzen uns dafür ein, dass Albstadt beim ökologischen Wandel vorangeht – ohne die sozialen Folgen aus dem Blick zu verlieren."
+      "status": "In Umsetzung",
+      "inhalt": "Der Klimawandel macht auch vor Albstadt nicht halt. Die SPD setzt auf konkrete kommunale Maßnahmen: Windkraft auf den Albstädter Höhen, Ausbau von Photovoltaik auf städtischen Gebäuden und eine klimafreundliche Bauleitplanung.\n\nWir wollen mehr Grünflächen im Stadtgebiet erhalten und neu schaffen – als Lebensraum für Mensch und Tier und als natürlicher Hitzeschutz. Bäume, Parks und begrünte Fassaden sind für uns keine Dekoration, sondern klimapolitische Notwendigkeit.\n\nNachhaltige Stadtentwicklung denkt Klimaschutz und Lebensqualität zusammen. Wir setzen uns dafür ein, dass Albstadt beim ökologischen Wandel vorangeht – ohne die sozialen Folgen aus dem Blick zu verlieren.",
+      "forderungen": [
+        "Windkraftanlagen auf den Albstädter Höhen realisieren",
+        "Photovoltaik auf allen geeigneten städtischen Gebäuden ausbauen",
+        "Grünflächen im Stadtgebiet erhalten und neu schaffen",
+        "Klimafreundliche Bauleitplanung verbindlich einführen"
+      ],
+      "newsSchlagwort": "Klimaschutz"
     },
     {
       "titel": "Mobilität und ÖPNV",
       "beschreibung": "Talgangbahn, bessere Busverbindungen, sichere Radwege. Wir kämpfen für eine echte Verkehrswende in Albstadt.",
       "icon": "Bus",
-      "inhalt": "Mobilität entscheidet darüber, wie selbstständig Menschen am gesellschaftlichen Leben teilnehmen können. Die SPD Albstadt kämpft für einen starken öffentlichen Nahverkehr – als Alternative zum Auto, nicht als Notlösung.\n\nDie Talgangbahn ist für uns ein Herzensanliegen: eine moderne Stadtbahn, die die Albstädter Stadtteile verbindet und Tausende von Pendlerinnen und Pendlern täglich entlastet. Wir treiben dieses Projekt im Gemeinderat aktiv voran.\n\nDaneben setzen wir uns für ein dichteres Busnetz, verlässlichere Takte und sichere Radwege ein. Wer in Albstadt ohne Auto mobil sein will, soll das ohne Kompromisse tun können."
+      "status": "Im Gemeinderat beantragt",
+      "inhalt": "Mobilität entscheidet darüber, wie selbstständig Menschen am gesellschaftlichen Leben teilnehmen können. Die SPD Albstadt kämpft für einen starken öffentlichen Nahverkehr – als Alternative zum Auto, nicht als Notlösung.\n\nDie Talgangbahn ist für uns ein Herzensanliegen: eine moderne Stadtbahn, die die Albstädter Stadtteile verbindet und Tausende von Pendlerinnen und Pendlern täglich entlastet. Wir treiben dieses Projekt im Gemeinderat aktiv voran.\n\nDaneben setzen wir uns für ein dichteres Busnetz, verlässlichere Takte und sichere Radwege ein. Wer in Albstadt ohne Auto mobil sein will, soll das ohne Kompromisse tun können.",
+      "forderungen": [
+        "Talgangbahn reaktivieren und modern ausbauen",
+        "Busverbindungen zwischen allen Stadtteilen verdichten",
+        "Sichere, durchgehende Radwege im gesamten Stadtgebiet",
+        "Park & Ride Angebote an den Stadträndern ausbauen"
+      ],
+      "zitat": "Die Talgangbahn ist kein Nostalgieproject – sie ist die Antwort auf die Verkehrsprobleme unserer Stadt.",
+      "zitatPerson": "Martin Frohme, Fraktionsvorsitzender Kreistag",
+      "zitatBildUrl": "/images/vorstand/martin-frohme.webp",
+      "newsSchlagwort": "Talgangbahn"
     },
     {
       "titel": "Wirtschaft und Arbeit",
       "beschreibung": "Gute Arbeit und faire Löhne. Wir unterstützen lokale Betriebe und schaffen neu, zukunftssichere Arbeitsplätze.",
       "icon": "Briefcase",
-      "inhalt": "Albstadt hat eine starke industrielle Tradition – und wir wollen diese Stärke in die Zukunft tragen. Die SPD steht für gute Arbeit: mit fairen Löhnen, sicheren Arbeitsplätzen und echten Mitbestimmungsrechten für die Beschäftigten.\n\nWir unterstützen lokale Unternehmen bei der Transformation: ob Digitalisierung, Energiewende oder Fachkräftemangel. Die Stadt soll dabei aktiver Partner sein – durch gezielte Wirtschaftsförderung, schnelle Genehmigungsverfahren und bezahlbare Gewerberäume.\n\nGleichzeitig setzen wir auf die Ansiedlung zukunftssicherer Branchen. Albstadt soll ein attraktiver Wirtschaftsstandort bleiben – für bestehende Betriebe und neue Ideen."
+      "status": "In Planung",
+      "inhalt": "Albstadt hat eine starke industrielle Tradition – und wir wollen diese Stärke in die Zukunft tragen. Die SPD steht für gute Arbeit: mit fairen Löhnen, sicheren Arbeitsplätzen und echten Mitbestimmungsrechten für die Beschäftigten.\n\nWir unterstützen lokale Unternehmen bei der Transformation: ob Digitalisierung, Energiewende oder Fachkräftemangel. Die Stadt soll dabei aktiver Partner sein – durch gezielte Wirtschaftsförderung, schnelle Genehmigungsverfahren und bezahlbare Gewerberäume.\n\nGleichzeitig setzen wir auf die Ansiedlung zukunftssicherer Branchen. Albstadt soll ein attraktiver Wirtschaftsstandort bleiben – für bestehende Betriebe und neue Ideen.",
+      "forderungen": [
+        "Lokale Betriebe bei Digitalisierung und Energiewende aktiv begleiten",
+        "Genehmigungsverfahren für Unternehmen beschleunigen",
+        "Bezahlbare Gewerbeflächen für Gründerinnen und Gründer bereitstellen",
+        "Ausbildungsplätze in der Region gemeinsam mit Betrieben sichern"
+      ]
     },
     {
       "titel": "Demokratie und Teilhabe",
       "beschreibung": "Bürgerbeteiligung stärken, Transparenz fördern und alle Albstädter in politische Entscheidungen einbeziehen.",
       "icon": "Users",
-      "inhalt": "Demokratie lebt von Menschen, die mitmachen. Die SPD Albstadt will Bürgerbeteiligung nicht als Pflichtübung, sondern als echten Bestandteil kommunaler Entscheidungsprozesse etablieren.\n\nWir setzen uns für mehr Transparenz im Gemeinderat ein: nachvollziehbare Entscheidungen, offene Sitzungen und verständliche Kommunikation mit den Bürgerinnen und Bürgern. Wer wissen will, was in seiner Stadt entschieden wird, soll das ohne Hürden erfahren können.\n\nBesonders wichtig ist uns die Einbeziehung von Menschen, die in der Politik oft weniger gehört werden – junge Albstädter, Menschen mit Migrationshintergrund, Familien und Ältere. Eine lebendige Demokratie braucht alle Stimmen."
+      "status": "In Planung",
+      "inhalt": "Demokratie lebt von Menschen, die mitmachen. Die SPD Albstadt will Bürgerbeteiligung nicht als Pflichtübung, sondern als echten Bestandteil kommunaler Entscheidungsprozesse etablieren.\n\nWir setzen uns für mehr Transparenz im Gemeinderat ein: nachvollziehbare Entscheidungen, offene Sitzungen und verständliche Kommunikation mit den Bürgerinnen und Bürgern. Wer wissen will, was in seiner Stadt entschieden wird, soll das ohne Hürden erfahren können.\n\nBesonders wichtig ist uns die Einbeziehung von Menschen, die in der Politik oft weniger gehört werden – junge Albstädter, Menschen mit Migrationshintergrund, Familien und Ältere. Eine lebendige Demokratie braucht alle Stimmen.",
+      "forderungen": [
+        "Echte Bürgerbeteiligung bei großen Stadtentwicklungsprojekten einführen",
+        "Gemeinderatssitzungen besser kommunizieren und zugänglicher machen",
+        "Jugendparlament stärken und politisch aufwerten",
+        "Mehrsprachige Informationsangebote für alle Bevölkerungsgruppen schaffen"
+      ]
     }
   ],
   "vorstand": [
