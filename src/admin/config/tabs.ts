@@ -1,5 +1,6 @@
 import type { TabConfig } from '../types'
 import { NEWS_CATEGORIES } from '../../types/news'
+import { SCHWERPUNKT_STATUS } from '../../components/sections/Partei/types'
 
 export const TABS: TabConfig[] = [
   // ── Startseite ──────────────────────────────────────────────────────────
@@ -61,9 +62,15 @@ export const TABS: TabConfig[] = [
         label: 'Schwerpunkte',
         fields: [
           { key: 'titel', label: 'Titel', type: 'text', required: true },
+          { key: 'icon', label: 'Icon', type: 'icon-picker' },
+          { key: 'status', label: 'Status', type: 'select', options: [...SCHWERPUNKT_STATUS] },
           { key: 'beschreibung', label: 'Kurzbeschreibung (Karte)', type: 'textarea' },
           { key: 'inhalt', label: 'Ausführlicher Text (Detail-Ansicht)', type: 'textarea' },
-          { key: 'icon', label: 'Icon', type: 'icon-picker' },
+          { key: 'forderungen', label: 'Forderungen (Bullet-Liste)', type: 'stringlist' },
+          { key: 'zitat', label: 'Zitat', type: 'textarea' },
+          { key: 'zitatPerson', label: 'Zitat – Person', type: 'text' },
+          { key: 'zitatBildUrl', label: 'Zitat – Foto', type: 'image', imageDir: 'vorstand' },
+          { key: 'newsSchlagwort', label: 'Verwandte News – Schlagwort', type: 'text' },
         ],
       },
       {
