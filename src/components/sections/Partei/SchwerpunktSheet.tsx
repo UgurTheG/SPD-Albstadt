@@ -45,12 +45,13 @@ export function SchwerpunktSheet({
             </div>
           </div>
           <div className="px-5 sm:px-6 pt-5 pb-8 space-y-4">
+            <p className="border-l-2 border-spd-red pl-4 text-gray-700 dark:text-gray-200 font-medium leading-relaxed text-[0.95rem] sm:text-lg italic">
+              {item.beschreibung}
+            </p>
             {item.inhalt && (
-              <div className="pt-4">
-                <p className="prose-justify text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
-                  {item.inhalt}
-                </p>
-              </div>
+              <p className="prose-justify text-gray-700 dark:text-gray-300 leading-relaxed text-base whitespace-pre-line">
+                {item.inhalt}
+              </p>
             )}
           </div>
         </div>
