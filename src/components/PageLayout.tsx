@@ -4,9 +4,9 @@ import Footer from './Footer'
 /** Wraps a page element with a shared Footer. Used by App route definitions. */
 export default function PageLayout({ children }: { children: ReactNode }) {
   return (
-    <>
-      {children}
+    <div className="flex flex-col flex-1">
+      <div className="flex-1">{children}</div>
       <Footer />
-    </>
+    </div>
   )
 }
