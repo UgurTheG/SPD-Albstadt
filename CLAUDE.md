@@ -185,7 +185,7 @@ Use `setStatus(message, type)` from `UISlice` for all user-facing feedback insid
 
 ### Image conversion
 
-Client-side WebP conversion happens in `fileToWebpBase64()` (`src/admin/lib/images.ts`) via the Canvas API at **0.85 quality**. There is no server-side image processing — do not add a build step or API route for this. The fallback `fileToBase64()` is only used when the Canvas API is unavailable.
+Client-side WebP conversion happens in `CropOverlay` (`src/admin/components/CropOverlay.tsx`) via the Canvas API at **0.9 quality** — every image upload goes through the crop overlay. There is no server-side image processing — do not add a build step or API route for this. `fileToBase64()` (`src/admin/lib/images.ts`) is used for binary document uploads (PDFs), not for images.
 
 ### Publish flow
 

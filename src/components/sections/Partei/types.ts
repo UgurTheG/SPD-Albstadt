@@ -14,8 +14,6 @@ export const SCHWERPUNKT_STATUS = [
   'Erreicht',
 ] as const
 
-export type SchwerpunktStatus = (typeof SCHWERPUNKT_STATUS)[number]
-
 export interface Schwerpunkt {
   titel: string
   beschreibung: string

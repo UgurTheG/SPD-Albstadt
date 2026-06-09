@@ -17,7 +17,9 @@ export interface PublishSlice {
   mergeConflicts: MergeConflict[] | null
   /** The tab key whose merge conflicts are being shown */
   mergeConflictTabKey: string | null
-  publishTab: (tabKey: string, orphansToDelete?: string[]) => Promise<void>
+  /** `retried` is internal — set on the automatic retry after a clean auto-merge
+   *  so a second conflict cannot trigger an endless merge/retry loop. */
+  publishTab: (tabKey: string, orphansToDelete?: string[], retried?: boolean) => Promise<void>
   publishAll: (orphansToDelete?: string[]) => Promise<void>
   /** Called by ConflictMergeModal when the user resolves all conflicts */
   applyMergeResolution: (tabKey: string, resolved: unknown) => void
@@ -45,7 +47,7 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
 
   dismissMergeConflicts: () => set({ mergeConflicts: null, mergeConflictTabKey: null }),
 
-  publishTab: async (tabKey, orphansToDelete) => {
+  publishTab: async (tabKey, orphansToDelete, retried) => {
     const { state: s, pendingUploads, publishing, dataLoadErrors, baseCommitSha } = get()
     if (publishing) return
     // Internal guard: never publish a tab whose data failed to load
@@ -58,15 +60,30 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       const changes: TreeFileChange[] = []
       const currentPaths = collectImagePaths(tab as TabConfig, s[tabKey] as Record<string, unknown>)
 
+      // Paths referenced by any tab — used to drop stale uploads (e.g. an image
+      // that was replaced twice; its first upload is no longer referenced anywhere
+      // and would otherwise keep the tab marked dirty forever).
+      const referencedPaths = new Set<string>()
+      for (const t of TABS) {
+        if (!t.file || !s[t.key]) continue
+        for (const p of collectImagePaths(t as TabConfig, s[t.key] as Record<string, unknown>)) {
+          referencedPaths.add(p)
+        }
+      }
+
       // Collect relevant image uploads
       const otherUploads: PendingUpload[] = []
       for (const upload of pendingUploads) {
         const publicUrl = upload.ghPath.replace(/^public/, '')
         if (currentPaths.has(publicUrl)) {
           changes.push({ path: upload.ghPath, base64Content: upload.base64 })
-        } else {
+        } else if (
+          referencedPaths.has(publicUrl) ||
+          (upload.tabKey !== undefined && dataLoadErrors.includes(upload.tabKey))
+        ) {
           otherUploads.push(upload)
         }
+        // else: stale upload — no tab references its path any more; drop it
       }
 
       // Collect orphan deletions
@@ -91,7 +108,7 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       if (e instanceof ConflictError) {
         // ── Auto-merge attempt ─────────────────────────────────────────────
         const tab = TABS.find(t => t.key === tabKey)
-        if (tab?.ghPath && tab?.file) {
+        if (tab?.ghPath && tab?.file && !retried) {
           try {
             const latest = await getFileContent(tab.ghPath)
             if (latest !== null) {
@@ -109,7 +126,11 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
                   originalState: { ...prev.originalState, [tabKey]: latest },
                   baseCommitSha: freshSha,
                 }))
-                await get().publishTab(tabKey, orphansToDelete)
+                // Release the publishing flag before retrying — the recursive
+                // call bails out at its `if (publishing) return` guard otherwise
+                // (this outer call's finally block has not run yet).
+                set({ publishing: false })
+                await get().publishTab(tabKey, orphansToDelete, true)
                 return
               } else {
                 // Conflicts — surface merge modal with partially-merged draft
@@ -148,16 +169,31 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
   },
 
   publishAll: async orphansToDelete => {
-    const { pendingUploads, publishing, dataLoadErrors, baseCommitSha } = get()
+    const { state: s, pendingUploads, publishing, dataLoadErrors, baseCommitSha } = get()
     if (publishing) return
 
     // Collect all changes BEFORE touching publishing state so an empty
     // batch never causes a spurious loading flash.
     const changes: TreeFileChange[] = []
 
-    // Collect image uploads
+    // Collect image uploads — only those still referenced by a tab. Stale
+    // uploads (path no longer referenced anywhere) would otherwise be committed
+    // as orphaned files; uploads for tabs that failed to load stay pending.
+    const referencedPaths = new Set<string>()
+    for (const t of TABS) {
+      if (!t.file || !s[t.key]) continue
+      for (const p of collectImagePaths(t as TabConfig, s[t.key] as Record<string, unknown>)) {
+        referencedPaths.add(p)
+      }
+    }
+    const keptUploads: PendingUpload[] = []
     for (const upload of pendingUploads) {
-      changes.push({ path: upload.ghPath, base64Content: upload.base64 })
+      const publicUrl = upload.ghPath.replace(/^public/, '')
+      if (referencedPaths.has(publicUrl)) {
+        changes.push({ path: upload.ghPath, base64Content: upload.base64 })
+      } else if (upload.tabKey !== undefined && dataLoadErrors.includes(upload.tabKey)) {
+        keptUploads.push(upload)
+      }
     }
 
     // Collect orphan deletions
@@ -200,8 +236,8 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       for (const tabKey of dirtyKeys) {
         get().resetOriginal(tabKey)
       }
-      set({ pendingUploads: [], baseCommitSha: result?.sha ?? baseCommitSha })
-      persistPendingUploads([])
+      set({ pendingUploads: keptUploads, baseCommitSha: result?.sha ?? baseCommitSha })
+      persistPendingUploads(keptUploads)
       get().setStatus(`${dirtyKeys.length} Datei(en) veröffentlicht!`, 'success')
     } catch (e) {
       if (e instanceof ConflictError) {
@@ -214,8 +250,10 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
           'Konflikt erkannt — versuche automatische Zusammenführung pro Datei…',
           'info',
         )
-        for (const tabKey of dirtyKeys) {
-          await get().publishTab(tabKey, undefined)
+        // Orphan deletions are tab-agnostic tree changes — attach them to the
+        // first per-tab commit so confirmed deletions are not silently dropped.
+        for (const [i, tabKey] of dirtyKeys.entries()) {
+          await get().publishTab(tabKey, i === 0 ? orphansToDelete : undefined)
         }
         return
       }

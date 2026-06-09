@@ -1,6 +1,20 @@
-import type { TabConfig } from '../types'
+import type { FieldConfig, TabConfig } from '../types'
 import { NEWS_CATEGORIES } from '../../types/news'
 import { SCHWERPUNKT_STATUS } from '../../components/sections/Partei/types'
+
+/**
+ * Person fields for the Kommunalpolitik editor (Gemeinderäte / Kreisräte).
+ * Single canonical source — consumed by the editor AND by diffTab() so every
+ * editable field is guaranteed to show up in the diff/publish panels.
+ */
+export const KOMMUNALPOLITIK_PERSON_FIELDS: FieldConfig[] = [
+  { key: 'name', label: 'Name', type: 'text', required: true },
+  { key: 'rolle', label: 'Rolle / Amt', type: 'text' },
+  { key: 'stadt', label: 'Stadt / Ortsteil', type: 'text' },
+  { key: 'bildUrl', label: 'Profilbild', type: 'image', imageDir: 'kommunalpolitik' },
+  { key: 'email', label: 'E-Mail', type: 'email' },
+  { key: 'bio', label: 'Biografie', type: 'textarea' },
+]
 
 export const TABS: TabConfig[] = [
   // ── Startseite ──────────────────────────────────────────────────────────

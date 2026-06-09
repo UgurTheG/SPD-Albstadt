@@ -1,22 +1,3 @@
-export function fileToWebpBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = img.width
-      canvas.height = img.height
-      canvas.getContext('2d')!.drawImage(img, 0, 0)
-      resolve(canvas.toDataURL('image/webp', 0.85).split(',')[1])
-      URL.revokeObjectURL(img.src)
-    }
-    img.onerror = () => {
-      reject(new Error('Bild konnte nicht geladen werden'))
-      URL.revokeObjectURL(img.src)
-    }
-    img.src = URL.createObjectURL(file)
-  })
-}
-
 export function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -64,7 +45,12 @@ export function collectImagePaths(
           scanFields(imgField, j.kreisraete as Record<string, unknown>[])
         if (Array.isArray(j.dokumente)) {
           for (const dok of j.dokumente as Record<string, unknown>[]) {
-            if (typeof dok.url === 'string' && dok.url.startsWith('/dokumente/')) {
+            // '/documents/' is the canonical prefix; '/dokumente/' is accepted
+            // for backwards compatibility with manually entered URLs.
+            if (
+              typeof dok.url === 'string' &&
+              (dok.url.startsWith('/documents/') || dok.url.startsWith('/dokumente/'))
+            ) {
               paths.add(dok.url)
             }
           }

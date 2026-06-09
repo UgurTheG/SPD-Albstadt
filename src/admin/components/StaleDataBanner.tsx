@@ -34,8 +34,8 @@ export default function StaleDataBanner({ publishedBy, onReload }: Props) {
           Neue Änderungen verfügbar
         </p>
         <p className="text-[11px] text-blue-700 dark:text-blue-400 font-medium">
-          {who} hat Änderungen veröffentlicht. Beim Neu laden werden Ihre lokalen Entwürfe
-          beibehalten.
+          {who} hat Änderungen veröffentlicht. Beim Neu laden bleiben Ihre lokalen Entwürfe erhalten
+          — außer in Tabs, die auch von der anderen Person geändert wurden.
         </p>
       </div>
       <button

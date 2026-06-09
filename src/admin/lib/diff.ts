@@ -1,4 +1,5 @@
 import type { FieldConfig, TabConfig } from '../types'
+import { KOMMUNALPOLITIK_PERSON_FIELDS } from '../config/tabs'
 
 type ChangePath = (string | number)[]
 
@@ -304,13 +305,7 @@ export function diffTab(
     ]
     diffFields(topFields, orig, curr, [], 'Allgemein', undefined, undefined, undefined, out)
 
-    const personFields: FieldConfig[] = [
-      { key: 'name', label: 'Name', type: 'text' },
-      { key: 'rolle', label: 'Rolle / Amt', type: 'text' },
-      { key: 'bildUrl', label: 'Profilbild', type: 'image' },
-      { key: 'email', label: 'E-Mail', type: 'email' },
-      { key: 'bio', label: 'Biografie', type: 'textarea' },
-    ]
+    const personFields = KOMMUNALPOLITIK_PERSON_FIELDS
     const dokumentFields: FieldConfig[] = [
       { key: 'titel', label: 'Titel', type: 'text' },
       { key: 'url', label: 'Datei', type: 'url' },
@@ -374,7 +369,7 @@ export function diffTab(
         origJ.gemeinderaete as Record<string, unknown>[] | undefined,
         currJ.gemeinderaete as Record<string, unknown>[] | undefined,
         ['jahre', ci, 'gemeinderaete'],
-        `${lbl} – Gemeinderte`,
+        `${lbl} – Gemeinderäte`,
         `jahre.${id}.gemeinderaete`,
         out,
       )

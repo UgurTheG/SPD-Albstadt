@@ -90,6 +90,30 @@ describe('diffTab — kommunalpolitik type', () => {
     expect(added).toBeDefined()
   })
 
+  it('detects a change to the stadt field of a person', () => {
+    const person = {
+      id: 'p1',
+      name: 'Alice',
+      rolle: '',
+      stadt: 'Ebingen',
+      bildUrl: '',
+      email: '',
+      bio: '',
+    }
+    const j = { ...makeJahr('j1', '2024'), gemeinderaete: [person] }
+    const jModified = {
+      ...j,
+      gemeinderaete: [{ ...person, stadt: 'Tailfingen' }],
+    }
+    const original = { sichtbar: true, beschreibung: '', jahre: [j] }
+    const current = { sichtbar: true, beschreibung: '', jahre: [jModified] }
+    const entries = diffTab(kpTab, original, current)
+    const stadtEntry = entries.find(e => e.fieldKey === 'stadt')
+    expect(stadtEntry).toBeDefined()
+    expect(stadtEntry!.before).toBe('Ebingen')
+    expect(stadtEntry!.after).toBe('Tailfingen')
+  })
+
   it('diffs dokumente inside a Jahr', () => {
     const j = makeJahr('j1', '2024')
     const jWithDoc = {
@@ -542,7 +566,6 @@ describe('loadIconSvg', () => {
 import {
   AuthError,
   validateToken,
-  commitFile,
   commitBinaryFile,
   deleteFile,
   commitTree,
@@ -620,44 +643,6 @@ describe('validateToken', () => {
       } as Response)
       .mockResolvedValueOnce({ ok: false, status: 500 } as Response)
     await expect(validateToken()).rejects.toThrow('Repository-Zugriff Fehler')
-  })
-})
-
-describe('commitFile', () => {
-  afterEach(() => vi.restoreAllMocks())
-
-  it('commits file without existing SHA', async () => {
-    vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce({ ok: false } as Response) // existing check
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ content: { sha: 'newsha' } }),
-      } as Response)
-    await expect(commitFile('path/file.json', '{}', 'msg')).resolves.not.toThrow()
-  })
-
-  it('commits file with existing SHA', async () => {
-    vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ sha: 'existing' }) } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ content: { sha: 'newsha' } }),
-      } as Response)
-    await expect(commitFile('path/file.json', '{}', 'msg')).resolves.not.toThrow()
-  })
-
-  it('throws on commit failure', async () => {
-    vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce({ ok: false } as Response)
-      .mockResolvedValueOnce({ ok: false, json: async () => ({ message: 'Conflict' }) } as Response)
-    await expect(commitFile('f', '{}', 'm')).rejects.toThrow('Conflict')
-  })
-
-  it('throws fallback message when no message in error body', async () => {
-    vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce({ ok: false } as Response)
-      .mockResolvedValueOnce({ ok: false, json: async () => ({}) } as Response)
-    await expect(commitFile('f', '{}', 'm')).rejects.toThrow('Fehler beim Speichern')
   })
 })
 
