@@ -135,7 +135,6 @@ function diffArray(
 
   // Emit moved entries for items that exist in both but changed position
   // Detect swaps (A↔B) and merge into a single entry
-  const movedEmitted = new Set<number>() // current indices already handled as moves
   const movedPairs = new Map<number, number>() // ci -> oi for moved items
   for (const [ci, oi] of currToOrig) {
     if (ci !== oi) movedPairs.set(ci, oi)
@@ -167,18 +166,22 @@ function diffArray(
       })
       swapEmitted.add(ci)
       swapEmitted.add(oi)
-      movedEmitted.add(ci)
-      movedEmitted.add(oi)
     }
   }
+  // Index shifts caused purely by insertions/removals are not user-initiated
+  // reorders — suppress the "reordered" entry when the matched items kept
+  // their relative order, so an added/removed entry is reported instead.
+  const matchedByCi = [...currToOrig.entries()].sort((a, b) => a[0] - b[0])
+  const orderPreserved = matchedByCi.every(
+    ([, oi], idx) => idx === 0 || oi > matchedByCi[idx - 1][1],
+  )
   // Emit remaining (non-swap) moves as a single "reordered" entry
   const remainingMoves: Array<[number, number]> = [] // [ci, oi]
   for (const [ci, oi] of movedPairs) {
     if (swapEmitted.has(ci)) continue
     remainingMoves.push([ci, oi])
-    movedEmitted.add(ci)
   }
-  if (remainingMoves.length > 0) {
+  if (remainingMoves.length > 0 && !orderPreserved) {
     // Collect labels for all involved items
     const labels = remainingMoves.map(([ci]) => {
       const c = curr[ci] as Record<string, unknown> | undefined
@@ -200,21 +203,25 @@ function diffArray(
     })
   }
 
-  // For items at the same index that are not exact matches and not moves, diff fields
+  // For items at the same index where neither side is matched elsewhere,
+  // pair them positionally and diff their fields. Track the consumed indices
+  // so the added/removed passes below only report genuinely unpaired items.
   const common = Math.min(orig.length, curr.length)
+  const origPaired = new Set<number>()
+  const currPaired = new Set<number>()
   for (let i = 0; i < common; i++) {
-    if (movedEmitted.has(i)) continue
-    if (currToOrig.has(i) && currToOrig.get(i) === i) continue // unchanged
+    if (currToOrig.has(i)) continue // exact match — unchanged or emitted as a move
+    if (origUsed.has(i)) continue // original item lives on at another index
     const o = orig[i] as Record<string, unknown> | undefined
     const c = curr[i] as Record<string, unknown> | undefined
-    if (eq(o, c)) continue
+    origPaired.add(i)
+    currPaired.add(i)
     diffFields(fields, o, c, [...basePath, i], group, groupKey, i, itemLabel(fields, c, i), out)
   }
   // added
   for (let i = 0; i < curr.length; i++) {
-    if (movedEmitted.has(i)) continue
     if (currToOrig.has(i)) continue // matched to an original
-    if (i < common) continue // handled above as modified
+    if (currPaired.has(i)) continue // handled above as modified
     const c = curr[i] as Record<string, unknown> | undefined
     const path: ChangePath = [...basePath, i]
     out.push({
@@ -231,7 +238,7 @@ function diffArray(
   // removed
   for (let i = 0; i < orig.length; i++) {
     if (origUsed.has(i)) continue
-    if (i < common) continue // handled above as modified
+    if (origPaired.has(i)) continue // handled above as modified
     const o = orig[i] as Record<string, unknown> | undefined
     const path: ChangePath = [...basePath, i]
     out.push({

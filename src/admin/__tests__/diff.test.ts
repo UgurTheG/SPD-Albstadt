@@ -121,6 +121,90 @@ describe('diffTab (array type)', () => {
     expect(removed!.itemLabel).toBe('Bob')
   })
 
+  it('detects removal of the first item without a spurious move entry', () => {
+    const original = [
+      { name: 'Alice', value: 'x' },
+      { name: 'Bob', value: 'y' },
+      { name: 'Carol', value: 'z' },
+    ]
+    const current = [
+      { name: 'Bob', value: 'y' },
+      { name: 'Carol', value: 'z' },
+    ]
+    const entries = diffTab(arrayTab, original, current)
+    expect(entries).toHaveLength(1)
+    expect(entries[0].kind).toBe('removed')
+    expect(entries[0].itemLabel).toBe('Alice')
+    expect(entries[0].originalIndex).toBe(0)
+  })
+
+  it('detects removal of a middle item without a spurious move entry', () => {
+    const original = [
+      { name: 'Alice', value: 'x' },
+      { name: 'Bob', value: 'y' },
+      { name: 'Carol', value: 'z' },
+    ]
+    const current = [
+      { name: 'Alice', value: 'x' },
+      { name: 'Carol', value: 'z' },
+    ]
+    const entries = diffTab(arrayTab, original, current)
+    expect(entries).toHaveLength(1)
+    expect(entries[0].kind).toBe('removed')
+    expect(entries[0].itemLabel).toBe('Bob')
+    expect(entries[0].originalIndex).toBe(1)
+  })
+
+  it('detects an item inserted at the top as added, not modified', () => {
+    const original = [
+      { name: 'Alice', value: 'x' },
+      { name: 'Bob', value: 'y' },
+    ]
+    const current = [
+      { name: 'Neu', value: 'n' },
+      { name: 'Alice', value: 'x' },
+      { name: 'Bob', value: 'y' },
+    ]
+    const entries = diffTab(arrayTab, original, current)
+    expect(entries).toHaveLength(1)
+    expect(entries[0].kind).toBe('added')
+    expect(entries[0].itemLabel).toBe('Neu')
+    expect(entries[0].itemIndex).toBe(0)
+  })
+
+  it('still reports a genuine reorder as moved', () => {
+    const original = [
+      { name: 'Alice', value: 'x' },
+      { name: 'Bob', value: 'y' },
+      { name: 'Carol', value: 'z' },
+    ]
+    const current = [
+      { name: 'Carol', value: 'z' },
+      { name: 'Alice', value: 'x' },
+      { name: 'Bob', value: 'y' },
+    ]
+    const entries = diffTab(arrayTab, original, current)
+    expect(entries).toHaveLength(1)
+    expect(entries[0].kind).toBe('moved')
+  })
+
+  it('reports removal plus reorder as separate entries', () => {
+    const original = [
+      { name: 'Alice', value: 'x' },
+      { name: 'Bob', value: 'y' },
+      { name: 'Carol', value: 'z' },
+    ]
+    const current = [
+      { name: 'Carol', value: 'z' },
+      { name: 'Alice', value: 'x' },
+    ]
+    const entries = diffTab(arrayTab, original, current)
+    const removed = entries.find(e => e.kind === 'removed')
+    const moved = entries.find(e => e.kind === 'moved')
+    expect(removed?.itemLabel).toBe('Bob')
+    expect(moved).toBeDefined()
+  })
+
   it('detects a modified field', () => {
     const original = [{ name: 'Alice', value: 'old' }]
     const current = [{ name: 'Alice', value: 'new' }]
