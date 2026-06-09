@@ -73,8 +73,13 @@ export default function ImageListField({ field, value, onChange, contextItem }: 
   const withCaps = (caps: string[]): Record<string, unknown> | undefined =>
     captionsKey ? { [captionsKey]: caps } : undefined
 
-  // Stable ids for sortable (index-based since URLs can repeat)
-  const ids = list.map((_, i) => `img-${i}`)
+  // Stable UUIDs for sortable — URLs can repeat, so they can't serve as ids.
+  // Every local mutation updates the id array in tandem with the list; external
+  // length changes (undo/redo/revert) are re-synced during render.
+  const [ids, setIds] = useState<string[]>(() => list.map(() => crypto.randomUUID()))
+  if (ids.length !== list.length) {
+    setIds(list.map((_, i) => ids[i] ?? crypto.randomUUID()))
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -86,6 +91,8 @@ export default function ImageListField({ field, value, onChange, contextItem }: 
     if (!over || active.id === over.id) return
     const oldIndex = ids.indexOf(active.id as string)
     const newIndex = ids.indexOf(over.id as string)
+    if (oldIndex === -1 || newIndex === -1) return
+    setIds(arrayMove(ids, oldIndex, newIndex))
     const newList = arrayMove(list, oldIndex, newIndex)
     const newCaptions = arrayMove(captions, oldIndex, newIndex)
     onChange(newList, withCaps(newCaptions))
@@ -147,6 +154,9 @@ export default function ImageListField({ field, value, onChange, contextItem }: 
                   n.splice(i, 1)
                   const c = [...captions]
                   c.splice(i, 1)
+                  const newIds = [...ids]
+                  newIds.splice(i, 1)
+                  setIds(newIds)
                   onChange(n, withCaps(c))
                 }}
                 onMoveUp={() => {
@@ -155,6 +165,7 @@ export default function ImageListField({ field, value, onChange, contextItem }: 
                   ;[n[i - 1], n[i]] = [n[i], n[i - 1]]
                   const c = [...captions]
                   ;[c[i - 1], c[i]] = [c[i], c[i - 1]]
+                  setIds(arrayMove(ids, i, i - 1))
                   onChange(n, withCaps(c))
                 }}
                 onMoveDown={() => {
@@ -163,6 +174,7 @@ export default function ImageListField({ field, value, onChange, contextItem }: 
                   ;[n[i], n[i + 1]] = [n[i + 1], n[i]]
                   const c = [...captions]
                   ;[c[i], c[i + 1]] = [c[i + 1], c[i]]
+                  setIds(arrayMove(ids, i, i + 1))
                   onChange(n, withCaps(c))
                 }}
               />
@@ -171,6 +183,7 @@ export default function ImageListField({ field, value, onChange, contextItem }: 
               type="button"
               className="text-xs text-spd-red font-semibold hover:underline flex items-center gap-1"
               onClick={() => {
+                setIds([...ids, crypto.randomUUID()])
                 onChange([...list, ''], withCaps([...captions, '']))
               }}
             >
