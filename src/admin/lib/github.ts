@@ -25,17 +25,6 @@ const REPO_OWNER = 'UgurTheG'
 const REPO_NAME = 'SPD-Albstadt'
 const BRANCH = 'main'
 
-/** Encode a UTF-8 string to base64 safely (handles all Unicode). */
-function utf8ToBase64(str: string): string {
-  const bytes = new TextEncoder().encode(str)
-  let binary = ''
-  for (const b of bytes) binary += String.fromCharCode(b)
-  return btoa(binary)
-}
-
-// Cache of known SHAs from recent commits, avoids stale GitHub API cache
-const shaCache = new Map<string, string>()
-
 // ─── Proxy helper ──────────────────────────────────────────────────────────────
 
 /**
@@ -74,31 +63,6 @@ export async function validateToken() {
     throw new Error(`Repository-Zugriff Fehler (${repoRes.status})`)
   }
   return user as { login: string; avatar_url: string }
-}
-
-export async function commitFile(filePath: string, content: string, message: string) {
-  let sha: string | undefined = shaCache.get(filePath)
-  if (!sha) {
-    const existing = await ghFetch(
-      'GET',
-      `${repoBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`,
-    )
-    if (existing.ok) sha = (await existing.json()).sha
-  }
-  const body: Record<string, unknown> = {
-    message,
-    content: utf8ToBase64(content),
-    branch: BRANCH,
-  }
-  if (sha) body.sha = sha
-  const res = await ghFetch('PUT', `${repoBase()}/contents/${filePath}`, body)
-  if (!res.ok) {
-    const err = await res.json()
-    throw new Error(err.message || 'Fehler beim Speichern')
-  }
-  const result = await res.json()
-  if (result?.content?.sha) shaCache.set(filePath, result.content.sha)
-  return result
 }
 
 export async function commitBinaryFile(filePath: string, base64Content: string, message: string) {

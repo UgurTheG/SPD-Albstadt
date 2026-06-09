@@ -296,7 +296,9 @@ function StringListField({
   return (
     <div className="space-y-2">
       {list.map((item, i) => (
-        <div key={`${i}-${item}`} className="flex gap-2 group">
+        // Index keys keep the input mounted while typing — a value-based key
+        // would remount (and defocus) the field on every keystroke.
+        <div key={i} className="flex gap-2 group">
           <input
             type="text"
             className={inputCls + ' flex-1'}

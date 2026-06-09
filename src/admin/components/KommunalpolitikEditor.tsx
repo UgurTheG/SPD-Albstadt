@@ -18,7 +18,8 @@ import { CollapsibleSectionHeader } from './CollapsibleSection'
 import { fileToBase64 } from '../lib/images'
 import { openPendingFile } from '../lib/fileUtils'
 import { inputCls } from '../lib/inputCls'
-import { useKommunalpolitikEditor, PERSON_FIELDS } from '../hooks/useKommunalpolitikEditor'
+import { useKommunalpolitikEditor } from '../hooks/useKommunalpolitikEditor'
+import { KOMMUNALPOLITIK_PERSON_FIELDS } from '../config/tabs'
 import type { Dokument } from '@/components/sections/Kommunalpolitik/types'
 
 export default function KommunalpolitikEditor() {
@@ -217,7 +218,7 @@ export default function KommunalpolitikEditor() {
                                 className="overflow-hidden"
                               >
                                 <ArrayEditor
-                                  fields={PERSON_FIELDS}
+                                  fields={KOMMUNALPOLITIK_PERSON_FIELDS}
                                   data={gemeinderaete as unknown as Record<string, unknown>[]}
                                   tabKey="kommunalpolitik"
                                   onStructureChange={p =>
@@ -250,7 +251,7 @@ export default function KommunalpolitikEditor() {
                                 className="overflow-hidden"
                               >
                                 <ArrayEditor
-                                  fields={PERSON_FIELDS}
+                                  fields={KOMMUNALPOLITIK_PERSON_FIELDS}
                                   data={kreisraete as unknown as Record<string, unknown>[]}
                                   tabKey="kommunalpolitik"
                                   onStructureChange={p => updateSection(jahr.id, 'kreisraete', p)}
@@ -376,8 +377,8 @@ function DokumentRow({
         '-' +
         Date.now()
       const ext = file.name.includes('.') ? file.name.split('.').pop()! : 'pdf'
-      const ghPath = `public/dokumente/kommunalpolitik/${namePart}.${ext}`
-      const publicUrl = `/dokumente/kommunalpolitik/${namePart}.${ext}`
+      const ghPath = `public/documents/kommunalpolitik/${namePart}.${ext}`
+      const publicUrl = `/documents/kommunalpolitik/${namePart}.${ext}`
       addPendingUpload({
         ghPath,
         base64,
@@ -466,7 +467,7 @@ function DokumentRow({
         <input
           type="text"
           className={inputCls + ' font-mono text-xs'}
-          placeholder="/dokumente/... oder https://..."
+          placeholder="/documents/... oder https://..."
           value={dok.url}
           spellCheck={false}
           autoCapitalize="off"

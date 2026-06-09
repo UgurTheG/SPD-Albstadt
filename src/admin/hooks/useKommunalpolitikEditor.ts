@@ -4,7 +4,6 @@
  */
 import { useCallback, useState } from 'react'
 import { useAdminStore } from '../store'
-import type { FieldConfig } from '../types'
 import { useUndoRedoShortcuts } from './useUndoRedoShortcuts'
 import { useTabPublisher } from './useTabPublisher'
 import type {
@@ -13,15 +12,6 @@ import type {
   KommunalpolitikJahr,
   KommunalpolitikPerson,
 } from '@/components/sections/Kommunalpolitik/types'
-
-export const PERSON_FIELDS: FieldConfig[] = [
-  { key: 'name', label: 'Name', type: 'text', required: true },
-  { key: 'rolle', label: 'Rolle / Amt', type: 'text' },
-  { key: 'stadt', label: 'Stadt / Ortsteil', type: 'text' },
-  { key: 'bildUrl', label: 'Profilbild', type: 'image', imageDir: 'kommunalpolitik' },
-  { key: 'email', label: 'E-Mail', type: 'email' },
-  { key: 'bio', label: 'Biografie', type: 'textarea' },
-]
 
 // ─── Hook return type ─────────────────────────────────────────────────────────
 

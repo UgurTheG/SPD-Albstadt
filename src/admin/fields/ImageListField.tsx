@@ -41,6 +41,7 @@ interface Props {
 export default function ImageListField({ field, value, onChange, contextItem }: Props) {
   const addPendingUpload = useAdminStore(s => s.addPendingUpload)
   const setStatus = useAdminStore(s => s.setStatus)
+  const pendingUploads = useAdminStore(s => s.pendingUploads)
   const list = Array.isArray(value) ? [...value] : []
   const captionsKey = field.captionsKey
   const captions: string[] =
@@ -49,6 +50,20 @@ export default function ImageListField({ field, value, onChange, contextItem }: 
         ? [...(contextItem[captionsKey] as string[])]
         : []
       : []
+  // Pad captions to the list length so swap/splice/set operations stay aligned —
+  // operating on a shorter array would create sparse holes that JSON.stringify
+  // turns into null entries in the published data.
+  if (captionsKey) {
+    while (captions.length < list.length) captions.push('')
+  }
+
+  // Resolve a not-yet-uploaded image to its base64 payload so the preview
+  // doesn't 404 before the pending upload is published (mirrors ImageField).
+  const resolvePreview = (url: string) => {
+    if (!url) return url
+    const match = pendingUploads.find(u => u.ghPath.replace(/^public/, '') === url)
+    return match ? `data:image/webp;base64,${match.base64}` : url
+  }
   const [cropData, setCropData] = useState<{ file: File; index: number; nameSlug: string } | null>(
     null,
   )
@@ -111,6 +126,7 @@ export default function ImageListField({ field, value, onChange, contextItem }: 
                 key={ids[i]}
                 id={ids[i]}
                 url={item}
+                previewSrc={resolvePreview(item)}
                 caption={captions[i] || ''}
                 hasCaption={!!captionsKey}
                 index={i}
@@ -170,6 +186,8 @@ export default function ImageListField({ field, value, onChange, contextItem }: 
 interface ImageListItemProps {
   id: string
   url: string
+  /** Display source — base64 data URI for pending uploads, otherwise the URL */
+  previewSrc: string
   caption: string
   hasCaption: boolean
   index: number
@@ -199,6 +217,7 @@ function SortableImageListItem(props: ImageListItemProps) {
 
 function ImageListItem({
   url,
+  previewSrc,
   caption,
   hasCaption,
   index,
@@ -252,7 +271,7 @@ function ImageListItem({
         )}
         {url ? (
           <img
-            src={url}
+            src={previewSrc || url}
             alt=""
             className="w-16 h-16 rounded-xl object-cover border border-gray-200/60 dark:border-gray-700/60 shrink-0 shadow-sm"
             onError={e => ((e.target as HTMLImageElement).style.display = 'none')}

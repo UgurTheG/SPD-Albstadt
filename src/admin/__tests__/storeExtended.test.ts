@@ -2,7 +2,7 @@
  * Additional store slice tests covering authSlice and publishSlice edge cases
  * not already tested in store.test.ts.
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 // ── Mock github before the store is imported ───────────────────────────────────
 vi.mock('../../admin/lib/github', () => {
@@ -35,7 +35,13 @@ vi.mock('../../admin/lib/github', () => {
 })
 
 import { useAdminStore } from '../../admin/store'
-import { commitTree, validateToken, AuthError } from '../../admin/lib/github'
+import {
+  commitTree,
+  getFileContent,
+  validateToken,
+  AuthError,
+  ConflictError,
+} from '../../admin/lib/github'
 import { resetPersistenceState } from '../../admin/store/persistence'
 
 function resetStore(overrides: Record<string, unknown> = {}) {
@@ -369,5 +375,82 @@ describe('publishSlice — error handling', () => {
     vi.mocked(commitTree).mockRejectedValueOnce(new Error('oops'))
     await useAdminStore.getState().publishAll()
     expect(useAdminStore.getState().publishing).toBe(false)
+  })
+})
+
+// ── publishSlice — conflict auto-merge retry ──────────────────────────────────
+
+describe('publishSlice — conflict auto-merge retry', () => {
+  beforeEach(() => {
+    resetStore({
+      state: { news: [{ titel: 'edited' }] },
+      originalState: { news: [{ titel: 'orig' }] },
+      baseCommitSha: 'oldsha',
+    })
+    vi.mocked(commitTree).mockReset()
+    vi.mocked(getFileContent).mockReset()
+  })
+
+  afterEach(() => {
+    // Restore the factory defaults so later describes see clean mocks
+    vi.mocked(commitTree).mockReset()
+    vi.mocked(commitTree).mockResolvedValue({})
+    vi.mocked(getFileContent).mockReset()
+    vi.mocked(getFileContent).mockResolvedValue(null)
+  })
+
+  it('retries the commit after a clean three-way merge', async () => {
+    vi.mocked(commitTree).mockRejectedValueOnce(new ConflictError())
+    vi.mocked(commitTree).mockResolvedValue({ sha: 'committed' })
+    // The published version equals our original → merge is clean, ours wins
+    vi.mocked(getFileContent).mockResolvedValue([{ titel: 'orig' }])
+    await useAdminStore.getState().publishTab('news')
+    expect(vi.mocked(commitTree).mock.calls.length).toBe(2)
+    expect(useAdminStore.getState().statusType).toBe('success')
+    expect(useAdminStore.getState().publishing).toBe(false)
+  })
+
+  it('does not loop endlessly when the retry conflicts again', async () => {
+    vi.mocked(commitTree).mockRejectedValue(new ConflictError())
+    vi.mocked(getFileContent).mockResolvedValue([{ titel: 'orig' }])
+    await useAdminStore.getState().publishTab('news')
+    // initial attempt + exactly one retry
+    expect(vi.mocked(commitTree).mock.calls.length).toBe(2)
+    expect(useAdminStore.getState().statusType).toBe('error')
+    expect(useAdminStore.getState().publishing).toBe(false)
+  })
+})
+
+// ── publishSlice — stale pending uploads ──────────────────────────────────────
+
+describe('publishSlice — stale pending uploads', () => {
+  beforeEach(() => {
+    resetStore({
+      state: { news: [{ titel: 'a', bildUrl: '/images/news/new.webp' }] },
+      originalState: { news: [] },
+      pendingUploads: [
+        { ghPath: 'public/images/news/old.webp', base64: 'x', message: 'm', tabKey: 'news' },
+        { ghPath: 'public/images/news/new.webp', base64: 'y', message: 'm', tabKey: 'news' },
+      ],
+    })
+    vi.mocked(commitTree).mockClear()
+    vi.mocked(commitTree).mockResolvedValue({})
+  })
+
+  it('publishTab commits the referenced upload and drops the stale one', async () => {
+    await useAdminStore.getState().publishTab('news')
+    const [, changes] = vi.mocked(commitTree).mock.calls[0] as [string, { path: string }[]]
+    expect(changes.some(c => c.path === 'public/images/news/new.webp')).toBe(true)
+    expect(changes.some(c => c.path === 'public/images/news/old.webp')).toBe(false)
+    expect(useAdminStore.getState().pendingUploads).toHaveLength(0)
+    expect(useAdminStore.getState().dirtyTabs().has('news')).toBe(false)
+  })
+
+  it('publishAll commits the referenced upload and drops the stale one', async () => {
+    await useAdminStore.getState().publishAll()
+    const [, changes] = vi.mocked(commitTree).mock.calls[0] as [string, { path: string }[]]
+    expect(changes.some(c => c.path === 'public/images/news/new.webp')).toBe(true)
+    expect(changes.some(c => c.path === 'public/images/news/old.webp')).toBe(false)
+    expect(useAdminStore.getState().pendingUploads).toHaveLength(0)
   })
 })

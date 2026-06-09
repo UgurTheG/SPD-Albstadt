@@ -47,7 +47,7 @@ import { useHaushaltsredenEditor } from '../../admin/hooks/useHaushaltsredenEdit
 import {
   listDirectory,
   getFileContent,
-  commitFile,
+  commitTree,
   commitBinaryFile,
   deleteFile,
 } from '../../admin/lib/github'
@@ -103,6 +103,22 @@ describe('useUndoRedoShortcuts', () => {
     })
     window.dispatchEvent(e)
     expect(redo).toHaveBeenCalledWith('news')
+  })
+
+  it('calls redo on Ctrl+Shift+Z when the browser reports the uppercase key', () => {
+    // Real browsers report e.key === 'Z' (uppercase) while Shift is held
+    const undo = vi.fn()
+    const redo = vi.fn()
+    renderHook(() => useUndoRedoShortcuts('news', undo, redo))
+    const e = new KeyboardEvent('keydown', {
+      key: 'Z',
+      ctrlKey: true,
+      shiftKey: true,
+      bubbles: true,
+    })
+    window.dispatchEvent(e)
+    expect(redo).toHaveBeenCalledWith('news')
+    expect(undo).not.toHaveBeenCalled()
   })
 
   it('calls redo on Ctrl+Y', () => {
@@ -527,7 +543,6 @@ describe('useHaushaltsredenEditor', () => {
   })
 
   it('toggleYear toggles disabled state', async () => {
-    vi.mocked(commitFile).mockResolvedValue({})
     const { result } = renderHook(() => useHaushaltsredenEditor())
     await act(async () => {
       await new Promise(r => setTimeout(r, 10))
@@ -545,6 +560,8 @@ describe('useHaushaltsredenEditor', () => {
   })
 
   it('toggleYear updates store state without immediate commit', async () => {
+    vi.mocked(commitTree).mockClear()
+    vi.mocked(commitBinaryFile).mockClear()
     const { result } = renderHook(() => useHaushaltsredenEditor())
     await act(async () => {
       await new Promise(r => setTimeout(r, 10))
@@ -558,7 +575,8 @@ describe('useHaushaltsredenEditor', () => {
       disabledYears?: number[]
     }
     expect(stored?.disabledYears).toContain(2023)
-    expect(vi.mocked(commitFile)).not.toHaveBeenCalled()
+    expect(vi.mocked(commitTree)).not.toHaveBeenCalled()
+    expect(vi.mocked(commitBinaryFile)).not.toHaveBeenCalled()
   })
 
   it('uploadPdf uploads and updates existingMap', async () => {

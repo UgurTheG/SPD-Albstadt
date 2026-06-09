@@ -1822,23 +1822,6 @@ describe('SortableItemCard — isDragging branch coverage (lines 37-45)', () => 
 // ─── github.ts lines 71, 197 ─────────────────────────────────────────────────
 
 describe('github.ts — uncovered branches', () => {
-  it('line 71: commitFile where file already exists (sha lookup succeeds)', async () => {
-    const { commitFile, getFileContent: _getFileContent } = await import('../../admin/lib/github')
-    // Mock fetch to simulate file already existing (returning sha)
-    const origFetch = globalThis.fetch
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ sha: 'existing-sha', content: '', encoding: 'base64' }),
-      text: () => Promise.resolve('{}'),
-    })
-    try {
-      await vi.mocked(commitFile)('public/data/test.json', 'test content', 'test update')
-    } catch {
-      // May fail due to other mocked functions but the line is covered
-    }
-    globalThis.fetch = origFetch
-  })
-
   it('line 197: commitTree with base64Content items (blob SHA mapping)', async () => {
     // The blob SHA mapping branch is when base64Content is set on a change
     const { commitTree } = await import('../../admin/lib/github')

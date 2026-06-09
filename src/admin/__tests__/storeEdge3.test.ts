@@ -417,9 +417,9 @@ describe('publishSlice — publishAll with orphansToDelete', () => {
     expect(changes.some(c => c.delete && c.path === 'public/images/old.webp')).toBe(true)
   })
 
-  it('includes pending uploads in the commit', async () => {
+  it('includes pending uploads referenced by tab state in the commit', async () => {
     resetStore({
-      state: { news: [{ titel: 'edited' }] },
+      state: { news: [{ titel: 'edited', bildUrl: '/images/news/x.webp' }] },
       originalState: { news: [] },
       pendingUploads: [
         {
