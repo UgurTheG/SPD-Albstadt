@@ -2,6 +2,7 @@ import { Building2, ExternalLink, Hash, Mail, MapPin, Phone } from 'lucide-react
 import Sheet from './Sheet'
 import PhotoGallery from './PhotoGallery'
 import type { PersonSheetData } from '../types/person'
+import { toTelLink } from '../utils/formatPhone'
 
 const getInitials = (name: string) =>
   name
@@ -202,7 +203,7 @@ export default function PersonSheet({ person, open, onClose }: Props) {
                 )}
                 {person.phone && (
                   <a
-                    href={`tel:${person.phone.replace(/\s/g, '')}`}
+                    href={`tel:${toTelLink(person.phone)}`}
                     className="flex items-center gap-3.5 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
                   >
                     <div className="w-8 h-8 rounded-xl bg-spd-red/8 dark:bg-spd-red/12 flex items-center justify-center shrink-0">

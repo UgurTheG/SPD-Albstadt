@@ -32,13 +32,15 @@ function parseCookies(header: string | undefined): Record<string, string> {
   return cookies
 }
 
-function makeCookie(name: string, value: string, maxAge: number): string {
+// Path must default to /api (not /api/auth) so that the /api/github proxy
+// receives the auth cookies from the browser — mirrors api/auth/cookies.ts.
+function makeCookie(name: string, value: string, maxAge: number, path = '/api'): string {
   // Dev: no Secure flag (HTTP localhost)
-  return `${name}=${encodeURIComponent(value)}; Path=/api/auth; Max-Age=${maxAge}; HttpOnly; SameSite=Lax`
+  return `${name}=${encodeURIComponent(value)}; Path=${path}; Max-Age=${maxAge}; HttpOnly; SameSite=Lax`
 }
 
-function clearCookie(name: string): string {
-  return makeCookie(name, '', 0)
+function clearCookie(name: string, path = '/api'): string {
+  return makeCookie(name, '', 0, path)
 }
 
 const ACCESS_TOKEN_COOKIE = 'spd_access_token'
@@ -46,18 +48,23 @@ const TOKEN_EXPIRES_COOKIE = 'spd_token_expires_at'
 const REFRESH_TOKEN_COOKIE = 'spd_refresh_token'
 const REFRESH_EXPIRES_COOKIE = 'spd_refresh_expires_at'
 const STATE_COOKIE = 'spd_oauth_state'
+const USER_LOGIN_COOKIE = 'spd_user_login'
 
 function makeAuthCookies(data: {
   access_token: string
   expires_in?: number
   refresh_token?: string
   refresh_token_expires_in?: number
+  login?: string
 }): string[] {
   const maxAge = data.expires_in ?? 8 * 3600
   const cookies = [
     makeCookie(ACCESS_TOKEN_COOKIE, data.access_token, maxAge),
     makeCookie(TOKEN_EXPIRES_COOKIE, String(Date.now() + maxAge * 1000), maxAge),
   ]
+  if (data.login) {
+    cookies.push(makeCookie(USER_LOGIN_COOKIE, data.login, maxAge))
+  }
   if (data.refresh_token) {
     const refreshMax = data.refresh_token_expires_in ?? 6 * 30 * 24 * 3600
     cookies.push(makeCookie(REFRESH_TOKEN_COOKIE, data.refresh_token, refreshMax))
@@ -74,6 +81,7 @@ function clearAuthCookies(): string[] {
     clearCookie(TOKEN_EXPIRES_COOKIE),
     clearCookie(REFRESH_TOKEN_COOKIE),
     clearCookie(REFRESH_EXPIRES_COOKIE),
+    clearCookie(USER_LOGIN_COOKIE),
   ]
 }
 
@@ -116,7 +124,7 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
           const state = randomBytes(16).toString('hex')
           const signed = signState(state, secret)
 
-          res.setHeader('Set-Cookie', makeCookie(STATE_COOKIE, signed, 600))
+          res.setHeader('Set-Cookie', makeCookie(STATE_COOKIE, signed, 600, '/api/auth'))
 
           const params = new URLSearchParams({
             client_id: clientId,
@@ -147,7 +155,7 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
           // Validate CSRF state
           const cookies = parseCookies(req.headers.cookie)
           const signedState = cookies[STATE_COOKIE]
-          const clearState = clearCookie(STATE_COOKIE)
+          const clearState = clearCookie(STATE_COOKIE, '/api/auth')
 
           if (!state || !signedState) {
             res.setHeader('Set-Cookie', clearState)
@@ -183,17 +191,61 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
                   error_description?: string
                 }>,
             )
-            .then(data => {
+            .then(async data => {
               if (!data.access_token) {
-                const msg = data.error_description ?? data.error ?? 'token_exchange_failed'
+                // Map raw GitHub error codes to opaque safe codes — do NOT forward
+                // error_description verbatim (mirrors api/auth/callback.ts).
+                const rawError = data.error ?? ''
+                const safeCode =
+                  rawError === 'bad_verification_code'
+                    ? 'bad_code'
+                    : rawError === 'incorrect_client_credentials' ||
+                        rawError === 'redirect_uri_mismatch'
+                      ? 'server_misconfigured'
+                      : 'token_exchange_failed'
                 res.setHeader('Set-Cookie', clearState)
-                return redirect(`auth=error&msg=${encodeURIComponent(msg)}`)
+                return redirect(`auth=error&msg=${safeCode}`)
               }
+
+              // Fetch the authenticated user so presence endpoints can bind
+              // identity to the token without trusting client-supplied values.
+              let login = ''
+              try {
+                const userRes = await fetch('https://api.github.com/user', {
+                  headers: {
+                    Authorization: `Bearer ${data.access_token}`,
+                    Accept: 'application/json',
+                  },
+                })
+                if (userRes.ok) {
+                  const userJson = (await userRes.json()) as { login?: string }
+                  login = (userJson.login ?? '').toLowerCase()
+                }
+              } catch {
+                // Network error fetching /user — fail closed below
+              }
+
+              const allowedLogins = env.ALLOWED_GITHUB_LOGINS
+              if (allowedLogins) {
+                const allowed = allowedLogins
+                  .split(',')
+                  .map(l => l.trim().toLowerCase())
+                  .filter(Boolean)
+                if (!login || !allowed.includes(login)) {
+                  res.setHeader('Set-Cookie', clearState)
+                  return redirect('auth=error&msg=unauthorized_user')
+                }
+              } else if (!login) {
+                res.setHeader('Set-Cookie', clearState)
+                return redirect('auth=error&msg=token_exchange_failed')
+              }
+
               const authCookies = makeAuthCookies({
                 access_token: data.access_token!,
                 expires_in: data.expires_in,
                 refresh_token: data.refresh_token,
                 refresh_token_expires_in: data.refresh_token_expires_in,
+                login,
               })
               res.setHeader('Set-Cookie', [clearState, ...authCookies])
               redirect('auth=ok')
@@ -281,12 +333,17 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
             )
             .then(data => {
               if (!data.access_token) {
+                // Opaque error codes + clear cookies on failure (mirrors api/auth/refresh.ts)
+                const rawError = data.error ?? ''
+                const safeCode =
+                  rawError === 'bad_refresh_token' || rawError === 'expired_token'
+                    ? 'token_expired'
+                    : rawError === 'incorrect_client_credentials'
+                      ? 'server_misconfigured'
+                      : 'refresh_failed'
+                res.setHeader('Set-Cookie', clearAuthCookies())
                 res.statusCode = 401
-                res.end(
-                  JSON.stringify({
-                    error: data.error_description ?? data.error ?? 'refresh_failed',
-                  }),
-                )
+                res.end(JSON.stringify({ error: safeCode }))
                 return
               }
               res.setHeader(
@@ -296,6 +353,7 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
                   expires_in: data.expires_in,
                   refresh_token: data.refresh_token,
                   refresh_token_expires_in: data.refresh_token_expires_in,
+                  login: cookies[USER_LOGIN_COOKIE],
                 }),
               )
               res.statusCode = 200
@@ -336,7 +394,13 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
                 return
               }
 
-              if (!path.startsWith('/user') && !path.startsWith('/repos/')) {
+              // Same allowlist as the production proxy (api/github.ts)
+              const ALLOWED_REPO_PREFIX = '/repos/UgurTheG/SPD-Albstadt/'
+              const allowed =
+                path === '/user' ||
+                path === ALLOWED_REPO_PREFIX.slice(0, -1) ||
+                path.startsWith(ALLOWED_REPO_PREFIX)
+              if (!allowed) {
                 res.statusCode = 400
                 res.end(JSON.stringify({ error: 'path_not_allowed' }))
                 return
