@@ -9,10 +9,14 @@ import { rateLimit, getClientIP } from './rateLimit.js'
  * Generates a signed CSRF state, stores it in an HttpOnly cookie,
  * and redirects the user to GitHub's OAuth authorize endpoint.
  */
-export default function handler(_req: VercelRequest, res: VercelResponse) {
+export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
+  if (req.method !== 'GET') {
+    res.status(405).json({ error: 'method_not_allowed' })
+    return
+  }
   // Rate limit: 5 login attempts per IP per minute
-  const ip = getClientIP(_req.headers as Record<string, string | string[] | undefined>)
+  const ip = getClientIP(req.headers as Record<string, string | string[] | undefined>)
   if (!rateLimit(ip, 5, 60_000)) {
     res.status(429).json({ error: 'too_many_requests' })
     return

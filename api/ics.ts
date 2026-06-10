@@ -47,8 +47,9 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8')
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
     res.status(200).end(body)
-  } catch (err) {
+  } catch {
+    // Opaque code only — raw error messages can leak internal hostnames/paths
     res.setHeader('Content-Type', 'application/json')
-    res.status(502).json({ error: err instanceof Error ? err.message : 'Unknown error' })
+    res.status(502).json({ error: 'upstream_error' })
   }
 }
