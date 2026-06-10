@@ -261,6 +261,7 @@ function ImageListItem({
               {...dragListeners}
               className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-400 cursor-grab active:cursor-grabbing transition-colors touch-none"
               title="Ziehen zum Sortieren"
+              aria-label="Ziehen zum Sortieren"
             >
               <GripVertical size={14} />
             </button>
@@ -268,6 +269,7 @@ function ImageListItem({
               type="button"
               disabled={index === 0}
               onClick={onMoveUp}
+              aria-label="Nach oben verschieben"
               className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-spd-red hover:bg-spd-red/10 disabled:opacity-25 disabled:hover:text-gray-400 disabled:hover:bg-transparent transition-all"
             >
               <ArrowUp size={13} />
@@ -276,6 +278,7 @@ function ImageListItem({
               type="button"
               disabled={index >= total - 1}
               onClick={onMoveDown}
+              aria-label="Nach unten verschieben"
               className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-spd-red hover:bg-spd-red/10 disabled:opacity-25 disabled:hover:text-gray-400 disabled:hover:bg-transparent transition-all"
             >
               <ArrowDown size={13} />
@@ -293,6 +296,7 @@ function ImageListItem({
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
+            aria-label="Bild hochladen"
             className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-400 hover:border-spd-red hover:text-spd-red transition-colors shrink-0"
           >
             <ImagePlus size={16} />

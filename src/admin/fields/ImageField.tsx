@@ -31,18 +31,12 @@ export default function ImageField({ field, value, onChange, contextItem }: Prop
   const [showUrl, setShowUrl] = useState(!value)
   // Track the previous value as state so we can sync derived state when value
   // changes externally (undo / redo / item switch) without accessing a ref during render.
+  // Internal changes (typing in the URL input, crop upload) update prevValue themselves
+  // so this block doesn't hide the URL input or overwrite the local preview mid-edit.
   const [prevValue, setPrevValue] = useState(value)
-  // Tracks the URL of our own pending upload to avoid overwriting its local preview
-  const [ownUploadUrl, setOwnUploadUrl] = useState<string | null>(null)
-
-  // Sync preview and showUrl when value changes externally (undo / redo / item switch)
   if (prevValue !== value) {
     setPrevValue(value)
-    if (value !== ownUploadUrl) {
-      setPreview(resolvePreview(value || ''))
-    } else {
-      setOwnUploadUrl(null)
-    }
+    setPreview(resolvePreview(value || ''))
     setShowUrl(!value)
   }
 
@@ -61,7 +55,7 @@ export default function ImageField({ field, value, onChange, contextItem }: Prop
     const imageDir = field.imageDir || 'news'
     const ghFilePath = `public/images/${imageDir}/${nameSlug}.webp`
     const publicUrl = `/images/${imageDir}/${nameSlug}.webp`
-    setOwnUploadUrl(publicUrl)
+    setPrevValue(publicUrl)
     addPendingUpload({
       ghPath: ghFilePath,
       base64,
@@ -88,6 +82,7 @@ export default function ImageField({ field, value, onChange, contextItem }: Prop
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
+                aria-label="Bild ersetzen"
                 className="absolute inset-0 bg-black/0 group-hover:bg-black/40 rounded-2xl transition-all flex items-center justify-center text-transparent group-hover:text-white"
               >
                 <Upload size={18} />
@@ -130,8 +125,9 @@ export default function ImageField({ field, value, onChange, contextItem }: Prop
             autoCapitalize="off"
             autoCorrect="off"
             onChange={e => {
+              setPrevValue(e.target.value)
               onChange(e.target.value)
-              setPreview(e.target.value)
+              setPreview(resolvePreview(e.target.value))
             }}
           />
         )}

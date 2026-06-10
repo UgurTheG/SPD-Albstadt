@@ -20,6 +20,10 @@ import {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
 
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'method_not_allowed' })
+  }
+
   // Only allow same-origin requests
   const origin = req.headers['origin'] ?? ''
   if (origin && !isAllowedOrigin(origin)) {

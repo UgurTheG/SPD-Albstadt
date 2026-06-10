@@ -76,6 +76,7 @@ export default function KommunalpolitikEditor() {
             onClick={() => update({ sichtbar: !data.sichtbar })}
             className={`shrink-0 transition-colors ${data.sichtbar ? 'text-spd-red' : 'text-gray-300 dark:text-gray-600'}`}
             title={data.sichtbar ? 'Ausblenden' : 'Einblenden'}
+            aria-label={data.sichtbar ? 'Ausblenden' : 'Einblenden'}
           >
             {data.sichtbar ? (
               <ToggleRight size={36} strokeWidth={1.5} />
@@ -147,6 +148,7 @@ export default function KommunalpolitikEditor() {
                     type="button"
                     onClick={() => toggleJahrAktiv(jahr.id)}
                     title={jahr.aktiv ? 'Ausblenden' : 'Einblenden'}
+                    aria-label={jahr.aktiv ? 'Jahr ausblenden' : 'Jahr einblenden'}
                     className={`shrink-0 transition-colors ${jahr.aktiv ? 'text-spd-red' : 'text-gray-300 dark:text-gray-600'}`}
                   >
                     {jahr.aktiv ? (
@@ -176,12 +178,14 @@ export default function KommunalpolitikEditor() {
                     onClick={() => removeJahr(jahr.id)}
                     className="shrink-0 w-7 h-7 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
                     title="Jahr löschen"
+                    aria-label="Jahr löschen"
                   >
                     <Trash2 size={13} />
                   </button>
                   <button
                     type="button"
                     onClick={() => toggleExpand(jahr.id)}
+                    aria-label={expanded ? 'Jahr einklappen' : 'Jahr ausklappen'}
                     className="shrink-0 w-7 h-7 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all"
                   >
                     {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
@@ -416,6 +420,7 @@ function DokumentRow({
           onClick={onRemove}
           className="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
           title="Entfernen"
+          aria-label="Dokument entfernen"
         >
           <Trash2 size={13} />
         </button>

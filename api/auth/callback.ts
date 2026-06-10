@@ -5,6 +5,11 @@ import { rateLimit, getClientIP } from './rateLimit.js'
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
 
+  if (req.method !== 'GET') {
+    res.status(405).json({ error: 'method_not_allowed' })
+    return
+  }
+
   // Rate limit: 10 callback attempts per IP per minute to prevent code stuffing.
   const ip = getClientIP(req.headers as Record<string, string | string[] | undefined>)
   if (!rateLimit(ip, 10, 60_000)) {

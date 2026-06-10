@@ -12,6 +12,7 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import {
+  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
@@ -33,6 +34,15 @@ export default function ArrayEditor({ fields, data, tabKey, onStructureChange }:
   const updateState = useAdminStore(s => s.updateState)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [filter, setFilter] = useState('')
+
+  // Stable UUIDs for sortable/React keys — most data items carry no `id` field,
+  // and index-based ids would misattach card UI state after remove/reorder.
+  // Every local mutation updates the id array in tandem with the data; external
+  // length changes (undo/redo/revert/discard) are re-synced during render.
+  const [ids, setIds] = useState<string[]>(() => data.map(() => crypto.randomUUID()))
+  if (ids.length !== data.length) {
+    setIds(data.map((_, i) => ids[i] ?? crypto.randomUUID()))
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -60,6 +70,7 @@ export default function ArrayEditor({ fields, data, tabKey, onStructureChange }:
   }
 
   const handleMove = (from: number, to: number) => {
+    setIds(arrayMove(ids, from, to))
     const newArr = [...data]
     const [moved] = newArr.splice(from, 1)
     newArr.splice(to, 0, moved)
@@ -67,6 +78,7 @@ export default function ArrayEditor({ fields, data, tabKey, onStructureChange }:
   }
 
   const handleRemove = (index: number) => {
+    setIds(ids.filter((_, i) => i !== index))
     const newArr = data.filter((_, i) => i !== index)
     commitArray(newArr)
   }
@@ -82,11 +94,9 @@ export default function ArrayEditor({ fields, data, tabKey, onStructureChange }:
     if (data.length > 0 && data[0] && 'uuid' in data[0]) {
       newItem.uuid = crypto.randomUUID?.() ?? String(Date.now())
     }
+    setIds([...ids, crypto.randomUUID()])
     commitArray([...data, newItem])
   }
-
-  // Generate stable IDs for sortable
-  const ids = data.map((item, i) => (item.id as string) || `item-${i}`)
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string)
