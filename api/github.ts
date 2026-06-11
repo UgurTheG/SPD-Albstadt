@@ -15,12 +15,35 @@ import { parseCookies, isAllowedOrigin, ACCESS_TOKEN_COOKIE } from './auth/cooki
 // (emails, repos, etc.) — only the exact /user identity endpoint is needed.
 const ALLOWED_REPO_PREFIX = '/repos/UgurTheG/SPD-Albstadt/'
 
-function isAllowedPath(path: string): boolean {
-  return (
-    path === '/user' ||
-    path === ALLOWED_REPO_PREFIX.slice(0, -1) ||
-    path.startsWith(ALLOWED_REPO_PREFIX)
-  )
+/**
+ * Resolve the proxied path against the GitHub API origin and validate the
+ * *normalized* pathname. Validating the raw string is unsafe: the URL parser
+ * collapses `..` segments, so a string that passes a naive `startsWith` check
+ * (e.g. `/repos/UgurTheG/SPD-Albstadt/../../../user/emails`) can resolve to a
+ * completely different endpoint. Returns the safe request URL, or null if the
+ * path is not allowed.
+ */
+function resolveAllowedUrl(path: string): string | null {
+  if (typeof path !== 'string' || !path.startsWith('/')) return null
+
+  let resolved: URL
+  try {
+    resolved = new URL(path, 'https://api.github.com')
+  } catch {
+    return null
+  }
+
+  // Reject anything that escaped the api.github.com origin.
+  if (resolved.origin !== 'https://api.github.com') return null
+
+  const pathname = resolved.pathname
+  const allowed =
+    pathname === '/user' ||
+    pathname === ALLOWED_REPO_PREFIX.slice(0, -1) ||
+    pathname.startsWith(ALLOWED_REPO_PREFIX)
+  if (!allowed) return null
+
+  return resolved.toString()
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -59,7 +82,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'invalid_method' })
   }
 
-  if (!isAllowedPath(path)) {
+  const requestUrl = resolveAllowedUrl(path)
+  if (!requestUrl) {
     return res.status(400).json({ error: 'path_not_allowed' })
   }
 
@@ -81,7 +105,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       fetchOpts.body = JSON.stringify(body)
     }
 
-    const ghRes = await fetch(`https://api.github.com${path}`, fetchOpts)
+    const ghRes = await fetch(requestUrl, fetchOpts)
 
     // Forward GitHub's status code and body
     const contentType = ghRes.headers.get('content-type') ?? ''
