@@ -22,6 +22,8 @@ function getIcsUrl(): string {
 }
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
+  // Never cache proxy responses — error codes and feed contents must always be fresh.
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
   // Allow cross-origin requests so the frontend on Hostinger can call this endpoint.
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
@@ -45,7 +47,6 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
     const body = await upstream.text()
 
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8')
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
     res.status(200).end(body)
   } catch {
     // Opaque code only — raw error messages can leak internal hostnames/paths
