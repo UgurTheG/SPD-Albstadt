@@ -56,6 +56,7 @@ export default function ItemCardBody({
             <button
               type="button"
               onClick={() => onMove(index, index - 1)}
+              aria-label="Nach oben verschieben"
               className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-xl bg-gray-100/80 dark:bg-gray-800/60 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700 transition-all"
             >
               <ChevronUp size={14} />
@@ -65,6 +66,7 @@ export default function ItemCardBody({
             <button
               type="button"
               onClick={() => onMove(index, index + 1)}
+              aria-label="Nach unten verschieben"
               className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-xl bg-gray-100/80 dark:bg-gray-800/60 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700 transition-all"
             >
               <ChevronDown size={14} />
@@ -73,6 +75,7 @@ export default function ItemCardBody({
           <button
             type="button"
             onClick={onRemove}
+            aria-label="Entfernen"
             className="h-7 sm:h-8 bg-red-50/80 dark:bg-red-900/15 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 px-2 sm:px-3 rounded-xl transition-all text-[10px] sm:text-xs font-medium flex items-center gap-1 sm:gap-1.5 ml-0.5 sm:ml-1"
           >
             <Trash2 size={12} /> <span className="hidden sm:inline">Entfernen</span>

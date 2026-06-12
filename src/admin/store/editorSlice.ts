@@ -272,6 +272,8 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
         redoStacks: { ...prev.redoStacks, [tabKey]: [] },
       }
     })
+    // Reset the debounce clock so the first edit after a revert is undoable.
+    lastUndoPush[tabKey] = 0
     persistPendingUploads(keptForPersist)
     get().setStatus('Änderungen verworfen.', 'info')
   },

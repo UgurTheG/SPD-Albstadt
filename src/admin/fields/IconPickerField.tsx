@@ -21,10 +21,14 @@ export default function IconPickerField({ id, value, onChange }: Props) {
   const [pos, setPos] = useState({ top: 0, left: 0, width: 0 })
 
   useEffect(() => {
-    if (value)
-      loadIconSvg(value).then(svg => {
-        if (svg) setSvgHtml(svg)
-      })
+    if (!value) return
+    let active = true
+    loadIconSvg(value).then(svg => {
+      if (active && svg) setSvgHtml(svg)
+    })
+    return () => {
+      active = false
+    }
   }, [value])
 
   useEffect(() => {
@@ -131,9 +135,13 @@ function IconCell({
 }) {
   const [svg, setSvg] = useState('')
   useEffect(() => {
+    let active = true
     loadIconSvg(name).then(s => {
-      if (s) setSvg(s)
+      if (active && s) setSvg(s)
     })
+    return () => {
+      active = false
+    }
   }, [name])
   return (
     <button

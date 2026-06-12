@@ -60,6 +60,51 @@ function itemLabel(
   return `#${fallbackIndex + 1}`
 }
 
+/** A stable identity for an array item, or undefined when none can be derived.
+ *  Mirrors itemLabel's preference order but never falls back to the index. */
+function stableIdentity(
+  fields: FieldConfig[],
+  item: Record<string, unknown> | undefined,
+): string | undefined {
+  if (!item) return undefined
+  const byKey = (k: string) =>
+    typeof item[k] === 'string' && (item[k] as string).trim()
+      ? (item[k] as string).trim()
+      : undefined
+  const preferred = byKey('name') || byKey('titel') || byKey('jahr')
+  if (preferred) return preferred
+  for (const f of fields) {
+    if (f.type === 'text' || f.type === 'email' || f.type === 'url') {
+      const v = byKey(f.key)
+      if (v) return v
+    }
+  }
+  return undefined
+}
+
+/**
+ * Whether two array items at the same index represent the same logical item
+ * (edited in place) rather than two different items that happen to share a slot
+ * after an insert/remove shifted positions.
+ *
+ * Positional field-diff pairing is only safe for same-index items because
+ * applyRevert reads the original and writes the current value at one shared
+ * path index. Pairing two genuinely different items would leak field values
+ * between them on revert, so we gate it on identity (then on field similarity
+ * for items that carry no stable identity field).
+ */
+function isSameItem(
+  fields: FieldConfig[],
+  o: Record<string, unknown> | undefined,
+  c: Record<string, unknown> | undefined,
+): boolean {
+  if (!o || !c) return false
+  const io = stableIdentity(fields, o)
+  const ic = stableIdentity(fields, c)
+  if (io !== undefined && ic !== undefined) return io === ic
+  return fields.some(f => eq(o[f.key], c[f.key]))
+}
+
 function diffFields(
   fields: FieldConfig[],
   original: Record<string, unknown> | undefined,
@@ -214,6 +259,10 @@ function diffArray(
     if (origUsed.has(i)) continue // original item lives on at another index
     const o = orig[i] as Record<string, unknown> | undefined
     const c = curr[i] as Record<string, unknown> | undefined
+    // Only field-diff when both slots hold the same logical item. Otherwise an
+    // insert/remove has shifted positions and these are different items — leave
+    // them to the added/removed passes so revert never mixes their fields.
+    if (!isSameItem(fields, o, c)) continue
     origPaired.add(i)
     currPaired.add(i)
     diffFields(fields, o, c, [...basePath, i], group, groupKey, i, itemLabel(fields, c, i), out)

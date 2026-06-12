@@ -172,6 +172,34 @@ describe('diffTab (array type)', () => {
     expect(entries[0].itemIndex).toBe(0)
   })
 
+  it('does not scramble fields when an insert shifts an edited item', () => {
+    const original = [
+      { name: 'Alice', value: 'x' },
+      { name: 'Bob', value: 'y' },
+    ]
+    const current = [
+      { name: 'Neu', value: 'n' },
+      { name: 'Alice', value: 'xx' }, // Alice edited and shifted down by the insert
+      { name: 'Bob', value: 'y' },
+    ]
+    const entries = diffTab(arrayTab, original, current)
+    // No modified entry may pair two different items — that would leak a field
+    // value from the wrong item and corrupt data on revert.
+    expect(entries.every(e => e.kind !== 'modified')).toBe(true)
+    // Reverting any single change must never produce a hybrid item mixing one
+    // item's identity with another item's field value.
+    for (const entry of entries) {
+      const reverted = applyRevert(arrayTab, original, current, entry) as {
+        name: string
+        value: string
+      }[]
+      expect(reverted.some(it => it.name === 'Neu' && it.value !== 'n')).toBe(false)
+      expect(
+        reverted.some(it => it.name === 'Alice' && it.value !== 'x' && it.value !== 'xx'),
+      ).toBe(false)
+    }
+  })
+
   it('still reports a genuine reorder as moved', () => {
     const original = [
       { name: 'Alice', value: 'x' },

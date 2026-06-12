@@ -143,6 +143,20 @@ describe('threeWayMerge — arrays with id fields', () => {
     expect(result.find(i => i.id === 2)).toBeUndefined() // Bob removed
   })
 
+  it('we delete an item, they edit it — conflict, their edit preserved (not silently dropped)', () => {
+    const original = [alice, bob]
+    const ours = [alice] // we deleted Bob
+    const theirs = [alice, { ...bob, role: 'superadmin' }] // they edited Bob
+    const { merged, conflicts } = threeWayMerge(original, ours, theirs)
+    const result = merged as typeof ours
+    // A delete-vs-edit is a real conflict — it must surface, not vanish silently.
+    expect(conflicts).toHaveLength(1)
+    expect(conflicts[0].ours).toBeUndefined()
+    expect((conflicts[0].theirs as { role: string }).role).toBe('superadmin')
+    // Their edit is kept in the merged default so no data is lost without a choice.
+    expect(result.find(i => i.id === 2)?.role).toBe('superadmin')
+  })
+
   it('they add a new item, we did not touch array — their addition kept', () => {
     const original = [alice]
     const ours = [alice] // unchanged

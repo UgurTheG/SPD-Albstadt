@@ -311,6 +311,7 @@ function StringListField({
           />
           <button
             type="button"
+            aria-label="Eintrag entfernen"
             className="text-xs text-gray-300 group-hover:text-red-400 hover:text-red-600! px-2 rounded-lg transition-colors"
             onClick={() => {
               const n = [...list]
