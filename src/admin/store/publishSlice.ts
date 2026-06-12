@@ -133,10 +133,18 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
                 await get().publishTab(tabKey, orphansToDelete, true)
                 return
               } else {
-                // Conflicts — surface merge modal with partially-merged draft
+                // Conflicts — surface merge modal with partially-merged draft.
+                // Advance baseCommitSha to the fresh tip (mirroring the clean-merge
+                // branch) so the republish after manual resolution commits against
+                // the current remote instead of conflicting again — a second conflict
+                // would collapse threeWayMerge(resolved, resolved, theirs) to `theirs`
+                // and silently discard the user's choices.
                 get().updateState(tabKey, merged)
+                const { getBranchSha } = await import('../lib/github')
+                const freshSha = await getBranchSha()
                 set(prev => ({
                   originalState: { ...prev.originalState, [tabKey]: latest },
+                  baseCommitSha: freshSha,
                   mergeConflicts: conflicts,
                   mergeConflictTabKey: tabKey,
                 }))

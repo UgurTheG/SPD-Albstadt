@@ -153,10 +153,22 @@ function mergeArraysById(
 
     if (!ourItem) {
       // We deleted this item; theirs still has it.
-      // If we explicitly removed it (it was in original), keep deletion.
-      // If it was never in original (they added it), keep theirs'.
-      if (!orig) result.push(theirItem) // new item added by them
-      // else: we deleted it — omit (our delete wins)
+      if (!orig) {
+        result.push(theirItem) // new item added by them — keep it
+      } else if (!deepEq(orig, theirItem)) {
+        // Delete-vs-edit: we removed it but they changed it. This is a real
+        // conflict — surface it instead of silently dropping their edit. We keep
+        // their version in the merged result (the modal default) and let the user
+        // choose to re-delete it via "Meine Version".
+        conflicts.push({
+          path: [...path, String(id)],
+          label: pathLabel([...path, String(id)]),
+          ours: undefined,
+          theirs: theirItem,
+        })
+        result.push(theirItem)
+      }
+      // else: they didn't touch it — our delete wins (omit)
     } else {
       // Both sides have it — recursively merge the object
       const base = orig ?? ({} as IdObject)

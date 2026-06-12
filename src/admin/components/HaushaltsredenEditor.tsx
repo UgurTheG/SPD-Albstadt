@@ -222,11 +222,15 @@ export default function HaushaltsredenEditor() {
                         >
                           <Eye size={10} /> Ansehen
                         </a>
-                        <label className="text-[10px] font-semibold px-2.5 py-2 rounded-xl bg-gray-100/80 dark:bg-gray-800/60 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all cursor-pointer flex items-center">
+                        <label
+                          title="PDF ersetzen"
+                          className="text-[10px] font-semibold px-2.5 py-2 rounded-xl bg-gray-100/80 dark:bg-gray-800/60 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all cursor-pointer flex items-center"
+                        >
                           <RefreshCw size={10} />
                           <input
                             type="file"
                             accept=".pdf"
+                            aria-label={`PDF für ${year} ersetzen`}
                             className="hidden"
                             onChange={e => {
                               if (e.target.files?.[0]) uploadPdf(year, e.target.files[0])
@@ -236,6 +240,7 @@ export default function HaushaltsredenEditor() {
                         <button
                           type="button"
                           onClick={() => requestDelete(year)}
+                          aria-label={`PDF für ${year} löschen`}
                           className="text-[10px] font-semibold px-2.5 py-2 rounded-xl bg-red-50/80 dark:bg-red-900/15 text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all"
                         >
                           <Trash2 size={10} />

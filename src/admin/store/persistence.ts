@@ -126,6 +126,12 @@ export function restoreDrafts(
  * or explicit reset). Uses the same DRAFT_KEY as persistDirtyState.
  */
 export function removeDraft(tabKey: string) {
+  // Cancel any in-flight debounced write — its closure captured the pre-publish
+  // state and would otherwise resurrect the draft we are about to remove.
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
   try {
     const raw = localStorage.getItem(DRAFT_KEY)
     if (!raw) return

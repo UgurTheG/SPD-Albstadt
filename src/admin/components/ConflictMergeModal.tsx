@@ -6,7 +6,7 @@
  * with "Keep mine" / "Keep theirs" buttons.  Once all conflicts are resolved
  * the "Veröffentlichen" button becomes available.
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AlertTriangle, CheckCircle2, GitMerge, User } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { MergeConflict } from '../lib/merge'
@@ -33,6 +33,20 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
 
   // Track which value the user picks for each conflict: 'ours' | 'theirs'
   const [choices, setChoices] = useState<Record<number, 'ours' | 'theirs'>>({})
+
+  // Escape-to-close + body scroll lock, matching the other admin modals.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handler)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', handler)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [onClose])
 
   const allResolved = conflicts.every((_, i) => choices[i] !== undefined)
   const tab = TABS.find(t => t.key === tabKey)

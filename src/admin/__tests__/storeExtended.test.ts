@@ -419,6 +419,20 @@ describe('publishSlice — conflict auto-merge retry', () => {
     expect(useAdminStore.getState().statusType).toBe('error')
     expect(useAdminStore.getState().publishing).toBe(false)
   })
+
+  it('advances baseCommitSha when surfacing conflicts so the republish does not re-conflict', async () => {
+    vi.mocked(commitTree).mockRejectedValueOnce(new ConflictError())
+    // Their published version changed the same field differently → real conflict
+    vi.mocked(getFileContent).mockResolvedValue([{ titel: 'theirs' }])
+    await useAdminStore.getState().publishTab('news')
+    const st = useAdminStore.getState()
+    expect(st.mergeConflicts?.length).toBeGreaterThan(0)
+    // Was 'oldsha'; must advance to the fresh branch tip (mocked getBranchSha),
+    // otherwise the post-resolution republish commits against a stale SHA and
+    // conflicts again — collapsing to theirs and discarding the user's choices.
+    expect(st.baseCommitSha).toBe('abc123')
+    expect(st.publishing).toBe(false)
+  })
 })
 
 // ── publishSlice — stale pending uploads ──────────────────────────────────────
