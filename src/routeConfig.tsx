@@ -63,14 +63,12 @@ export const ROUTES: RouteEntry[] = [
   },
   { path: '/impressum', title: 'SPD Albstadt / Impressum', depth: 1, element: <Impressum /> },
   // Error pages
-  ...ERROR_CODES.map(
-    (code): RouteEntry => ({
-      path: `/${code}`,
-      title: `SPD Albstadt / ${code}`,
-      depth: 1,
-      element: <ErrorPage code={code} />,
-    }),
-  ),
+  ...ERROR_CODES.map((code): RouteEntry => ({
+    path: `/${code}`,
+    title: `SPD Albstadt / ${code}`,
+    depth: 1,
+    element: <ErrorPage code={code} />,
+  })),
 ]
 
 /** Catch-all 404 route — rendered outside the config loop. */
