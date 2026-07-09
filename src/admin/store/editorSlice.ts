@@ -3,7 +3,8 @@ import type { AdminState } from './index'
 import type { PendingUpload, TabConfig } from '../types'
 import type { ChangeEntry } from '../lib/diff'
 import { applyRevert } from '../lib/diff'
-import { collectImagePaths } from '../lib/images'
+import { collectAllReferencedPaths, collectImagePaths } from '../lib/images'
+import { deepClone } from '../lib/json'
 import { getBranchSha } from '../lib/github'
 import { TABS } from '../config/tabs'
 import {
@@ -19,6 +20,22 @@ import {
 
 const UNDO_LIMIT = 50
 const UNDO_DEBOUNCE = 600 // ms
+
+/**
+ * Per-tab cache for the JSON dirty comparison. Store updates are immutable
+ * (every edit replaces the tab's value), so reference equality of the current
+ * and original values is a safe cache key — only the tab that actually changed
+ * is re-serialised, instead of stringifying every tab on every store update.
+ */
+const dirtyJsonCache = new Map<string, { cur: unknown; orig: unknown; dirty: boolean }>()
+
+function isTabJsonDirty(tabKey: string, cur: unknown, orig: unknown): boolean {
+  const cached = dirtyJsonCache.get(tabKey)
+  if (cached && cached.cur === cur && cached.orig === orig) return cached.dirty
+  const dirty = JSON.stringify(cur) !== JSON.stringify(orig)
+  dirtyJsonCache.set(tabKey, { cur, orig, dirty })
+  return dirty
+}
 
 // ─── Slice interface ───────────────────────────────────────────────────────────
 
@@ -74,7 +91,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
     const dirty = new Set<string>()
     for (const tab of TABS) {
       if (!tab.file) continue
-      if (JSON.stringify(s[tab.key]) !== JSON.stringify(os[tab.key])) {
+      if (isTabJsonDirty(tab.key, s[tab.key], os[tab.key])) {
         dirty.add(tab.key)
       }
     }
@@ -134,20 +151,33 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
         }
       }),
     ])
-    const original = JSON.parse(JSON.stringify(newState))
+    const original = deepClone(newState)
     // Restore any saved drafts from localStorage
     const merged = restoreDrafts(newState, original)
+    // Prune pending uploads that nothing references any more — e.g. their
+    // draft was discarded (TTL expiry or the original changed remotely).
+    // Without this they would keep the tab marked dirty while the diff shows
+    // no changes. Uploads for tabs that failed to load are kept: their
+    // references may live in the data we could not fetch.
+    const referenced = collectAllReferencedPaths(merged)
+    const keptUploads = get().pendingUploads.filter(
+      u =>
+        referenced.has(u.ghPath.replace(/^public/, '')) ||
+        (u.tabKey !== undefined && failedTabs.includes(u.tabKey)),
+    )
     try {
       set({
         state: merged,
         originalState: original,
         dataLoaded: true,
         dataLoadErrors: failedTabs,
+        pendingUploads: keptUploads,
         undoStacks: {},
         redoStacks: {},
         baseCommitSha: branchSha,
         remoteSha: '', // clear stale-data flag on successful reload
       })
+      persistPendingUploads(keptUploads)
     } catch {
       // Fallback: mark all file-backed tabs as failed rather than hanging forever
       set({ dataLoaded: true, dataLoadErrors: TABS.filter(t => t.file).map(t => t.key) })
@@ -170,7 +200,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
     if (now - lastPush > UNDO_DEBOUNCE) {
       const stack = [...(prev.undoStacks[tabKey] || [])]
       if (prev.state[tabKey] !== undefined) {
-        stack.push(JSON.parse(JSON.stringify(prev.state[tabKey])))
+        stack.push(deepClone(prev.state[tabKey]))
       }
       if (stack.length > UNDO_LIMIT) stack.shift()
       newUndoStacks = { ...prev.undoStacks, [tabKey]: stack }
@@ -191,7 +221,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
     if (stack.length === 0) return
     const snapshot = stack.pop()!
     const redoStack = [...(prev.redoStacks[tabKey] || [])]
-    redoStack.push(JSON.parse(JSON.stringify(prev.state[tabKey])))
+    redoStack.push(deepClone(prev.state[tabKey]))
     const newState = { ...prev.state, [tabKey]: snapshot }
     set({
       state: newState,
@@ -207,7 +237,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
     if (stack.length === 0) return
     const snapshot = stack.pop()!
     const undoStack = [...(prev.undoStacks[tabKey] || [])]
-    undoStack.push(JSON.parse(JSON.stringify(prev.state[tabKey])))
+    undoStack.push(deepClone(prev.state[tabKey]))
     const newState = { ...prev.state, [tabKey]: snapshot }
     set({
       state: newState,
@@ -221,7 +251,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
     set(prev => ({
       pendingUploads: [
         ...prev.pendingUploads,
-        { ...upload, tabKey: upload.tabKey ?? prev.activeTab },
+        { ...upload, tabKey: upload.tabKey ?? prev.activeTab, savedAt: Date.now() },
       ],
     }))
     persistPendingUploads(get().pendingUploads)
@@ -231,7 +261,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
     set(prev => ({
       originalState: {
         ...prev.originalState,
-        [tabKey]: JSON.parse(JSON.stringify(prev.state[tabKey])),
+        [tabKey]: deepClone(prev.state[tabKey]),
       },
       undoStacks: { ...prev.undoStacks, [tabKey]: [] },
       redoStacks: { ...prev.redoStacks, [tabKey]: [] },
@@ -246,7 +276,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
       const orig = prev.originalState[tabKey]
       const nextState = {
         ...prev.state,
-        [tabKey]: orig === undefined ? prev.state[tabKey] : JSON.parse(JSON.stringify(orig)),
+        [tabKey]: orig === undefined ? prev.state[tabKey] : deepClone(orig),
       }
       const allPaths = new Set<string>()
       for (const tab of TABS) {
@@ -314,7 +344,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
       persistDirtyState(nextState, prev.originalState)
       // Push current state onto undo stack so the revert itself is undoable
       const undoStack = [...(prev.undoStacks[tabKey] || [])]
-      undoStack.push(JSON.parse(JSON.stringify(prev.state[tabKey])))
+      undoStack.push(deepClone(prev.state[tabKey]))
       if (undoStack.length > UNDO_LIMIT) undoStack.shift()
       return {
         state: nextState,

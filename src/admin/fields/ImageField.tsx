@@ -3,6 +3,7 @@ import { ImagePlus, Link as LinkIcon, Upload } from 'lucide-react'
 import type { FieldConfig } from '../types'
 import { useAdminStore } from '../store'
 import CropOverlay from '../components/CropOverlay'
+import { resolvePendingPreview } from '../lib/images'
 import { inputCls } from '../lib/inputCls'
 
 interface Props {
@@ -17,13 +18,9 @@ export default function ImageField({ field, value, onChange, contextItem }: Prop
   const setStatus = useAdminStore(s => s.setStatus)
   const pendingUploads = useAdminStore(s => s.pendingUploads)
 
-  // Returns the base64 data URI if this URL is a pending (not-yet-uploaded) image,
-  // otherwise returns the URL itself. Fixes preview loss on component remount.
-  const resolvePreview = (url: string) => {
-    if (!url) return ''
-    const match = pendingUploads.find(u => u.ghPath.replace(/^public/, '') === url)
-    return match ? `data:image/webp;base64,${match.base64}` : url
-  }
+  // Resolves pending (not-yet-uploaded) images to their base64 data URI so
+  // the preview survives component remounts.
+  const resolvePreview = (url: string) => resolvePendingPreview(pendingUploads, url)
 
   const [preview, setPreview] = useState(() => resolvePreview(value || ''))
   const [cropFile, setCropFile] = useState<File | null>(null)

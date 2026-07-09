@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand'
 import type { AdminState } from './index'
+import { getBranchSha, hasDataChanges } from '../lib/github'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -22,8 +23,6 @@ export interface PresenceSlice {
   remoteSha: string
   /** Polling interval handle (POST heartbeat, always 30 s) */
   _presenceTimer: ReturnType<typeof setInterval> | null
-  /** @deprecated kept for compatibility — always POLL_INTERVAL_IDLE_MS now */
-  _presenceInterval: number
   /** Last presence-version received from the server */
   _lastPresenceVersion: number
   /** Fast version-check timer handle (500 ms, only while other users are present) */
@@ -60,7 +59,6 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
   presenceUsers: [],
   remoteSha: '',
   _presenceTimer: null,
-  _presenceInterval: POLL_INTERVAL_IDLE_MS,
   _lastPresenceVersion: 0,
   _versionTimer: null,
 
@@ -103,7 +101,6 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
 
     // Also check if the remote branch SHA has moved (someone else published)
     try {
-      const { getBranchSha, hasDataChanges } = await import('../lib/github')
       const remoteSha = await getBranchSha()
       const { baseCommitSha: base } = get()
       if (remoteSha && base && remoteSha !== base) {
@@ -175,7 +172,7 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
       void get().reportPresence()
     }, POLL_INTERVAL_IDLE_MS)
 
-    set({ _presenceTimer: timer, _presenceInterval: POLL_INTERVAL_IDLE_MS })
+    set({ _presenceTimer: timer })
 
     // Re-report immediately when the user returns to this browser tab so
     // presence data is never stale after backgrounding.
@@ -206,7 +203,6 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
       set({
         _presenceTimer: null,
         _versionTimer: null,
-        _presenceInterval: POLL_INTERVAL_IDLE_MS,
         _lastPresenceVersion: 0,
         presenceUsers: [],
         remoteSha: '',

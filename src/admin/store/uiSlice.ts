@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand'
 import type { AdminState } from './index'
+import { DARK_MODE_STORAGE_KEY, readDarkModePreference } from '@/utils/darkMode'
 
 // ─── Slice interface ───────────────────────────────────────────────────────────
 
@@ -12,19 +13,10 @@ export interface UISlice {
   setStatus: (msg: string, type: 'info' | 'success' | 'error') => void
 }
 
-// ─── Storage key ──────────────────────────────────────────────────────────────
-
-const DARK_KEY = 'spd-darkmode'
-
 // ─── Slice creator ────────────────────────────────────────────────────────────
 
 export const createUISlice: StateCreator<AdminState, [], [], UISlice> = set => ({
-  darkMode: (() => {
-    const pref = localStorage.getItem(DARK_KEY)
-    if (pref === 'true') return true
-    if (pref === 'false') return false
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-  })(),
+  darkMode: readDarkModePreference(),
   statusMessage: '',
   statusType: 'info',
   statusCounter: 0,
@@ -32,7 +24,7 @@ export const createUISlice: StateCreator<AdminState, [], [], UISlice> = set => (
   toggleDark: () => {
     set(prev => {
       const next = !prev.darkMode
-      localStorage.setItem(DARK_KEY, String(next))
+      localStorage.setItem(DARK_MODE_STORAGE_KEY, String(next))
       // DOM sync (document.documentElement.classList) is handled by the
       // useEffect in AdminApp — keeping side-effects out of store actions.
       return { darkMode: next }

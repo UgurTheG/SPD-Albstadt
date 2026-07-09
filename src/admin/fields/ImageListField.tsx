@@ -29,6 +29,7 @@ import { CSS } from '@dnd-kit/utilities'
 import type { FieldConfig } from '../types'
 import { useAdminStore } from '../store'
 import CropOverlay from '../components/CropOverlay'
+import { resolvePendingPreview } from '../lib/images'
 import { inputCls } from '../lib/inputCls'
 
 interface Props {
@@ -59,11 +60,7 @@ export default function ImageListField({ field, value, onChange, contextItem }: 
 
   // Resolve a not-yet-uploaded image to its base64 payload so the preview
   // doesn't 404 before the pending upload is published (mirrors ImageField).
-  const resolvePreview = (url: string) => {
-    if (!url) return url
-    const match = pendingUploads.find(u => u.ghPath.replace(/^public/, '') === url)
-    return match ? `data:image/webp;base64,${match.base64}` : url
-  }
+  const resolvePreview = (url: string) => resolvePendingPreview(pendingUploads, url)
   const [cropData, setCropData] = useState<{ file: File; index: number; nameSlug: string } | null>(
     null,
   )

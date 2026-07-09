@@ -1,3 +1,6 @@
+import type { PendingUpload, TabConfig } from '../types'
+import { TABS } from '../config/tabs'
+
 export function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -58,7 +61,9 @@ export function collectImagePaths(
       }
     }
   } else if (tabConfig.type === 'array' && tabConfig.fields) {
-    scanFields(tabConfig.fields, data as unknown as Record<string, unknown>[])
+    if (Array.isArray(data)) {
+      scanFields(tabConfig.fields, data as unknown as Record<string, unknown>[])
+    }
   } else {
     if (tabConfig.topFields) {
       scanFields(tabConfig.topFields, [data])
@@ -77,4 +82,29 @@ export function collectImagePaths(
     }
   }
   return paths
+}
+
+/** Collect every image/document path referenced by any tab's current data. */
+export function collectAllReferencedPaths(state: Record<string, unknown>): Set<string> {
+  const paths = new Set<string>()
+  for (const tab of TABS) {
+    if (!tab.file || !state[tab.key]) continue
+    for (const p of collectImagePaths(
+      tab as TabConfig,
+      state[tab.key] as Record<string, unknown>,
+    )) {
+      paths.add(p)
+    }
+  }
+  return paths
+}
+
+/**
+ * Resolve a not-yet-uploaded image URL to its base64 data URI so previews
+ * don't 404 before the pending upload is published.
+ */
+export function resolvePendingPreview(pendingUploads: PendingUpload[], url: string): string {
+  if (!url) return url
+  const match = pendingUploads.find(u => u.ghPath.replace(/^public/, '') === url)
+  return match ? `data:image/webp;base64,${match.base64}` : url
 }

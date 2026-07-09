@@ -224,6 +224,19 @@ export async function commitTree(
   return newCommitData
 }
 
+/**
+ * Check whether a file currently exists in the repo. Used to filter orphan
+ * deletions: a tree entry that deletes a never-committed path (e.g. a manually
+ * entered URL) makes GitHub reject the entire tree commit with a 422.
+ */
+export async function fileExists(filePath: string): Promise<boolean> {
+  const res = await ghFetch(
+    'GET',
+    `${repoBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`,
+  )
+  return res.ok
+}
+
 export async function listDirectory(dirPath: string) {
   const res = await ghFetch(
     'GET',

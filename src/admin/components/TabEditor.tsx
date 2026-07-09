@@ -8,6 +8,7 @@ import TabEditorShell from './TabEditorShell'
 import { CollapsibleSection } from './CollapsibleSection'
 import { useUndoRedoShortcuts } from '../hooks/useUndoRedoShortcuts'
 import { useTabPublisher } from '../hooks/useTabPublisher'
+import { deepClone } from '../lib/json'
 
 interface Props {
   tab: TabConfig
@@ -76,14 +77,14 @@ function ObjectEditor({ tab, data }: { tab: TabConfig; data: Record<string, unkn
   const updateState = useAdminStore(s => s.updateState)
 
   const updateField = (key: string, value: unknown, extras?: Record<string, unknown>) => {
-    const clone = JSON.parse(JSON.stringify(data))
+    const clone = deepClone(data)
     clone[key] = value
     if (extras) Object.assign(clone, extras)
     updateState(tab.key, clone)
   }
 
   const updateSection = (sectionKey: string, value: unknown) => {
-    const clone = JSON.parse(JSON.stringify(data))
+    const clone = deepClone(data)
     clone[sectionKey] = value
     updateState(tab.key, clone)
   }
