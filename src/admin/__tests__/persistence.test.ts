@@ -64,6 +64,22 @@ describe('persistPendingUploads / restorePendingUploads', () => {
     localStorage.setItem(PENDING_KEY, 'not-json')
     expect(restorePendingUploads()).toEqual([])
   })
+
+  it('discards uploads older than the 7-day TTL and prunes storage', () => {
+    const eightDaysAgo = Date.now() - 8 * 24 * 60 * 60 * 1000
+    const fresh = { ...upload, savedAt: Date.now() }
+    const stale = { ...upload, ghPath: 'public/images/old.webp', savedAt: eightDaysAgo }
+    persistPendingUploads([fresh, stale])
+
+    expect(restorePendingUploads()).toEqual([fresh])
+    // Storage itself is pruned so the stale entry doesn't come back next time
+    expect(JSON.parse(localStorage.getItem(PENDING_KEY)!)).toEqual([fresh])
+  })
+
+  it('keeps uploads without a savedAt timestamp (pre-TTL persistence format)', () => {
+    persistPendingUploads([upload])
+    expect(restorePendingUploads()).toEqual([upload])
+  })
 })
 
 describe('removeDraft', () => {

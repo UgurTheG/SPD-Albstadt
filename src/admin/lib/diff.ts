@@ -1,7 +1,9 @@
 import type { FieldConfig, TabConfig } from '../types'
 import { KOMMUNALPOLITIK_PERSON_FIELDS } from '../config/tabs'
+import type { JsonPath } from './json'
+import { deepClone, deepEqual, getAtPath, setAtPath } from './json'
 
-type ChangePath = (string | number)[]
+type ChangePath = JsonPath
 
 type ChangeKind = 'modified' | 'added' | 'removed' | 'moved'
 
@@ -30,38 +32,8 @@ export interface ChangeEntry {
   pendingImagePath?: string
 }
 
-const eq = (a: unknown, b: unknown): boolean => {
-  if (a === b) return true
-  if (a == null || b == null) return a === b
-  if (typeof a !== typeof b) return false
-  if (typeof a === 'object') return JSON.stringify(a) === JSON.stringify(b)
-  return false
-}
-
-function itemLabel(
-  fields: FieldConfig[],
-  item: Record<string, unknown> | undefined,
-  fallbackIndex: number,
-): string {
-  if (!item) return `#${fallbackIndex + 1}`
-  const byKey = (k: string) =>
-    typeof item[k] === 'string' && (item[k] as string).trim()
-      ? (item[k] as string).trim()
-      : undefined
-  const preferred = byKey('name') || byKey('titel') || byKey('jahr')
-  if (preferred) return preferred
-  // fall back to the first text-like field that has a value
-  for (const f of fields) {
-    if (f.type === 'text' || f.type === 'email' || f.type === 'url') {
-      const v = byKey(f.key)
-      if (v) return v
-    }
-  }
-  return `#${fallbackIndex + 1}`
-}
-
 /** A stable identity for an array item, or undefined when none can be derived.
- *  Mirrors itemLabel's preference order but never falls back to the index. */
+ *  Prefers name-like keys, then the first text-like field with a value. */
 function stableIdentity(
   fields: FieldConfig[],
   item: Record<string, unknown> | undefined,
@@ -80,6 +52,14 @@ function stableIdentity(
     }
   }
   return undefined
+}
+
+function itemLabel(
+  fields: FieldConfig[],
+  item: Record<string, unknown> | undefined,
+  fallbackIndex: number,
+): string {
+  return stableIdentity(fields, item) ?? `#${fallbackIndex + 1}`
 }
 
 /**
@@ -102,7 +82,7 @@ function isSameItem(
   const io = stableIdentity(fields, o)
   const ic = stableIdentity(fields, c)
   if (io !== undefined && ic !== undefined) return io === ic
-  return fields.some(f => eq(o[f.key], c[f.key]))
+  return fields.some(f => deepEqual(o[f.key], c[f.key]))
 }
 
 function diffFields(
@@ -121,14 +101,14 @@ function diffFields(
   for (const f of fields) {
     const before = orig[f.key]
     const after = curr[f.key]
-    if (eq(before, after)) continue
+    if (deepEqual(before, after)) continue
     const fieldPath: ChangePath = [...basePath, f.key]
     // Track companion keys (e.g. captionsKey for imagelist) so revert handles both
     const companionPaths: ChangePath[] = []
     if (f.captionsKey) {
       const capBefore = orig[f.captionsKey]
       const capAfter = curr[f.captionsKey]
-      if (!eq(capBefore, capAfter)) {
+      if (!deepEqual(capBefore, capAfter)) {
         companionPaths.push([...basePath, f.captionsKey])
       }
     }
@@ -170,7 +150,7 @@ function diffArray(
   for (let ci = 0; ci < curr.length; ci++) {
     for (let oi = 0; oi < orig.length; oi++) {
       if (origUsed.has(oi)) continue
-      if (eq(orig[oi], curr[ci])) {
+      if (deepEqual(orig[oi], curr[ci])) {
         currToOrig.set(ci, oi)
         origUsed.add(oi)
         break
@@ -619,14 +599,14 @@ export function applyRevert(
   currentRoot: unknown,
   entry: ChangeEntry,
 ): unknown {
-  const next = clone(currentRoot)
+  const next = deepClone(currentRoot)
   if (entry.kind === 'modified') {
     const beforeValue = getAtPath(originalRoot, entry.path)
-    setAtPath(next, entry.path, clone(beforeValue))
+    setAtPath(next, entry.path, deepClone(beforeValue))
     // Also revert companion paths (e.g. captionsKey for the imagelist)
     if (entry.companionPaths) {
       for (const cp of entry.companionPaths) {
-        setAtPath(next, cp, clone(getAtPath(originalRoot, cp)))
+        setAtPath(next, cp, deepClone(getAtPath(originalRoot, cp)))
       }
     }
     return next
@@ -636,11 +616,11 @@ export function applyRevert(
     const parentPath = entry.path.slice(0, -1)
     if (parentPath.length === 0) {
       // Top-level array tab — return the original root directly
-      return clone(originalRoot)
+      return deepClone(originalRoot)
     }
     const origArr = getAtPath(originalRoot, parentPath) as unknown[]
     if (Array.isArray(origArr)) {
-      setAtPath(next, parentPath, clone(origArr))
+      setAtPath(next, parentPath, deepClone(origArr))
     }
     return next
   }
@@ -667,7 +647,7 @@ export function applyRevert(
     if (parentPath.length === 0) {
       // Top-level array — splice directly on next
       if (Array.isArray(next)) {
-        next.splice(Math.min(idx, next.length), 0, clone(entry.before))
+        next.splice(Math.min(idx, next.length), 0, deepClone(entry.before))
       }
       return next
     }
@@ -676,42 +656,10 @@ export function applyRevert(
       arr = []
       setAtPath(next, parentPath, arr)
     }
-    ;(arr as unknown[]).splice(Math.min(idx, (arr as unknown[]).length), 0, clone(entry.before))
+    ;(arr as unknown[]).splice(Math.min(idx, (arr as unknown[]).length), 0, deepClone(entry.before))
     return next
   }
   return next
-}
-
-function clone<T>(v: T): T {
-  return v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T)
-}
-
-function getAtPath(root: unknown, path: ChangePath): unknown {
-  let cur: unknown = root
-  for (const seg of path) {
-    if (cur == null) return undefined
-    cur = (cur as Record<string | number, unknown>)[seg as never]
-  }
-  return cur
-}
-
-function setAtPath(root: unknown, path: ChangePath, value: unknown): void {
-  if (path.length === 0) return
-  let cur: unknown = root
-  for (let i = 0; i < path.length - 1; i++) {
-    const seg = path[i]
-    const next = (cur as Record<string | number, unknown>)[seg as never]
-    if (next == null) {
-      const followSeg = path[i + 1]
-      const created: unknown = typeof followSeg === 'number' ? [] : {}
-      ;(cur as Record<string | number, unknown>)[seg as never] = created as never
-      cur = created
-    } else {
-      cur = next
-    }
-  }
-  const last = path[path.length - 1]
-  ;(cur as Record<string | number, unknown>)[last as never] = value as never
 }
 
 // ── Shared grouping helper (used by TabEditor, GlobalDiffModal, PublishConfirmModal) ──

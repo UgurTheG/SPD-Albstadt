@@ -12,6 +12,7 @@ interface Props {
 export default function CropOverlay({ file, onComplete }: Props) {
   const [imgSrc, setImgSrc] = useState('')
   const [loadError, setLoadError] = useState(false)
+  const [encodeError, setEncodeError] = useState(false)
   const [crop, setCrop] = useState<Crop>()
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>()
   const imgRef = useRef<HTMLImageElement>(null)
@@ -63,7 +64,15 @@ export default function CropOverlay({ file, onComplete }: Props) {
         canvas.width,
         canvas.height,
       )
-    onComplete(canvas.toDataURL('image/webp', 0.9).split(',')[1])
+    const dataUrl = canvas.toDataURL('image/webp', 0.9)
+    // Browsers without WebP canvas encoding (e.g. older Safari) silently fall
+    // back to PNG — committing that as a .webp file would serve a mislabelled
+    // image forever, so refuse instead.
+    if (!dataUrl.startsWith('data:image/webp')) {
+      setEncodeError(true)
+      return
+    }
+    onComplete(dataUrl.split(',')[1])
   }, [completedCrop, onComplete])
 
   const canExport = (completedCrop?.width ?? 0) > 0 && (completedCrop?.height ?? 0) > 0
@@ -88,13 +97,19 @@ export default function CropOverlay({ file, onComplete }: Props) {
 
       {/* Stage */}
       <div className="flex-1 overflow-auto flex items-center justify-center p-4 bg-[#111]">
-        {loadError ? (
+        {loadError || encodeError ? (
           <div className="flex flex-col items-center justify-center gap-3 text-center px-6">
             <ImageIcon size={40} className="text-white/20" />
             <p className="text-white/80 text-sm font-semibold">
-              Dieses Bildformat wird nicht unterstützt.
+              {encodeError
+                ? 'Dein Browser kann Bilder nicht als WebP speichern.'
+                : 'Dieses Bildformat wird nicht unterstützt.'}
             </p>
-            <p className="text-white/45 text-xs">Bitte verwende JPG, PNG, WebP oder GIF.</p>
+            <p className="text-white/45 text-xs">
+              {encodeError
+                ? 'Bitte verwende einen aktuellen Browser (z. B. Chrome, Firefox oder Safari 17+).'
+                : 'Bitte verwende JPG, PNG, WebP oder GIF.'}
+            </p>
             <button
               type="button"
               onClick={() => onComplete(null)}
@@ -127,7 +142,7 @@ export default function CropOverlay({ file, onComplete }: Props) {
         >
           Abbrechen
         </button>
-        {!loadError && (
+        {!loadError && !encodeError && (
           <button
             type="button"
             onClick={exportCrop}

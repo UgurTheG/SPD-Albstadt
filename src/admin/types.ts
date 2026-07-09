@@ -46,6 +46,8 @@ export interface PendingUpload {
   base64: string
   message: string
   tabKey?: string
+  /** When the upload was queued — restores older than the draft TTL are discarded. */
+  savedAt?: number
 }
 
 export interface GHUser {

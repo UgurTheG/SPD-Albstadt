@@ -40,7 +40,7 @@ export function simpleHash(str: string): string {
 
 // ─── Draft persistence ────────────────────────────────────────────────────────
 
-/** Maximum age of a saved draft before it is discarded on restore (7 days). */
+/** Maximum age of a saved draft or pending upload before it is discarded on restore (7 days). */
 const DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
 /** Debounced — writes changed tabs to localStorage after 1 s of inactivity. */
@@ -161,7 +161,15 @@ export function persistPendingUploads(uploads: PendingUpload[]) {
 export function restorePendingUploads(): PendingUpload[] {
   try {
     const raw = localStorage.getItem(PENDING_KEY)
-    return raw ? (JSON.parse(raw) as PendingUpload[]) : []
+    if (!raw) return []
+    const uploads = JSON.parse(raw) as PendingUpload[]
+    // Apply the same TTL as drafts — an upload whose draft has expired would
+    // otherwise linger forever and keep its tab marked dirty with no visible
+    // change in the diff panels.
+    const now = Date.now()
+    const fresh = uploads.filter(u => u.savedAt === undefined || now - u.savedAt <= DRAFT_TTL_MS)
+    if (fresh.length !== uploads.length) persistPendingUploads(fresh)
+    return fresh
   } catch {
     return []
   }

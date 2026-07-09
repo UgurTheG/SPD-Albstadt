@@ -142,7 +142,7 @@ When the admin needs the same type as a public section (e.g. `KommunalpolitikPer
 - Use `describe` + `it` with clear English descriptions
 - Mock at the boundary (GitHub API, fetch, browser APIs) — never mock the code under test
 - Do not test implementation details — test behaviour and return values
-- Aim to keep all 39 test files passing; never reduce the test count without a clear reason
+- Aim to keep all 43 test files passing; never reduce the test count without a clear reason
 
 ---
 

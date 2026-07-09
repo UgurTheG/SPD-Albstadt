@@ -2,12 +2,37 @@ import type { StateCreator } from 'zustand'
 import type { AdminState } from './index'
 import type { PendingUpload, TabConfig } from '../types'
 import type { TreeFileChange } from '../lib/github'
-import { AuthError, ConflictError, commitTree, getFileContent } from '../lib/github'
-import { collectImagePaths } from '../lib/images'
+import {
+  AuthError,
+  ConflictError,
+  commitTree,
+  fileExists,
+  getBranchSha,
+  getFileContent,
+} from '../lib/github'
+import { collectAllReferencedPaths, collectImagePaths } from '../lib/images'
 import { TABS } from '../config/tabs'
 import { persistPendingUploads } from './persistence'
 import { threeWayMerge } from '../lib/merge'
 import type { MergeConflict } from '../lib/merge'
+
+/**
+ * Build tree deletions for confirmed orphan images, skipping paths that don't
+ * exist in the repo — deleting a never-committed path (e.g. a manually entered
+ * URL) would make GitHub reject the whole tree commit with a 422.
+ */
+async function collectOrphanDeletions(
+  orphansToDelete: string[] | undefined,
+): Promise<TreeFileChange[]> {
+  if (!orphansToDelete || orphansToDelete.length === 0) return []
+  const checks = await Promise.all(
+    orphansToDelete.map(async imgPath => ({
+      imgPath,
+      exists: await fileExists('public' + imgPath),
+    })),
+  )
+  return checks.filter(c => c.exists).map(c => ({ path: 'public' + c.imgPath, delete: true }))
+}
 
 // ─── Slice interface ───────────────────────────────────────────────────────────
 
@@ -34,22 +59,25 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
   mergeConflictTabKey: null,
 
   applyMergeResolution: (tabKey, resolved) => {
-    // Update state + clear conflicts, then re-trigger publish
+    // Apply the resolved draft and clear the conflict UI. The originalState
+    // baseline was already advanced to the remote version when the conflict
+    // was detected, so the tab stays dirty until the follow-up publish
+    // succeeds (resetOriginal). Resetting the baseline here would make a
+    // failed publish look "clean" and strand the resolution as invisible,
+    // unpublished changes.
     get().updateState(tabKey, resolved)
-    // Update originalState baseline to the latest published SHA so the retry
-    // doesn't see a divergence (the merge already incorporated their changes).
-    set(prev => ({
-      mergeConflicts: null,
-      mergeConflictTabKey: null,
-      originalState: { ...prev.originalState, [tabKey]: resolved },
-    }))
+    set({ mergeConflicts: null, mergeConflictTabKey: null })
   },
 
   dismissMergeConflicts: () => set({ mergeConflicts: null, mergeConflictTabKey: null }),
 
   publishTab: async (tabKey, orphansToDelete, retried) => {
     const { state: s, pendingUploads, publishing, dataLoadErrors, baseCommitSha } = get()
-    if (publishing) return
+    // The auto-merge retry runs while the outer call still holds the
+    // publishing flag — skipping the guard there (instead of releasing the
+    // flag before retrying) keeps concurrent publish clicks blocked for the
+    // whole conflict-retry window.
+    if (publishing && !retried) return
     // Internal guard: never publish a tab whose data failed to load
     if (dataLoadErrors.includes(tabKey)) return
     const tab = TABS.find(t => t.key === tabKey)
@@ -63,13 +91,7 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       // Paths referenced by any tab — used to drop stale uploads (e.g. an image
       // that was replaced twice; its first upload is no longer referenced anywhere
       // and would otherwise keep the tab marked dirty forever).
-      const referencedPaths = new Set<string>()
-      for (const t of TABS) {
-        if (!t.file || !s[t.key]) continue
-        for (const p of collectImagePaths(t as TabConfig, s[t.key] as Record<string, unknown>)) {
-          referencedPaths.add(p)
-        }
-      }
+      const referencedPaths = collectAllReferencedPaths(s)
 
       // Collect relevant image uploads
       const otherUploads: PendingUpload[] = []
@@ -86,12 +108,7 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
         // else: stale upload — no tab references its path any more; drop it
       }
 
-      // Collect orphan deletions
-      if (orphansToDelete) {
-        for (const imgPath of orphansToDelete) {
-          changes.push({ path: 'public' + imgPath, delete: true })
-        }
-      }
+      changes.push(...(await collectOrphanDeletions(orphansToDelete)))
 
       // Add the JSON data file
       const json = JSON.stringify(s[tabKey], null, 2) + '\n'
@@ -118,18 +135,15 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
                 latest,
               )
               if (conflicts.length === 0) {
-                // Clean merge — update state baseline and retry
+                // Clean merge — update state baseline and retry. The retry
+                // passes `retried: true`, which also skips the publishing
+                // guard so the flag stays held for the whole retry window.
                 get().updateState(tabKey, merged)
-                const { getBranchSha } = await import('../lib/github')
                 const freshSha = await getBranchSha()
                 set(prev => ({
                   originalState: { ...prev.originalState, [tabKey]: latest },
                   baseCommitSha: freshSha,
                 }))
-                // Release the publishing flag before retrying — the recursive
-                // call bails out at its `if (publishing) return` guard otherwise
-                // (this outer call's finally block has not run yet).
-                set({ publishing: false })
                 await get().publishTab(tabKey, orphansToDelete, true)
                 return
               } else {
@@ -140,7 +154,6 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
                 // would collapse threeWayMerge(resolved, resolved, theirs) to `theirs`
                 // and silently discard the user's choices.
                 get().updateState(tabKey, merged)
-                const { getBranchSha } = await import('../lib/github')
                 const freshSha = await getBranchSha()
                 set(prev => ({
                   originalState: { ...prev.originalState, [tabKey]: latest },
@@ -187,13 +200,7 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
     // Collect image uploads — only those still referenced by a tab. Stale
     // uploads (path no longer referenced anywhere) would otherwise be committed
     // as orphaned files; uploads for tabs that failed to load stay pending.
-    const referencedPaths = new Set<string>()
-    for (const t of TABS) {
-      if (!t.file || !s[t.key]) continue
-      for (const p of collectImagePaths(t as TabConfig, s[t.key] as Record<string, unknown>)) {
-        referencedPaths.add(p)
-      }
-    }
+    const referencedPaths = collectAllReferencedPaths(s)
     const keptUploads: PendingUpload[] = []
     for (const upload of pendingUploads) {
       const publicUrl = upload.ghPath.replace(/^public/, '')
@@ -201,13 +208,6 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
         changes.push({ path: upload.ghPath, base64Content: upload.base64 })
       } else if (upload.tabKey !== undefined && dataLoadErrors.includes(upload.tabKey)) {
         keptUploads.push(upload)
-      }
-    }
-
-    // Collect orphan deletions
-    if (orphansToDelete) {
-      for (const imgPath of orphansToDelete) {
-        changes.push({ path: 'public' + imgPath, delete: true })
       }
     }
 
@@ -224,7 +224,7 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       dirtyKeys.push(tabKey)
     }
 
-    if (changes.length === 0) {
+    if (changes.length === 0 && (!orphansToDelete || orphansToDelete.length === 0)) {
       get().setStatus('Nichts zu veröffentlichen.', 'info')
       return
     }
@@ -232,6 +232,15 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
     set({ publishing: true })
     try {
       await get().ensureAuthenticated()
+
+      // Orphan deletions need the existence check against the GitHub API, so
+      // they are collected after authentication.
+      changes.push(...(await collectOrphanDeletions(orphansToDelete)))
+      if (changes.length === 0) {
+        get().setStatus('Nichts zu veröffentlichen.', 'info')
+        return
+      }
+
       // Build a descriptive commit message from file names
       const fileNames = dirtyKeys.map(k => {
         const tab = TABS.find(t => t.key === k)

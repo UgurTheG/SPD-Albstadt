@@ -18,6 +18,8 @@
  * the result is always a valid document even if the user ignores the modal.
  */
 
+import { deepEqual } from './json'
+
 export interface MergeConflict {
   /** JSON path of the conflicting leaf (e.g. ["sections", "header", "title"]) */
   path: (string | number)[]
@@ -49,13 +51,13 @@ function mergeValue(
   path: (string | number)[],
   conflicts: MergeConflict[],
 ): unknown {
-  const oursDiff = !deepEq(original, ours)
-  const theirsDiff = !deepEq(original, theirs)
+  const oursDiff = !deepEqual(original, ours)
+  const theirsDiff = !deepEqual(original, theirs)
 
   if (!oursDiff && !theirsDiff) return original // both unchanged
   if (!oursDiff) return theirs // only they changed
   if (!theirsDiff) return ours // only we changed
-  if (deepEq(ours, theirs)) return ours // both changed to same value (no conflict)
+  if (deepEqual(ours, theirs)) return ours // both changed to same value (no conflict)
 
   // Both changed differently —
 
@@ -155,7 +157,7 @@ function mergeArraysById(
       // We deleted this item; theirs still has it.
       if (!orig) {
         result.push(theirItem) // new item added by them — keep it
-      } else if (!deepEq(orig, theirItem)) {
+      } else if (!deepEqual(orig, theirItem)) {
         // Delete-vs-edit: we removed it but they changed it. This is a real
         // conflict — surface it instead of silently dropping their edit. We keep
         // their version in the merged result (the modal default) and let the user
@@ -186,14 +188,6 @@ function mergeArraysById(
   }
 
   return result
-}
-
-function deepEq(a: unknown, b: unknown): boolean {
-  if (a === b) return true
-  if (a == null || b == null) return a === b
-  if (typeof a !== typeof b) return false
-  if (typeof a === 'object') return JSON.stringify(a) === JSON.stringify(b)
-  return false
 }
 
 function isPlainObject(v: unknown): boolean {

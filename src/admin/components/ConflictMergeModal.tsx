@@ -11,6 +11,7 @@ import { AlertTriangle, CheckCircle2, GitMerge, User } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { MergeConflict } from '../lib/merge'
 import { summarizeValue } from '../lib/diff'
+import { deepClone, setAtPathImmutable } from '../lib/json'
 import { useAdminStore } from '../store'
 import { TABS } from '../config/tabs'
 
@@ -55,11 +56,11 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
     if (!allResolved) return
 
     // Apply user choices onto the currently merged draft in store state
-    let resolved = JSON.parse(JSON.stringify(state[tabKey]))
+    let resolved: unknown = deepClone(state[tabKey])
     for (let i = 0; i < conflicts.length; i++) {
       const c = conflicts[i]
       const choice = choices[i] === 'ours' ? c.ours : c.theirs
-      resolved = setAtPath(resolved, c.path, choice)
+      resolved = setAtPathImmutable(resolved, c.path, choice)
     }
 
     applyMergeResolution(tabKey, resolved)
@@ -214,20 +215,4 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
       </motion.div>
     </div>
   )
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function setAtPath(root: unknown, path: (string | number)[], value: unknown): unknown {
-  if (path.length === 0) return value
-  const next = Array.isArray(root)
-    ? [...(root as unknown[])]
-    : { ...(root as Record<string, unknown>) }
-  const [head, ...rest] = path as [string | number, ...(string | number)[]]
-  ;(next as Record<string | number, unknown>)[head] = setAtPath(
-    (root as Record<string | number, unknown>)[head],
-    rest,
-    value,
-  )
-  return next
 }
