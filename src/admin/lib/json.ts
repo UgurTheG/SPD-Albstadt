@@ -57,6 +57,39 @@ export function setAtPath(root: unknown, path: JsonPath, value: unknown): void {
 }
 
 /**
+ * Returns a copy of `root` with the element at `path` removed — array
+ * elements are spliced out, object keys deleted. Containers along the path
+ * are shallow-copied, everything else is shared. An empty path returns
+ * `undefined` (the root itself is removed).
+ */
+export function deleteAtPathImmutable(root: unknown, path: JsonPath): unknown {
+  if (path.length === 0) return undefined
+  const [head, ...rest] = path as [string | number, ...JsonPath]
+  if (Array.isArray(root)) {
+    const next = [...(root as unknown[])]
+    if (rest.length === 0) {
+      if (typeof head === 'number') next.splice(head, 1)
+      return next
+    }
+    ;(next as Record<number, unknown>)[head as number] = deleteAtPathImmutable(
+      (root as Record<number, unknown>)[head as number],
+      rest,
+    )
+    return next
+  }
+  const next = { ...(root as Record<string, unknown>) }
+  if (rest.length === 0) {
+    delete next[head as string]
+    return next
+  }
+  next[head as string] = deleteAtPathImmutable(
+    (root as Record<string, unknown>)[head as string],
+    rest,
+  )
+  return next
+}
+
+/**
  * Returns a copy of `root` with the value at `path` replaced — containers
  * along the path are shallow-copied, everything else is shared. An empty
  * path returns `value` itself.

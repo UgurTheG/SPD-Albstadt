@@ -18,7 +18,7 @@
  * the result is always a valid document even if the user ignores the modal.
  */
 
-import { deepEqual } from './json'
+import { deepEqual, deleteAtPathImmutable, setAtPathImmutable } from './json'
 
 export interface MergeConflict {
   /** JSON path of the conflicting leaf (e.g. ["sections", "header", "title"]) */
@@ -40,6 +40,45 @@ export function threeWayMerge(original: unknown, ours: unknown, theirs: unknown)
   const conflicts: MergeConflict[] = []
   const merged = mergeValue(original, ours, theirs, [], conflicts)
   return { merged, conflicts }
+}
+
+export type ConflictChoice = 'ours' | 'theirs'
+
+/**
+ * Apply the user's per-conflict choices onto the merged draft.
+ *
+ * A chosen value of `undefined` means "this side deleted the item" — the
+ * element is removed from its parent container instead of being set (setting
+ * `undefined` into an array would publish `null` via JSON.stringify).
+ * Removals are applied after all value replacements, deepest/highest index
+ * first, so a splice never shifts the path of a resolution not yet applied.
+ */
+export function applyConflictResolutions(
+  merged: unknown,
+  conflicts: MergeConflict[],
+  choices: Record<number, ConflictChoice>,
+): unknown {
+  const picked = conflicts.map((c, i) => ({
+    path: c.path,
+    value: choices[i] === 'ours' ? c.ours : c.theirs,
+  }))
+  let resolved = merged
+  for (const { path, value } of picked) {
+    if (value === undefined) continue
+    resolved = setAtPathImmutable(resolved, path, value)
+  }
+  const deletions = picked
+    .filter(p => p.value === undefined)
+    .sort((a, b) => {
+      if (b.path.length !== a.path.length) return b.path.length - a.path.length
+      const ai = a.path.at(-1)
+      const bi = b.path.at(-1)
+      return (typeof bi === 'number' ? bi : 0) - (typeof ai === 'number' ? ai : 0)
+    })
+  for (const { path } of deletions) {
+    resolved = deleteAtPathImmutable(resolved, path)
+  }
+  return resolved
 }
 
 // ─── Internals ────────────────────────────────────────────────────────────────
@@ -146,12 +185,16 @@ function mergeArraysById(
   const result: IdObject[] = []
   const handled = new Set<string | number>()
 
-  // Walk theirs' order first (they published — respect their ordering)
+  // Walk theirs' order first (they published — respect their ordering).
+  // Conflict paths use the item's numeric index in the *merged* result (not the
+  // id): resolutions are applied onto the merged draft via path access, and a
+  // string id segment cannot address an array element.
   for (const theirItem of theirs) {
     const id = theirItem.id
     handled.add(id)
     const orig = origById.get(id)
     const ourItem = oursById.get(id)
+    const itemPath = [...path, result.length]
 
     if (!ourItem) {
       // We deleted this item; theirs still has it.
@@ -163,8 +206,8 @@ function mergeArraysById(
         // their version in the merged result (the modal default) and let the user
         // choose to re-delete it via "Meine Version".
         conflicts.push({
-          path: [...path, String(id)],
-          label: pathLabel([...path, String(id)]),
+          path: itemPath,
+          label: pathLabel(itemPath),
           ours: undefined,
           theirs: theirItem,
         })
@@ -174,7 +217,7 @@ function mergeArraysById(
     } else {
       // Both sides have it — recursively merge the object
       const base = orig ?? ({} as IdObject)
-      const merged = mergeValue(base, ourItem, theirItem, [...path, String(id)], conflicts)
+      const merged = mergeValue(base, ourItem, theirItem, itemPath, conflicts)
       result.push(merged as IdObject)
     }
   }

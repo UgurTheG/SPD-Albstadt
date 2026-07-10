@@ -6,13 +6,15 @@
  * with "Keep mine" / "Keep theirs" buttons.  Once all conflicts are resolved
  * the "Veröffentlichen" button becomes available.
  */
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { AlertTriangle, CheckCircle2, GitMerge, User } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { MergeConflict } from '../lib/merge'
+import type { ConflictChoice, MergeConflict } from '../lib/merge'
+import { applyConflictResolutions } from '../lib/merge'
 import { summarizeValue } from '../lib/diff'
-import { deepClone, setAtPathImmutable } from '../lib/json'
+import { deepClone } from '../lib/json'
 import { useAdminStore } from '../store'
+import { useModalDismiss } from '../hooks/useModalDismiss'
 import { TABS } from '../config/tabs'
 
 interface Props {
@@ -33,21 +35,9 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
   const conflictAuthors = presenceUsers.filter(u => !u.dirtyTabs.includes(tabKey)).map(u => u.login)
 
   // Track which value the user picks for each conflict: 'ours' | 'theirs'
-  const [choices, setChoices] = useState<Record<number, 'ours' | 'theirs'>>({})
+  const [choices, setChoices] = useState<Record<number, ConflictChoice>>({})
 
-  // Escape-to-close + body scroll lock, matching the other admin modals.
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handler)
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      window.removeEventListener('keydown', handler)
-      document.body.style.overflow = prevOverflow
-    }
-  }, [onClose])
+  useModalDismiss(onClose)
 
   const allResolved = conflicts.every((_, i) => choices[i] !== undefined)
   const tab = TABS.find(t => t.key === tabKey)
@@ -56,12 +46,7 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
     if (!allResolved) return
 
     // Apply user choices onto the currently merged draft in store state
-    let resolved: unknown = deepClone(state[tabKey])
-    for (let i = 0; i < conflicts.length; i++) {
-      const c = conflicts[i]
-      const choice = choices[i] === 'ours' ? c.ours : c.theirs
-      resolved = setAtPathImmutable(resolved, c.path, choice)
-    }
+    const resolved = applyConflictResolutions(deepClone(state[tabKey]), conflicts, choices)
 
     applyMergeResolution(tabKey, resolved)
     await publishTab(tabKey)

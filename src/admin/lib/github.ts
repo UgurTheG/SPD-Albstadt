@@ -65,7 +65,20 @@ export async function validateToken() {
   return user as { login: string; avatar_url: string }
 }
 
-export async function commitBinaryFile(filePath: string, base64Content: string, message: string) {
+/** Shape of the GitHub Contents API commit response (PUT/DELETE). The commit
+ *  info lets callers advance the local conflict baseline (`baseCommitSha`)
+ *  after a direct commit so the next Trees-API publish doesn't take a
+ *  needless conflict/auto-merge detour. */
+export interface ContentsCommitResult {
+  content?: { sha?: string } | null
+  commit?: { sha?: string; parents?: { sha: string }[] }
+}
+
+export async function commitBinaryFile(
+  filePath: string,
+  base64Content: string,
+  message: string,
+): Promise<ContentsCommitResult> {
   const existing = await ghFetch(
     'GET',
     `${repoBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`,
@@ -79,17 +92,26 @@ export async function commitBinaryFile(filePath: string, base64Content: string, 
     const err = await res.json()
     throw new Error(err.message || 'Fehler beim Hochladen')
   }
-  return res.json()
+  return res.json() as Promise<ContentsCommitResult>
 }
 
-export async function deleteFile(filePath: string, message: string) {
+export async function deleteFile(
+  filePath: string,
+  message: string,
+): Promise<ContentsCommitResult | undefined> {
   const existing = await ghFetch(
     'GET',
     `${repoBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`,
   )
   if (!existing.ok) return
   const { sha } = await existing.json()
-  await ghFetch('DELETE', `${repoBase()}/contents/${filePath}`, { message, sha, branch: BRANCH })
+  const res = await ghFetch('DELETE', `${repoBase()}/contents/${filePath}`, {
+    message,
+    sha,
+    branch: BRANCH,
+  })
+  if (!res.ok) return
+  return res.json() as Promise<ContentsCommitResult>
 }
 
 export interface TreeFileChange {

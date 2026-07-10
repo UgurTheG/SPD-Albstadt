@@ -6,6 +6,7 @@ import { applyRevert } from '../lib/diff'
 import { collectAllReferencedPaths, collectImagePaths } from '../lib/images'
 import { deepClone } from '../lib/json'
 import { getBranchSha } from '../lib/github'
+import type { ContentsCommitResult } from '../lib/github'
 import { TABS } from '../config/tabs'
 import {
   lastUndoPush,
@@ -63,6 +64,11 @@ export interface EditorSlice {
   undo: (tabKey: string) => void
   redo: (tabKey: string) => void
   addPendingUpload: (upload: PendingUpload) => void
+  /** Advance baseCommitSha after a direct Contents-API commit (PDF upload/
+   *  delete) so the next publish doesn't trip the conflict guard on our own
+   *  commit. Only advances when the commit's parent is the current base —
+   *  if someone else published in between, the conflict guard must stay armed. */
+  advanceBaseSha: (result: ContentsCommitResult | undefined) => void
   resetOriginal: (tabKey: string) => void
   revertTab: (tabKey: string) => void
   revertChange: (tabKey: string, entry: ChangeEntry) => void
@@ -255,6 +261,17 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
       ],
     }))
     persistPendingUploads(get().pendingUploads)
+  },
+
+  advanceBaseSha: result => {
+    const sha = result?.commit?.sha
+    const parents = result?.commit?.parents
+    if (!sha) return
+    set(prev =>
+      prev.baseCommitSha && parents?.some(p => p.sha === prev.baseCommitSha)
+        ? { baseCommitSha: sha }
+        : {},
+    )
   },
 
   resetOriginal: tabKey => {

@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react'
 import { ImagePlus, Link as LinkIcon, Upload } from 'lucide-react'
 import type { FieldConfig } from '../types'
-import { useAdminStore } from '../store'
 import CropOverlay from '../components/CropOverlay'
-import { resolvePendingPreview } from '../lib/images'
+import { useImageUpload } from '../hooks/useImageUpload'
 import { inputCls } from '../lib/inputCls'
 
 interface Props {
@@ -14,13 +13,7 @@ interface Props {
 }
 
 export default function ImageField({ field, value, onChange, contextItem }: Props) {
-  const addPendingUpload = useAdminStore(s => s.addPendingUpload)
-  const setStatus = useAdminStore(s => s.setStatus)
-  const pendingUploads = useAdminStore(s => s.pendingUploads)
-
-  // Resolves pending (not-yet-uploaded) images to their base64 data URI so
-  // the preview survives component remounts.
-  const resolvePreview = (url: string) => resolvePendingPreview(pendingUploads, url)
+  const { resolvePreview, registerUpload } = useImageUpload(field)
 
   const [preview, setPreview] = useState(() => resolvePreview(value || ''))
   const [cropFile, setCropFile] = useState<File | null>(null)
@@ -40,27 +33,10 @@ export default function ImageField({ field, value, onChange, contextItem }: Prop
   const handleCrop = (base64: string | null) => {
     setCropFile(null)
     if (!base64) return
-    // Always append a short timestamp to avoid filename collisions between
-    // people with the same name in the same imageDir (e.g. two "Max Müller"s).
-    const baseName = contextItem?.name
-      ? String(contextItem.name)
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, '')
-      : 'bild'
-    const nameSlug = `${baseName}-${Date.now()}`
-    const imageDir = field.imageDir || 'news'
-    const ghFilePath = `public/images/${imageDir}/${nameSlug}.webp`
-    const publicUrl = `/images/${imageDir}/${nameSlug}.webp`
+    const { publicUrl, previewSrc } = registerUpload(base64, contextItem?.name)
     setPrevValue(publicUrl)
-    addPendingUpload({
-      ghPath: ghFilePath,
-      base64,
-      message: `admin: Bild ${nameSlug}.webp hochgeladen`,
-    })
     onChange(publicUrl)
-    setPreview(`data:image/webp;base64,${base64}`)
-    setStatus('Bild vorbereitet — wird beim Veröffentlichen hochgeladen', 'success')
+    setPreview(previewSrc)
   }
 
   return (

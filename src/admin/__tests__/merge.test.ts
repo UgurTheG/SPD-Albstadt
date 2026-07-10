@@ -3,7 +3,7 @@
  * id-based array merge strategy.
  */
 import { describe, it, expect } from 'vitest'
-import { threeWayMerge } from '../../admin/lib/merge'
+import { applyConflictResolutions, threeWayMerge } from '../../admin/lib/merge'
 
 // ─── Primitives & plain objects ───────────────────────────────────────────────
 
@@ -200,5 +200,81 @@ describe('threeWayMerge — arrays with id fields', () => {
     // Bob comes first (theirs order), then Alice
     expect(result).toHaveLength(2)
     expect(conflicts).toHaveLength(0)
+  })
+})
+
+// ─── Conflict resolution application ─────────────────────────────────────────
+// Regression: conflict paths inside id-carrying arrays used the item *id* as a
+// path segment, which cannot address an array element — applying a resolution
+// either threw or was silently dropped by JSON.stringify. Paths now use the
+// numeric index in the merged result, and applyConflictResolutions handles
+// deletions without writing `undefined` into arrays.
+
+describe('applyConflictResolutions', () => {
+  it('conflict path inside an id array is a numeric index into the merged result', () => {
+    const original = [{ id: 'a', titel: 'Alt' }]
+    const ours = [{ id: 'a', titel: 'Meine Version' }]
+    const theirs = [{ id: 'a', titel: 'Fremde Version' }]
+    const { conflicts } = threeWayMerge(original, ours, theirs)
+    expect(conflicts).toHaveLength(1)
+    expect(conflicts[0].path).toEqual([0, 'titel'])
+  })
+
+  it('applies "ours" onto the merged draft and survives JSON round-trip', () => {
+    const original = [{ id: 'a', titel: 'Alt' }]
+    const ours = [{ id: 'a', titel: 'Meine Version' }]
+    const theirs = [{ id: 'a', titel: 'Fremde Version' }]
+    const { merged, conflicts } = threeWayMerge(original, ours, theirs)
+    const resolved = applyConflictResolutions(merged, conflicts, { 0: 'ours' })
+    expect(JSON.parse(JSON.stringify(resolved))).toEqual([{ id: 'a', titel: 'Meine Version' }])
+  })
+
+  it('nested id arrays resolve at the right depth', () => {
+    const original = { jahre: [{ id: 'j1', jahr: '2024' }] }
+    const ours = { jahre: [{ id: 'j1', jahr: '2024/25' }] }
+    const theirs = { jahre: [{ id: 'j1', jahr: '2024-2025' }] }
+    const { merged, conflicts } = threeWayMerge(original, ours, theirs)
+    expect(conflicts[0].path).toEqual(['jahre', 0, 'jahr'])
+    const resolved = applyConflictResolutions(merged, conflicts, { 0: 'theirs' })
+    expect((resolved as { jahre: { jahr: string }[] }).jahre[0].jahr).toBe('2024-2025')
+  })
+
+  it('delete-vs-edit: picking "ours" removes the item instead of inserting null', () => {
+    const original = [
+      { id: 'a', titel: 'Bleibt' },
+      { id: 'b', titel: 'Alt' },
+    ]
+    const ours = [{ id: 'a', titel: 'Bleibt' }] // we deleted b
+    const theirs = [
+      { id: 'a', titel: 'Bleibt' },
+      { id: 'b', titel: 'Von ihnen geändert' },
+    ]
+    const { merged, conflicts } = threeWayMerge(original, ours, theirs)
+    expect(conflicts).toHaveLength(1)
+    expect(conflicts[0].ours).toBeUndefined()
+
+    const keptDeletion = applyConflictResolutions(merged, conflicts, { 0: 'ours' })
+    expect(JSON.parse(JSON.stringify(keptDeletion))).toEqual([{ id: 'a', titel: 'Bleibt' }])
+
+    const keptTheirs = applyConflictResolutions(merged, conflicts, { 0: 'theirs' })
+    expect(JSON.parse(JSON.stringify(keptTheirs))).toEqual(theirs)
+  })
+
+  it('multiple deletions in one array apply highest index first', () => {
+    const original = [
+      { id: 'a', titel: 'A' },
+      { id: 'b', titel: 'B' },
+      { id: 'c', titel: 'C' },
+    ]
+    const ours = [{ id: 'a', titel: 'A' }] // we deleted b and c
+    const theirs = [
+      { id: 'a', titel: 'A' },
+      { id: 'b', titel: 'B geändert' },
+      { id: 'c', titel: 'C geändert' },
+    ]
+    const { merged, conflicts } = threeWayMerge(original, ours, theirs)
+    expect(conflicts).toHaveLength(2)
+    const resolved = applyConflictResolutions(merged, conflicts, { 0: 'ours', 1: 'ours' })
+    expect(JSON.parse(JSON.stringify(resolved))).toEqual([{ id: 'a', titel: 'A' }])
   })
 })

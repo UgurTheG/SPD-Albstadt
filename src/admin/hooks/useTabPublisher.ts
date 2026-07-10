@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAdminStore } from '../store'
+import { useOrphanGate } from './useOrphanGate'
 
 /**
  * Encapsulates the shared publish flow for a single tab:
@@ -16,7 +17,10 @@ export function useTabPublisher(tabKey: string, filename?: string) {
   const revertTab = useAdminStore(s => s.revertTab)
   const state = useAdminStore(s => s.state)
 
-  const [orphans, setOrphans] = useState<string[] | null>(null)
+  const orphanGate = useOrphanGate(
+    () => findOrphanImagesForTab(tabKey),
+    orphansToDelete => publishTab(tabKey, orphansToDelete),
+  )
   const [showDiff, setShowDiff] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [showPublishConfirm, setShowPublishConfirm] = useState(false)
@@ -25,22 +29,7 @@ export function useTabPublisher(tabKey: string, filename?: string) {
 
   const handlePublishConfirmed = () => {
     setShowPublishConfirm(false)
-    const o = findOrphanImagesForTab(tabKey)
-    if (o.length > 0) {
-      setOrphans(o)
-      return
-    }
-    publishTab(tabKey)
-  }
-
-  const handleOrphanConfirm = (toDelete: string[]) => {
-    setOrphans(null)
-    publishTab(tabKey, toDelete.length > 0 ? toDelete : undefined)
-  }
-
-  const handleOrphanKeep = () => {
-    setOrphans(null)
-    publishTab(tabKey)
+    orphanGate.start()
   }
 
   const handleDownload = () => {
@@ -62,15 +51,15 @@ export function useTabPublisher(tabKey: string, filename?: string) {
 
   return {
     publishing,
-    orphans,
+    orphans: orphanGate.orphans,
     showDiff,
     showPreview,
     showPublishConfirm,
     handlePublish,
     handlePublishConfirmed,
-    handleOrphanConfirm,
-    handleOrphanKeep,
-    handleOrphanCancel: () => setOrphans(null),
+    handleOrphanConfirm: orphanGate.confirm,
+    handleOrphanKeep: orphanGate.keep,
+    handleOrphanCancel: orphanGate.cancel,
     handleDownload,
     handleRevertAndCloseDiff,
     setShowDiff,

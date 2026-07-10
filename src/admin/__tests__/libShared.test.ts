@@ -1,10 +1,11 @@
 /**
  * Tests for the shared admin lib helpers:
- * - lib/json.ts — deepEqual, deepClone, getAtPath, setAtPath, setAtPathImmutable
+ * - lib/json.ts — deepEqual, deepClone, getAtPath, setAtPath, setAtPathImmutable, deleteAtPathImmutable
  * - lib/images.ts — collectAllReferencedPaths, resolvePendingPreview
  */
 import { describe, it, expect } from 'vitest'
 import {
+  deleteAtPathImmutable,
   deepEqual,
   deepClone,
   getAtPath,
@@ -100,6 +101,27 @@ describe('setAtPathImmutable', () => {
     expect(Array.isArray(next.items)).toBe(true)
     expect(next.items[1].v).toBe(5)
     expect(root.items[1].v).toBe(2)
+  })
+})
+
+describe('deleteAtPathImmutable', () => {
+  it('returns undefined for an empty path (root removed)', () => {
+    expect(deleteAtPathImmutable({ a: 1 }, [])).toBeUndefined()
+  })
+
+  it('splices an array element out without leaving a hole', () => {
+    const root = { items: [1, 2, 3] }
+    const next = deleteAtPathImmutable(root, ['items', 1]) as typeof root
+    expect(next.items).toEqual([1, 3])
+    expect(root.items).toEqual([1, 2, 3])
+  })
+
+  it('deletes an object key and shallow-copies containers along the path', () => {
+    const root = { a: { b: 1, c: 2 }, untouched: { d: 3 } }
+    const next = deleteAtPathImmutable(root, ['a', 'b']) as typeof root
+    expect(next.a).toEqual({ c: 2 })
+    expect(next.untouched).toBe(root.untouched)
+    expect(root.a).toEqual({ b: 1, c: 2 })
   })
 })
 

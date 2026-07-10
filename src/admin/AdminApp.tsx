@@ -16,6 +16,7 @@ import ConflictMergeModal from './components/ConflictMergeModal'
 import PresenceBadge from './components/PresenceBadge'
 import { getTabIcon } from './lib/tabIcons'
 import AdminSkeleton from './components/AdminSkeleton'
+import { useOrphanGate } from './hooks/useOrphanGate'
 
 export default function AdminApp() {
   // Actions: Zustand action references are stable — they never change between renders.
@@ -50,7 +51,10 @@ export default function AdminApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showGlobalDiff, setShowGlobalDiff] = useState(false)
   const [showPublishConfirm, setShowPublishConfirm] = useState(false)
-  const [globalOrphans, setGlobalOrphans] = useState<string[] | null>(null)
+  const orphanGate = useOrphanGate(
+    () => useAdminStore.getState().findOrphanImages(),
+    orphansToDelete => publishAll(orphansToDelete),
+  )
 
   useEffect(() => {
     tryAutoLogin()
@@ -124,12 +128,7 @@ export default function AdminApp() {
 
   const handlePublishAllConfirmed = () => {
     setShowPublishConfirm(false)
-    const orphans = useAdminStore.getState().findOrphanImages()
-    if (orphans.length > 0) {
-      setGlobalOrphans(orphans)
-      return
-    }
-    publishAll()
+    orphanGate.start()
   }
 
   return (
@@ -149,18 +148,12 @@ export default function AdminApp() {
           onCancel={() => setShowPublishConfirm(false)}
         />
       )}
-      {globalOrphans && (
+      {orphanGate.orphans && (
         <OrphanModal
-          orphans={globalOrphans}
-          onConfirm={toDelete => {
-            setGlobalOrphans(null)
-            publishAll(toDelete.length > 0 ? toDelete : undefined)
-          }}
-          onKeep={() => {
-            setGlobalOrphans(null)
-            publishAll()
-          }}
-          onCancel={() => setGlobalOrphans(null)}
+          orphans={orphanGate.orphans}
+          onConfirm={orphanGate.confirm}
+          onKeep={orphanGate.keep}
+          onCancel={orphanGate.cancel}
         />
       )}
       {mergeConflicts && mergeConflictTabKey && (

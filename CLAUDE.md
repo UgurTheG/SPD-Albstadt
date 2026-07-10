@@ -162,7 +162,7 @@ When the admin needs the same type as a public section (e.g. `KommunalpolitikPer
 - The `useTabPublisher` hook handles the publish flow; use it instead of calling the GitHub API directly
 - Undo/redo is per-tab via the Zustand store — use `useUndoRedoShortcuts` for keyboard shortcuts
 - Image uploads go through `ImageField` / `ImageListField`; they convert to WebP before committing
-- Presence state (`src/admin/store/presenceSlice.ts`) uses Vercel KV in production — do not add polling; heartbeats are already on a 30-second interval
+- Presence state (`src/admin/store/presenceSlice.ts`) uses Vercel KV in production — do not add new polling loops; the slice already runs a 30-second POST heartbeat plus a lightweight 500 ms version-check GET that is active only while other editors are online
 - Dark mode preference is persisted under the localStorage key **`spd-darkmode`** and is shared between the public site (`src/hooks/useDarkMode.ts`) and the admin store (`uiSlice`). If unset it falls back to `prefers-color-scheme`. Do not change the key — it would reset every user's preference.
 
 ### Admin Zustand store

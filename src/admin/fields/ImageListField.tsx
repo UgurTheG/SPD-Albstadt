@@ -27,9 +27,8 @@ import {
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers'
 import { CSS } from '@dnd-kit/utilities'
 import type { FieldConfig } from '../types'
-import { useAdminStore } from '../store'
 import CropOverlay from '../components/CropOverlay'
-import { resolvePendingPreview } from '../lib/images'
+import { useImageUpload } from '../hooks/useImageUpload'
 import { inputCls } from '../lib/inputCls'
 
 interface Props {
@@ -40,9 +39,7 @@ interface Props {
 }
 
 export default function ImageListField({ field, value, onChange, contextItem }: Props) {
-  const addPendingUpload = useAdminStore(s => s.addPendingUpload)
-  const setStatus = useAdminStore(s => s.setStatus)
-  const pendingUploads = useAdminStore(s => s.pendingUploads)
+  const { resolvePreview, registerUpload } = useImageUpload(field)
   const list = Array.isArray(value) ? [...value] : []
   const captionsKey = field.captionsKey
   const captions: string[] =
@@ -58,12 +55,7 @@ export default function ImageListField({ field, value, onChange, contextItem }: 
     while (captions.length < list.length) captions.push('')
   }
 
-  // Resolve a not-yet-uploaded image to its base64 payload so the preview
-  // doesn't 404 before the pending upload is published (mirrors ImageField).
-  const resolvePreview = (url: string) => resolvePendingPreview(pendingUploads, url)
-  const [cropData, setCropData] = useState<{ file: File; index: number; nameSlug: string } | null>(
-    null,
-  )
+  const [cropData, setCropData] = useState<{ file: File; index: number } | null>(null)
 
   // Build extras object for caption changes — keeps URLs and captions in sync
   // within a single immutable update instead of two separate calls.
@@ -97,21 +89,13 @@ export default function ImageListField({ field, value, onChange, contextItem }: 
 
   const handleCrop = (base64: string | null) => {
     if (!cropData) return
-    const { index, nameSlug } = cropData
+    const { index } = cropData
     setCropData(null)
     if (!base64) return
-    const imageDir = field.imageDir || 'news'
-    const ghFilePath = `public/images/${imageDir}/${nameSlug}.webp`
-    const publicUrl = `/images/${imageDir}/${nameSlug}.webp`
-    addPendingUpload({
-      ghPath: ghFilePath,
-      base64,
-      message: `admin: Bild ${nameSlug}.webp hochgeladen`,
-    })
+    const { publicUrl } = registerUpload(base64)
     const newList = [...list]
     newList[index] = publicUrl
     onChange(newList)
-    setStatus('Bild vorbereitet — wird beim Veröffentlichen hochgeladen', 'success')
   }
 
   return (
@@ -145,7 +129,7 @@ export default function ImageListField({ field, value, onChange, contextItem }: 
                   c[i] = v
                   onChange([...list], withCaps(c))
                 }}
-                onUpload={file => setCropData({ file, index: i, nameSlug: `bild-${Date.now()}` })}
+                onUpload={file => setCropData({ file, index: i })}
                 onRemove={() => {
                   const n = [...list]
                   n.splice(i, 1)

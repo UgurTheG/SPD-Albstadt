@@ -33,6 +33,7 @@ export interface HaushaltsredenEditorState {
 export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
   const ensureAuthenticated = useAdminStore(s => s.ensureAuthenticated)
   const setStatus = useAdminStore(s => s.setStatus)
+  const advanceBaseSha = useAdminStore(s => s.advanceBaseSha)
   const storeData = useAdminStore(
     s => s.state['haushaltsreden'] as { disabledYears?: number[] } | null,
   )
@@ -128,6 +129,7 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
           await fileToBase64(file),
           `admin: Haushaltsrede ${year}.pdf hochgeladen`,
         )
+        advanceBaseSha(result)
         const sha: string = result?.content?.sha ?? 'pending'
         setExistingMap(prev => ({ ...prev, [year]: sha }))
         setStatus(`${year}.pdf erfolgreich hochgeladen!`, 'success')
@@ -138,7 +140,7 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
         setBusy(null)
       }
     },
-    [ensureAuthenticated, load, setStatus],
+    [advanceBaseSha, ensureAuthenticated, load, setStatus],
   )
 
   const deletePdf = useCallback(
@@ -146,10 +148,11 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
       setBusy(year)
       try {
         await ensureAuthenticated()
-        await deleteFile(
+        const result = await deleteFile(
           `public/documents/fraktion/haushaltsreden/${year}.pdf`,
           `admin: Haushaltsrede ${year}.pdf gelöscht`,
         )
+        advanceBaseSha(result)
         setExistingMap(prev => {
           const next = { ...prev }
           delete next[year]
@@ -163,7 +166,7 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
         setBusy(null)
       }
     },
-    [ensureAuthenticated, load, setStatus],
+    [advanceBaseSha, ensureAuthenticated, load, setStatus],
   )
 
   const requestDelete = useCallback((year: number) => setConfirmDeleteYear(year), [])

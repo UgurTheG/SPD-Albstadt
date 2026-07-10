@@ -5,7 +5,9 @@ import { createHmac } from 'node:crypto'
 export const ACCESS_TOKEN_COOKIE = 'spd_access_token'
 export const TOKEN_EXPIRES_COOKIE = 'spd_token_expires_at'
 export const REFRESH_TOKEN_COOKIE = 'spd_refresh_token'
-export const REFRESH_EXPIRES_COOKIE = 'spd_refresh_expires_at'
+/** No longer set — refresh expiry is judged by GitHub server-side. Kept only
+ *  so clearAuthCookies removes the stale cookie from existing sessions. */
+const LEGACY_REFRESH_EXPIRES_COOKIE = 'spd_refresh_expires_at'
 export const STATE_COOKIE = 'spd_oauth_state'
 /** Stores the GitHub username server-side so presence endpoints can bind
  *  identity to the token without trusting client-supplied login values. */
@@ -157,13 +159,6 @@ export function makeAuthCookies(data: {
         path: '/api',
       }),
     )
-    cookies.push(
-      serializeCookie(REFRESH_EXPIRES_COOKIE, {
-        value: String(Date.now() + refreshMax * 1000),
-        maxAge: refreshMax,
-        path: '/api',
-      }),
-    )
   }
 
   return cookies
@@ -175,7 +170,7 @@ export function clearAuthCookies(): string[] {
     clearCookie(ACCESS_TOKEN_COOKIE, '/api'),
     clearCookie(TOKEN_EXPIRES_COOKIE, '/api'),
     clearCookie(REFRESH_TOKEN_COOKIE, '/api'),
-    clearCookie(REFRESH_EXPIRES_COOKIE, '/api'),
+    clearCookie(LEGACY_REFRESH_EXPIRES_COOKIE, '/api'),
     clearCookie(USER_LOGIN_COOKIE, '/api'),
   ]
 }

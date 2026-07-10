@@ -687,13 +687,24 @@ describe('deleteFile', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1)
   })
 
-  it('deletes when file exists', async () => {
+  it('deletes when file exists and returns the commit info', async () => {
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce({ ok: true, json: async () => ({ sha: 'abc' }) } as Response)
-      .mockResolvedValueOnce({ ok: true } as Response)
-    await deleteFile('f', 'm')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ commit: { sha: 'new-tip', parents: [{ sha: 'base' }] } }),
+      } as Response)
+    const result = await deleteFile('f', 'm')
     expect(fetchSpy).toHaveBeenCalledTimes(2)
+    expect(result?.commit?.sha).toBe('new-tip')
+  })
+
+  it('returns undefined when the delete request fails', async () => {
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ sha: 'abc' }) } as Response)
+      .mockResolvedValueOnce({ ok: false } as Response)
+    await expect(deleteFile('f', 'm')).resolves.toBeUndefined()
   })
 })
 

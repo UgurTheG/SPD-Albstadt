@@ -16,6 +16,22 @@ export const KOMMUNALPOLITIK_PERSON_FIELDS: FieldConfig[] = [
   { key: 'bio', label: 'Biografie', type: 'textarea' },
 ]
 
+/** Person fields shared by the two Fraktion sections (Gemeinderäte / Kreisräte) —
+ *  identical except for the image directory, which is passed per section. */
+function fraktionPersonFields(imageDir: string): FieldConfig[] {
+  return [
+    { key: 'name', label: 'Name', type: 'text', required: true },
+    { key: 'beruf', label: 'Beruf', type: 'text' },
+    { key: 'bildUrl', label: 'Bild', type: 'image', imageDir },
+    { key: 'seit', label: 'Im Rat seit', type: 'text' },
+    { key: 'address', label: 'Adresse', type: 'text' },
+    { key: 'zipCode', label: 'PLZ & Ort', type: 'text' },
+    { key: 'email', label: 'E-Mail', type: 'email' },
+    { key: 'ausschuesse', label: 'Ausschüsse', type: 'stringlist' },
+    { key: 'bio', label: 'Biografie', type: 'textarea' },
+  ]
+}
+
 export const TABS: TabConfig[] = [
   // ── Startseite ──────────────────────────────────────────────────────────
   {
@@ -128,32 +144,12 @@ export const TABS: TabConfig[] = [
       {
         key: 'gemeinderaete',
         label: 'Gemeinderäte',
-        fields: [
-          { key: 'name', label: 'Name', type: 'text', required: true },
-          { key: 'beruf', label: 'Beruf', type: 'text' },
-          { key: 'bildUrl', label: 'Bild', type: 'image', imageDir: 'gemeinderaete' },
-          { key: 'seit', label: 'Im Rat seit', type: 'text' },
-          { key: 'address', label: 'Adresse', type: 'text' },
-          { key: 'zipCode', label: 'PLZ & Ort', type: 'text' },
-          { key: 'email', label: 'E-Mail', type: 'email' },
-          { key: 'ausschuesse', label: 'Ausschüsse', type: 'stringlist' },
-          { key: 'bio', label: 'Biografie', type: 'textarea' },
-        ],
+        fields: fraktionPersonFields('gemeinderaete'),
       },
       {
         key: 'kreisraete',
         label: 'Kreisräte',
-        fields: [
-          { key: 'name', label: 'Name', type: 'text', required: true },
-          { key: 'beruf', label: 'Beruf', type: 'text' },
-          { key: 'bildUrl', label: 'Bild', type: 'image', imageDir: 'kreisraete' },
-          { key: 'seit', label: 'Im Rat seit', type: 'text' },
-          { key: 'address', label: 'Adresse', type: 'text' },
-          { key: 'zipCode', label: 'PLZ & Ort', type: 'text' },
-          { key: 'email', label: 'E-Mail', type: 'email' },
-          { key: 'ausschuesse', label: 'Ausschüsse', type: 'stringlist' },
-          { key: 'bio', label: 'Biografie', type: 'textarea' },
-        ],
+        fields: fraktionPersonFields('kreisraete'),
       },
     ],
   },
