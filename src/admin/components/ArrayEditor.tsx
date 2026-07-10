@@ -27,10 +27,13 @@ interface Props {
   fields: FieldConfig[]
   data: Record<string, unknown>[]
   tabKey: string
+  /** Identity keys assigned to new items (from TabConfig/SectionConfig.itemIds).
+   *  Falls back to inferring from the first existing item when omitted. */
+  itemIds?: ('id' | 'uuid')[]
   onStructureChange?: (newArr: Record<string, unknown>[]) => void
 }
 
-export default function ArrayEditor({ fields, data, tabKey, onStructureChange }: Props) {
+export default function ArrayEditor({ fields, data, tabKey, itemIds, onStructureChange }: Props) {
   const updateState = useAdminStore(s => s.updateState)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [filter, setFilter] = useState('')
@@ -85,14 +88,16 @@ export default function ArrayEditor({ fields, data, tabKey, onStructureChange }:
 
   const handleAdd = () => {
     const newItem: Record<string, unknown> = {}
-    for (const f of fields)
-      newItem[f.key] = f.type === 'stringlist' || f.type === 'imagelist' ? [] : ''
-    if (data.length > 0 && data[0] && 'id' in data[0]) {
-      newItem.id = crypto.randomUUID?.() ?? String(Date.now())
+    for (const f of fields) {
+      newItem[f.key] =
+        f.type === 'stringlist' || f.type === 'imagelist' ? [] : f.type === 'toggle' ? false : ''
     }
-    // Auto-assign a stable UUID for deep-linking (separate from the order-number id)
-    if (data.length > 0 && data[0] && 'uuid' in data[0]) {
-      newItem.uuid = crypto.randomUUID?.() ?? String(Date.now())
+    // Identity keys: configured itemIds win; otherwise infer from the first
+    // existing item (inference alone would leave items added to an empty
+    // array without an id, degrading the three-way merge for that array).
+    const identityKeys = itemIds ?? (['id', 'uuid'] as const).filter(k => data[0] && k in data[0])
+    for (const key of identityKeys) {
+      newItem[key] = crypto.randomUUID?.() ?? String(Date.now())
     }
     setIds([...ids, crypto.randomUUID()])
     commitArray([...data, newItem])

@@ -64,6 +64,7 @@ function GenericTabEditor({ tab }: Props) {
           fields={tab.fields}
           data={data as Record<string, unknown>[]}
           tabKey={tab.key}
+          itemIds={tab.itemIds}
         />
       )}
       {tab.type === 'object' && <ObjectEditor tab={tab} data={data as Record<string, unknown>} />}
@@ -160,6 +161,7 @@ function SectionEditor({
         fields={sec.fields}
         data={arr}
         tabKey={tabKey}
+        itemIds={sec.itemIds}
         onStructureChange={newArr => onSectionChange(newArr)}
       />
     </CollapsibleSection>

@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Search } from 'lucide-react'
-import { ICON_LIST, loadIconSvg } from '../lib/icons'
+import { ICONS } from '@/components/sections/Partei/icons'
+
+// The picker offers exactly the icons the public site can render — the map in
+// Partei/icons.ts is the single canonical source for both. Icons render from
+// the bundled lucide-react package; no CDN fetch, no HTML injection.
+const ICON_LIST = Object.keys(ICONS)
 
 const inputCls =
   'w-full bg-white/60 dark:bg-gray-800/40 border border-gray-200/80 dark:border-gray-700/60 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-spd-red/20 focus:border-spd-red/40 focus:bg-white dark:focus:bg-gray-800/80 dark:text-white dark:placeholder-gray-500 transition-all duration-200 backdrop-blur-sm'
@@ -15,21 +20,9 @@ interface Props {
 export default function IconPickerField({ id, value, onChange }: Props) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
-  const [svgHtml, setSvgHtml] = useState('')
   const btnRef = useRef<HTMLButtonElement>(null)
   const dropRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState({ top: 0, left: 0, width: 0 })
-
-  useEffect(() => {
-    if (!value) return
-    let active = true
-    loadIconSvg(value).then(svg => {
-      if (active && svg) setSvgHtml(svg)
-    })
-    return () => {
-      active = false
-    }
-  }, [value])
 
   useEffect(() => {
     if (!open) return
@@ -60,6 +53,7 @@ export default function IconPickerField({ id, value, onChange }: Props) {
   }, [open])
 
   const filtered = ICON_LIST.filter(i => i.toLowerCase().includes(search.toLowerCase()))
+  const SelectedIcon = value ? ICONS[value] : undefined
 
   return (
     <div>
@@ -70,12 +64,10 @@ export default function IconPickerField({ id, value, onChange }: Props) {
         className={inputCls + ' text-left flex items-center gap-2.5 cursor-pointer'}
         onClick={() => setOpen(!open)}
       >
-        {/* SVG is sourced from the lucide-static CDN — a controlled internal source */}
-        {svgHtml && (
-          <span
-            className="w-4 h-4 shrink-0"
-            dangerouslySetInnerHTML={{ __html: svgHtml.replace(/<svg/, '<svg class="w-4 h-4"') }}
-          />
+        {SelectedIcon && (
+          <span className="w-4 h-4 shrink-0 flex items-center">
+            <SelectedIcon size={16} />
+          </span>
         )}
         <span className="truncate">{value || 'Icon wählen…'}</span>
       </button>
@@ -133,16 +125,7 @@ function IconCell({
   selected: boolean
   onSelect: () => void
 }) {
-  const [svg, setSvg] = useState('')
-  useEffect(() => {
-    let active = true
-    loadIconSvg(name).then(s => {
-      if (active && s) setSvg(s)
-    })
-    return () => {
-      active = false
-    }
-  }, [name])
+  const Icon = ICONS[name]
   return (
     <button
       type="button"
@@ -150,13 +133,9 @@ function IconCell({
       title={name}
       onClick={onSelect}
     >
-      {/* SVG is sourced from the lucide-static CDN — a controlled internal source */}
-      {svg && (
-        <span
-          className="w-4 h-4 text-gray-700 dark:text-gray-300"
-          dangerouslySetInnerHTML={{ __html: svg.replace(/<svg/, '<svg class="w-4 h-4"') }}
-        />
-      )}
+      <span className="w-4 h-4 text-gray-700 dark:text-gray-300 flex items-center justify-center">
+        <Icon size={16} />
+      </span>
       <span className="text-[7px] text-gray-400 mt-0.5 leading-tight truncate w-full text-center">
         {name}
       </span>

@@ -40,6 +40,7 @@ export const TABS: TabConfig[] = [
     ghPath: 'public/data/news.json',
     type: 'array',
     previewPath: '/#aktuelles',
+    itemIds: ['uuid'],
     fields: [
       { key: 'datum', label: 'Datum', type: 'date', required: true },
       { key: 'titel', label: 'Titel', type: 'text', required: true },

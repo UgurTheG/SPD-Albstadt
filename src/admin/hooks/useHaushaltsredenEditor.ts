@@ -118,6 +118,14 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
     [storeData, updateState],
   )
 
+  // Direct binary commits advance the branch tip — move the store's
+  // conflict-detection baseline along with it, otherwise the next publish of
+  // any tab hits the conflict guard and runs a needless auto-merge round trip.
+  const advanceBaseCommit = useCallback((result: { commit?: { sha?: string } } | null) => {
+    const commitSha = result?.commit?.sha
+    if (commitSha) useAdminStore.setState({ baseCommitSha: commitSha })
+  }, [])
+
   const uploadPdf = useCallback(
     async (year: number, file: File) => {
       setBusy(year)
@@ -128,6 +136,7 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
           await fileToBase64(file),
           `admin: Haushaltsrede ${year}.pdf hochgeladen`,
         )
+        advanceBaseCommit(result)
         const sha: string = result?.content?.sha ?? 'pending'
         setExistingMap(prev => ({ ...prev, [year]: sha }))
         setStatus(`${year}.pdf erfolgreich hochgeladen!`, 'success')
@@ -138,7 +147,7 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
         setBusy(null)
       }
     },
-    [ensureAuthenticated, load, setStatus],
+    [advanceBaseCommit, ensureAuthenticated, load, setStatus],
   )
 
   const deletePdf = useCallback(
@@ -146,10 +155,11 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
       setBusy(year)
       try {
         await ensureAuthenticated()
-        await deleteFile(
+        const result = await deleteFile(
           `public/documents/fraktion/haushaltsreden/${year}.pdf`,
           `admin: Haushaltsrede ${year}.pdf gelöscht`,
         )
+        advanceBaseCommit(result)
         setExistingMap(prev => {
           const next = { ...prev }
           delete next[year]
@@ -163,7 +173,7 @@ export function useHaushaltsredenEditor(): HaushaltsredenEditorState {
         setBusy(null)
       }
     },
-    [ensureAuthenticated, load, setStatus],
+    [advanceBaseCommit, ensureAuthenticated, load, setStatus],
   )
 
   const requestDelete = useCallback((year: number) => setConfirmDeleteYear(year), [])

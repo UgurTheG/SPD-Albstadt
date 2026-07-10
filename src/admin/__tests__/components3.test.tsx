@@ -28,7 +28,7 @@ vi.mock('../../admin/lib/github', () => {
     AuthError,
     ConflictError,
     getBranchSha: vi.fn().mockResolvedValue('abc123'),
-    hasDataChanges: vi.fn().mockResolvedValue(true),
+    getDataChanges: vi.fn().mockResolvedValue({ changed: true, authors: [] }),
     fileExists: vi.fn().mockResolvedValue(true),
     commitTree: vi.fn().mockResolvedValue({}),
     validateToken: vi.fn().mockResolvedValue({ login: 'testuser', avatar_url: '' }),
@@ -38,11 +38,6 @@ vi.mock('../../admin/lib/github', () => {
     getFileContent: vi.fn().mockResolvedValue(null),
     listDirectory: vi.fn().mockResolvedValue([]),
   }
-})
-
-vi.mock('../../admin/lib/icons', async importOriginal => {
-  const original = await importOriginal<typeof import('../../admin/lib/icons')>()
-  return { ...original, loadIconSvg: vi.fn().mockResolvedValue('<svg><path/></svg>') }
 })
 
 vi.mock('sonner', () => ({
@@ -355,6 +350,44 @@ describe('ArrayEditor — move and add with various field types', () => {
       const newArr = onChange.mock.calls[0][0] as Record<string, unknown>[]
       expect(newArr[newArr.length - 1]).toHaveProperty('id')
     }
+  })
+
+  it('assigns configured itemIds to items added to an EMPTY array', () => {
+    const onChange = vi.fn()
+    const { container } = render(
+      <ArrayEditor
+        fields={fields}
+        data={[]}
+        tabKey="news"
+        itemIds={['uuid']}
+        onStructureChange={onChange}
+      />,
+    )
+    const addBtn = Array.from(container.querySelectorAll('button')).find(b =>
+      b.textContent?.includes('hinzufügen'),
+    )!
+    fireEvent.click(addBtn)
+    const newArr = onChange.mock.calls[0][0] as Record<string, unknown>[]
+    expect(typeof newArr[0].uuid).toBe('string')
+    expect((newArr[0].uuid as string).length).toBeGreaterThan(0)
+    expect(newArr[0]).not.toHaveProperty('id')
+  })
+
+  it('initializes toggle fields to false instead of an empty string', () => {
+    const toggleFields = [
+      { key: 'name', label: 'Name', type: 'text' as const },
+      { key: 'aktiv', label: 'Aktiv', type: 'toggle' as const },
+    ]
+    const onChange = vi.fn()
+    const { container } = render(
+      <ArrayEditor fields={toggleFields} data={[]} tabKey="news" onStructureChange={onChange} />,
+    )
+    const addBtn = Array.from(container.querySelectorAll('button')).find(b =>
+      b.textContent?.includes('hinzufügen'),
+    )!
+    fireEvent.click(addBtn)
+    const newArr = onChange.mock.calls[0][0] as Record<string, unknown>[]
+    expect(newArr[0].aktiv).toBe(false)
   })
 
   it('filter shows matching items only', () => {

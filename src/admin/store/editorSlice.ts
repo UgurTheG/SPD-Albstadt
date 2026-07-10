@@ -176,6 +176,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
         redoStacks: {},
         baseCommitSha: branchSha,
         remoteSha: '', // clear stale-data flag on successful reload
+        remotePublishers: [],
       })
       persistPendingUploads(keptUploads)
     } catch {

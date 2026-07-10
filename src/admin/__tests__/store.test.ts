@@ -26,7 +26,7 @@ vi.mock('../../admin/lib/github', () => {
     AuthError,
     ConflictError,
     getBranchSha: vi.fn().mockResolvedValue('abc123'),
-    hasDataChanges: vi.fn().mockResolvedValue(true),
+    getDataChanges: vi.fn().mockResolvedValue({ changed: true, authors: [] }),
     fileExists: vi.fn().mockResolvedValue(true),
     commitTree: vi.fn().mockResolvedValue({}),
     validateToken: vi.fn().mockResolvedValue({ login: 'testuser', avatar_url: '' }),

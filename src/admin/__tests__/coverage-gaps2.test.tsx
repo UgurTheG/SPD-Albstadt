@@ -28,7 +28,7 @@ vi.mock('../../admin/lib/github', () => {
     AuthError,
     ConflictError,
     getBranchSha: vi.fn().mockResolvedValue('abc123'),
-    hasDataChanges: vi.fn().mockResolvedValue(true),
+    getDataChanges: vi.fn().mockResolvedValue({ changed: true, authors: [] }),
     fileExists: vi.fn().mockResolvedValue(true),
     commitTree: vi.fn().mockResolvedValue({}),
     validateToken: vi.fn().mockResolvedValue({ login: 'testuser', avatar_url: '' }),
@@ -38,11 +38,6 @@ vi.mock('../../admin/lib/github', () => {
     getFileContent: vi.fn().mockResolvedValue(null),
     listDirectory: vi.fn().mockResolvedValue([]),
   }
-})
-
-vi.mock('../../admin/lib/icons', async importOriginal => {
-  const original = await importOriginal<typeof import('../../admin/lib/icons')>()
-  return { ...original, loadIconSvg: vi.fn().mockResolvedValue('<svg><path/></svg>') }
 })
 
 vi.mock('sonner', () => ({
@@ -1719,25 +1714,25 @@ describe('FieldRenderer — additional field types for coverage', () => {
 import IconPickerField from '../../admin/fields/IconPickerField'
 
 describe('IconPickerField — uncovered branches', () => {
-  it('line 26: useEffect skips loadIconSvg when value is empty', async () => {
+  it('renders without a selected icon when value is empty', async () => {
     const { container } = render(<IconPickerField id="test" value="" onChange={vi.fn()} />)
     await act(async () => {
       await new Promise(r => setTimeout(r, 50))
     })
-    expect(container.firstChild).toBeTruthy()
+    expect(container.querySelector('svg')).toBeNull()
+    expect(container.textContent).toContain('Icon wählen')
   })
 
-  it('line 26: loadIconSvg called with value when present', async () => {
-    const { loadIconSvg } = await import('../../admin/lib/icons')
-    const { container } = render(<IconPickerField id="test" value="home" onChange={vi.fn()} />)
+  it('renders the selected icon locally when a value is present', async () => {
+    const { container } = render(<IconPickerField id="test" value="Home" onChange={vi.fn()} />)
     await act(async () => {
-      await new Promise(r => setTimeout(r, 100))
+      await new Promise(r => setTimeout(r, 50))
     })
-    expect(loadIconSvg).toHaveBeenCalledWith('home')
-    expect(container.firstChild).toBeTruthy()
+    expect(container.querySelector('svg')).not.toBeNull()
+    expect(container.textContent).toContain('Home')
   })
 
-  it('lines 33-34: scroll on dropdown closes picker when not inside dropdown', async () => {
+  it('scroll on dropdown closes picker when not inside dropdown', async () => {
     const { container } = render(<IconPickerField id="test" value="" onChange={vi.fn()} />)
     // Open the picker
     const triggerBtn = container.querySelector('button')
@@ -1753,7 +1748,7 @@ describe('IconPickerField — uncovered branches', () => {
     expect(container.firstChild).toBeTruthy()
   })
 
-  it('line 135: IconItem renders with SVG when loadIconSvg resolves', async () => {
+  it('IconCell selection calls onChange', async () => {
     const onChange = vi.fn()
     const { container } = render(<IconPickerField id="test" value="" onChange={onChange} />)
     // Open the dropdown

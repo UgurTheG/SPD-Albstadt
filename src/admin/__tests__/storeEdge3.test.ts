@@ -36,7 +36,7 @@ vi.mock('../../admin/lib/github', () => {
     getFileContent: vi.fn().mockResolvedValue(null),
     listDirectory: vi.fn().mockResolvedValue([]),
     getBranchSha: vi.fn().mockResolvedValue('abc123'),
-    hasDataChanges: vi.fn().mockResolvedValue(true),
+    getDataChanges: vi.fn().mockResolvedValue({ changed: true, authors: [] }),
     fileExists: vi.fn().mockResolvedValue(true),
   }
 })

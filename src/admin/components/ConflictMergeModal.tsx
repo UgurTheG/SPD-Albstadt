@@ -27,10 +27,15 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
   const state = useAdminStore(s => s.state)
   const publishing = useAdminStore(s => s.publishing)
   const presenceUsers = useAdminStore(s => s.presenceUsers)
+  const remotePublishers = useAdminStore(s => s.remotePublishers)
 
-  // Users who likely published the conflicting version:
-  // they are present but no longer have this tab dirty (they published and reset).
-  const conflictAuthors = presenceUsers.filter(u => !u.dirtyTabs.includes(tabKey)).map(u => u.login)
+  // Who published the conflicting version: the commit authors from the compare
+  // API when known; otherwise fall back to the presence heuristic (present
+  // users who no longer have this tab dirty — they published and reset).
+  const conflictAuthors =
+    remotePublishers.length > 0
+      ? remotePublishers
+      : presenceUsers.filter(u => !u.dirtyTabs.includes(tabKey)).map(u => u.login)
 
   // Track which value the user picks for each conflict: 'ours' | 'theirs'
   const [choices, setChoices] = useState<Record<number, 'ours' | 'theirs'>>({})

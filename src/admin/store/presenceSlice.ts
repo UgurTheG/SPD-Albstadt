@@ -1,6 +1,6 @@
 import type { StateCreator } from 'zustand'
 import type { AdminState } from './index'
-import { getBranchSha, hasDataChanges } from '../lib/github'
+import { getBranchSha, getDataChanges } from '../lib/github'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -21,6 +21,8 @@ export interface PresenceSlice {
   presenceUsers: PresenceUser[]
   /** True when the remote branch SHA has advanced past our baseCommitSha */
   remoteSha: string
+  /** GitHub logins that authored the remote data commits (for the stale banner) */
+  remotePublishers: string[]
   /** Polling interval handle (POST heartbeat, always 30 s) */
   _presenceTimer: ReturnType<typeof setInterval> | null
   /** Last presence-version received from the server */
@@ -58,6 +60,7 @@ let _visibilityCleanup: (() => void) | null = null
 export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice> = (set, get) => ({
   presenceUsers: [],
   remoteSha: '',
+  remotePublishers: [],
   _presenceTimer: null,
   _lastPresenceVersion: 0,
   _versionTimer: null,
@@ -108,9 +111,9 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
         // Other commits (CI runs, Vercel deploy bots, code-style fixes, …) must
         // NOT trigger the banner.  If no public/data file was touched we silently
         // advance baseCommitSha so the same commits aren't re-checked next poll.
-        const dataChanged = await hasDataChanges(base, remoteSha)
-        if (dataChanged) {
-          set({ remoteSha })
+        const { changed, authors } = await getDataChanges(base, remoteSha)
+        if (changed) {
+          set({ remoteSha, remotePublishers: authors })
         } else {
           set({ baseCommitSha: remoteSha })
         }
@@ -206,6 +209,7 @@ export const createPresenceSlice: StateCreator<AdminState, [], [], PresenceSlice
         _lastPresenceVersion: 0,
         presenceUsers: [],
         remoteSha: '',
+        remotePublishers: [],
       })
     }
     // Best-effort departure notification (explicit logout — page is still alive,

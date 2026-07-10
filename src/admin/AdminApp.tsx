@@ -38,6 +38,7 @@ export default function AdminApp() {
   const dataLoadErrors = useAdminStore(s => s.dataLoadErrors)
   const presenceUsers = useAdminStore(s => s.presenceUsers)
   const remoteSha = useAdminStore(s => s.remoteSha)
+  const remotePublishers = useAdminStore(s => s.remotePublishers)
   const mergeConflicts = useAdminStore(s => s.mergeConflicts)
   const mergeConflictTabKey = useAdminStore(s => s.mergeConflictTabKey)
   const dismissMergeConflicts = useAdminStore(s => s.dismissMergeConflicts)
@@ -110,10 +111,11 @@ export default function AdminApp() {
   const usersOnCurrentTab = presenceUsers.filter(
     u => u.activeTab === activeTab || u.dirtyTabs.includes(activeTab),
   )
-  // Users who have no dirty tabs — they likely just published and reloaded.
-  // Fall back to all known presence users if none match, so the StaleDataBanner
-  // always shows someone rather than "Ein anderer Benutzer" when users are present.
+  // Who published the remote changes: the commit authors from the compare API
+  // are authoritative; the presence heuristic ("users with no dirty tabs")
+  // remains only as a fallback when the compare response carried no logins.
   const recentPublishers = (() => {
+    if (remotePublishers.length > 0) return remotePublishers
     const cleanUsers = presenceUsers.filter(u => u.dirtyTabs.length === 0).map(u => u.login)
     if (cleanUsers.length > 0) return cleanUsers
     // If everyone still has dirty tabs, at least surface their names

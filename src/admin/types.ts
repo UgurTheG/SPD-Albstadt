@@ -27,6 +27,10 @@ export interface SectionConfig {
   label: string
   fields: FieldConfig[]
   isSingleObject?: boolean
+  /** Identity keys auto-assigned (crypto.randomUUID) to newly added items.
+   *  Declared in config so items added to an EMPTY array still get them —
+   *  inference from existing items has nothing to infer from. */
+  itemIds?: ('id' | 'uuid')[]
 }
 
 export interface TabConfig {
@@ -39,6 +43,8 @@ export interface TabConfig {
   topFields?: FieldConfig[]
   sections?: SectionConfig[]
   previewPath?: string
+  /** Identity keys auto-assigned to newly added items (array tabs) — see SectionConfig.itemIds. */
+  itemIds?: ('id' | 'uuid')[]
 }
 
 export interface PendingUpload {

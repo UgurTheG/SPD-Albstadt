@@ -35,14 +35,9 @@ vi.mock('../../admin/lib/github', () => {
     getFileContent: vi.fn().mockResolvedValue(null),
     listDirectory: vi.fn().mockResolvedValue([]),
     getBranchSha: vi.fn().mockResolvedValue('abc123'),
-    hasDataChanges: vi.fn().mockResolvedValue(true),
+    getDataChanges: vi.fn().mockResolvedValue({ changed: true, authors: [] }),
     fileExists: vi.fn().mockResolvedValue(true),
   }
-})
-
-vi.mock('../../admin/lib/icons', async importOriginal => {
-  const original = await importOriginal<typeof import('../../admin/lib/icons')>()
-  return { ...original, loadIconSvg: vi.fn().mockResolvedValue('<svg><path/></svg>') }
 })
 
 vi.mock('sonner', () => ({

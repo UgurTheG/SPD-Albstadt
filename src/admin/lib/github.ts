@@ -87,9 +87,16 @@ export async function deleteFile(filePath: string, message: string) {
     'GET',
     `${repoBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`,
   )
-  if (!existing.ok) return
+  if (!existing.ok) return null
   const { sha } = await existing.json()
-  await ghFetch('DELETE', `${repoBase()}/contents/${filePath}`, { message, sha, branch: BRANCH })
+  const res = await ghFetch('DELETE', `${repoBase()}/contents/${filePath}`, {
+    message,
+    sha,
+    branch: BRANCH,
+  })
+  // Return the response (contains commit.sha) so callers can advance their
+  // conflict-detection baseline past this direct commit.
+  return res.ok ? res.json() : null
 }
 
 export interface TreeFileChange {
@@ -111,23 +118,37 @@ export async function getBranchSha(): Promise<string> {
 }
 
 /**
- * Returns true if any commit between baseSha (exclusive) and headSha (inclusive)
- * modified a file under `public/data/`.
+ * Compares baseSha (exclusive) to headSha (inclusive) and reports whether any
+ * commit in between modified a file under `public/data/`, plus the GitHub
+ * logins of the commit authors.
  *
- * Used to suppress the "reload" banner when the branch tip advanced only because
- * of CI runs, Vercel deploy commits, dependency bumps, code-style fixes, etc.
- * Falls back to `true` (show the banner) on any API error so we never silently
- * miss a real data change.
+ * `changed` suppresses the "reload" banner when the branch tip advanced only
+ * because of CI runs, Vercel deploy commits, dependency bumps, etc. `authors`
+ * lets the banner name who actually published instead of guessing from
+ * presence data. Falls back to `changed: true` (show the banner) on any API
+ * error so a real data change is never silently missed.
  */
-export async function hasDataChanges(baseSha: string, headSha: string): Promise<boolean> {
-  if (baseSha === headSha) return false
+export async function getDataChanges(
+  baseSha: string,
+  headSha: string,
+): Promise<{ changed: boolean; authors: string[] }> {
+  if (baseSha === headSha) return { changed: false, authors: [] }
   try {
     const res = await ghFetch('GET', `${repoBase()}/compare/${baseSha}...${headSha}`)
-    if (!res.ok) return true // safe fallback: treat as changed
-    const data = (await res.json()) as { files?: { filename: string }[] }
-    return (data.files ?? []).some(f => f.filename.startsWith('public/data/'))
+    if (!res.ok) return { changed: true, authors: [] } // safe fallback: treat as changed
+    const data = (await res.json()) as {
+      files?: { filename: string }[]
+      commits?: { author?: { login?: string } | null }[]
+    }
+    const changed = (data.files ?? []).some(f => f.filename.startsWith('public/data/'))
+    const authors = [
+      ...new Set(
+        (data.commits ?? []).map(c => c.author?.login).filter((l): l is string => Boolean(l)),
+      ),
+    ]
+    return { changed, authors }
   } catch {
-    return true // safe fallback
+    return { changed: true, authors: [] } // safe fallback
   }
 }
 
@@ -254,6 +275,12 @@ export async function getFileContent(filePath: string) {
   )
   if (!res.ok) return null
   const data = await res.json()
+  // The Contents API stops inlining base64 for files over 1 MB (content: "",
+  // encoding: "none") — treat that as "not available" so callers degrade
+  // gracefully instead of throwing on JSON.parse('').
+  if (typeof data.content !== 'string' || (data.content === '' && (data.size ?? 0) > 0)) {
+    return null
+  }
   // Decode base64 → bytes → UTF-8 string (atob alone breaks on multi-byte chars like ä/ö/ü/ß)
   const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, '')), c => c.charCodeAt(0))
   return JSON.parse(new TextDecoder().decode(bytes))

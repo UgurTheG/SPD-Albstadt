@@ -306,13 +306,15 @@ Every editor tab is declared in `src/admin/config/tabs.ts` as a `TabConfig`. To 
   topFields?: FieldConfig[]   // top-level scalar fields (object tabs)
   sections?: SectionConfig[]  // named array sub-sections (object tabs)
   fields?: FieldConfig[]      // item fields (array tabs)
+  itemIds?: ('id' | 'uuid')[] // identity keys auto-assigned to new items (also on SectionConfig)
 }
 ```
 
 **`FieldConfig` types:** `text`, `textarea`, `date`, `time`, `email`, `url`, `select`, `toggle`, `image`, `imagelist`, `icon-picker`, `stringlist`
 
 For `image` fields, set `imageDir` to the target subdirectory under `public/images/` (e.g. `imageDir: 'vorstand'`).  
-For `imagelist` fields, set `captionsKey` to the companion string-array field if captions are supported.
+For `imagelist` fields, set `captionsKey` to the companion string-array field if captions are supported.  
+For `icon-picker` fields, the selectable icons are the keys of the canonical `ICONS` map in `src/components/sections/Partei/icons.ts` — add new icons there; the admin picker and the public site both follow it. Icons render from the bundled `lucide-react` package, never from a CDN.
 
 ### Changes must appear in Änderungen, Alle Änderungen, and Veröffentlichen
 

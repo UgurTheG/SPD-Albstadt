@@ -28,7 +28,7 @@ vi.mock('../../admin/lib/github', () => {
     AuthError,
     ConflictError,
     getBranchSha: vi.fn().mockResolvedValue('abc123'),
-    hasDataChanges: vi.fn().mockResolvedValue(true),
+    getDataChanges: vi.fn().mockResolvedValue({ changed: true, authors: [] }),
     fileExists: vi.fn().mockResolvedValue(true),
     commitTree: vi.fn().mockResolvedValue({}),
     validateToken: vi.fn().mockResolvedValue({ login: 'testuser', avatar_url: '' }),
@@ -519,6 +519,47 @@ describe('useHaushaltsredenEditor', () => {
     })
     expect(result.current.loadError).toBe(true)
     expect(result.current.loading).toBe(false)
+  })
+
+  it('advances baseCommitSha after a direct PDF upload commit', async () => {
+    resetStore({ baseCommitSha: 'old-base' })
+    vi.mocked(commitBinaryFile).mockResolvedValueOnce({
+      content: { sha: 'blob-sha' },
+      commit: { sha: 'new-tip' },
+    })
+    const { result } = renderHook(() => useHaushaltsredenEditor())
+    await act(async () => {
+      await new Promise(r => setTimeout(r, 10))
+    })
+    await act(async () => {
+      await result.current.uploadPdf(2025, new File(['x'], '2025.pdf'))
+    })
+    expect(useAdminStore.getState().baseCommitSha).toBe('new-tip')
+  })
+
+  it('advances baseCommitSha after a direct PDF delete commit', async () => {
+    resetStore({ baseCommitSha: 'old-base' })
+    vi.mocked(deleteFile).mockResolvedValueOnce({ commit: { sha: 'tip-after-delete' } })
+    const { result } = renderHook(() => useHaushaltsredenEditor())
+    await act(async () => {
+      await new Promise(r => setTimeout(r, 10))
+    })
+    await act(async () => {
+      await result.current.deletePdf(2023)
+    })
+    expect(useAdminStore.getState().baseCommitSha).toBe('tip-after-delete')
+  })
+
+  it('keeps baseCommitSha when the commit response carries no sha', async () => {
+    resetStore({ baseCommitSha: 'old-base' })
+    const { result } = renderHook(() => useHaushaltsredenEditor())
+    await act(async () => {
+      await new Promise(r => setTimeout(r, 10))
+    })
+    await act(async () => {
+      await result.current.uploadPdf(2025, new File(['x'], '2025.pdf'))
+    })
+    expect(useAdminStore.getState().baseCommitSha).toBe('old-base')
   })
 
   it('requestDelete and cancelDelete manage confirmDeleteYear', async () => {
