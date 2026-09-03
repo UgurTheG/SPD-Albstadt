@@ -40,11 +40,6 @@ vi.mock('../../admin/lib/github', () => {
   }
 })
 
-vi.mock('../../admin/lib/icons', async importOriginal => {
-  const original = await importOriginal<typeof import('../../admin/lib/icons')>()
-  return { ...original, loadIconSvg: vi.fn().mockResolvedValue('<svg><path/></svg>') }
-})
-
 vi.mock('sonner', () => ({
   toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
   Toaster: () => null,
@@ -1719,7 +1714,7 @@ describe('FieldRenderer — additional field types for coverage', () => {
 import IconPickerField from '../../admin/fields/IconPickerField'
 
 describe('IconPickerField — uncovered branches', () => {
-  it('line 26: useEffect skips loadIconSvg when value is empty', async () => {
+  it('line 26: renders no icon when value is empty', async () => {
     const { container } = render(<IconPickerField id="test" value="" onChange={vi.fn()} />)
     await act(async () => {
       await new Promise(r => setTimeout(r, 50))
@@ -1727,14 +1722,15 @@ describe('IconPickerField — uncovered branches', () => {
     expect(container.firstChild).toBeTruthy()
   })
 
-  it('line 26: loadIconSvg called with value when present', async () => {
-    const { loadIconSvg } = await import('../../admin/lib/icons')
-    const { container } = render(<IconPickerField id="test" value="home" onChange={vi.fn()} />)
+  it('line 26: renders the selected icon inline without fetching', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    const { container } = render(<IconPickerField id="test" value="Home" onChange={vi.fn()} />)
     await act(async () => {
-      await new Promise(r => setTimeout(r, 100))
+      await new Promise(r => setTimeout(r, 50))
     })
-    expect(loadIconSvg).toHaveBeenCalledWith('home')
-    expect(container.firstChild).toBeTruthy()
+    expect(container.querySelector('button svg')).not.toBeNull()
+    expect(fetchSpy).not.toHaveBeenCalled()
+    fetchSpy.mockRestore()
   })
 
   it('lines 33-34: scroll on dropdown closes picker when not inside dropdown', async () => {
@@ -1753,7 +1749,7 @@ describe('IconPickerField — uncovered branches', () => {
     expect(container.firstChild).toBeTruthy()
   })
 
-  it('line 135: IconItem renders with SVG when loadIconSvg resolves', async () => {
+  it('line 135: IconItem selects an icon on click', async () => {
     const onChange = vi.fn()
     const { container } = render(<IconPickerField id="test" value="" onChange={onChange} />)
     // Open the dropdown

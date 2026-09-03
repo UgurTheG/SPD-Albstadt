@@ -43,6 +43,20 @@ const ALLOWED_TAB_KEYS = new Set([
   'config',
 ])
 
+// ─── Input validation helpers ─────────────────────────────────────────────────
+
+const AVATAR_HOST = 'avatars.githubusercontent.com'
+
+export function isGitHubAvatarUrl(raw: string): boolean {
+  if (!raw || raw.length > 512) return false
+  try {
+    const url = new URL(raw)
+    return url.protocol === 'https:' && url.hostname === AVATAR_HOST
+  } catch {
+    return false
+  }
+}
+
 // ─── Startup guard ────────────────────────────────────────────────────────────
 
 if (process.env.NODE_ENV === 'production' && !process.env.KV_REST_API_URL) {
@@ -247,17 +261,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // ── Input validation ────────────────────────────────────────────────────
-    // Validate avatar_url: must be a valid https:// URL (GitHub CDN or blank)
-    const rawAvatar = body?.avatar_url ?? ''
-    let safeAvatarUrl = ''
-    if (rawAvatar) {
-      try {
-        const url = new URL(rawAvatar)
-        if (url.protocol === 'https:') safeAvatarUrl = rawAvatar
-      } catch {
-        // Malformed URL — silently drop it
-      }
-    }
+    // Validate avatar_url: other editors render it as an <img>, so only the
+    // GitHub avatar CDN is accepted — anything else could act as a tracking
+    // pixel that logs colleagues' IP addresses.
+    const rawAvatar = typeof body?.avatar_url === 'string' ? body.avatar_url : ''
+    const safeAvatarUrl = isGitHubAvatarUrl(rawAvatar) ? rawAvatar : ''
 
     // Validate activeTab against the known tab key list
     const rawActiveTab = body?.activeTab ?? ''

@@ -18,6 +18,24 @@ function GitHubMark({ size = 18 }: { size?: number }) {
 
 const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID as string | undefined
 
+/** Opaque error codes from /api/auth/callback → user-facing German messages.
+ *  The query string is attacker-controllable (anyone can craft a link), so it
+ *  is never echoed verbatim — unknown codes fall back to a generic message. */
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  missing_code: 'GitHub hat keinen Anmeldecode zurückgegeben.',
+  invalid_state: 'Die Anmeldung ist abgelaufen oder ungültig. Bitte erneut versuchen.',
+  bad_code: 'Der Anmeldecode ist ungültig oder abgelaufen. Bitte erneut versuchen.',
+  server_misconfigured: 'Der Server ist nicht korrekt konfiguriert.',
+  token_exchange_failed: 'Die Anmeldung bei GitHub ist fehlgeschlagen.',
+  unauthorized_user: 'Dieses GitHub-Konto ist nicht für den Admin-Bereich freigeschaltet.',
+  no_push_access: 'Dieses GitHub-Konto hat keinen Schreibzugriff auf das Repository.',
+}
+
+function authErrorMessage(code: string | null): string {
+  const text = (code && AUTH_ERROR_MESSAGES[code]) || 'Unbekannter Fehler.'
+  return `Anmeldung fehlgeschlagen: ${text}`
+}
+
 export default function LoginScreen() {
   const { login, loginError, loginLoading, loginAuthStatus, darkMode, toggleDark } = useAdminStore()
   const navigate = useNavigate()
@@ -28,8 +46,7 @@ export default function LoginScreen() {
     if (!auth) return { error: '', ok: false }
     window.history.replaceState(null, '', window.location.pathname)
     if (auth === 'error') {
-      const msg = params.get('msg') || 'unknown_error'
-      return { error: `Anmeldung fehlgeschlagen: ${decodeURIComponent(msg)}`, ok: false }
+      return { error: authErrorMessage(params.get('msg')), ok: false }
     }
     return { error: '', ok: auth === 'ok' }
   })

@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
 import { parseCookies, verifyState, makeAuthCookies, clearCookie, STATE_COOKIE } from './cookies.js'
 import { rateLimit, getClientIP } from './rateLimit.js'
+import { fetchGitHubLogin, hasPushAccess, isLoginAllowed } from './access.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
@@ -100,49 +101,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return redirect(`auth=error&msg=${safeCode}`)
     }
 
-    // ── Fetch the authenticated GitHub user ──────────────────────────────────────
-    // We always fetch the login so it can be stored in an HttpOnly cookie and used
-    // server-side (e.g. to bind presence identity to the token without trusting
-    // client-supplied values).
-    let login = ''
-    try {
-      const userRes = await fetch('https://api.github.com/user', {
-        headers: {
-          Authorization: `Bearer ${data.access_token}`,
-          Accept: 'application/json',
-        },
-      })
-      if (userRes.ok) {
-        const userJson = (await userRes.json()) as { login?: string }
-        login = (userJson.login ?? '').toLowerCase()
-      }
-    } catch {
-      // Network error fetching /user — fail closed
-    }
-
-    // ── User allowlist check ─────────────────────────────────────────────────────
-    // If ALLOWED_GITHUB_LOGINS is set, only those exact GitHub usernames may log in.
-    // This is a defence-in-depth measure on top of GitHub's own repo-access control.
-    const allowedLogins = process.env.ALLOWED_GITHUB_LOGINS
-    if (allowedLogins) {
-      const allowed = allowedLogins
-        .split(',')
-        .map(l => l.trim().toLowerCase())
-        .filter(Boolean)
-
-      if (!login || !allowed.includes(login)) {
-        res.setHeader('Set-Cookie', clearOAuthCookies)
-        return redirect('auth=error&msg=unauthorized_user')
-      }
-    } else if (!login) {
-      // If we can't verify the user identity at all, reject to be safe
+    // ── Authorisation ────────────────────────────────────────────────────────────
+    // The repository is public, so a successful token exchange proves nothing
+    // about the user's rights. Require push access on the content repo (verified
+    // with the user's own token) and, if configured, the login allowlist.
+    // The login is stored in an HttpOnly cookie so presence endpoints can bind
+    // identity to the token without trusting client-supplied values.
+    const login = await fetchGitHubLogin(data.access_token)
+    if (!login) {
       res.setHeader('Set-Cookie', clearOAuthCookies)
       return redirect('auth=error&msg=token_exchange_failed')
     }
 
+    if (!isLoginAllowed(login)) {
+      res.setHeader('Set-Cookie', clearOAuthCookies)
+      return redirect('auth=error&msg=unauthorized_user')
+    }
+
+    if (!(await hasPushAccess(data.access_token))) {
+      res.setHeader('Set-Cookie', clearOAuthCookies)
+      return redirect('auth=error&msg=no_push_access')
+    }
+
     // Set auth cookies (HttpOnly, Secure, SameSite=Lax) + clear OAuth cookies
     const authCookies = makeAuthCookies({
-      access_token: data.access_token!,
+      access_token: data.access_token,
       expires_in: data.expires_in,
       refresh_token: data.refresh_token,
       refresh_token_expires_in: data.refresh_token_expires_in,

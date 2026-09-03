@@ -49,6 +49,10 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     client_id: clientId,
     redirect_uri: redirectUri,
     state,
+    // Least privilege for a classic OAuth App: the content repo is public, so
+    // `public_repo` is sufficient for commits. GitHub Apps ignore this value
+    // and use their installation permissions instead.
+    scope: 'read:user public_repo',
   })
 
   res.setHeader('Location', `https://github.com/login/oauth/authorize?${params}`)

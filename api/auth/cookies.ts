@@ -106,6 +106,16 @@ export function clearCookie(name: string, path = '/api/auth'): string {
   return serializeCookie(name, { value: '', maxAge: 0, path })
 }
 
+/** decodeURIComponent that never throws — a malformed cookie value must not
+ *  turn into an unhandled exception (HTTP 500) on every API route. */
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return ''
+  }
+}
+
 export function parseCookies(header: string | undefined): Record<string, string> {
   const cookies: Record<string, string> = {}
   if (!header) return cookies
@@ -113,7 +123,7 @@ export function parseCookies(header: string | undefined): Record<string, string>
     const [rawName, ...rest] = pair.split('=')
     const name = rawName?.trim()
     if (!name) continue
-    cookies[name] = decodeURIComponent(rest.join('=').trim())
+    cookies[name] = safeDecode(rest.join('=').trim())
   }
   return cookies
 }

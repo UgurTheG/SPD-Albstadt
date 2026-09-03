@@ -186,7 +186,7 @@ Der Admin-Editor nutzt GitHub OAuth 2.0 mit serverseitiger Token-Verwaltung:
 5. Weiterleitung zur Admin-Seite; Sitzungsstatus wird über `/api/auth/session` geprüft
 6. Alle GitHub-API-Aufrufe laufen über den serverseitigen Proxy `/api/github` — das Token verlässt den Server nicht
 
-Zugangsberechtigung: Nur GitHub-Konten mit **Push-Zugriff** auf das Repository können sich erfolgreich anmelden. Optional kann über die Umgebungsvariable `ALLOWED_GITHUB_LOGINS` eine zusätzliche Allowlist konfiguriert werden.
+Zugangsberechtigung: Nur GitHub-Konten mit **Push-Zugriff** auf das Repository können sich erfolgreich anmelden — der Callback prüft das serverseitig über die GitHub-API (`permissions.push`), da das Repository öffentlich ist und ein erfolgreicher Login allein nichts über Rechte aussagt. Die Prüfung wird bei jedem Token-Refresh wiederholt. Optional kann über die Umgebungsvariable `ALLOWED_GITHUB_LOGINS` eine zusätzliche Allowlist konfiguriert werden.
 
 ### Funktionen im Admin-Editor
 
@@ -290,7 +290,7 @@ Der Admin-Editor konvertiert Uploads nach WebP und referenziert sie in den JSON-
 - OAuth 2.0 Callback-Endpunkt für den Admin-Login
 - Validiert den CSRF-State gegen das signierte Cookie (Constant-Time-Vergleich)
 - Tauscht den Code serverseitig gegen ein GitHub Access-Token (nutzt `GITHUB_CLIENT_SECRET`)
-- Prüft optional die User-Allowlist (`ALLOWED_GITHUB_LOGINS`)
+- Prüft den Push-Zugriff auf das Repository (Fehlercode `no_push_access`) und optional die User-Allowlist (`ALLOWED_GITHUB_LOGINS`, Fehlercode `unauthorized_user`)
 - Setzt Access- und Refresh-Token als HttpOnly/Secure/SameSite=Lax-Cookies
 - Leitet bei Erfolg zu `/admin?auth=ok` weiter, bei Fehler zu `/admin?auth=error&msg=...`
 - Rate Limit: 10 Anfragen pro IP pro Minute
@@ -384,7 +384,7 @@ npm run preview
 ### E) Neuen Admin-Nutzer hinzufügen
 
 1. GitHub-Konto der Person als Kollaborator einladen: Repository → Settings → Collaborators
-2. Scope `repo` (Write-Zugriff) vergeben
+2. Rolle **Write** (Push-Zugriff) vergeben — der Login fordert den OAuth-Scope `public_repo` an
 3. Optional: GitHub-Benutzernamen in der Umgebungsvariable `ALLOWED_GITHUB_LOGINS` ergänzen (kommagetrennt)
 4. Person kann sich danach über „Mit GitHub anmelden" einloggen
 
@@ -392,7 +392,8 @@ npm run preview
 
 - Admin-Login scheitert mit Fehlerseite 403: GitHub-Konto hat keinen Push-Zugriff auf das Repository — unter Settings → Collaborators prüfen. Falls `ALLOWED_GITHUB_LOGINS` gesetzt ist, Benutzername dort prüfen.
 - Admin-Login scheitert mit Fehlerseite 401: Sitzung ist abgelaufen — erneut einloggen
-- Admin-Login zeigt `unauthorized_user`: GitHub-Konto ist nicht in der `ALLOWED_GITHUB_LOGINS`-Allowlist
+- Admin-Login zeigt „nicht freigeschaltet“: GitHub-Konto ist nicht in der `ALLOWED_GITHUB_LOGINS`-Allowlist
+- Admin-Login zeigt „keinen Schreibzugriff“: GitHub-Konto hat keine Write-Rolle auf dem Repository
 - Änderungen erscheinen nicht: Veröffentlichung im Admin ausführen und kurz auf Redeploy warten
 - Kalender leer: `icsUrl` in `public/data/config.json` prüfen, Erreichbarkeit des ICS-Feeds testen
 - Instagram leer: Elfsight App-ID in `public/data/config.json` unter `elfsightAppId` prüfen

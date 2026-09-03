@@ -142,7 +142,8 @@ When the admin needs the same type as a public section (e.g. `KommunalpolitikPer
 - Use `describe` + `it` with clear English descriptions
 - Mock at the boundary (GitHub API, fetch, browser APIs) — never mock the code under test
 - Do not test implementation details — test behaviour and return values
-- Aim to keep all 43 test files passing; never reduce the test count without a clear reason
+- Aim to keep all 47 test files passing; never reduce the test count without a clear reason
+- Serverless functions are tested in `api/__tests__/` with the fake request/response helpers in `helpers.ts`
 
 ---
 
@@ -392,7 +393,9 @@ Every Vercel Function in `api/` must follow these rules:
 - **Opaque error codes** — never forward GitHub's raw `error_description` in a redirect or response body; map to short opaque codes (`bad_code`, `server_misconfigured`, `token_exchange_failed`, `unauthorized_user`) to avoid leaking internals into browser history or logs.
 - **Clear OAuth cookies after use** — the CSRF state cookie must be cleared in the callback regardless of success or failure.
 - **Token never leaves the server** — the GitHub access token is stored in an HttpOnly cookie and forwarded to GitHub by the server-side proxy (`api/github.ts`). Client code never sees the raw token.
-- **Path allowlist in proxy** — `api/github.ts` only proxies requests to `/user` and `/repos/UgurTheG/SPD-Albstadt/*`. Any new proxy path must be explicitly added to the allowlist.
+- **Endpoint allowlist in proxy** — `api/github.ts` only forwards the exact endpoints the editor uses (`/user`, repo root, `contents/`, `git/ref(s)/heads/main`, `git/commits`, `git/blobs`, `git/trees`, `compare/`), and every write is validated to stay under `public/data/`, `public/images/` and `public/documents/`. A content editor must never be able to commit application code. Any new proxy call must be added explicitly, with a test in `api/__tests__/github.test.ts`.
+- **Push access is enforced server-side** — the repo is public, so `api/auth/callback.ts` and `api/auth/refresh.ts` require `permissions.push` on the repo (via `api/auth/access.ts`) in addition to the optional `ALLOWED_GITHUB_LOGINS` allowlist.
+- **No inline scripts** — the CSP in `vercel.json` forbids inline `<script>` blocks. Early bootstrap code lives in `public/head.js`; the only inline handler is the async-CSS `onload` in `vite.config.ts`, whitelisted by hash. Changing that handler string requires updating the hash in `vercel.json`.
 
 ---
 
