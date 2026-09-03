@@ -2,6 +2,7 @@ import { Building2, ExternalLink, Hash, Mail, MapPin, Phone } from 'lucide-react
 import Sheet from './Sheet'
 import PhotoGallery from './PhotoGallery'
 import type { PersonSheetData } from '../types/person'
+import { safeHref } from '../utils/safeUrl'
 
 const getInitials = (name: string) =>
   name
@@ -19,6 +20,7 @@ interface Props {
 
 export default function PersonSheet({ person, open, onClose }: Props) {
   const label = person?.rolle ?? person?.beruf
+  const website = safeHref(person?.website)
 
   return (
     <Sheet open={open} onClose={onClose}>
@@ -147,7 +149,7 @@ export default function PersonSheet({ person, open, onClose }: Props) {
               person.zipCode ||
               person.phone ||
               person.email ||
-              person.website) && (
+              website) && (
               <div
                 className="rounded-2xl overflow-hidden divide-y divide-gray-100 dark:divide-gray-800
                               border border-gray-100 dark:border-gray-800"
@@ -222,9 +224,9 @@ export default function PersonSheet({ person, open, onClose }: Props) {
                     <span className="text-sm text-gray-600 dark:text-gray-400">{person.email}</span>
                   </a>
                 )}
-                {person.website && (
+                {website && (
                   <a
-                    href={person.website}
+                    href={website}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-3.5 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
@@ -233,7 +235,7 @@ export default function PersonSheet({ person, open, onClose }: Props) {
                       <ExternalLink size={14} className="text-spd-red" />
                     </div>
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {person.website.replace(/^https?:\/\//, '')}
+                      {website.replace(/^https?:\/\//, '')}
                     </span>
                   </a>
                 )}

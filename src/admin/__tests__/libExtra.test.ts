@@ -501,63 +501,18 @@ describe('openPendingFile', () => {
 
 // ─── icons.ts ─────────────────────────────────────────────────────────────────
 
-import { iconToKebab, loadIconSvg, ICON_LIST } from '../../admin/lib/icons'
+import { ICON_LIST } from '../../admin/lib/icons'
+import { ICONS } from '../../components/sections/Partei/icons'
 
-describe('iconToKebab', () => {
-  it('converts CamelCase to kebab-case', () => {
-    expect(iconToKebab('GraduationCap')).toBe('graduation-cap')
-  })
-
-  it('inserts hyphen between letter and digit', () => {
-    expect(iconToKebab('Building2')).toBe('building-2')
-  })
-
-  it('applies known aliases', () => {
-    expect(iconToKebab('Home')).toBe('house') // alias: home → house
-    expect(iconToKebab('BarChart')).toBe('chart-bar')
-    expect(iconToKebab('Train')).toBe('train-front')
-  })
-
-  it('ICON_LIST is a non-empty array', () => {
+describe('ICON_LIST', () => {
+  it('is a non-empty array', () => {
     expect(Array.isArray(ICON_LIST)).toBe(true)
     expect(ICON_LIST.length).toBeGreaterThan(0)
   })
-})
 
-describe('loadIconSvg', () => {
-  afterEach(() => vi.restoreAllMocks())
-
-  it('returns SVG string on success', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      text: async () => '<svg>test</svg>',
-    } as Response)
-    const svg = await loadIconSvg('Home')
-    expect(svg).toBe('<svg>test</svg>')
-  })
-
-  it('returns null on non-ok response', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({ ok: false } as Response)
-    const svg = await loadIconSvg('Nonexistent')
-    expect(svg).toBeNull()
-  })
-
-  it('returns null on fetch error', async () => {
-    vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new Error('network'))
-    const svg = await loadIconSvg('BrokenIcon')
-    expect(svg).toBeNull()
-  })
-
-  it('uses cache on second call', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      text: async () => '<svg>cached</svg>',
-    } as Response)
-    // First call fills cache
-    await loadIconSvg('CachedIcon')
-    // Second call should NOT fetch again
-    await loadIconSvg('CachedIcon')
-    expect(fetchSpy).toHaveBeenCalledTimes(1)
+  it('offers exactly the icons the public site can render', () => {
+    expect(ICON_LIST).toEqual(Object.keys(ICONS))
+    for (const name of ICON_LIST) expect(ICONS[name]).toBeDefined()
   })
 })
 

@@ -1,6 +1,7 @@
 import { Mail } from 'lucide-react'
 import { useConfig } from '../hooks/useConfig'
 import { useNavigateTo } from '../hooks/useNavigateTo'
+import { safeHref } from '../utils/safeUrl'
 
 const FacebookIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -56,7 +57,7 @@ export default function Footer() {
             </a>
             <div className="flex items-center gap-2.5">
               <a
-                href={facebookUrl}
+                href={safeHref(facebookUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
@@ -65,7 +66,7 @@ export default function Footer() {
                 <FacebookIcon />
               </a>
               <a
-                href={instagramUrl}
+                href={safeHref(instagramUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"

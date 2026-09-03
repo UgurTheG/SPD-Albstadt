@@ -1,4 +1,5 @@
 import { ExternalLink } from 'lucide-react'
+import { safeHref } from '@/utils/safeUrl'
 import { motion } from 'framer-motion'
 import { personCardItemVariants } from '@/components/personCardVariants'
 import type { Abgeordneter } from './types'
@@ -52,9 +53,9 @@ export function AbgeordneterCard({
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
-          {a.website && (
+          {safeHref(a.website) && (
             <a
-              href={a.website}
+              href={safeHref(a.website)}
               target="_blank"
               rel="noopener noreferrer"
               onClick={e => e.stopPropagation()}

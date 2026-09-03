@@ -16,6 +16,11 @@
       "groupName": "all dependencies",
       "groupSlug": "all",
       "matchPackageNames": ["*"]
+    },
+    {
+      "description": "TypeScript 7 is the native (Go) compiler; typescript-eslint requires <6.1 and crashes on it. Lift once typescript-eslint supports it.",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
     }
   ]
 }

@@ -9,6 +9,7 @@ import {
   USER_LOGIN_COOKIE,
 } from './cookies.js'
 import { rateLimit, getClientIP } from './rateLimit.js'
+import { hasPushAccess, isLoginAllowed } from './access.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
@@ -90,13 +91,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(401).json({ error: safeCode })
     }
 
-    // Update auth cookies — carry the existing login cookie forward so the
-    // user identity binding is not lost across token refreshes.
-    const existingLogin = cookies[USER_LOGIN_COOKIE]
+    // Re-check authorisation on every refresh so that removing a user from the
+    // allowlist or revoking their push access locks them out at the next
+    // refresh instead of only when the (months-long) refresh token expires.
+    const existingLogin = cookies[USER_LOGIN_COOKIE] ?? ''
+    if (!existingLogin || !isLoginAllowed(existingLogin)) {
+      res.setHeader('Set-Cookie', clearAuthCookies())
+      return res.status(401).json({ error: 'unauthorized_user' })
+    }
+    if (!(await hasPushAccess(data.access_token))) {
+      res.setHeader('Set-Cookie', clearAuthCookies())
+      return res.status(401).json({ error: 'no_push_access' })
+    }
+
+    // Carry the existing login cookie forward so the identity binding is not
+    // lost across token refreshes.
     res.setHeader(
       'Set-Cookie',
       makeAuthCookies({
-        access_token: data.access_token!,
+        access_token: data.access_token,
         expires_in: data.expires_in,
         refresh_token: data.refresh_token,
         refresh_token_expires_in: data.refresh_token_expires_in,

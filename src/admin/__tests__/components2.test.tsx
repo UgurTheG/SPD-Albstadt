@@ -38,14 +38,6 @@ vi.mock('../../admin/lib/github', () => {
   }
 })
 
-vi.mock('../../admin/lib/icons', async importOriginal => {
-  const original = await importOriginal<typeof import('../../admin/lib/icons')>()
-  return {
-    ...original,
-    loadIconSvg: vi.fn().mockResolvedValue('<svg><path/></svg>'),
-  }
-})
-
 vi.mock('sonner', () => ({
   toast: vi.fn(),
   Toaster: () => null,

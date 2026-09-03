@@ -1,11 +1,12 @@
 import { FileDown } from 'lucide-react'
 import type { Dokument } from './types'
+import { safeHref } from '@/utils/safeUrl'
 
 /** A generic document download tile used in the Kommunalpolitik documents grid. */
 export function DokumentCard({ dok }: { dok: Dokument }) {
   return (
     <a
-      href={dok.url}
+      href={safeHref(dok.url)}
       target="_blank"
       rel="noopener noreferrer"
       className="group flex flex-col items-center gap-2.5 p-4
