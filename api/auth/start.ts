@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import type { VercelRequest, VercelResponse } from '../vercel.d.ts'
-import { signState, serializeCookie, STATE_COOKIE } from './cookies.js'
+import { signState, serializeCookie, STATE_COOKIE, STATE_MAX_AGE_S } from './cookies.js'
 import { rateLimit, getClientIP } from './rateLimit.js'
 
 /**
@@ -34,11 +34,11 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   const state = randomBytes(16).toString('hex')
   const signed = signState(state)
 
-  // Set state cookie (short-lived, 10 minutes)
+  // Set state cookie (short-lived — the same limit is enforced inside the signature)
   res.setHeader('Set-Cookie', [
     serializeCookie(STATE_COOKIE, {
       value: signed,
-      maxAge: 600,
+      maxAge: STATE_MAX_AGE_S,
       path: '/api/auth',
     }),
   ])

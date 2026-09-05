@@ -321,9 +321,10 @@ Before publishing, the editor compares images referenced in the original state v
 - The GitHub access token is stored **only in HttpOnly / Secure / SameSite=Lax cookies** — browser JavaScript has no access to the token at any point.
 - All GitHub API calls go through the **server-side proxy** at `POST /api/github`, which reads the token from the cookie and forwards it. The token never leaves the server.
 - The proxy restricts API paths to the one managed repository (`/repos/UgurTheG/SPD-Albstadt/`) and the `/user` identity endpoint — even a compromised token cannot access other repos via the app.
-- **CSRF protection** in the OAuth flow: cryptographic state parameter, HMAC-SHA256-signed, stored in a short-lived HttpOnly cookie (10 min), validated with constant-time comparison.
+- **Writes are confined to content**: every tree entry and single-file write must live under `public/data/`, `public/images/` or `public/documents/`, and before `main` is moved the proxy fetches the target commit from GitHub and requires that it sits directly on the current branch tip and differs from its parent only in regular blobs under those directories (`verifyRefUpdate` in `api/github.ts`). A stolen editor session cannot publish application code, workflows or Vercel config.
+- **CSRF protection** in the OAuth flow: cryptographic state parameter, HMAC-SHA256-signed with the attempt's expiry embedded in the signed payload (10 min), stored in a short-lived HttpOnly cookie, validated with constant-time comparison.
 - **Origin allowlist** on all mutating auth and proxy endpoints (`/api/auth/refresh`, `/api/auth/logout`, `/api/github`).
-- **Rate limiting** on login (5/min), callback (10/min), and refresh (10/min) per IP address.
+- **Rate limiting** on login (5/min), callback (10/min), session check (60/min) and refresh (10/min) per IP address.
 - **User allowlist** (optional): the `ALLOWED_GITHUB_LOGINS` env var restricts login to specific GitHub accounts, as a defence-in-depth measure on top of GitHub's own repository permissions.
 - GitHub error messages are mapped to **opaque safe error codes** — internal details are never exposed in the browser URL bar or history.
 - The OAuth `GITHUB_CLIENT_SECRET` is **only available server-side** and is never exposed to the browser.

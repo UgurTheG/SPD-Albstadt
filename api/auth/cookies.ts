@@ -57,12 +57,26 @@ function verify(purpose: Purpose, signed: string): string | null {
   return timingSafeEqual(sig, expected) ? payload : null
 }
 
+/** Lifetime of one login attempt. Also used as the state cookie's Max-Age. */
+export const STATE_MAX_AGE_S = 600
+
+/** Signed state cookie value: `<state>:<expiresAtMs>.<hmac>`. The expiry is
+ *  part of the signed payload, so a captured cookie/state pair cannot be
+ *  replayed after the login attempt it belongs to has timed out — the cookie's
+ *  own Max-Age is only advisory for the browser. */
 export function signState(state: string): string {
-  return sign('state', state)
+  return sign('state', `${state}:${Date.now() + STATE_MAX_AGE_S * 1000}`)
 }
 
+/** Returns the state if the signature is valid and the attempt has not expired. */
 export function verifyState(signed: string): string | null {
-  return verify('state', signed)
+  const payload = verify('state', signed)
+  if (!payload) return null
+  const colon = payload.lastIndexOf(':')
+  if (colon < 1) return null
+  const expiresAt = Number(payload.slice(colon + 1))
+  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) return null
+  return payload.slice(0, colon)
 }
 
 // ─── Identity cookie ───────────────────────────────────────────────────────────

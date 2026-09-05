@@ -299,7 +299,7 @@ Der Admin-Editor konvertiert Uploads nach WebP und referenziert sie in den JSON-
 
 - Gibt den Authentifizierungsstatus und Token-Ablaufzeitpunkt zurück
 - Das Access-Token selbst wird **nie** an den Client zurückgegeben
-- Origin-Prüfung gegen Allowlist
+- Origin-Prüfung gegen Allowlist, Rate Limit (60/min)
 
 ### `POST /api/auth/refresh`
 
@@ -316,7 +316,8 @@ Der Admin-Editor konvertiert Uploads nach WebP und referenziert sie in den JSON-
 
 - Serverseitiger Proxy für GitHub-API-Aufrufe
 - Das Access-Token wird aus dem HttpOnly-Cookie gelesen und serverseitig an GitHub weitergeleitet
-- Pfad-Allowlist: nur `/repos/UgurTheG/SPD-Albstadt/` und `/user` sind erlaubt
+- Endpunkt-Allowlist: nur die vom Editor benötigten Aufrufe unter `/repos/UgurTheG/SPD-Albstadt/` und `/user`; Schreibzugriffe nur unter `public/data/`, `public/images/` und `public/documents/`
+- Vor jedem Branch-Update (`PATCH git/refs/heads/main`) prüft der Proxy den Ziel-Commit bei GitHub: Er muss direkt auf der aktuellen `main`-Spitze aufsetzen und darf gegenüber dem Eltern-Commit ausschließlich reguläre Dateien in den Inhaltsverzeichnissen ändern — sonst `403`
 - Origin-Prüfung, Methoden-Beschränkung (GET/POST/PUT/PATCH/DELETE)
 
 ## 11. Deployment
@@ -340,13 +341,13 @@ npm run preview
 - Login erfolgt über GitHub OAuth 2.0 mit serverseitiger Token-Verwaltung
 - Access- und Refresh-Token liegen ausschließlich in **HttpOnly/Secure/SameSite=Lax-Cookies** — JavaScript im Browser hat keinen Zugriff
 - Alle GitHub-API-Aufrufe laufen über den serverseitigen Proxy `/api/github`; das Token verlässt den Server nicht
-- Der Proxy beschränkt API-Pfade auf das eigene Repository (`/repos/UgurTheG/SPD-Albstadt/`) und `/user`
-- CSRF-Schutz im OAuth-Flow: kryptographischer State-Parameter, HMAC-SHA256-signiert, in HttpOnly-Cookie gespeichert, Constant-Time-Vergleich
+- Der Proxy beschränkt API-Pfade auf das eigene Repository (`/repos/UgurTheG/SPD-Albstadt/`) und `/user`; Schreibzugriffe sind auf die Inhaltsverzeichnisse unter `public/` begrenzt, und `main` wird nur auf Commits bewegt, die nachweislich nichts anderes ändern — eine gestohlene Editor-Sitzung kann keinen Anwendungscode veröffentlichen
+- CSRF-Schutz im OAuth-Flow: kryptographischer State-Parameter, HMAC-SHA256-signiert mit eingebettetem Ablaufzeitpunkt (10 min), in HttpOnly-Cookie gespeichert, Constant-Time-Vergleich
 - Origin-Allowlist auf allen schreibenden Auth- und Proxy-Endpunkten
-- Rate Limiting auf Login (5/min), Callback (10/min) und Refresh (10/min) pro IP
+- Rate Limiting auf Login (5/min), Callback (10/min), Session-Check (60/min) und Refresh (10/min) pro IP
 - Bei jedem Token-Refresh wird die Identität erneut bei GitHub abgefragt (nicht aus Cookies übernommen) und Allowlist sowie Push-Zugriff werden neu geprüft
 - Identitäts-Cookie für die Präsenzanzeige ist HMAC-signiert und zeitlich begrenzt; ein Cookie, den der Server nicht ausgestellt hat, wird verworfen
-- HTTP-Header: HSTS, CSP ohne Inline-Skripte, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` (siehe `vercel.json`)
+- HTTP-Header: HSTS (inkl. Subdomains), CSP ohne Inline-Skripte mit `upgrade-insecure-requests`, `Cross-Origin-Opener-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` (siehe `vercel.json`)
 - GitHub-Fehlermeldungen werden auf opake Codes gemappt — keine internen Details im Browser
 - Optional: User-Allowlist über `ALLOWED_GITHUB_LOGINS` (zusätzlich zu GitHub-Repository-Berechtigungen)
 - Das OAuth Client-Secret (`GITHUB_CLIENT_SECRET`) ist ausschließlich serverseitig verfügbar

@@ -212,11 +212,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // ── Rate limiting ──────────────────────────────────────────────────────────
-  // 180 requests / minute per IP — allows 500 ms version-check polling for up
-  // to ~3 concurrent active sessions (3 users × 2 req/s = 6 req/s) while
-  // still blocking runaway clients.
+  // 400 requests / minute per IP — the 500 ms version-check poll runs only
+  // while colleagues are online, i.e. exactly when several editors may share
+  // one office IP: 3 users × 2 req/s = 360 req/min, plus heartbeats. Anything
+  // beyond that is a runaway client.
   const ip = getClientIP(req.headers as Record<string, string | string[] | undefined>)
-  if (!rateLimit(ip, 180, 60_000)) {
+  if (!rateLimit(ip, 400, 60_000)) {
     return res.status(429).json({ error: 'rate_limited' })
   }
 
