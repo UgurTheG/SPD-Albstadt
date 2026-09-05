@@ -6,10 +6,9 @@ import {
   isAllowedOrigin,
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
-  USER_LOGIN_COOKIE,
 } from './cookies.js'
 import { rateLimit, getClientIP } from './rateLimit.js'
-import { hasPushAccess, isLoginAllowed } from './access.js'
+import { fetchGitHubLogin, hasPushAccess, isLoginAllowed } from './access.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
@@ -94,8 +93,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Re-check authorisation on every refresh so that removing a user from the
     // allowlist or revoking their push access locks them out at the next
     // refresh instead of only when the (months-long) refresh token expires.
-    const existingLogin = cookies[USER_LOGIN_COOKIE] ?? ''
-    if (!existingLogin || !isLoginAllowed(existingLogin)) {
+    // The identity is resolved from GitHub with the freshly issued token —
+    // never from a cookie, which the browser's owner can replace.
+    const login = await fetchGitHubLogin(data.access_token)
+    if (!login) {
+      res.setHeader('Set-Cookie', clearAuthCookies())
+      return res.status(401).json({ error: 'refresh_failed' })
+    }
+    if (!isLoginAllowed(login)) {
       res.setHeader('Set-Cookie', clearAuthCookies())
       return res.status(401).json({ error: 'unauthorized_user' })
     }
@@ -104,8 +109,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(401).json({ error: 'no_push_access' })
     }
 
-    // Carry the existing login cookie forward so the identity binding is not
-    // lost across token refreshes.
     res.setHeader(
       'Set-Cookie',
       makeAuthCookies({
@@ -113,7 +116,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         expires_in: data.expires_in,
         refresh_token: data.refresh_token,
         refresh_token_expires_in: data.refresh_token_expires_in,
-        login: existingLogin,
+        login,
       }),
     )
 

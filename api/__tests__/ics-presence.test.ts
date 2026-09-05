@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ics from '../ics'
-import { isGitHubAvatarUrl } from '../admin-presence'
+import presence, { isGitHubAvatarUrl } from '../admin-presence'
+import { makeLoginCookieValue } from '../auth/cookies'
 import { makeRequest, makeResponse } from './helpers'
 
 function textResponse(body: string, extraHeaders: Record<string, string> = {}): Response {
@@ -76,5 +77,134 @@ describe('isGitHubAvatarUrl', () => {
     expect(isGitHubAvatarUrl('javascript:alert(1)')).toBe(false)
     expect(isGitHubAvatarUrl('')).toBe(false)
     expect(isGitHubAvatarUrl('not a url')).toBe(false)
+  })
+})
+
+// ─── /api/admin-presence ──────────────────────────────────────────────────────
+
+describe('/api/admin-presence', () => {
+  beforeEach(() => vi.stubEnv('STATE_SIGNING_SECRET', 'presence-secret'))
+  afterEach(() => vi.unstubAllEnvs())
+
+  function cookieHeader(loginCookie: string | undefined): string {
+    const parts = ['spd_access_token=gho_x']
+    if (loginCookie !== undefined) parts.push(`spd_user_login=${encodeURIComponent(loginCookie)}`)
+    return parts.join('; ')
+  }
+
+  function request(
+    method: string,
+    loginCookie: string | undefined,
+    body?: Record<string, unknown>,
+    ip = '10.2.0.1',
+  ) {
+    return makeRequest({
+      method,
+      body,
+      headers: {
+        origin: 'https://www.spd-albstadt.de',
+        cookie: cookieHeader(loginCookie),
+        'x-forwarded-for': ip,
+      },
+    })
+  }
+
+  it('rejects requests without a valid signed identity cookie', async () => {
+    let res = makeResponse()
+    await presence(request('GET', undefined), res)
+    expect(res.statusCode).toBe(401)
+    expect(res.body).toEqual({ error: 'invalid_identity_cookie' })
+
+    // A plain (unsigned) login value — what the client's owner could set by hand
+    res = makeResponse()
+    await presence(request('POST', 'editor', { activeTab: 'news' }), res)
+    expect(res.statusCode).toBe(401)
+
+    // A signature made with another secret
+    vi.stubEnv('STATE_SIGNING_SECRET', 'other')
+    const foreign = makeLoginCookieValue('editor', 3600)
+    vi.stubEnv('STATE_SIGNING_SECRET', 'presence-secret')
+    res = makeResponse()
+    await presence(request('DELETE', foreign), res)
+    expect(res.statusCode).toBe(401)
+  })
+
+  it('rejects requests without the access-token cookie', async () => {
+    const res = makeResponse()
+    await presence(
+      makeRequest({
+        method: 'GET',
+        headers: {
+          cookie: `spd_user_login=${encodeURIComponent(makeLoginCookieValue('editor', 3600))}`,
+          'x-forwarded-for': '10.2.0.2',
+        },
+      }),
+      res,
+    )
+    expect(res.statusCode).toBe(401)
+    expect(res.body).toEqual({ error: 'unauthenticated' })
+  })
+
+  it('binds presence to the verified login and ignores body.login', async () => {
+    const alice = makeLoginCookieValue('alice', 3600)
+    const bob = makeLoginCookieValue('bob', 3600)
+
+    let res = makeResponse()
+    await presence(
+      request('POST', alice, {
+        login: 'mallory',
+        avatar_url: 'https://tracker.example/pixel.gif',
+        activeTab: 'news',
+        dirtyTabs: ['news', 'not-a-tab'],
+      }),
+      res,
+    )
+    expect(res.statusCode).toBe(200)
+    // The caller never sees themselves in the list
+    expect((res.body as { users: unknown[] }).users).toEqual([])
+
+    res = makeResponse()
+    await presence(request('GET', bob), res)
+    expect(res.statusCode).toBe(200)
+    const { users } = res.body as {
+      users: { login: string; avatar_url: string; activeTab: string; dirtyTabs: string[] }[]
+    }
+    expect(users).toHaveLength(1)
+    expect(users[0]).toMatchObject({
+      login: 'alice',
+      avatar_url: '',
+      activeTab: 'news',
+      dirtyTabs: ['news'],
+    })
+
+    // DELETE only ever removes the caller's own entry
+    res = makeResponse()
+    await presence(request('DELETE', bob, { login: 'alice' }), res)
+    expect(res.statusCode).toBe(200)
+    res = makeResponse()
+    await presence(request('GET', bob), res)
+    expect((res.body as { users: { login: string }[] }).users.map(u => u.login)).toEqual(['alice'])
+
+    res = makeResponse()
+    await presence(request('DELETE', alice), res)
+    res = makeResponse()
+    await presence(request('GET', bob), res)
+    expect((res.body as { users: unknown[] }).users).toEqual([])
+  })
+
+  it('rejects cross-origin callers', async () => {
+    const res = makeResponse()
+    await presence(
+      makeRequest({
+        method: 'GET',
+        headers: {
+          origin: 'https://evil.example',
+          cookie: cookieHeader(makeLoginCookieValue('editor', 3600)),
+          'x-forwarded-for': '10.2.0.3',
+        },
+      }),
+      res,
+    )
+    expect(res.statusCode).toBe(403)
   })
 })

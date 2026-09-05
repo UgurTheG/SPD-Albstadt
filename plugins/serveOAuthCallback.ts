@@ -32,13 +32,14 @@ function parseCookies(header: string | undefined): Record<string, string> {
   return cookies
 }
 
-function makeCookie(name: string, value: string, maxAge: number): string {
-  // Dev: no Secure flag (HTTP localhost)
-  return `${name}=${encodeURIComponent(value)}; Path=/api/auth; Max-Age=${maxAge}; HttpOnly; SameSite=Lax`
+function makeCookie(name: string, value: string, maxAge: number, path = '/api'): string {
+  // Dev: no Secure flag (HTTP localhost). Path mirrors production: token
+  // cookies on /api so the /api/github proxy receives them.
+  return `${name}=${encodeURIComponent(value)}; Path=${path}; Max-Age=${maxAge}; HttpOnly; SameSite=Lax`
 }
 
-function clearCookie(name: string): string {
-  return makeCookie(name, '', 0)
+function clearCookie(name: string, path = '/api'): string {
+  return makeCookie(name, '', 0, path)
 }
 
 const ACCESS_TOKEN_COOKIE = 'spd_access_token'
@@ -97,8 +98,21 @@ function readJsonBody(req: import('http').IncomingMessage): Promise<unknown> {
 
 // ─── Plugin ────────────────────────────────────────────────────────────────────
 
+/** Opaque codes only — GitHub's error_description must not end up in the URL bar. */
+function safeOAuthErrorCode(rawError: string | undefined): string {
+  switch (rawError) {
+    case 'bad_verification_code':
+      return 'bad_code'
+    case 'incorrect_client_credentials':
+    case 'redirect_uri_mismatch':
+      return 'server_misconfigured'
+    default:
+      return 'token_exchange_failed'
+  }
+}
+
 export function serveOAuthCallback(env: Record<string, string>): Plugin {
-  const secret = env.GITHUB_CLIENT_SECRET || ''
+  const secret = env.STATE_SIGNING_SECRET || env.GITHUB_CLIENT_SECRET || ''
 
   return {
     name: 'serve-oauth-callback',
@@ -107,7 +121,7 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
         // ── GET /api/auth/start ───────────────────────────────────────────────
         if (req.url?.startsWith('/api/auth/start')) {
           const clientId = env.VITE_GITHUB_CLIENT_ID
-          if (!clientId) {
+          if (!clientId || !secret) {
             res.statusCode = 500
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify({ error: 'server_misconfigured' }))
@@ -116,13 +130,15 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
           const state = randomBytes(16).toString('hex')
           const signed = signState(state, secret)
 
-          res.setHeader('Set-Cookie', makeCookie(STATE_COOKIE, signed, 600))
+          res.setHeader('Set-Cookie', makeCookie(STATE_COOKIE, signed, 600, '/api/auth'))
 
           const params = new URLSearchParams({
             client_id: clientId,
             redirect_uri: `http://localhost:5173/api/auth/callback`,
             state,
-            scope: 'read:user repo',
+            // Same least-privilege scope as production (api/auth/start.ts) — a
+            // developer's token must not be granted access to private repos.
+            scope: 'read:user public_repo',
           })
           res.statusCode = 302
           res.setHeader('Location', `https://github.com/login/oauth/authorize?${params}`)
@@ -147,9 +163,9 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
           // Validate CSRF state
           const cookies = parseCookies(req.headers.cookie)
           const signedState = cookies[STATE_COOKIE]
-          const clearState = clearCookie(STATE_COOKIE)
+          const clearState = clearCookie(STATE_COOKIE, '/api/auth')
 
-          if (!state || !signedState) {
+          if (!state || !signedState || !secret) {
             res.setHeader('Set-Cookie', clearState)
             return redirect('auth=error&msg=invalid_state')
           }
@@ -185,9 +201,8 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
             )
             .then(data => {
               if (!data.access_token) {
-                const msg = data.error_description ?? data.error ?? 'token_exchange_failed'
                 res.setHeader('Set-Cookie', clearState)
-                return redirect(`auth=error&msg=${encodeURIComponent(msg)}`)
+                return redirect(`auth=error&msg=${safeOAuthErrorCode(data.error)}`)
               }
               const authCookies = makeAuthCookies({
                 access_token: data.access_token!,
@@ -282,11 +297,8 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
             .then(data => {
               if (!data.access_token) {
                 res.statusCode = 401
-                res.end(
-                  JSON.stringify({
-                    error: data.error_description ?? data.error ?? 'refresh_failed',
-                  }),
-                )
+                res.setHeader('Set-Cookie', clearAuthCookies())
+                res.end(JSON.stringify({ error: 'refresh_failed' }))
                 return
               }
               res.setHeader(

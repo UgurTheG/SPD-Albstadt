@@ -118,7 +118,7 @@ The admin panel tracks which users are currently active and which tabs they have
 - **Storage:** In-memory (single-instance / local dev) or **Vercel KV** (production multi-instance). To enable KV, link a Vercel KV database via the dashboard and set `KV_REST_API_URL` + `KV_REST_API_TOKEN`.
 - **Heartbeat:** The frontend sends a `POST` every 30 seconds with the active tab and dirty-tab list.
 - **Version polling:** A lightweight `GET ?since=<version>` check runs every 500 ms so presence updates are near-real-time without a full KV scan on every tick.
-- **Identity binding:** The user's `login` is always read from the server-side `USER_LOGIN_COOKIE` set during OAuth — client-supplied values are ignored, preventing impersonation.
+- **Identity binding:** The user's `login` is always read from the HMAC-signed `USER_LOGIN_COOKIE` set during OAuth (and re-issued on every token refresh from GitHub's `/user` response). The signature and expiry are verified on every request — client-supplied values and hand-crafted cookies are rejected, preventing impersonation.
 - **TTL:** Presence entries expire after 45 s of inactivity (KV TTL: 50 s).
 
 ### How Publishing Works

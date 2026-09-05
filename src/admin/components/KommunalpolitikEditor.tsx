@@ -20,6 +20,7 @@ import { openPendingFile } from '../lib/fileUtils'
 import { inputCls } from '../lib/inputCls'
 import { useKommunalpolitikEditor } from '../hooks/useKommunalpolitikEditor'
 import { KOMMUNALPOLITIK_PERSON_FIELDS } from '../config/tabs'
+import { safeHref } from '@/utils/safeUrl'
 import type { Dokument } from '@/components/sections/Kommunalpolitik/types'
 
 export default function KommunalpolitikEditor() {
@@ -400,9 +401,10 @@ function DokumentRow({
     if (!dok.url) return
     if (pendingEntry) {
       openPendingFile(pendingEntry.base64, dok.url)
-    } else {
-      window.open(dok.url, '_blank')
+      return
     }
+    const href = safeHref(dok.url)
+    if (href) window.open(href, '_blank', 'noopener,noreferrer')
   }
 
   return (

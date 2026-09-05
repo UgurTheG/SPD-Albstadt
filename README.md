@@ -270,7 +270,7 @@ Der Admin-Editor konvertiert Uploads nach WebP und referenziert sie in den JSON-
 ### `POST /api/admin-presence`
 
 - Heartbeat-Endpunkt: aktualisiert das Präsenz-Profil des anfragenden Nutzers (aktiver Tab, Dirty-Tabs, Avatar)
-- Nutzeridentität wird aus dem serverseitigen `USER_LOGIN_COOKIE` gelesen — Client-Angaben werden ignoriert (verhindert Impersonation)
+- Nutzeridentität wird aus dem HMAC-signierten, serverseitig gesetzten `USER_LOGIN_COOKIE` gelesen und die Signatur geprüft — Client-Angaben oder selbst gesetzte Cookies werden ignoriert (verhindert Impersonation)
 - Rate Limit: 180 Anfragen pro IP pro Minute
 
 ### `DELETE /api/admin-presence`
@@ -344,6 +344,9 @@ npm run preview
 - CSRF-Schutz im OAuth-Flow: kryptographischer State-Parameter, HMAC-SHA256-signiert, in HttpOnly-Cookie gespeichert, Constant-Time-Vergleich
 - Origin-Allowlist auf allen schreibenden Auth- und Proxy-Endpunkten
 - Rate Limiting auf Login (5/min), Callback (10/min) und Refresh (10/min) pro IP
+- Bei jedem Token-Refresh wird die Identität erneut bei GitHub abgefragt (nicht aus Cookies übernommen) und Allowlist sowie Push-Zugriff werden neu geprüft
+- Identitäts-Cookie für die Präsenzanzeige ist HMAC-signiert und zeitlich begrenzt; ein Cookie, den der Server nicht ausgestellt hat, wird verworfen
+- HTTP-Header: HSTS, CSP ohne Inline-Skripte, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` (siehe `vercel.json`)
 - GitHub-Fehlermeldungen werden auf opake Codes gemappt — keine internen Details im Browser
 - Optional: User-Allowlist über `ALLOWED_GITHUB_LOGINS` (zusätzlich zu GitHub-Repository-Berechtigungen)
 - Das OAuth Client-Secret (`GITHUB_CLIENT_SECRET`) ist ausschließlich serverseitig verfügbar
