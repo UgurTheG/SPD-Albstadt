@@ -1,5 +1,5 @@
 import { type ReactNode, type RefObject } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 
 interface SectionHeaderProps {
   /** The ref returned by useRef — passed to the motion.div so useInView works. */

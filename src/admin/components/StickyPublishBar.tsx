@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { FileSearch, Loader2, Rocket } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 
 interface Props {
   isDirty: boolean

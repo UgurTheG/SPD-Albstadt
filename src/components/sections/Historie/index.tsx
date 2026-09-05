@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useSectionView } from '@/hooks/useSectionView'
 import Sheet from '@/components/Sheet'
 import PersonSheet from '@/components/PersonSheet'

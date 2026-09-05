@@ -1,5 +1,5 @@
 import { ChevronRight, Users } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { personCardItemVariants } from '@/components/personCardVariants'
 import type { Schwerpunkt } from './types'
 import { ICONS } from './icons'

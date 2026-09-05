@@ -17,14 +17,15 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Strict-Transport-Security", "value": "max-age=63072000" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains" },
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-hashes' 'sha256-MhtPZXr7+LpJUY5qtMutB+qWfQtMaPccfe7QXtCcEYc=' https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; style-src 'self' 'unsafe-inline' https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; img-src 'self' data: blob: https:; connect-src 'self' https://formspree.io https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com https://*.cdninstagram.com https://cdninstagram.com https://*.fbcdn.net; font-src 'self' https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; frame-src https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; media-src 'self' https://*.cdninstagram.com https://cdninstagram.com https://*.fbcdn.net https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com blob:; worker-src 'self' blob:;"
+          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-hashes' 'sha256-MhtPZXr7+LpJUY5qtMutB+qWfQtMaPccfe7QXtCcEYc=' https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; style-src 'self' 'unsafe-inline' https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; img-src 'self' data: blob: https:; connect-src 'self' https://formspree.io https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com https://*.cdninstagram.com https://cdninstagram.com https://*.fbcdn.net; font-src 'self' https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; frame-src https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com; media-src 'self' https://*.cdninstagram.com https://cdninstagram.com https://*.fbcdn.net https://*.elfsight.com https://*.elfsightcdn.com https://elfsightcdn.com blob:; worker-src 'self' blob:;"
         }
       ]
     },

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useSectionPage } from '@/hooks/useSectionPage'
 import { useHaushaltsredenPagination } from '@/hooks/useHaushaltsredenPagination'
 import { useSheetState } from '@/hooks/useSheetState'

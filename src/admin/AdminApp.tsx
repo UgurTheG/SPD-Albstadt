@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Menu } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { toast, Toaster } from 'sonner'
 import { useAdminStore } from './store'
 import { TABS } from './config/tabs'

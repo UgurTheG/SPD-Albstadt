@@ -6,6 +6,7 @@ import {
   ACCESS_TOKEN_COOKIE,
   TOKEN_EXPIRES_COOKIE,
 } from './cookies.js'
+import { rateLimit, getClientIP } from './rateLimit.js'
 
 /**
  * GET /api/auth/session
@@ -22,6 +23,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'method_not_allowed' })
+  }
+
+  // Rate limit: every call with a token costs one GitHub API request on the
+  // user's quota — 60 per IP per minute is far above what the editor needs.
+  const ip = getClientIP(req.headers as Record<string, string | string[] | undefined>)
+  if (!rateLimit(ip, 60, 60_000)) {
+    return res.status(429).json({ error: 'too_many_requests' })
   }
 
   // Only allow same-origin requests

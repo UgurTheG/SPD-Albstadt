@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { personCardContainerVariants } from './personCardVariants'
 import PersonCard from './PersonCard'
 import { SkeletonGrid } from './SkeletonGrid'

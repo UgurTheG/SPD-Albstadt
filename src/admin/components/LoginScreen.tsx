@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Loader2, Moon, Shield, Sun } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
 import { useAdminStore } from '../store'
 

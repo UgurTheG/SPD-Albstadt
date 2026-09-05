@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 import { FileSearch, Loader2, LogOut, Moon, Rocket, Sun, X } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import type { GHUser } from '../types'
 import type { PresenceUser } from '../store/presenceSlice'
 import { TABS } from '../config/tabs'

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { AlertCircle, CheckCircle, ChevronDown, Send } from 'lucide-react'
 import { useKontaktForm } from '@/hooks/useKontaktForm'
 import { BETREFF_OPTIONS } from './constants'

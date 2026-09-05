@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSectionPage } from '@/hooks/useSectionPage'
 import { useSheetState } from '@/hooks/useSheetState'

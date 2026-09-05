@@ -9,6 +9,7 @@ import {
 } from '../auth/cookies'
 import callback from '../auth/callback'
 import refresh from '../auth/refresh'
+import session from '../auth/session'
 import start from '../auth/start'
 import { jsonResponse, makeRequest, makeResponse, mockFetchByUrl } from './helpers'
 
@@ -69,6 +70,19 @@ describe('signState / verifyState', () => {
     const signed = signState('abc123')
     vi.stubEnv('STATE_SIGNING_SECRET', 'rotated')
     expect(verifyState(signed)).toBeNull()
+  })
+
+  it('rejects a state whose login attempt has timed out', () => {
+    vi.useFakeTimers()
+    try {
+      const signed = signState('abc123')
+      vi.advanceTimersByTime(9 * 60 * 1000)
+      expect(verifyState(signed)).toBe('abc123')
+      vi.advanceTimersByTime(2 * 60 * 1000)
+      expect(verifyState(signed)).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
 
@@ -150,6 +164,40 @@ describe('GET /api/auth/start', () => {
     const location = new URL(String(res.headers['Location']))
     expect(location.searchParams.get('scope')).toBe('read:user public_repo')
     expect(location.searchParams.get('client_id')).toBe('client-id')
+  })
+})
+
+describe('GET /api/auth/session', () => {
+  it('rate-limits repeated checks from one IP', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ login: 'editor' }))
+    let last = makeResponse()
+    for (let i = 0; i < 61; i++) {
+      last = makeResponse()
+      await session(
+        makeRequest({
+          headers: { cookie: 'spd_access_token=gho_x', 'x-forwarded-for': '10.0.9.1' },
+        }),
+        last,
+      )
+    }
+    expect(last.statusCode).toBe(429)
+  })
+
+  it('reports an existing session without exposing the token', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ login: 'editor' }))
+    const res = makeResponse()
+    await session(
+      makeRequest({
+        headers: {
+          cookie: 'spd_access_token=gho_x; spd_token_expires_at=123',
+          'x-forwarded-for': '10.0.9.2',
+        },
+      }),
+      res,
+    )
+    expect(res.statusCode).toBe(200)
+    expect(res.body).toEqual({ authenticated: true, expires_at: 123 })
+    expect(JSON.stringify(res.body)).not.toContain('gho_x')
   })
 })
 

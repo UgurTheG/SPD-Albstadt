@@ -6,7 +6,7 @@
  * edits are preserved in localStorage drafts so they survive the reload.
  */
 import { RefreshCw } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 
 interface Props {
   /** Login name(s) of the users who published — derived from presenceUsers by caller */

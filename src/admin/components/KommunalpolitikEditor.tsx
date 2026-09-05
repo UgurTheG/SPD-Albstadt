@@ -10,7 +10,7 @@ import {
   ToggleRight,
   Trash2,
 } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { useAdminStore } from '../store'
 import ArrayEditor from './ArrayEditor'
 import TabEditorShell from './TabEditorShell'

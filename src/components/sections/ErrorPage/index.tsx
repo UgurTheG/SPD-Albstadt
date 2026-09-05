@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { ArrowLeft, Home } from 'lucide-react'
 import { useNavigateTo } from '@/hooks/useNavigateTo'
 import { ERROR_CONFIG, hasIconInCode, renderCodeWithIcon } from './errorConfig'

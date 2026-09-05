@@ -15,6 +15,15 @@ import { REPO_OWNER, REPO_NAME } from './auth/access.js'
  * directories under `public/`.  A stolen admin session (or an XSS in the
  * admin) must not be able to commit application code, workflows or Vercel
  * config to `main`, manage webhooks or collaborators, or touch other repos.
+ *
+ * Path validation alone is not enough for the Trees flow: `POST /git/commits`
+ * accepts *any* tree SHA and `PATCH /git/refs/heads/main` accepts *any*
+ * commit SHA, and GitHub resolves objects from the whole repository network —
+ * including old revisions and commits pushed to a fork by an anonymous PR.
+ * So before the branch is moved, `verifyRefUpdate` fetches the target commit
+ * and requires that (a) its only parent is the current `main` tip and (b) its
+ * tree differs from the parent's tree solely in regular blobs under the
+ * content directories.
  */
 
 const REPO_PATH = `/repos/${REPO_OWNER}/${REPO_NAME}`
@@ -170,6 +179,113 @@ function isAllowedEndpoint(method: string, pathname: string, body: unknown): boo
   return false
 }
 
+// ─── Branch update verification ───────────────────────────────────────────────
+
+const GITHUB_API = 'https://api.github.com'
+const REF_UPDATE_PATH = `${REPO_PATH}/git/refs/heads/${BRANCH}`
+
+function githubHeaders(accessToken: string): Record<string, string> {
+  return {
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'If-None-Match': '', // bypass GitHub CDN cache
+  }
+}
+
+/** GET a GitHub API path; `null` on network failure, `{ status, data }` otherwise. */
+async function githubGet(
+  accessToken: string,
+  path: string,
+): Promise<{ status: number; data: unknown } | null> {
+  try {
+    const res = await fetch(`${GITHUB_API}${path}`, {
+      headers: githubHeaders(accessToken),
+      cache: 'no-store',
+    })
+    const contentType = res.headers.get('content-type') ?? ''
+    const data: unknown = contentType.includes('application/json') ? await res.json() : null
+    return { status: res.status, data }
+  } catch {
+    return null
+  }
+}
+
+/** Every non-directory entry of a tree as `path → mode:type:sha`. */
+type TreeIndex = Map<string, string>
+
+/** `null` when the tree cannot be read completely (network error, truncated listing). */
+async function fetchTreeIndex(accessToken: string, treeSha: string): Promise<TreeIndex | null> {
+  const result = await githubGet(accessToken, `${REPO_PATH}/git/trees/${treeSha}?recursive=1`)
+  if (!result || !isRecord(result.data)) return null
+  const { truncated, tree } = result.data
+  if (truncated === true || !Array.isArray(tree)) return null
+  const index: TreeIndex = new Map()
+  for (const entry of tree) {
+    if (!isRecord(entry) || typeof entry.path !== 'string') return null
+    // Directory entries carry no content of their own; a changed directory
+    // always shows up as changed blobs beneath it.
+    if (entry.type === 'tree') continue
+    index.set(entry.path, `${String(entry.mode)}:${String(entry.type)}:${String(entry.sha)}`)
+  }
+  return index
+}
+
+export type RefUpdateVerdict = 'ok' | 'conflict' | 'forbidden' | 'unavailable'
+
+/**
+ * Decide whether `main` may be fast-forwarded to `newSha`.
+ *
+ * - `conflict`    — the commit does not sit directly on the current branch tip
+ *                   (someone else published meanwhile, or the commit was built
+ *                   on top of foreign history)
+ * - `forbidden`   — the commit changes something outside the content
+ *                   directories, or adds a non-regular-file entry
+ * - `unavailable` — GitHub could not be consulted; fail closed
+ */
+export async function verifyRefUpdate(
+  accessToken: string,
+  newSha: string,
+): Promise<RefUpdateVerdict> {
+  const ref = await githubGet(accessToken, `${REPO_PATH}/git/ref/heads/${BRANCH}`)
+  if (!ref) return 'unavailable'
+  const headSha = isRecord(ref.data) && isRecord(ref.data.object) ? ref.data.object.sha : undefined
+  if (!isSha(headSha)) return 'unavailable'
+  if (newSha.toLowerCase() === headSha.toLowerCase()) return 'ok'
+
+  const [newCommit, headCommit] = await Promise.all([
+    githubGet(accessToken, `${REPO_PATH}/git/commits/${newSha}`),
+    githubGet(accessToken, `${REPO_PATH}/git/commits/${headSha}`),
+  ])
+  if (!newCommit || !headCommit) return 'unavailable'
+  if (!isRecord(newCommit.data) || newCommit.status !== 200) return 'forbidden'
+  if (!isRecord(headCommit.data) || headCommit.status !== 200) return 'unavailable'
+
+  const parents = newCommit.data.parents
+  const parentSha = Array.isArray(parents) && isRecord(parents[0]) ? parents[0].sha : undefined
+  if (!Array.isArray(parents) || parents.length !== 1 || !isSha(parentSha)) return 'forbidden'
+  if (parentSha.toLowerCase() !== headSha.toLowerCase()) return 'conflict'
+
+  const newTreeSha = isRecord(newCommit.data.tree) ? newCommit.data.tree.sha : undefined
+  const headTreeSha = isRecord(headCommit.data.tree) ? headCommit.data.tree.sha : undefined
+  if (!isSha(newTreeSha)) return 'forbidden'
+  if (!isSha(headTreeSha)) return 'unavailable'
+
+  const [newIndex, headIndex] = await Promise.all([
+    fetchTreeIndex(accessToken, newTreeSha),
+    fetchTreeIndex(accessToken, headTreeSha),
+  ])
+  if (!newIndex || !headIndex) return 'unavailable'
+
+  for (const path of new Set([...newIndex.keys(), ...headIndex.keys()])) {
+    const after = newIndex.get(path)
+    if (after === headIndex.get(path)) continue
+    if (!isContentPath(path)) return 'forbidden'
+    if (after !== undefined && !after.startsWith(`${BLOB_MODE}:blob:`)) return 'forbidden'
+  }
+  return 'ok'
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
 
@@ -211,17 +327,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'path_not_allowed' })
   }
 
-  try {
-    const ghHeaders: Record<string, string> = {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      'If-None-Match': '', // bypass GitHub CDN cache
+  if (upperMethod === 'PATCH' && new URL(requestUrl).pathname === REF_UPDATE_PATH) {
+    const verdict = await verifyRefUpdate(accessToken, (body as { sha: string }).sha)
+    if (verdict === 'conflict') {
+      // Same status GitHub uses for a non-fast-forward update — the editor
+      // maps it to its "someone else published" conflict flow.
+      return res.status(422).json({ error: 'ref_not_fast_forward' })
     }
+    if (verdict === 'forbidden') return res.status(403).json({ error: 'ref_update_not_allowed' })
+    if (verdict === 'unavailable') return res.status(502).json({ error: 'github_request_failed' })
+  }
 
+  try {
     const fetchOpts: RequestInit = {
       method: upperMethod,
-      headers: ghHeaders,
+      headers: githubHeaders(accessToken),
       cache: 'no-store',
     }
 

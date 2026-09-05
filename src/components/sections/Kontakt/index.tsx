@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useSectionView } from '@/hooks/useSectionView'
 import { useConfig } from '@/hooks/useConfig'
 import SectionHeader from '@/components/SectionHeader'

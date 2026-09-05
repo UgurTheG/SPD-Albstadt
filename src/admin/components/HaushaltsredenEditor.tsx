@@ -1,5 +1,5 @@
 import { Eye, EyeOff, FileUp, RefreshCw, Trash2 } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import AdminWarningBanner from './AdminWarningBanner'
 import TabEditorShell from './TabEditorShell'
 import { useAdminStore } from '../store'

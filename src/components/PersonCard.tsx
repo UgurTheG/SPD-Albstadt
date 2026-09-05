@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { personCardItemVariants } from './personCardVariants'
 
 function getInitials(name: string): string {

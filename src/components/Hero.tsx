@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'motion/react'
 import { ChevronDown, Moon, Sun, UserPlus } from 'lucide-react'
 import { useConfig } from '../hooks/useConfig'
 import { useDarkMode } from '../hooks/useDarkMode'

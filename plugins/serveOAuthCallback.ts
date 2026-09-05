@@ -1,5 +1,6 @@
 import { createHmac, randomBytes } from 'node:crypto'
 import type { Plugin } from 'vite'
+import { resolveAllowedUrl } from '../api/github'
 
 // ─── Cookie helpers (mirrors api/auth/cookies.ts for dev server) ───────────────
 
@@ -348,7 +349,11 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
                 return
               }
 
-              if (!path.startsWith('/user') && !path.startsWith('/repos/')) {
+              // Same endpoint allowlist as production, so a developer's token
+              // is never more exposed locally than an editor's is on Vercel and
+              // an out-of-allowlist call fails in `npm run dev` already.
+              const requestUrl = resolveAllowedUrl({ method: method.toUpperCase(), path, body })
+              if (!requestUrl) {
                 res.statusCode = 400
                 res.end(JSON.stringify({ error: 'path_not_allowed' }))
                 return
@@ -371,7 +376,7 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
                 fetchOpts.body = JSON.stringify(body)
               }
 
-              const ghRes = await fetch(`https://api.github.com${path}`, fetchOpts)
+              const ghRes = await fetch(requestUrl, fetchOpts)
               const data = await ghRes.json()
               res.statusCode = ghRes.status
               res.end(JSON.stringify(data))
