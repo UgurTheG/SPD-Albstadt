@@ -29,6 +29,6 @@ export function openPendingFile(base64: string, publicUrl: string): void {
   for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i)
   const blob = new Blob([byteArr], { type: mime })
   const blobUrl = URL.createObjectURL(blob)
-  window.open(blobUrl, '_blank')
+  window.open(blobUrl, '_blank', 'noopener')
   setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
 }

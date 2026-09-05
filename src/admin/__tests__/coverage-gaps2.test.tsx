@@ -150,22 +150,22 @@ describe('fileUtils — openPendingFile with unknown extension', () => {
     // 'xlsx' hits the default branch of mimeFromExt (lines 25/default case)
     openPendingFile('dGVzdA==', 'document.xlsx')
     expect(URL.createObjectURL).toHaveBeenCalled()
-    expect(window.open).toHaveBeenCalledWith('blob:test', '_blank')
+    expect(window.open).toHaveBeenCalledWith('blob:test', '_blank', 'noopener')
   })
 
   it('uses application/pdf for pdf extension', () => {
     openPendingFile('dGVzdA==', 'file.pdf')
-    expect(window.open).toHaveBeenCalledWith('blob:test', '_blank')
+    expect(window.open).toHaveBeenCalledWith('blob:test', '_blank', 'noopener')
   })
 
   it('uses doc mime for .doc extension', () => {
     openPendingFile('dGVzdA==', 'file.doc')
-    expect(window.open).toHaveBeenCalledWith('blob:test', '_blank')
+    expect(window.open).toHaveBeenCalledWith('blob:test', '_blank', 'noopener')
   })
 
   it('uses docx mime for .docx extension', () => {
     openPendingFile('dGVzdA==', 'file.docx')
-    expect(window.open).toHaveBeenCalledWith('blob:test', '_blank')
+    expect(window.open).toHaveBeenCalledWith('blob:test', '_blank', 'noopener')
   })
 })
 

@@ -3,7 +3,7 @@
  * POST   /api/admin-presence  — heartbeat; updates the calling user's presence
  * DELETE /api/admin-presence  — user is closing the session (best-effort)
  *
- * Identity is bound to the server-side USER_LOGIN_COOKIE set during OAuth —
+ * Identity is bound to the HMAC-signed USER_LOGIN_COOKIE set during OAuth —
  * client-supplied `login` values in the request body are ignored for key
  * purposes, preventing presence spoofing / session takeover.
  *
@@ -21,6 +21,7 @@ import type { VercelRequest, VercelResponse } from './vercel.d.ts'
 import {
   parseCookies,
   isAllowedOrigin,
+  verifyLoginCookie,
   ACCESS_TOKEN_COOKIE,
   USER_LOGIN_COOKIE,
 } from './auth/cookies.js'
@@ -226,14 +227,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // ── Identity binding ────────────────────────────────────────────────────────
-  // The authoritative login comes from the HttpOnly USER_LOGIN_COOKIE set
-  // during OAuth callback — never from the client-supplied request body.
-  // This prevents any authenticated user from impersonating someone else or
-  // evicting a colleague's presence entry (DELETE takeover).
-  const verifiedLogin = cookies[USER_LOGIN_COOKIE]
+  // The authoritative login comes from the HMAC-signed USER_LOGIN_COOKIE set
+  // during OAuth callback / refresh — never from the client-supplied request
+  // body. Verifying the signature (not just the cookie's presence) means a
+  // cookie the server did not issue is rejected, so nobody can impersonate a
+  // colleague, evict their presence entry (DELETE takeover) or read the list
+  // of active editors without a real session.
+  const verifiedLogin = verifyLoginCookie(cookies[USER_LOGIN_COOKIE])
   if (!verifiedLogin) {
-    // User authenticated before the login cookie was introduced — force re-login.
-    return res.status(401).json({ error: 'missing_identity_cookie' })
+    // Missing, forged or expired identity cookie (also: a session created
+    // before the signed cookie was introduced) — the next token refresh or
+    // login issues a fresh one.
+    return res.status(401).json({ error: 'invalid_identity_cookie' })
   }
 
   // ── GET ────────────────────────────────────────────────────────────────────

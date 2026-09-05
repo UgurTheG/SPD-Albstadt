@@ -1,4 +1,4 @@
-import { createHmac } from 'node:crypto'
+import { createHmac, timingSafeEqual } from 'node:crypto'
 
 // ─── Cookie names ──────────────────────────────────────────────────────────────
 
@@ -8,10 +8,13 @@ export const REFRESH_TOKEN_COOKIE = 'spd_refresh_token'
 export const REFRESH_EXPIRES_COOKIE = 'spd_refresh_expires_at'
 export const STATE_COOKIE = 'spd_oauth_state'
 /** Stores the GitHub username server-side so presence endpoints can bind
- *  identity to the token without trusting client-supplied login values. */
+ *  identity to the token without trusting client-supplied login values.
+ *  The value is HMAC-signed and carries an expiry — a cookie with this name
+ *  that the server did not issue (e.g. one set through DevTools or from a
+ *  sibling subdomain) fails verification instead of being trusted. */
 export const USER_LOGIN_COOKIE = 'spd_user_login'
 
-// ─── HMAC helpers (state signing) ──────────────────────────────────────────────
+// ─── HMAC helpers ──────────────────────────────────────────────────────────────
 
 function getSecret(): string {
   if (process.env.STATE_SIGNING_SECRET) return process.env.STATE_SIGNING_SECRET
@@ -27,24 +30,63 @@ function getSecret(): string {
   throw new Error('Missing STATE_SIGNING_SECRET or GITHUB_CLIENT_SECRET — cannot sign OAuth state')
 }
 
+/** Signature purposes — mixed into the MAC so a value signed for one use
+ *  (e.g. an identity cookie) can never be replayed as another (e.g. OAuth state). */
+type Purpose = 'state' | 'login'
+
+function mac(purpose: Purpose, payload: string): Buffer {
+  return createHmac('sha256', getSecret()).update(`${purpose}\0${payload}`).digest()
+}
+
+function sign(purpose: Purpose, payload: string): string {
+  return `${payload}.${mac(purpose, payload).toString('hex')}`
+}
+
+/** Returns the payload if the signature is valid for the purpose, otherwise null. */
+function verify(purpose: Purpose, signed: string): string | null {
+  const dot = signed.lastIndexOf('.')
+  if (dot < 1) return null
+  const payload = signed.slice(0, dot)
+  const sigHex = signed.slice(dot + 1)
+  // Strict hex check first: Buffer.from(…, 'hex') silently drops a trailing
+  // odd nibble, which would let "<valid sig>0" pass the length comparison.
+  if (!/^[0-9a-f]{64}$/i.test(sigHex)) return null
+  const sig = Buffer.from(sigHex, 'hex')
+  const expected = mac(purpose, payload)
+  if (sig.length !== expected.length) return null
+  return timingSafeEqual(sig, expected) ? payload : null
+}
+
 export function signState(state: string): string {
-  const sig = createHmac('sha256', getSecret()).update(state).digest('hex')
-  return `${state}.${sig}`
+  return sign('state', state)
 }
 
 export function verifyState(signed: string): string | null {
-  const dot = signed.lastIndexOf('.')
-  if (dot < 1) return null
-  const state = signed.slice(0, dot)
-  const sig = signed.slice(dot + 1)
-  const expected = createHmac('sha256', getSecret()).update(state).digest('hex')
-  if (sig.length !== expected.length) return null
-  // Constant-time comparison
-  let mismatch = 0
-  for (let i = 0; i < sig.length; i++) {
-    mismatch |= sig.charCodeAt(i) ^ expected.charCodeAt(i)
-  }
-  return mismatch === 0 ? state : null
+  return verify('state', signed)
+}
+
+// ─── Identity cookie ───────────────────────────────────────────────────────────
+
+/** GitHub logins are alphanumerics and hyphens; the login is lower-cased by
+ *  `fetchGitHubLogin` before it ever reaches the cookie. */
+const LOGIN_PAYLOAD_RE = /^([a-z0-9-]{1,39}):(\d{1,16})$/
+
+/** Signed identity cookie value: `<login>:<expiresAtMs>.<hmac>`. */
+export function makeLoginCookieValue(login: string, maxAgeSeconds: number): string {
+  return sign('login', `${login}:${Date.now() + maxAgeSeconds * 1000}`)
+}
+
+/** Returns the login from a signed identity cookie, or null when the cookie is
+ *  missing, tampered with, signed for another purpose, or expired. */
+export function verifyLoginCookie(raw: string | undefined): string | null {
+  if (!raw) return null
+  const payload = verify('login', raw)
+  if (!payload) return null
+  const match = LOGIN_PAYLOAD_RE.exec(payload)
+  if (!match) return null
+  const [, login, expiresAt] = match
+  if (Number(expiresAt) <= Date.now()) return null
+  return login!
 }
 
 // ─── Origin allowlist ────────────────────────────────────────────────────────
@@ -134,8 +176,9 @@ export function makeAuthCookies(data: {
   expires_in?: number
   refresh_token?: string
   refresh_token_expires_in?: number
-  /** GitHub username — stored server-side so identity can be verified without
-   *  trusting client-supplied values (e.g. in the presence endpoint). */
+  /** GitHub username as verified against GitHub with this very token — stored
+   *  signed so identity can be checked without trusting client-supplied
+   *  values (e.g. in the presence endpoint). */
   login?: string
 }): string[] {
   const cookies: string[] = []
@@ -155,7 +198,13 @@ export function makeAuthCookies(data: {
   )
 
   if (data.login) {
-    cookies.push(serializeCookie(USER_LOGIN_COOKIE, { value: data.login, maxAge, path: '/api' }))
+    cookies.push(
+      serializeCookie(USER_LOGIN_COOKIE, {
+        value: makeLoginCookieValue(data.login, maxAge),
+        maxAge,
+        path: '/api',
+      }),
+    )
   }
 
   if (data.refresh_token) {

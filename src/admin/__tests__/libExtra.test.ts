@@ -470,7 +470,7 @@ describe('openPendingFile', () => {
     // base64 for a single byte 0x00
     openPendingFile('AA==', '/docs/test.pdf')
     expect(createObjectURLSpy).toHaveBeenCalledOnce()
-    expect(openSpy).toHaveBeenCalledWith('blob:test', '_blank')
+    expect(openSpy).toHaveBeenCalledWith('blob:test', '_blank', 'noopener')
   })
 
   it('opens a DOC file', async () => {

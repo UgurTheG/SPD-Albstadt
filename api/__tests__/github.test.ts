@@ -308,6 +308,23 @@ describe('POST /api/github handler', () => {
     expect(res.headers['Cache-Control']).toBe('no-store')
   })
 
+  it('forwards non-JSON upstream bodies as plain text, never as HTML', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 502,
+      headers: new Headers({ 'content-type': 'text/html' }),
+      text: async () => '<html>Bad Gateway</html>',
+    } as unknown as Response)
+    const res = makeResponse()
+    await handler(
+      makeRequest({ method: 'POST', headers, body: { method: 'GET', path: '/user' } }),
+      res,
+    )
+    expect(res.statusCode).toBe(502)
+    expect(res.headers['Content-Type']).toBe('text/plain; charset=utf-8')
+    expect(res.body).toBe('<html>Bad Gateway</html>')
+  })
+
   it('maps upstream failures to 502', async () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('down'))
     const res = makeResponse()

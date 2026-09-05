@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetchGitHubLogin, hasPushAccess, isLoginAllowed } from '../auth/access'
-import { parseCookies, signState } from '../auth/cookies'
+import {
+  makeLoginCookieValue,
+  parseCookies,
+  signState,
+  verifyLoginCookie,
+  verifyState,
+} from '../auth/cookies'
 import callback from '../auth/callback'
 import refresh from '../auth/refresh'
 import start from '../auth/start'
@@ -28,6 +34,12 @@ function setCookies(res: ReturnType<typeof makeResponse>): string[] {
   return Array.isArray(raw) ? [...raw] : typeof raw === 'string' ? [raw] : []
 }
 
+/** The decoded value of the identity cookie among a response's Set-Cookie headers. */
+function loginCookieValue(cookies: string[]): string | undefined {
+  const header = cookies.find(c => c.startsWith('spd_user_login='))
+  return header && parseCookies(header.split(';')[0])['spd_user_login']
+}
+
 // ─── parseCookies ─────────────────────────────────────────────────────────────
 
 describe('parseCookies', () => {
@@ -38,6 +50,47 @@ describe('parseCookies', () => {
   it('does not throw on malformed percent-encoding', () => {
     expect(() => parseCookies('spd_access_token=%E0; ok=1')).not.toThrow()
     expect(parseCookies('spd_access_token=%E0; ok=1')).toEqual({ spd_access_token: '', ok: '1' })
+  })
+})
+
+// ─── signed values ────────────────────────────────────────────────────────────
+
+describe('signState / verifyState', () => {
+  it('round-trips and rejects tampered or foreign signatures', () => {
+    const signed = signState('abc123')
+    expect(verifyState(signed)).toBe('abc123')
+    expect(verifyState(`${signed}0`)).toBeNull()
+    expect(verifyState('abc123.deadbeef')).toBeNull()
+    expect(verifyState('abc123')).toBeNull()
+    expect(verifyState('abc124.' + signed.split('.')[1])).toBeNull()
+  })
+
+  it('rejects signatures made with another secret', () => {
+    const signed = signState('abc123')
+    vi.stubEnv('STATE_SIGNING_SECRET', 'rotated')
+    expect(verifyState(signed)).toBeNull()
+  })
+})
+
+describe('verifyLoginCookie', () => {
+  it('returns the login for a cookie the server issued', () => {
+    expect(verifyLoginCookie(makeLoginCookieValue('editor', 3600))).toBe('editor')
+    expect(verifyLoginCookie(makeLoginCookieValue('some-one-2', 3600))).toBe('some-one-2')
+  })
+
+  it('rejects unsigned, tampered, purpose-confused and missing values', () => {
+    expect(verifyLoginCookie(undefined)).toBeNull()
+    expect(verifyLoginCookie('')).toBeNull()
+    expect(verifyLoginCookie('editor')).toBeNull()
+    expect(verifyLoginCookie('editor:9999999999999')).toBeNull()
+    const signed = makeLoginCookieValue('editor', 3600)
+    expect(verifyLoginCookie(signed.replace('editor', 'admin0'))).toBeNull()
+    // A valid OAuth state signature must not double as an identity cookie
+    expect(verifyLoginCookie(signState('editor:9999999999999'))).toBeNull()
+  })
+
+  it('rejects expired cookies', () => {
+    expect(verifyLoginCookie(makeLoginCookieValue('editor', -1))).toBeNull()
   })
 })
 
@@ -147,7 +200,7 @@ describe('GET /api/auth/callback', () => {
     expect(res.headers['Location']).toBe('/admin?auth=ok')
     const cookies = setCookies(res)
     expect(cookies.some(c => c.startsWith('spd_access_token=gho_new'))).toBe(true)
-    expect(cookies.some(c => c.startsWith('spd_user_login=editor'))).toBe(true)
+    expect(verifyLoginCookie(loginCookieValue(cookies))).toBe('editor')
     expect(cookies.some(c => c.startsWith('spd_oauth_state=;'))).toBe(true)
   })
 })
@@ -155,12 +208,12 @@ describe('GET /api/auth/callback', () => {
 // ─── refresh ──────────────────────────────────────────────────────────────────
 
 describe('POST /api/auth/refresh', () => {
-  function refreshRequest(ip: string, login = 'editor') {
+  function refreshRequest(ip: string, loginCookie = 'spd_user_login=editor') {
     return makeRequest({
       method: 'POST',
       headers: {
         origin: 'https://www.spd-albstadt.de',
-        cookie: `spd_access_token=old; spd_refresh_token=r1; spd_user_login=${login}`,
+        cookie: `spd_access_token=old; spd_refresh_token=r1; ${loginCookie}`,
         'x-forwarded-for': ip,
       },
     })
@@ -168,7 +221,10 @@ describe('POST /api/auth/refresh', () => {
 
   it('locks out a login removed from the allowlist and clears cookies', async () => {
     vi.stubEnv('ALLOWED_GITHUB_LOGINS', 'someone-else')
-    mockFetchByUrl([['login/oauth/access_token', jsonResponse({ access_token: 'gho_new' })]])
+    mockFetchByUrl([
+      ['login/oauth/access_token', jsonResponse({ access_token: 'gho_new' })],
+      ['/user', jsonResponse({ login: 'Editor' })],
+    ])
     const res = makeResponse()
     await refresh(refreshRequest('10.0.2.1'), res)
     expect(res.statusCode).toBe(401)
@@ -176,9 +232,24 @@ describe('POST /api/auth/refresh', () => {
     expect(setCookies(res).some(c => c.startsWith('spd_refresh_token=;'))).toBe(true)
   })
 
+  it('resolves the identity from GitHub, not from a client-controlled cookie', async () => {
+    vi.stubEnv('ALLOWED_GITHUB_LOGINS', 'someone-else')
+    mockFetchByUrl([
+      ['login/oauth/access_token', jsonResponse({ access_token: 'gho_new' })],
+      ['/user', jsonResponse({ login: 'Editor' })],
+      ['/repos/', jsonResponse({ permissions: { push: true } })],
+    ])
+    const res = makeResponse()
+    // A removed editor replays a cookie naming a colleague who is still allowed
+    await refresh(refreshRequest('10.0.2.4', 'spd_user_login=someone-else'), res)
+    expect(res.statusCode).toBe(401)
+    expect(res.body).toEqual({ error: 'unauthorized_user' })
+  })
+
   it('locks out a login whose push access was revoked', async () => {
     mockFetchByUrl([
       ['login/oauth/access_token', jsonResponse({ access_token: 'gho_new' })],
+      ['/user', jsonResponse({ login: 'Editor' })],
       ['/repos/', jsonResponse({ permissions: { push: false } })],
     ])
     const res = makeResponse()
@@ -187,15 +258,29 @@ describe('POST /api/auth/refresh', () => {
     expect(res.body).toEqual({ error: 'no_push_access' })
   })
 
+  it('fails closed when the new token cannot be resolved to a login', async () => {
+    mockFetchByUrl([
+      ['login/oauth/access_token', jsonResponse({ access_token: 'gho_new' })],
+      ['/user', jsonResponse({}, 401)],
+    ])
+    const res = makeResponse()
+    await refresh(refreshRequest('10.0.2.5'), res)
+    expect(res.statusCode).toBe(401)
+    expect(res.body).toEqual({ error: 'refresh_failed' })
+    expect(setCookies(res).some(c => c.startsWith('spd_access_token=;'))).toBe(true)
+  })
+
   it('rotates cookies for an authorised login', async () => {
     mockFetchByUrl([
       ['login/oauth/access_token', jsonResponse({ access_token: 'gho_new', expires_in: 100 })],
+      ['/user', jsonResponse({ login: 'Editor' })],
       ['/repos/', jsonResponse({ permissions: { push: true } })],
     ])
     const res = makeResponse()
     await refresh(refreshRequest('10.0.2.3'), res)
     expect(res.statusCode).toBe(200)
-    expect(setCookies(res).some(c => c.startsWith('spd_access_token=gho_new'))).toBe(true)
-    expect(setCookies(res).some(c => c.startsWith('spd_user_login=editor'))).toBe(true)
+    const cookies = setCookies(res)
+    expect(cookies.some(c => c.startsWith('spd_access_token=gho_new'))).toBe(true)
+    expect(verifyLoginCookie(loginCookieValue(cookies))).toBe('editor')
   })
 })

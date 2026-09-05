@@ -238,8 +238,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(ghRes.status).json(data)
     }
 
-    // Non-JSON response (rare) — forward as text
+    // Non-JSON response (rare) — forward as plain text so an upstream HTML
+    // error page is never rendered as a same-origin document.
     const text = await ghRes.text()
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
     return res.status(ghRes.status).send(text)
   } catch {
     return res.status(502).json({ error: 'github_request_failed' })
