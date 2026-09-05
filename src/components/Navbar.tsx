@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { ChevronLeft, Menu, Moon, Sun, X } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { useDarkMode } from '../hooks/useDarkMode'

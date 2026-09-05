@@ -1,5 +1,5 @@
 import { type ReactNode, useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView } from 'motion/react'
 import { useData } from '@/hooks/useData'
 import { renderTextContent } from '@/utils/renderTextContent'
 

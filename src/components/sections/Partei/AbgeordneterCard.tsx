@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react'
 import { safeHref } from '@/utils/safeUrl'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { personCardItemVariants } from '@/components/personCardVariants'
 import type { Abgeordneter } from './types'
 

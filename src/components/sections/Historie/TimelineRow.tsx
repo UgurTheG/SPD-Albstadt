@@ -1,6 +1,6 @@
 import { memo, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView } from 'motion/react'
 import type { MergedItem, TimelineEntry, Persoenlichkeit } from './types'
 import { TIMELINE_TYPE_META } from './types'
 import { EventCard } from './EventCard'

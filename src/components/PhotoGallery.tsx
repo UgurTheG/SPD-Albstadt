@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 // Lazy-loaded: fetched only when user opens the fullscreen lightbox (~34 KiB saved on initial load)

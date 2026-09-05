@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView } from 'motion/react'
 import { Calendar } from 'lucide-react'
 import type { ICSEvent } from '@/utils/icsParser'
 import SubsectionHeading from '@/components/SubsectionHeading'

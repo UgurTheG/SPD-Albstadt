@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Monitor, X } from 'lucide-react'
 import { SWRConfig } from 'swr'
 import { useAdminStore } from '../store'

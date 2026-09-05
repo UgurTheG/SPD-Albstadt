@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView } from 'motion/react'
 import { ChevronRight, Search, Tag, X } from 'lucide-react'
 import type { NewsItem } from '@/types/news'
 import { CATEGORY_COLOR_FALLBACK, CATEGORY_COLORS, getNewsImages } from '@/types/news'

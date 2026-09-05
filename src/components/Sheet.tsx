@@ -6,7 +6,7 @@ import {
   type PanInfo,
   useDragControls,
   useMotionValue,
-} from 'framer-motion'
+} from 'motion/react'
 import { type ReactNode, useEffect, useRef } from 'react'
 import { lockScroll } from '../utils/scrollLock'
 

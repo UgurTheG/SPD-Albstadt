@@ -8,7 +8,7 @@
  */
 import { useEffect, useState } from 'react'
 import { AlertTriangle, CheckCircle2, GitMerge, User } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import type { MergeConflict } from '../lib/merge'
 import { summarizeValue } from '../lib/diff'
 import { deepClone, setAtPathImmutable } from '../lib/json'

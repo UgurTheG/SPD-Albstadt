@@ -58,7 +58,8 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules/ical.js/') || id.includes('node_modules/ics/'))
               return 'calendar'
             // Heavy animation library
-            if (id.includes('framer-motion')) return 'framer-motion'
+            if (id.includes('framer-motion') || id.includes('node_modules/motion/'))
+              return 'framer-motion'
             // Lucide icons (large icon set)
             if (id.includes('lucide-react')) return 'lucide'
             // React ecosystem core

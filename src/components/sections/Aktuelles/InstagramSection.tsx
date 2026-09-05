@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView } from 'motion/react'
 import { Camera, ExternalLink } from 'lucide-react'
 import { INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME } from '@/shared/instagram'
 import SubsectionHeading from '@/components/SubsectionHeading'
