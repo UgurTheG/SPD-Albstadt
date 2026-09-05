@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import ics from '../ics'
+import ics, { isAllowedIcsUrl } from '../ics'
 import presence, { isGitHubAvatarUrl } from '../admin-presence'
 import { makeLoginCookieValue } from '../auth/cookies'
 import { makeRequest, makeResponse } from './helpers'
@@ -65,6 +65,63 @@ describe('GET /api/ics', () => {
     await ics(makeRequest({ headers: { 'x-forwarded-for': '10.1.0.4' } }), res)
     expect(res.statusCode).toBe(502)
     expect(res.body).toEqual({ error: 'upstream_error' })
+  })
+
+  it('refuses to relay an upstream body that is not a calendar', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(textResponse('<html>not a calendar</html>'))
+    const res = makeResponse()
+    await ics(makeRequest({ headers: { 'x-forwarded-for': '10.1.0.5' } }), res)
+    expect(res.statusCode).toBe(502)
+    expect(res.body).toEqual({ error: 'upstream_not_calendar' })
+  })
+
+  it('tolerates a BOM and leading whitespace before BEGIN:VCALENDAR', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      textResponse('\uFEFF\r\nbegin:vcalendar\r\nEND:VCALENDAR'),
+    )
+    const res = makeResponse()
+    await ics(makeRequest({ headers: { 'x-forwarded-for': '10.1.0.6' } }), res)
+    expect(res.statusCode).toBe(200)
+    expect(res.headers['Content-Type']).toBe('text/calendar; charset=utf-8')
+  })
+})
+
+describe('isAllowedIcsUrl', () => {
+  it('accepts https URLs on public host names', () => {
+    expect(isAllowedIcsUrl('https://p143-caldav.icloud.com/published/2/abc')).toBe(true)
+    expect(isAllowedIcsUrl('https://calendar.google.com/calendar/ical/x/public/basic.ics')).toBe(
+      true,
+    )
+  })
+
+  it('rejects plain http, webcal, embedded credentials and malformed values', () => {
+    expect(isAllowedIcsUrl('http://calendar.example.org/x.ics')).toBe(false)
+    expect(isAllowedIcsUrl('webcal://calendar.example.org/x.ics')).toBe(false)
+    expect(isAllowedIcsUrl('https://user:pw@calendar.example.org/x.ics')).toBe(false)
+    expect(isAllowedIcsUrl('not a url')).toBe(false)
+    expect(isAllowedIcsUrl('')).toBe(false)
+  })
+
+  it('rejects loopback, private and single-label hosts as well as IP literals', () => {
+    const hosts = [
+      'localhost',
+      'dev.localhost',
+      'printer.local',
+      'db.internal',
+      'nas.home.arpa',
+      'intranet',
+      '127.0.0.1',
+      '10.0.0.1',
+      '169.254.169.254',
+      '[::1]',
+      '[fd00::1]',
+      // decimal and hex spellings of 127.0.0.1 — canonicalised by the URL parser
+      '2130706433',
+      '0x7f000001',
+    ]
+    for (const host of hosts) {
+      expect(isAllowedIcsUrl(`https://${host}/x.ics`), host).toBe(false)
+    }
   })
 })
 

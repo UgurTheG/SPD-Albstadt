@@ -14,6 +14,47 @@ function normalizeUrl(url: string): string {
   return url.replace(/^[a-zA-Z]+:\/\//, 'https://')
 }
 
+/**
+ * The calendar URL is editor-controlled content (`config.json`), so the relay
+ * must not be steerable at the function's own network: no loopback, private
+ * or single-label host names, no IP literals (the WHATWG parser has already
+ * canonicalised decimal/hex/octal forms by the time we see the hostname).
+ */
+function isPublicHostname(hostname: string): boolean {
+  const host = hostname.toLowerCase().replace(/\.$/, '')
+  if (!host || host === 'localhost' || host.endsWith('.localhost')) return false
+  if (host.endsWith('.local') || host.endsWith('.internal') || host.endsWith('.home.arpa')) {
+    return false
+  }
+  if (host.startsWith('[') || /^\d+(\.\d+){3}$/.test(host)) return false
+  return host.includes('.')
+}
+
+/** Only `https://` URLs on public host names, without embedded credentials. */
+export function isAllowedIcsUrl(raw: string): boolean {
+  try {
+    const url = new URL(raw)
+    return (
+      url.protocol === 'https:' && !url.username && !url.password && isPublicHostname(url.hostname)
+    )
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Only relay bodies that are actually iCalendar data — even with a public
+ * host the endpoint must not become a fetch-anything proxy for whatever
+ * `config.json` points at.
+ */
+function looksLikeCalendar(bytes: ArrayBuffer): boolean {
+  const head = new TextDecoder()
+    .decode(bytes.slice(0, 64))
+    .replace(/^\uFEFF/, '')
+    .trimStart()
+  return head.toUpperCase().startsWith('BEGIN:VCALENDAR')
+}
+
 function getIcsUrl(): string {
   try {
     const configPath = join(process.cwd(), 'public', 'data', 'config.json')
@@ -56,6 +97,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const icsUrl = getIcsUrl()
+    if (!isAllowedIcsUrl(icsUrl)) {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(502).json({ error: 'ics_url_not_allowed' })
+      return
+    }
 
     const upstream = await fetch(icsUrl, {
       headers: {
@@ -82,6 +128,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (bytes.byteLength > MAX_BODY_BYTES) {
       res.setHeader('Content-Type', 'application/json')
       res.status(502).json({ error: 'upstream_too_large' })
+      return
+    }
+    if (!looksLikeCalendar(bytes)) {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(502).json({ error: 'upstream_not_calendar' })
       return
     }
 

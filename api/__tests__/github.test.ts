@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import handler, { isContentPath, resolveAllowedUrl, verifyRefUpdate } from '../github'
+import handler, {
+  isContentFilePath,
+  isContentPath,
+  resolveAllowedUrl,
+  verifyRefUpdate,
+} from '../github'
 import { jsonResponse, makeRequest, makeResponse, mockFetchByUrl } from './helpers'
 
 const REPO = '/repos/UgurTheG/SPD-Albstadt'
@@ -532,5 +537,193 @@ describe('POST /api/github handler — branch updates', () => {
     const res = makeResponse()
     await handler(makeRequest({ method: 'POST', headers, body: patchMain }), res)
     expect(res.statusCode).toBe(502)
+  })
+})
+
+// ─── Content file types ───────────────────────────────────────────────────────
+
+describe('isContentFilePath', () => {
+  it('accepts the file types each content directory is meant for', () => {
+    expect(isContentFilePath('public/data/news.json')).toBe(true)
+    expect(isContentFilePath('public/images/vorstand/max-1.webp')).toBe(true)
+    expect(isContentFilePath('public/images/news/Foto.JPG')).toBe(true)
+    expect(isContentFilePath('public/documents/fraktion/haushaltsreden/2024.pdf')).toBe(true)
+    expect(isContentFilePath('public/documents/kommunalpolitik/antrag.docx')).toBe(true)
+  })
+
+  it('rejects anything Vercel would serve as a page or script', () => {
+    expect(isContentFilePath('public/documents/kommunalpolitik/seite.html')).toBe(false)
+    expect(isContentFilePath('public/documents/kommunalpolitik/app.js')).toBe(false)
+    expect(isContentFilePath('public/images/news/logo.svg')).toBe(false)
+    expect(isContentFilePath('public/data/news.json.html')).toBe(false)
+  })
+
+  it('rejects types that do not belong in the directory, dotfiles and missing extensions', () => {
+    expect(isContentFilePath('public/data/bild.webp')).toBe(false)
+    expect(isContentFilePath('public/images/news/bericht.pdf')).toBe(false)
+    expect(isContentFilePath('public/documents/notizen.json')).toBe(false)
+    expect(isContentFilePath('public/documents/.htaccess')).toBe(false)
+    expect(isContentFilePath('public/documents/README')).toBe(false)
+    expect(isContentFilePath('public/documents/bericht.')).toBe(false)
+    expect(isContentFilePath('api/github.ts')).toBe(false)
+  })
+})
+
+describe('resolveAllowedUrl — request bodies stay within the allowlist', () => {
+  const commit = { message: 'admin: news.json aktualisiert', tree: SHA_A, parents: [SHA_B] }
+  const put = { message: 'admin: upload', content: 'AAA=', branch: 'main' }
+  const treeWith = (entry: Record<string, unknown>) =>
+    resolveAllowedUrl({
+      method: 'POST',
+      path: `${REPO}/git/trees`,
+      body: { base_tree: SHA_A, tree: [{ mode: '100644', type: 'blob', ...entry }] },
+    })
+
+  it('rejects commits that set author, committer or a signature', () => {
+    const extras = [
+      { author: { name: 'Someone Else', email: 'someone@example.org' } },
+      { committer: { name: 'Release Bot', email: 'bot@example.org' } },
+      { signature: '-----BEGIN PGP SIGNATURE-----' },
+    ]
+    for (const extra of extras) {
+      expect(
+        resolveAllowedUrl({
+          method: 'POST',
+          path: `${REPO}/git/commits`,
+          body: { ...commit, ...extra },
+        }),
+      ).toBeNull()
+    }
+  })
+
+  it('rejects single-file writes that set author or committer', () => {
+    const path = `${REPO}/contents/public/documents/kommunalpolitik/antrag.pdf`
+    expect(
+      resolveAllowedUrl({
+        method: 'PUT',
+        path,
+        body: { ...put, committer: { name: 'x', email: 'x@example.org' } },
+      }),
+    ).toBeNull()
+    expect(
+      resolveAllowedUrl({ method: 'PUT', path, body: { ...put, sha: 'not-a-sha' } }),
+    ).toBeNull()
+    expect(resolveAllowedUrl({ method: 'PUT', path, body: { ...put, sha: SHA_A } })).not.toBeNull()
+    expect(
+      resolveAllowedUrl({
+        method: 'DELETE',
+        path,
+        body: { message: 'x', sha: SHA_A, author: { name: 'x', email: 'x@example.org' } },
+      }),
+    ).toBeNull()
+  })
+
+  it('rejects unexpected fields on tree, blob and ref-update bodies', () => {
+    const entry = { path: 'public/data/news.json', mode: '100644', type: 'blob', content: '{}' }
+    expect(
+      resolveAllowedUrl({
+        method: 'POST',
+        path: `${REPO}/git/trees`,
+        body: { base_tree: SHA_A, tree: [entry], truncated: false },
+      }),
+    ).toBeNull()
+    expect(treeWith({ ...entry, url: 'https://evil.example/blob' })).toBeNull()
+    expect(
+      resolveAllowedUrl({
+        method: 'POST',
+        path: `${REPO}/git/blobs`,
+        body: { content: 'AAA=', encoding: 'base64', size: 3 },
+      }),
+    ).toBeNull()
+    expect(
+      resolveAllowedUrl({
+        method: 'PATCH',
+        path: `${REPO}/git/refs/heads/main`,
+        body: { sha: SHA_A, ref: 'refs/heads/main' },
+      }),
+    ).toBeNull()
+  })
+
+  it('only creates or replaces files of an allowed type, but still deletes legacy ones', () => {
+    expect(
+      treeWith({ path: 'public/documents/kommunalpolitik/seite.html', content: '<script>' }),
+    ).toBeNull()
+    expect(treeWith({ path: 'public/images/news/logo.svg', sha: SHA_B })).toBeNull()
+    expect(treeWith({ path: 'public/documents/kommunalpolitik/alt.txt', sha: null })).not.toBeNull()
+    expect(
+      resolveAllowedUrl({
+        method: 'PUT',
+        path: `${REPO}/contents/public/documents/kommunalpolitik/seite.html`,
+        body: put,
+      }),
+    ).toBeNull()
+    expect(
+      resolveAllowedUrl({
+        method: 'DELETE',
+        path: `${REPO}/contents/public/documents/kommunalpolitik/alt.txt`,
+        body: { message: 'x', sha: SHA_A },
+      }),
+    ).not.toBeNull()
+  })
+})
+
+describe('verifyRefUpdate — content file types', () => {
+  afterEach(() => vi.restoreAllMocks())
+
+  it('rejects a commit that adds a page or script to a content directory', async () => {
+    refUpdateRoutes({
+      newTree: withChange({
+        path: 'public/documents/kommunalpolitik/seite.html',
+        mode: '100644',
+        type: 'blob',
+        sha: '9'.repeat(40),
+      }),
+    })
+    expect(await verifyRefUpdate('gho_x', NEW)).toBe('forbidden')
+  })
+
+  it('accepts a commit that removes a legacy file of another type', async () => {
+    const legacy = {
+      path: 'public/documents/kommunalpolitik/alt.txt',
+      mode: '100644',
+      type: 'blob',
+      sha: '5'.repeat(40),
+    }
+    mockFetchByUrl([
+      ['git/ref/heads/main', jsonResponse({ object: { sha: HEAD } })],
+      [`git/commits/${NEW}`, jsonResponse({ parents: [{ sha: HEAD }], tree: { sha: NEW_TREE } })],
+      [`git/commits/${HEAD}`, jsonResponse({ parents: [], tree: { sha: HEAD_TREE } })],
+      [`git/trees/${NEW_TREE}`, jsonResponse({ truncated: false, tree: BASE_TREE })],
+      [`git/trees/${HEAD_TREE}`, jsonResponse({ truncated: false, tree: [...BASE_TREE, legacy] })],
+    ])
+    expect(await verifyRefUpdate('gho_x', NEW)).toBe('ok')
+  })
+})
+
+describe('POST /api/github handler — rate limit', () => {
+  afterEach(() => vi.restoreAllMocks())
+
+  it('answers 429 once an IP exceeds its budget, without contacting GitHub', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    const headers = {
+      origin: 'https://www.spd-albstadt.de',
+      cookie: 'spd_access_token=gho_secret',
+      'x-forwarded-for': '10.7.0.1',
+    }
+    let last = makeResponse()
+    for (let i = 0; i < 301; i++) {
+      last = makeResponse()
+      await handler(
+        makeRequest({
+          method: 'POST',
+          headers,
+          body: { method: 'DELETE', path: `${REPO}/hooks/1` },
+        }),
+        last,
+      )
+    }
+    expect(last.statusCode).toBe(429)
+    expect(last.body).toEqual({ error: 'too_many_requests' })
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 })
