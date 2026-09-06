@@ -440,3 +440,56 @@ describe('ImageListField — deep interactions', () => {
     expect(container.firstChild).toBeTruthy()
   })
 })
+
+// ─── KommunalpolitikEditor — Dokument upload file types ──────────────────────
+
+describe('KommunalpolitikEditor — Dokument upload', () => {
+  const jahr = {
+    id: 'j1',
+    jahr: '2024',
+    aktiv: true,
+    gemeinderaete: [],
+    kreisraete: [],
+    dokumente: [{ id: 'd1', titel: 'Bericht', url: '' }],
+  }
+
+  async function renderWithFileInput() {
+    resetStore({
+      state: { kommunalpolitik: { sichtbar: true, beschreibung: '', jahre: [jahr] } },
+      originalState: { kommunalpolitik: { sichtbar: true, beschreibung: '', jahre: [jahr] } },
+    })
+    const { container } = render(<KommunalpolitikEditor />)
+    await act(async () => {
+      fireEvent.click(container.querySelector('button[aria-label="Jahr ausklappen"]')!)
+    })
+    return container.querySelector('input[type="file"]') as HTMLInputElement
+  }
+
+  it('refuses file types the content allowlist rejects and says why', async () => {
+    const input = await renderWithFileInput()
+    await act(async () => {
+      fireEvent.change(input, {
+        target: { files: [new File(['<script>'], 'seite.html', { type: 'text/html' })] },
+      })
+    })
+    const s = useAdminStore.getState()
+    expect(s.pendingUploads).toHaveLength(0)
+    expect(s.statusType).toBe('error')
+    expect(s.statusMessage).toContain('PDF')
+  })
+
+  it('queues a PDF under public/documents/kommunalpolitik with a lower-case extension', async () => {
+    const input = await renderWithFileInput()
+    await act(async () => {
+      fireEvent.change(input, {
+        target: { files: [new File(['%PDF-1.4'], 'Bericht.PDF', { type: 'application/pdf' })] },
+      })
+      await new Promise(r => setTimeout(r, 30))
+    })
+    const s = useAdminStore.getState()
+    expect(s.pendingUploads).toHaveLength(1)
+    expect(s.pendingUploads[0]!.ghPath).toMatch(
+      /^public\/documents\/kommunalpolitik\/bericht-\d+\.pdf$/,
+    )
+  })
+})

@@ -259,7 +259,9 @@ Der Admin-Editor konvertiert Uploads nach WebP und referenziert sie in den JSON-
 
 - Liest `icsUrl` aus `public/data/config.json`
 - Holt den Kalender serverseitig und gibt `text/calendar` zurück
+- Ruft nur `https://`-URLs auf öffentlichen Hostnamen ab (keine IP-Literale, kein `localhost`, keine privaten Domains) und reicht nur Antworten weiter, die mit `BEGIN:VCALENDAR` beginnen — der Proxy ist kein allgemeiner Fetch-Relay, auch wenn `config.json` auf etwas anderes zeigt
 - Fehlerfall: HTTP 502 mit JSON-Fehlerobjekt
+- Rate Limit: 30 Anfragen pro IP pro Minute
 
 ### `GET /api/admin-presence`
 
@@ -271,7 +273,7 @@ Der Admin-Editor konvertiert Uploads nach WebP und referenziert sie in den JSON-
 
 - Heartbeat-Endpunkt: aktualisiert das Präsenz-Profil des anfragenden Nutzers (aktiver Tab, Dirty-Tabs, Avatar)
 - Nutzeridentität wird aus dem HMAC-signierten, serverseitig gesetzten `USER_LOGIN_COOKIE` gelesen und die Signatur geprüft — Client-Angaben oder selbst gesetzte Cookies werden ignoriert (verhindert Impersonation)
-- Rate Limit: 180 Anfragen pro IP pro Minute
+- Rate Limit: 400 Anfragen pro IP pro Minute (über alle Methoden; deckt den 500-ms-Versions-Check mehrerer Editoren hinter einer Büro-IP ab)
 
 ### `DELETE /api/admin-presence`
 
@@ -317,8 +319,10 @@ Der Admin-Editor konvertiert Uploads nach WebP und referenziert sie in den JSON-
 - Serverseitiger Proxy für GitHub-API-Aufrufe
 - Das Access-Token wird aus dem HttpOnly-Cookie gelesen und serverseitig an GitHub weitergeleitet
 - Endpunkt-Allowlist: nur die vom Editor benötigten Aufrufe unter `/repos/UgurTheG/SPD-Albstadt/` und `/user`; Schreibzugriffe nur unter `public/data/`, `public/images/` und `public/documents/`
-- Vor jedem Branch-Update (`PATCH git/refs/heads/main`) prüft der Proxy den Ziel-Commit bei GitHub: Er muss direkt auf der aktuellen `main`-Spitze aufsetzen und darf gegenüber dem Eltern-Commit ausschließlich reguläre Dateien in den Inhaltsverzeichnissen ändern — sonst `403`
-- Origin-Prüfung, Methoden-Beschränkung (GET/POST/PUT/PATCH/DELETE)
+- Dateityp-Allowlist pro Verzeichnis: `public/data/` nur `.json`, `public/images/` nur `.webp`/`.jpg`/`.jpeg`/`.png`/`.gif`/`.avif`, `public/documents/` nur `.pdf`/`.doc`/`.docx`. Andere Typen (z. B. `.html`, `.js`, `.svg`) würde Vercel als Seite oder Skript unter der eigenen Domain ausliefern und damit die CSP unterlaufen — sie werden beim Anlegen/Ersetzen abgelehnt; Löschen ist für alle Dateien in den Inhaltsverzeichnissen erlaubt
+- Request-Bodies werden strikt auf die vom Editor genutzten Felder begrenzt — insbesondere sind `author`/`committer` auf Commits nicht erlaubt, damit niemand fremde Namen unter einen Commit auf `main` setzen kann
+- Vor jedem Branch-Update (`PATCH git/refs/heads/main`) prüft der Proxy den Ziel-Commit bei GitHub: Er muss direkt auf der aktuellen `main`-Spitze aufsetzen und darf gegenüber dem Eltern-Commit ausschließlich reguläre Dateien erlaubter Typen in den Inhaltsverzeichnissen anlegen oder ändern — sonst `403`
+- Origin-Prüfung, Methoden-Beschränkung (GET/POST/PUT/PATCH/DELETE), Rate Limit (300/min pro IP)
 
 ## 11. Deployment
 
@@ -341,10 +345,12 @@ npm run preview
 - Login erfolgt über GitHub OAuth 2.0 mit serverseitiger Token-Verwaltung
 - Access- und Refresh-Token liegen ausschließlich in **HttpOnly/Secure/SameSite=Lax-Cookies** — JavaScript im Browser hat keinen Zugriff
 - Alle GitHub-API-Aufrufe laufen über den serverseitigen Proxy `/api/github`; das Token verlässt den Server nicht
-- Der Proxy beschränkt API-Pfade auf das eigene Repository (`/repos/UgurTheG/SPD-Albstadt/`) und `/user`; Schreibzugriffe sind auf die Inhaltsverzeichnisse unter `public/` begrenzt, und `main` wird nur auf Commits bewegt, die nachweislich nichts anderes ändern — eine gestohlene Editor-Sitzung kann keinen Anwendungscode veröffentlichen
+- Der Proxy beschränkt API-Pfade auf das eigene Repository (`/repos/UgurTheG/SPD-Albstadt/`) und `/user`; Schreibzugriffe sind auf die Inhaltsverzeichnisse unter `public/` und dort auf die erwarteten Dateitypen (JSON, Bilder, PDF/DOC/DOCX) begrenzt, und `main` wird nur auf Commits bewegt, die nachweislich nichts anderes ändern — eine gestohlene Editor-Sitzung kann weder Anwendungscode noch eine HTML-Seite oder ein Skript unter der eigenen Domain veröffentlichen
+- Request-Bodies an GitHub werden auf die vom Editor genutzten Felder begrenzt; `author`/`committer` auf Commits werden abgelehnt (keine gefälschten Commit-Urheber)
 - CSRF-Schutz im OAuth-Flow: kryptographischer State-Parameter, HMAC-SHA256-signiert mit eingebettetem Ablaufzeitpunkt (10 min), in HttpOnly-Cookie gespeichert, Constant-Time-Vergleich
 - Origin-Allowlist auf allen schreibenden Auth- und Proxy-Endpunkten
-- Rate Limiting auf Login (5/min), Callback (10/min), Session-Check (60/min) und Refresh (10/min) pro IP
+- Rate Limiting pro IP auf allen API-Routen: Login (5/min), Callback (10/min), Session-Check (60/min), Refresh (10/min), Logout (10/min), GitHub-Proxy (300/min), Präsenz (400/min), ICS-Proxy (30/min). Der Zähler lebt im Speicher der jeweiligen Function-Instanz — ein wirksamer Schutz gegen anhaltenden Missbrauch, aber kein exaktes globales Limit
+- Der ICS-Proxy ruft nur `https://`-URLs auf öffentlichen Hostnamen ab und reicht nur echte iCalendar-Daten weiter — ein manipulierter `icsUrl`-Eintrag macht aus ihm keinen Fetch-Relay ins interne Netz
 - Bei jedem Token-Refresh wird die Identität erneut bei GitHub abgefragt (nicht aus Cookies übernommen) und Allowlist sowie Push-Zugriff werden neu geprüft
 - Identitäts-Cookie für die Präsenzanzeige ist HMAC-signiert und zeitlich begrenzt; ein Cookie, den der Server nicht ausgestellt hat, wird verworfen
 - HTTP-Header: HSTS (inkl. Subdomains), CSP ohne Inline-Skripte mit `upgrade-insecure-requests`, `Cross-Origin-Opener-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` (siehe `vercel.json`)

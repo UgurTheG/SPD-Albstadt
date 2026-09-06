@@ -350,6 +350,10 @@ export default function KommunalpolitikEditor() {
 
 // ─── Local sub-components ─────────────────────────────────────────────────────
 
+/** Mirrors the server-side allowlist in `api/github.ts` — the proxy refuses
+ *  anything else, so reject it here with a readable message instead. */
+const ALLOWED_DOCUMENT_EXTENSIONS = new Set(['pdf', 'doc', 'docx'])
+
 function DokumentRow({
   dok,
   onChange,
@@ -372,6 +376,11 @@ function DokumentRow({
   const displayName = dok.url ? dok.url.split('/').pop() : null
 
   const handleFile = async (file: File) => {
+    const ext = file.name.includes('.') ? file.name.split('.').pop()!.toLowerCase() : 'pdf'
+    if (!ALLOWED_DOCUMENT_EXTENSIONS.has(ext)) {
+      setStatus('Nur PDF-, DOC- und DOCX-Dateien können hochgeladen werden.', 'error')
+      return
+    }
     try {
       const base64 = await fileToBase64(file)
       const namePart =
@@ -381,7 +390,6 @@ function DokumentRow({
           .replace(/(^-|-$)/g, '') +
         '-' +
         Date.now()
-      const ext = file.name.includes('.') ? file.name.split('.').pop()! : 'pdf'
       const ghPath = `public/documents/kommunalpolitik/${namePart}.${ext}`
       const publicUrl = `/documents/kommunalpolitik/${namePart}.${ext}`
       addPendingUpload({
