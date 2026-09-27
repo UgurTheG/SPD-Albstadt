@@ -3,6 +3,8 @@
  * - useUndoRedoShortcuts
  * - useTabPublisher
  * - useKommunalpolitikEditor
+ * - useTabEditorState
+ * - useTabChanges
  * - useHaushaltsredenEditor
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
@@ -45,6 +47,9 @@ import { resetPersistenceState } from '../../admin/store/persistence'
 import { useUndoRedoShortcuts } from '../../admin/hooks/useUndoRedoShortcuts'
 import { useTabPublisher } from '../../admin/hooks/useTabPublisher'
 import { useKommunalpolitikEditor } from '../../admin/hooks/useKommunalpolitikEditor'
+import { useTabEditorState } from '../../admin/hooks/useTabEditorState'
+import { useTabChanges } from '../../admin/hooks/useTabChanges'
+import { isTabDirty } from '../../admin/store/editorSlice'
 import { useHaushaltsredenEditor } from '../../admin/hooks/useHaushaltsredenEditor'
 import {
   listDirectory,
@@ -427,6 +432,12 @@ describe('useKommunalpolitikEditor', () => {
     act(() => result.current.toggleSection('j1-gemeinderaete'))
     expect(result.current.collapsedSections.has('j1-gemeinderaete')).toBe(false)
   })
+})
+
+// ── useTabEditorState ─────────────────────────────────────────────────────────
+
+describe('useTabEditorState', () => {
+  beforeEach(() => resetStore())
 
   it('undo/redo delegate to store', () => {
     resetStore({
@@ -434,7 +445,7 @@ describe('useKommunalpolitikEditor', () => {
       originalState: { kommunalpolitik: { sichtbar: false, beschreibung: '', jahre: [] } },
       undoStacks: { kommunalpolitik: [{ sichtbar: false, beschreibung: '', jahre: [] }] },
     })
-    const { result } = renderHook(() => useKommunalpolitikEditor())
+    const { result } = renderHook(() => useTabEditorState('kommunalpolitik'))
     act(() => result.current.undo())
     expect(result.current.canUndo).toBe(false)
     expect(result.current.canRedo).toBe(true)
@@ -447,14 +458,80 @@ describe('useKommunalpolitikEditor', () => {
       state: { kommunalpolitik: { sichtbar: false, beschreibung: '', jahre: [] } },
       originalState: { kommunalpolitik: { sichtbar: true, beschreibung: '', jahre: [] } },
     })
-    const { result } = renderHook(() => useKommunalpolitikEditor())
+    const { result } = renderHook(() => useTabEditorState('kommunalpolitik'))
+    expect(result.current.isDirty).toBe(true)
+  })
+
+  it('isDirty is true when the tab owns a pending upload', () => {
+    const data = { sichtbar: true, beschreibung: '', jahre: [] }
+    resetStore({
+      state: { kommunalpolitik: data },
+      originalState: { kommunalpolitik: data },
+      pendingUploads: [
+        {
+          ghPath: 'public/documents/x.pdf',
+          base64: 'AA==',
+          message: 'upload',
+          tabKey: 'kommunalpolitik',
+        },
+      ],
+    })
+    const { result } = renderHook(() => useTabEditorState('kommunalpolitik'))
     expect(result.current.isDirty).toBe(true)
   })
 
   it('hasLoadError reflects dataLoadErrors', () => {
     resetStore({ dataLoadErrors: ['kommunalpolitik'] })
-    const { result } = renderHook(() => useKommunalpolitikEditor())
+    const { result } = renderHook(() => useTabEditorState('kommunalpolitik'))
     expect(result.current.hasLoadError).toBe(true)
+  })
+})
+
+// ── isTabDirty ────────────────────────────────────────────────────────────────
+
+describe('isTabDirty', () => {
+  const party = { vorstand: [{ name: 'A', bildUrl: '/images/vorstand/a.webp' }] }
+
+  it('agrees with dirtyTabs() for an image replaced under the same URL', () => {
+    resetStore({
+      state: { party },
+      originalState: { party },
+      pendingUploads: [
+        { ghPath: 'public/images/vorstand/a.webp', base64: 'AA==', message: 'upload' },
+      ],
+    })
+    const s = useAdminStore.getState()
+    expect(isTabDirty(s, 'party')).toBe(true)
+    expect(s.dirtyTabs().has('party')).toBe(true)
+  })
+
+  it('is false for an unchanged tab without uploads', () => {
+    resetStore({ state: { party }, originalState: { party } })
+    expect(isTabDirty(useAdminStore.getState(), 'party')).toBe(false)
+  })
+})
+
+// ── useTabChanges ─────────────────────────────────────────────────────────────
+
+describe('useTabChanges', () => {
+  it('returns only tabs with changes, grouped', () => {
+    resetStore({
+      state: { startseite: { heroSlogan: 'Neu' }, kontakt: { email: 'a@b.de' } },
+      originalState: { startseite: { heroSlogan: 'Alt' }, kontakt: { email: 'a@b.de' } },
+    })
+    const { result } = renderHook(() => useTabChanges())
+    expect(result.current.map(tc => tc.tab.key)).toEqual(['startseite'])
+    expect(result.current[0].entries).toHaveLength(1)
+    expect(result.current[0].groups).toHaveLength(1)
+  })
+
+  it('limits the diff to one tab when a key is given', () => {
+    resetStore({
+      state: { startseite: { heroSlogan: 'Neu' }, kontakt: { email: 'x@y.de' } },
+      originalState: { startseite: { heroSlogan: 'Alt' }, kontakt: { email: 'a@b.de' } },
+    })
+    const { result } = renderHook(() => useTabChanges('kontakt'))
+    expect(result.current.map(tc => tc.tab.key)).toEqual(['kontakt'])
   })
 })
 

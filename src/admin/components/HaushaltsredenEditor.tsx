@@ -2,10 +2,7 @@ import { Eye, EyeOff, FileUp, RefreshCw, Trash2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import AdminWarningBanner from './AdminWarningBanner'
 import TabEditorShell from './TabEditorShell'
-import { useAdminStore } from '../store'
 import { useHaushaltsredenEditor } from '../hooks/useHaushaltsredenEditor'
-import { useUndoRedoShortcuts } from '../hooks/useUndoRedoShortcuts'
-import { useTabPublisher } from '../hooks/useTabPublisher'
 
 export default function HaushaltsredenEditor() {
   const {
@@ -28,32 +25,8 @@ export default function HaushaltsredenEditor() {
   // Visibility toggles go through the store's dirty-tracking, so this tab needs
   // the same publish/undo/diff chrome as every other tab — without it the only
   // way to publish a toggle would be the global "Alle veröffentlichen" button.
-  const undoAction = useAdminStore(s => s.undo)
-  const redoAction = useAdminStore(s => s.redo)
-  const loadData = useAdminStore(s => s.loadData)
-  const hasLoadError = useAdminStore(s => s.dataLoadErrors.includes('haushaltsreden'))
-  const isDirty = useAdminStore(
-    s =>
-      JSON.stringify(s.state['haushaltsreden']) !==
-      JSON.stringify(s.originalState['haushaltsreden']),
-  )
-  const canUndo = useAdminStore(s => (s.undoStacks['haushaltsreden']?.length ?? 0) > 0)
-  const canRedo = useAdminStore(s => (s.redoStacks['haushaltsreden']?.length ?? 0) > 0)
-  useUndoRedoShortcuts('haushaltsreden', undoAction, redoAction)
-  const publisher = useTabPublisher('haushaltsreden', 'haushaltsreden.json')
-
   return (
-    <TabEditorShell
-      tabKey="haushaltsreden"
-      isDirty={isDirty}
-      hasLoadError={hasLoadError}
-      canUndo={canUndo}
-      canRedo={canRedo}
-      publisher={publisher}
-      onUndo={() => undoAction('haushaltsreden')}
-      onRedo={() => redoAction('haushaltsreden')}
-      onReloadData={loadData}
-    >
+    <TabEditorShell tabKey="haushaltsreden">
       {/* Toolbar: reload button */}
       <div className="flex items-center justify-end mb-6">
         <button

@@ -4,8 +4,6 @@
  */
 import { useCallback, useState } from 'react'
 import { useAdminStore } from '../store'
-import { useUndoRedoShortcuts } from './useUndoRedoShortcuts'
-import { useTabPublisher } from './useTabPublisher'
 import type {
   Dokument,
   KommunalpolitikData,
@@ -17,13 +15,8 @@ import type {
 
 export interface KommunalpolitikEditorState {
   data: KommunalpolitikData
-  isDirty: boolean
-  hasLoadError: boolean
-  canUndo: boolean
-  canRedo: boolean
   expandedJahrIds: Set<string>
   collapsedSections: Set<string>
-  publisher: ReturnType<typeof useTabPublisher>
   update: (patch: Partial<KommunalpolitikData>) => void
   addJahr: () => void
   removeJahr: (id: string) => void
@@ -37,40 +30,17 @@ export interface KommunalpolitikEditorState {
   updateDokumente: (jahrId: string, dokumente: Dokument[]) => void
   toggleExpand: (id: string) => void
   toggleSection: (key: string) => void
-  undo: () => void
-  redo: () => void
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useKommunalpolitikEditor(): KommunalpolitikEditorState {
   const updateState = useAdminStore(s => s.updateState)
-  const undoAction = useAdminStore(s => s.undo)
-  const redoAction = useAdminStore(s => s.redo)
-  const undoStacks = useAdminStore(s => s.undoStacks)
-  const redoStacks = useAdminStore(s => s.redoStacks)
   const rawData = useAdminStore(s => s.state['kommunalpolitik'])
-  const hasLoadError = useAdminStore(s => s.dataLoadErrors.includes('kommunalpolitik'))
-  // Efficient dirty check: compare only this tab's data instead of calling dirtyTabs()
-  // which would JSON.stringify every tab on every store update.
-  const isDirty = useAdminStore(s => {
-    if (
-      JSON.stringify(s.state['kommunalpolitik']) !==
-      JSON.stringify(s.originalState['kommunalpolitik'])
-    )
-      return true
-    return s.pendingUploads.some(u => u.tabKey === 'kommunalpolitik')
-  })
 
   const [expandedJahrIds, setExpandedJahrIds] = useState<Set<string>>(new Set())
   // key = `${jahrId}-gemeinderaete` | `${jahrId}-kreisraete` | `${jahrId}-dokumente`
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
-
-  const canUndo = (undoStacks['kommunalpolitik']?.length ?? 0) > 0
-  const canRedo = (redoStacks['kommunalpolitik']?.length ?? 0) > 0
-
-  useUndoRedoShortcuts('kommunalpolitik', undoAction, redoAction)
-  const publisher = useTabPublisher('kommunalpolitik', 'kommunalpolitik.json')
 
   // Derive typed data — fall back to an empty structure if the store has nothing yet.
   const data: KommunalpolitikData =
@@ -152,18 +122,10 @@ export function useKommunalpolitikEditor(): KommunalpolitikEditorState {
     })
   }, [])
 
-  const undo = useCallback(() => undoAction('kommunalpolitik'), [undoAction])
-  const redo = useCallback(() => redoAction('kommunalpolitik'), [redoAction])
-
   return {
     data,
-    isDirty,
-    hasLoadError,
-    canUndo,
-    canRedo,
     expandedJahrIds,
     collapsedSections,
-    publisher,
     update,
     addJahr,
     removeJahr,
@@ -173,7 +135,5 @@ export function useKommunalpolitikEditor(): KommunalpolitikEditorState {
     updateDokumente,
     toggleExpand,
     toggleSection,
-    undo,
-    redo,
   }
 }

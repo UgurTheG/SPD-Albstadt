@@ -37,6 +37,27 @@ function isTabJsonDirty(tabKey: string, cur: unknown, orig: unknown): boolean {
   return dirty
 }
 
+/**
+ * Whether one tab has unpublished changes — the per-tab form of dirtyTabs(),
+ * cheap enough to use directly as a store selector.
+ */
+export function isTabDirty(
+  s: Pick<EditorSlice, 'state' | 'originalState' | 'pendingUploads'>,
+  tabKey: string,
+): boolean {
+  // The upload's tabKey is ground truth: it catches document uploads whose URL
+  // may not be in the state yet (race between addPendingUpload and onChange).
+  if (s.pendingUploads.some(u => u.tabKey === tabKey)) return true
+  const tab = TABS.find(t => t.key === tabKey)
+  if (!tab?.file) return false
+  if (isTabJsonDirty(tabKey, s.state[tabKey], s.originalState[tabKey])) return true
+  // Replacing an image under the same URL (e.g. a same-named Abgeordneter)
+  // leaves the JSON unchanged, so also match pending uploads by path.
+  if (s.pendingUploads.length === 0 || !s.state[tabKey]) return false
+  const paths = collectImagePaths(tab, s.state[tabKey] as Record<string, unknown>)
+  return s.pendingUploads.some(u => paths.has(u.ghPath.replace(/^public/, '')))
+}
+
 // ─── Slice interface ───────────────────────────────────────────────────────────
 
 export interface EditorSlice {
@@ -90,34 +111,10 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
   tabBaseShas: {},
 
   dirtyTabs: () => {
-    const { state: s, originalState: os, pendingUploads } = get()
-    const dirty = new Set<string>()
-    for (const tab of TABS) {
-      if (!tab.file) continue
-      if (isTabJsonDirty(tab.key, s[tab.key], os[tab.key])) {
-        dirty.add(tab.key)
-      }
-    }
-    // Mark a tab dirty if it owns a pending upload — the tabKey is the ground truth,
-    // so this catches document uploads where the new URL may not yet be in the state
-    // (race between addPendingUpload and the state update from onChange).
-    for (const upload of pendingUploads) {
+    const s = get()
+    const dirty = new Set(TABS.filter(tab => isTabDirty(s, tab.key)).map(tab => tab.key))
+    for (const upload of s.pendingUploads) {
       if (upload.tabKey) dirty.add(upload.tabKey)
-    }
-    // Also mark a tab dirty if there's a pending image upload targeting a path
-    // referenced by the tab — otherwise replacing an image with the same URL
-    // (e.g. same-named Abgeordneter) would leave the tab undetected as changed.
-    if (pendingUploads.length > 0) {
-      for (const tab of TABS) {
-        if (!tab.file || dirty.has(tab.key) || !s[tab.key]) continue
-        const paths = collectImagePaths(tab as TabConfig, s[tab.key] as Record<string, unknown>)
-        for (const upload of pendingUploads) {
-          if (paths.has(upload.ghPath.replace(/^public/, ''))) {
-            dirty.add(tab.key)
-            break
-          }
-        }
-      }
     }
     return dirty
   },

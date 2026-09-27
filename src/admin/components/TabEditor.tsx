@@ -6,8 +6,6 @@ import HaushaltsredenEditor from './HaushaltsredenEditor'
 import KommunalpolitikEditor from './KommunalpolitikEditor'
 import TabEditorShell from './TabEditorShell'
 import { CollapsibleSection } from './CollapsibleSection'
-import { useUndoRedoShortcuts } from '../hooks/useUndoRedoShortcuts'
-import { useTabPublisher } from '../hooks/useTabPublisher'
 import { deepClone } from '../lib/json'
 
 interface Props {
@@ -28,37 +26,12 @@ export default function TabEditor({ tab }: Props) {
 // ─── Generic editor (array / object tabs) ─────────────────────────────────────
 
 function GenericTabEditor({ tab }: Props) {
-  const undo = useAdminStore(s => s.undo)
-  const redo = useAdminStore(s => s.redo)
-  const undoStacks = useAdminStore(s => s.undoStacks)
-  const redoStacks = useAdminStore(s => s.redoStacks)
-  const loadData = useAdminStore(s => s.loadData)
-  const hasLoadError = useAdminStore(s => s.dataLoadErrors.includes(tab.key))
-  const isDirty = useAdminStore(s => s.dirtyTabs().has(tab.key))
   const data = useAdminStore(s => s.state[tab.key])
-
-  const canUndo = (undoStacks[tab.key]?.length ?? 0) > 0
-  const canRedo = (redoStacks[tab.key]?.length ?? 0) > 0
-
-  useUndoRedoShortcuts(tab.key, undo, redo)
-
-  const publisher = useTabPublisher(tab.key, tab.file?.split('/').pop())
 
   if (!data) return <p className="text-gray-400 text-center py-20">Daten werden geladen…</p>
 
   return (
-    <TabEditorShell
-      tabKey={tab.key}
-      previewPath={tab.previewPath}
-      isDirty={isDirty}
-      hasLoadError={hasLoadError}
-      canUndo={canUndo}
-      canRedo={canRedo}
-      publisher={publisher}
-      onUndo={() => undo(tab.key)}
-      onRedo={() => redo(tab.key)}
-      onReloadData={loadData}
-    >
+    <TabEditorShell tabKey={tab.key} previewPath={tab.previewPath}>
       {tab.type === 'array' && tab.fields && (
         <ArrayEditor
           fields={tab.fields}

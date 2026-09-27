@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { useTabPublisher } from '../hooks/useTabPublisher'
+import { useTabEditorState } from '../hooks/useTabEditorState'
 import AdminActionBar from './AdminActionBar'
 import StickyPublishBar from './StickyPublishBar'
 import AdminWarningBanner from './AdminWarningBanner'
@@ -8,35 +8,16 @@ import PreviewModal from './PreviewModal'
 import PublishConfirmModal from './PublishConfirmModal'
 import DiffModal from './DiffModal'
 
-type Publisher = ReturnType<typeof useTabPublisher>
-
 interface TabEditorShellProps {
   tabKey: string
   previewPath?: string
-  isDirty: boolean
-  hasLoadError: boolean
-  canUndo: boolean
-  canRedo: boolean
-  publisher: Publisher
-  onUndo: () => void
-  onRedo: () => void
-  onReloadData: () => void
   children: ReactNode
 }
 
-export default function TabEditorShell({
-  tabKey,
-  previewPath,
-  isDirty,
-  hasLoadError,
-  canUndo,
-  canRedo,
-  publisher,
-  onUndo,
-  onRedo,
-  onReloadData,
-  children,
-}: TabEditorShellProps) {
+export default function TabEditorShell({ tabKey, previewPath, children }: TabEditorShellProps) {
+  const { isDirty, hasLoadError, canUndo, canRedo, publisher, loadData, undo, redo } =
+    useTabEditorState(tabKey)
+
   return (
     <div className="pb-28">
       {publisher.orphans && (
@@ -71,7 +52,7 @@ export default function TabEditorShell({
             Daten für diesen Tab konnten nicht geladen werden. Veröffentlichen ist gesperrt —{' '}
             <button
               type="button"
-              onClick={onReloadData}
+              onClick={loadData}
               className="underline font-semibold hover:no-underline"
             >
               Erneut versuchen
@@ -87,8 +68,8 @@ export default function TabEditorShell({
         canUndo={canUndo}
         canRedo={canRedo}
         previewPath={previewPath}
-        onUndo={onUndo}
-        onRedo={onRedo}
+        onUndo={undo}
+        onRedo={redo}
         onShowPreview={() => publisher.setShowPreview(true)}
         onShowDiff={() => publisher.setShowDiff(true)}
         onDownload={publisher.handleDownload}

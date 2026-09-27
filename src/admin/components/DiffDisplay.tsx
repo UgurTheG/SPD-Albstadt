@@ -1,5 +1,160 @@
-import { ArrowRight } from 'lucide-react'
-import { type ChangeEntry, summarizeValue } from '../lib/diff'
+import { ArrowRight, Plus, Trash2, Undo2 } from 'lucide-react'
+import { type ChangeEntry, type ChangeGroup, summarizeValue } from '../lib/diff'
+import { cn } from '@/utils/cn'
+
+type StructuralKind = Exclude<ChangeGroup['itemKind'], 'modified'>
+
+const KIND_BADGE: Record<StructuralKind, { label: string; icon?: typeof Plus; cls: string }> = {
+  added: {
+    label: 'Neu',
+    icon: Plus,
+    cls: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
+  },
+  removed: {
+    label: 'Entfernt',
+    icon: Trash2,
+    cls: 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300',
+  },
+  moved: {
+    label: 'Verschoben',
+    cls: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+  },
+}
+
+const STRUCTURAL_REVERT: Record<StructuralKind, { label: string; title: string }> = {
+  added: { label: 'Verwerfen', title: 'Diesen neuen Eintrag verwerfen' },
+  removed: { label: 'Wiederherstellen', title: 'Entfernten Eintrag wiederherstellen' },
+  moved: { label: 'Zurücksetzen', title: 'Position zurücksetzen' },
+}
+
+// md: single-tab "Änderungen" modal. sm: the denser multi-tab lists in
+// "Alle Änderungen" and the publish confirmation.
+const CARD_SIZES = {
+  md: {
+    card: 'rounded-2xl',
+    header: 'px-3 py-2',
+    headerItems: 'gap-2',
+    badge: 'inline-flex items-center gap-1 text-[10px] tracking-wider px-2 py-0.5',
+    group: 'text-[10px]',
+    itemLabel: 'text-xs truncate',
+    revert: 'text-[11px] px-2.5 py-1 rounded-lg gap-1.5',
+    icon: 11,
+    moved: 'px-3 py-2 text-xs',
+    row: 'items-start gap-3 px-3 py-2.5',
+    fieldLabel: 'text-xs mb-1',
+  },
+  sm: {
+    card: 'rounded-xl text-[11px]',
+    header: 'px-2.5 py-1.5',
+    headerItems: 'gap-1.5',
+    badge: 'text-[9px] px-1.5 py-0.5',
+    group: 'text-[9px]',
+    itemLabel: '',
+    revert: 'px-2 py-0.5 rounded-md gap-1',
+    icon: 9,
+    moved: 'px-2.5 py-1.5',
+    row: 'items-center gap-2 px-2.5 py-1.5',
+    fieldLabel: 'text-[10px] mb-0.5',
+  },
+} as const
+
+const REVERT_BUTTON =
+  'shrink-0 font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center'
+
+/** One grouped block of changes (an item or section) with per-change revert buttons. */
+export function ChangeGroupCard({
+  group,
+  onRevert,
+  size = 'sm',
+}: {
+  group: ChangeGroup
+  onRevert: (entry: ChangeEntry) => void
+  size?: keyof typeof CARD_SIZES
+}) {
+  const sz = CARD_SIZES[size]
+  const kind = group.itemKind === 'modified' ? null : group.itemKind
+  const badge = kind && KIND_BADGE[kind]
+  const BadgeIcon = size === 'md' ? badge?.icon : undefined
+
+  return (
+    <div
+      className={cn(
+        'border border-gray-200/60 dark:border-gray-700/40 overflow-hidden bg-white/50 dark:bg-gray-800/30',
+        sz.card,
+      )}
+    >
+      <div
+        className={cn(
+          'flex items-center justify-between gap-2 bg-gray-50/80 dark:bg-gray-800/40 border-b border-gray-100 dark:border-gray-700/30',
+          sz.header,
+        )}
+      >
+        <div className={cn('flex items-center min-w-0 flex-wrap', sz.headerItems)}>
+          {badge && (
+            <span className={cn('font-bold uppercase rounded-full', sz.badge, badge.cls)}>
+              {BadgeIcon && <BadgeIcon size={10} />}
+              {badge.label}
+            </span>
+          )}
+          <span
+            className={cn(
+              'font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 truncate',
+              sz.group,
+            )}
+          >
+            {group.group}
+          </span>
+          {group.itemLabel && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">·</span>
+              <span className={cn('font-semibold text-gray-700 dark:text-gray-200', sz.itemLabel)}>
+                {group.itemLabel}
+              </span>
+            </>
+          )}
+        </div>
+        {kind && (
+          <button
+            type="button"
+            onClick={() => onRevert(group.entries[0])}
+            className={cn(REVERT_BUTTON, sz.revert)}
+            title={STRUCTURAL_REVERT[kind].title}
+          >
+            <Undo2 size={sz.icon} />
+            {STRUCTURAL_REVERT[kind].label}
+          </button>
+        )}
+      </div>
+
+      {kind === 'moved' && (
+        <div className={cn('text-gray-500 dark:text-gray-400', sz.moved)}>Reihenfolge geändert</div>
+      )}
+      {!kind && (
+        <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+          {group.entries.map(e => (
+            <li key={e.id} className={cn('flex justify-between', sz.row)}>
+              <div className="min-w-0 flex-1">
+                <div
+                  className={cn('font-semibold text-gray-700 dark:text-gray-200', sz.fieldLabel)}
+                >
+                  {e.fieldLabel}
+                </div>
+                <FieldChangeDiff entry={e} />
+              </div>
+              <button
+                type="button"
+                onClick={() => onRevert(e)}
+                className={cn(REVERT_BUTTON, sz.revert)}
+              >
+                <Undo2 size={sz.icon} /> Zurücksetzen
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
 
 export function FieldChangeDiff({ entry }: { entry: ChangeEntry }) {
   const t = entry.fieldType

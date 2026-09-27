@@ -1,48 +1,20 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { FileSearch, Undo2 } from 'lucide-react'
-import type { TabConfig } from '../types'
 import { useAdminStore } from '../store'
-import { TABS } from '../config/tabs'
-import { type ChangeEntry, diffTab, groupChangeEntries, type ChangeGroup } from '../lib/diff'
-import { FieldChangeDiff } from './DiffDisplay'
+import { useTabChanges } from '../hooks/useTabChanges'
+import { ChangeGroupCard } from './DiffDisplay'
 import ModalFrame from './ModalFrame'
 
 interface Props {
   onClose: () => void
 }
 
-interface TabChanges {
-  tab: TabConfig
-  entries: ChangeEntry[]
-  groups: ChangeGroup[]
-}
-
 export default function GlobalDiffModal({ onClose }: Props) {
-  const state = useAdminStore(s => s.state)
-  const originalState = useAdminStore(s => s.originalState)
-  const pendingUploads = useAdminStore(s => s.pendingUploads)
   const revertChange = useAdminStore(s => s.revertChange)
   const revertTab = useAdminStore(s => s.revertTab)
   const [confirmRevertTab, setConfirmRevertTab] = useState<string | null>(null)
   const [confirmRevertAll, setConfirmRevertAll] = useState(false)
-
-  const tabChanges = useMemo<TabChanges[]>(() => {
-    const pendingImagePaths = new Set(pendingUploads.map(u => u.ghPath.replace(/^public/, '')))
-    const result: TabChanges[] = []
-    for (const tab of TABS) {
-      if (!tab.file) continue
-      const entries = diffTab(
-        tab as TabConfig,
-        originalState[tab.key],
-        state[tab.key],
-        pendingImagePaths,
-      )
-      if (entries.length > 0) {
-        result.push({ tab: tab as TabConfig, entries, groups: groupChangeEntries(entries) })
-      }
-    }
-    return result
-  }, [state, originalState, pendingUploads])
+  const tabChanges = useTabChanges()
 
   const totalChanges = tabChanges.reduce((sum, tc) => sum + tc.entries.length, 0)
 
@@ -103,11 +75,10 @@ export default function GlobalDiffModal({ onClose }: Props) {
               </div>
               <div className="space-y-2">
                 {tc.groups.map(g => (
-                  <GlobalChangeGroup
+                  <ChangeGroupCard
                     key={g.key}
                     group={g}
-                    tabKey={tc.tab.key}
-                    onRevert={revertChange}
+                    onRevert={e => revertChange(tc.tab.key, e)}
                   />
                 ))}
               </div>
@@ -162,91 +133,5 @@ export default function GlobalDiffModal({ onClose }: Props) {
         </button>
       </div>
     </ModalFrame>
-  )
-}
-
-function GlobalChangeGroup({
-  group,
-  tabKey,
-  onRevert,
-}: {
-  group: ChangeGroup
-  tabKey: string
-  onRevert: (tabKey: string, entry: ChangeEntry) => void
-}) {
-  const isStructural = group.itemKind !== 'modified'
-  const structural = isStructural ? group.entries[0] : undefined
-
-  return (
-    <div className="rounded-xl border border-gray-200/60 dark:border-gray-700/40 overflow-hidden bg-white/50 dark:bg-gray-800/30 text-[11px]">
-      <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 bg-gray-50/80 dark:bg-gray-800/40 border-b border-gray-100 dark:border-gray-700/30">
-        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-          {group.itemKind === 'added' && (
-            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
-              Neu
-            </span>
-          )}
-          {group.itemKind === 'removed' && (
-            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300">
-              Entfernt
-            </span>
-          )}
-          {group.itemKind === 'moved' && (
-            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
-              Verschoben
-            </span>
-          )}
-          <span className="font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 truncate text-[9px]">
-            {group.group}
-          </span>
-          {group.itemLabel && (
-            <>
-              <span className="text-gray-300 dark:text-gray-600">·</span>
-              <span className="font-semibold text-gray-700 dark:text-gray-200">
-                {group.itemLabel}
-              </span>
-            </>
-          )}
-        </div>
-        {structural && (
-          <button
-            type="button"
-            onClick={() => onRevert(tabKey, structural)}
-            className="shrink-0 font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2 py-0.5 rounded-md border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1"
-          >
-            <Undo2 size={9} />
-            {group.itemKind === 'added'
-              ? 'Verwerfen'
-              : group.itemKind === 'moved'
-                ? 'Zurücksetzen'
-                : 'Wiederherstellen'}
-          </button>
-        )}
-      </div>
-      {group.itemKind === 'moved' && (
-        <div className="px-2.5 py-1.5 text-gray-500 dark:text-gray-400">Reihenfolge geändert</div>
-      )}
-      {!isStructural && (
-        <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-          {group.entries.map(e => (
-            <li key={e.id} className="flex items-center justify-between gap-2 px-2.5 py-1.5">
-              <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-semibold text-gray-700 dark:text-gray-200 mb-0.5">
-                  {e.fieldLabel}
-                </div>
-                <FieldChangeDiff entry={e} />
-              </div>
-              <button
-                type="button"
-                onClick={() => onRevert(tabKey, e)}
-                className="shrink-0 font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2 py-0.5 rounded-md border border-amber-300/60 dark:border-amber-700/40 transition-colors flex items-center gap-1"
-              >
-                <Undo2 size={9} /> Zurücksetzen
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
   )
 }

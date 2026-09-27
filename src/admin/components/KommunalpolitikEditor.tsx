@@ -26,13 +26,8 @@ import type { Dokument } from '@/components/sections/Kommunalpolitik/types'
 export default function KommunalpolitikEditor() {
   const {
     data,
-    isDirty,
-    hasLoadError,
-    canUndo,
-    canRedo,
     expandedJahrIds,
     collapsedSections,
-    publisher,
     update,
     addJahr,
     removeJahr,
@@ -42,25 +37,10 @@ export default function KommunalpolitikEditor() {
     updateDokumente,
     toggleExpand,
     toggleSection,
-    undo,
-    redo,
   } = useKommunalpolitikEditor()
 
-  const loadData = useAdminStore(s => s.loadData)
-
   return (
-    <TabEditorShell
-      tabKey="kommunalpolitik"
-      previewPath="/kommunalpolitik"
-      isDirty={isDirty}
-      hasLoadError={hasLoadError}
-      canUndo={canUndo}
-      canRedo={canRedo}
-      publisher={publisher}
-      onUndo={undo}
-      onRedo={redo}
-      onReloadData={loadData}
-    >
+    <TabEditorShell tabKey="kommunalpolitik" previewPath="/kommunalpolitik">
       {/* Sichtbar toggle */}
       <div className="bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/40 rounded-2xl p-5 mb-6">
         <div className="flex items-center justify-between gap-4">
