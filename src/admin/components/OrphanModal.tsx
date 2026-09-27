@@ -53,7 +53,7 @@ export default function OrphanModal({ orphans, onConfirm, onKeep, onCancel }: Pr
         </button>
         <button
           type="button"
-          className="text-xs px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:shadow-lg hover:shadow-red-500/25 transition-all flex items-center gap-1.5"
+          className="text-xs px-4 py-2.5 rounded-xl bg-linear-to-r from-red-500 to-red-600 text-white font-semibold hover:shadow-lg hover:shadow-red-500/25 transition-all flex items-center gap-1.5"
           onClick={() => onConfirm(orphans.filter(p => checked[p]))}
         >
           <Trash2 size={12} /> Löschen

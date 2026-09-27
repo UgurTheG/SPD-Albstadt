@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { AlertCircle, CheckCircle, ChevronDown, Send } from 'lucide-react'
+import { ChevronDown, CircleAlert, CircleCheckBig, Send } from 'lucide-react'
 import { useKontaktForm } from '@/hooks/useKontaktForm'
 import { BETREFF_OPTIONS } from './constants'
 
@@ -24,7 +24,7 @@ export function KontaktForm() {
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 300, delay: 0.1 }}
           >
-            <CheckCircle
+            <CircleCheckBig
               size={56}
               className="text-spd-red dark:text-white mb-5"
               strokeWidth={1.5}
@@ -147,7 +147,7 @@ export function KontaktForm() {
 
           {status === 'error' && (
             <div className="flex items-center gap-2.5 bg-red-50 dark:bg-white text-spd-red rounded-xl px-4 py-3 text-sm font-medium border border-red-200 dark:border-transparent">
-              <AlertCircle size={16} className="shrink-0" />
+              <CircleAlert size={16} className="shrink-0" />
               Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder schreiben Sie uns
               direkt per E-Mail.
             </div>

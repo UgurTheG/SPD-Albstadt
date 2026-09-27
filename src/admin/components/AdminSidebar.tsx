@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import { FileSearch, Loader2, LogOut, Moon, Rocket, Sun, X } from 'lucide-react'
+import { FileSearch, LoaderCircle, LogOut, Moon, Rocket, Sun, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { GHUser } from '../types'
 import type { PresenceUser } from '../store/presenceSlice'
@@ -84,9 +84,9 @@ export default function AdminSidebar({
           {/* Logo area */}
           <div className="relative px-5 pt-5 pb-4 overflow-hidden">
             {/* Accent line at top */}
-            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-spd-red via-spd-red/50 to-transparent" />
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-spd-red via-spd-red/50 to-transparent" />
             {/* Subtle gradient wash */}
-            <div className="absolute inset-0 bg-gradient-to-b from-spd-red/5 dark:from-spd-red/10 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-b from-spd-red/5 dark:from-spd-red/10 to-transparent pointer-events-none" />
             <div className="relative flex items-center gap-3">
               <div className="relative shrink-0">
                 <div className="absolute inset-0 bg-spd-red/20 blur-md" />
@@ -205,7 +205,7 @@ export default function AdminSidebar({
                     className="w-full bg-spd-red hover:bg-spd-red-dark text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm shadow-spd-red/25 hover:shadow-lg hover:shadow-spd-red/35 active:scale-[0.98] transition-colors flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-spd-red disabled:active:scale-100 whitespace-nowrap [hyphens:none]"
                   >
                     {publishing ? (
-                      <Loader2 size={14} strokeWidth={2.5} className="animate-spin shrink-0" />
+                      <LoaderCircle size={14} strokeWidth={2.5} className="animate-spin shrink-0" />
                     ) : (
                       <Rocket size={14} strokeWidth={2.5} className="shrink-0" />
                     )}

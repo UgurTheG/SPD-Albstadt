@@ -56,7 +56,7 @@ export function InlineDiff({ oldVal, newVal }: { oldVal?: unknown; newVal?: unkn
   const segments = wordDiff(wordsA, wordsB)
 
   return (
-    <div className="whitespace-pre-wrap break-words leading-relaxed">
+    <div className="whitespace-pre-wrap wrap-break-word leading-relaxed">
       {segments.map((seg, i) => {
         if (seg.type === 'equal')
           return (

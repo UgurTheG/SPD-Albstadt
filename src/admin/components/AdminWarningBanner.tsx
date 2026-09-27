@@ -1,4 +1,4 @@
-import { AlertTriangle } from 'lucide-react'
+import { TriangleAlert } from 'lucide-react'
 
 interface Props {
   title?: string
@@ -14,7 +14,7 @@ interface Props {
 export default function AdminWarningBanner({ title, children, iconSize = 14 }: Props) {
   return (
     <div className="flex items-start gap-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-700/40 rounded-2xl px-4 py-3">
-      <AlertTriangle
+      <TriangleAlert
         size={iconSize}
         className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"
       />

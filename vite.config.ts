@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
           return deps.filter(dep => !dep.includes('AdminApp') && !dep.includes('admin-vendor'))
         },
       },
-      rollupOptions: {
+      rolldownOptions: {
         output: {
           manualChunks(id) {
             // NOTE: Do NOT manually chunk /src/admin/ here — let Rolldown create

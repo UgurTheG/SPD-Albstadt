@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Loader2, Moon, Shield, Sun } from 'lucide-react'
+import { LoaderCircle, Moon, Shield, Sun } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
 import { useAdminStore } from '../store'
@@ -76,14 +76,14 @@ export default function LoginScreen() {
       {/* ── Left branding panel (desktop only) ─────────────────────────── */}
       <div className="hidden lg:flex lg:w-[420px] xl:w-[480px] shrink-0 flex-col justify-between p-10 xl:p-14 relative overflow-hidden bg-gray-950">
         {/* Grid pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:36px_36px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-size-[36px_36px]" />
         {/* Radial glows */}
         <div className="absolute -top-32 -right-32 w-[500px] h-[500px] bg-spd-red/15 rounded-full blur-3xl" />
         <div className="absolute -bottom-32 -left-32 w-[400px] h-[400px] bg-spd-red/8 rounded-full blur-3xl" />
         {/* Top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-spd-red via-spd-red/60 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-spd-red via-spd-red/60 to-transparent" />
         {/* Right edge fade */}
-        <div className="absolute top-0 right-0 bottom-0 w-px bg-gradient-to-b from-transparent via-white/5 to-transparent" />
+        <div className="absolute top-0 right-0 bottom-0 w-px bg-linear-to-b from-transparent via-white/5 to-transparent" />
 
         {/* Top: logo + wordmark */}
         <div className="relative z-10">
@@ -117,9 +117,9 @@ export default function LoginScreen() {
       {/* ── Right login panel ───────────────────────────────────────────── */}
       <div className="flex-1 flex items-center justify-center px-6 py-16 relative overflow-hidden bg-white dark:bg-gray-950">
         {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-50/80 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900" />
-        <div className="absolute -top-48 -right-48 w-[600px] h-[600px] bg-spd-red/[0.04] dark:bg-spd-red/[0.08] rounded-full blur-3xl" />
-        <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-spd-red/[0.02] dark:bg-spd-red/[0.05] rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-linear-to-br from-gray-50 via-white to-gray-50/80 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900" />
+        <div className="absolute -top-48 -right-48 w-[600px] h-[600px] bg-spd-red/4 dark:bg-spd-red/8 rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-spd-red/2 dark:bg-spd-red/5 rounded-full blur-3xl" />
 
         {/* Dark mode toggle */}
         <button
@@ -187,7 +187,7 @@ export default function LoginScreen() {
                 className="w-full group relative bg-gray-950 dark:bg-white/8 hover:bg-gray-800 dark:hover:bg-white/12 text-white font-bold py-3.5 rounded-2xl transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:pointer-events-none shadow-lg shadow-black/10 dark:shadow-black/30 hover:shadow-xl hover:shadow-black/15 hover:scale-[1.01] active:scale-[0.99]"
               >
                 {loginLoading ? (
-                  <Loader2 size={18} className="animate-spin" />
+                  <LoaderCircle size={18} className="animate-spin" />
                 ) : (
                   <>
                     <GitHubMark size={18} />
