@@ -17,11 +17,11 @@ const STATUS_STYLES: Record<string, string> = {
 }
 
 function RelatedNewsSection({ schlagwort }: { schlagwort: string }) {
-  const { data } = useData<{ items: NewsItem[] }>('/data/news.json')
-  if (!data?.items) return null
+  const { data } = useData<NewsItem[]>('/data/news.json')
+  if (!data) return null
 
   const q = schlagwort.toLowerCase()
-  const related = data.items
+  const related = data
     .filter(
       n =>
         n.titel.toLowerCase().includes(q) ||
