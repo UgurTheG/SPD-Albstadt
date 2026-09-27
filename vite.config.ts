@@ -85,10 +85,21 @@ export default defineConfig(({ mode }) => {
         injectRegister: 'script-defer',
         manifest: false, // use existing public/manifest.json
         workbox: {
-          globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'],
-          // Don't precache admin JS — it's a large lazy chunk only needed on /admin.
-          // It will be cached on first access to /admin via the navigation handler.
-          globIgnores: ['**/AdminApp*.js', '**/admin*.js'],
+          globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+          globIgnores: [
+            // Don't precache admin JS — it's a large lazy chunk only needed on /admin.
+            // It will be cached on first access to /admin via the navigation handler.
+            '**/AdminApp*.js',
+            '**/admin*.js',
+            // Content images (several MB) are cached at runtime as visitors see them.
+            'images/**',
+            // Inter ships one file per script. German text only needs the Latin
+            // subset; the browser fetches the others on demand via unicode-range.
+            'assets/inter-cyrillic*.woff2',
+            'assets/inter-greek*.woff2',
+            'assets/inter-latin-ext*.woff2',
+            'assets/inter-vietnamese*.woff2',
+          ],
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [
             /^\/api\//,
@@ -98,6 +109,17 @@ export default defineConfig(({ mode }) => {
             /\.pdf$/i,
           ],
           runtimeCaching: [
+            {
+              // Stale-while-revalidate so an image replaced in the admin under
+              // the same path still updates on the next visit.
+              urlPattern: ({ sameOrigin, url }) =>
+                sameOrigin && url.pathname.startsWith('/images/'),
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'images',
+                expiration: { maxEntries: 150, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              },
+            },
             {
               urlPattern: /^https:\/\/static\.elfsight\.com\/.*/i,
               handler: 'CacheFirst',

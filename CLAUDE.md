@@ -370,7 +370,9 @@ The `manualChunks` function in `vite.config.ts` deliberately returns `undefined`
 
 Non-render-blocking CSS is loaded via the print-media trick in `index.html` (saves ~300 ms FCP/LCP). Do not change the `media="print"` → `media="all"` `onload` pattern.
 
-The Workbox config excludes `AdminApp*.js` and `admin*.js` from the service worker precache. If admin chunk names change, update the `globPatterns` exclusions in `vite.config.ts` accordingly — otherwise the service worker will try to precache the large admin bundle for every visitor.
+The Workbox config excludes `AdminApp*.js` and `admin*.js` from the service worker precache. If admin chunk names change, update the `globIgnores` exclusions in `vite.config.ts` accordingly — otherwise the service worker will try to precache the large admin bundle for every visitor.
+
+Content images (`public/images/`) and the non-Latin Inter subsets are also kept out of the precache; images are cached at runtime (stale-while-revalidate) as visitors view them. Never add `webp` or `images/**` back to the precache — it made every first visit download all content images (~4 MB).
 
 ---
 
