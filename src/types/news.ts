@@ -48,6 +48,20 @@ export function getNewsImages(news: NewsItem): { urls: string[]; captions: strin
 }
 
 /**
+ * News items whose title, summary or body mention `keyword` (case-insensitive),
+ * in feed order and capped at `limit`. Used for "Verwandte Artikel" on Schwerpunkte.
+ */
+export function findRelatedNews(items: NewsItem[], keyword: string, limit = 2): NewsItem[] {
+  const q = keyword.trim().toLowerCase()
+  if (!q) return []
+  return items
+    .filter(n =>
+      [n.titel, n.zusammenfassung, n.inhalt].some(text => text?.toLowerCase().includes(q)),
+    )
+    .slice(0, limit)
+}
+
+/**
  * Fallback colour used when a news item's kategorie is not in CATEGORY_COLORS
  * (e.g. stale JSON produced before a new category was added to the type).
  */

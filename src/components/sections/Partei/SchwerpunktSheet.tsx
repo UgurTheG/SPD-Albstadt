@@ -1,10 +1,11 @@
 import { Users } from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
+import { Link } from 'react-router-dom'
 import Sheet from '@/components/Sheet'
 import { slugify } from '@/utils/slugify'
 import { useData } from '@/hooks/useData'
 import { formatDate } from '@/utils/formatDate'
-import { CATEGORY_COLORS, CATEGORY_COLOR_FALLBACK } from '@/types/news'
+import { CATEGORY_COLORS, CATEGORY_COLOR_FALLBACK, findRelatedNews } from '@/types/news'
 import type { NewsItem } from '@/types/news'
 import type { Schwerpunkt } from './types'
 import { ICONS } from './icons'
@@ -19,19 +20,8 @@ const STATUS_STYLES: Record<string, string> = {
 }
 
 function RelatedNewsSection({ schlagwort }: { schlagwort: string }) {
-  const { data } = useData<{ items: NewsItem[] }>('/data/news.json')
-  if (!data?.items) return null
-
-  const q = schlagwort.toLowerCase()
-  const related = data.items
-    .filter(
-      n =>
-        n.titel.toLowerCase().includes(q) ||
-        n.zusammenfassung?.toLowerCase().includes(q) ||
-        n.inhalt?.toLowerCase().includes(q),
-    )
-    .slice(0, 2)
-
+  const { data } = useData<NewsItem[]>('/data/news.json')
+  const related = data ? findRelatedNews(data, schlagwort) : []
   if (related.length === 0) return null
 
   return (
@@ -44,9 +34,10 @@ function RelatedNewsSection({ schlagwort }: { schlagwort: string }) {
       </div>
       <div className="space-y-2">
         {related.map(n => (
-          <div
+          <Link
             key={n.uuid ?? n.id}
-            className="rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 p-3"
+            to={`/aktuelles/${n.uuid ?? n.id}`}
+            className="group block rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 p-3 hover:border-spd-red/30 transition-colors"
           >
             <div className="flex items-center gap-2 mb-1">
               <span
@@ -56,13 +47,13 @@ function RelatedNewsSection({ schlagwort }: { schlagwort: string }) {
               </span>
               <time className="text-xs text-gray-400">{formatDate(n.datum)}</time>
             </div>
-            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-snug">
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-snug group-hover:text-spd-red transition-colors">
               {n.titel}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
               {n.zusammenfassung}
             </p>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
