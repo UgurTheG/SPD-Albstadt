@@ -1,15 +1,13 @@
 import { Users } from 'lucide-react'
-import { Helmet } from 'react-helmet-async'
 import Sheet from '@/components/Sheet'
-import { slugify } from '@/utils/slugify'
+import DeepLinkHead from '@/components/DeepLinkHead'
+import { schwerpunktSEO } from '@/seoConfig'
 import { useData } from '@/hooks/useData'
 import { formatDate } from '@/utils/formatDate'
 import { CATEGORY_COLORS, CATEGORY_COLOR_FALLBACK } from '@/types/news'
 import type { NewsItem } from '@/types/news'
 import type { Schwerpunkt } from './types'
 import { ICONS } from './icons'
-
-const BASE_URL = 'https://www.spd-albstadt.de'
 
 const STATUS_STYLES: Record<string, string> = {
   'In Planung': 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
@@ -86,20 +84,7 @@ export function SchwerpunktSheet({
     <Sheet open={!!item} onClose={onClose}>
       {item && (
         <div>
-          <Helmet>
-            <title>{item.titel} – SPD Albstadt</title>
-            <meta name="description" content={item.beschreibung} />
-            <link rel="canonical" href={`${BASE_URL}/partei/${slugify(item.titel)}`} />
-            <meta property="og:type" content="article" />
-            <meta property="og:url" content={`${BASE_URL}/partei/${slugify(item.titel)}`} />
-            <meta property="og:title" content={`${item.titel} – SPD Albstadt`} />
-            <meta property="og:description" content={item.beschreibung} />
-            <meta property="og:locale" content="de_DE" />
-            <meta property="og:site_name" content="SPD Albstadt" />
-            <meta name="twitter:card" content="summary" />
-            <meta name="twitter:title" content={`${item.titel} – SPD Albstadt`} />
-            <meta name="twitter:description" content={item.beschreibung} />
-          </Helmet>
+          <DeepLinkHead seo={schwerpunktSEO(item)} />
 
           {/* Header */}
           <div className="bg-linear-to-br from-spd-red via-spd-red to-spd-red-dark px-5 sm:px-6 pt-6 pb-8 relative overflow-hidden">

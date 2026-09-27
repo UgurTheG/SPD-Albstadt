@@ -1,5 +1,13 @@
 // Per-route SEO metadata
-// Single source of truth for meta tags used by <SEOHead> and sitemap generation.
+// Single source of truth for meta tags used by <SEOHead>, <DeepLinkHead> and the
+// build plugins that prerender route HTML shells and the sitemap. The plugins load
+// this file through vite.config.ts, where the `@/` alias is not available — keep
+// imports relative.
+
+import { getNewsImages, type NewsItem } from './types/news'
+import { slugify } from './utils/slugify'
+import type { Schwerpunkt } from './components/sections/Partei/types'
+import type { TimelineEntry } from './components/sections/Historie/types'
 
 export interface SEOMeta {
   title: string
@@ -117,4 +125,45 @@ export const SEO_CONFIG: Record<string, SEOMeta> = {
     changefreq: 'yearly',
     priority: 0.3,
   },
+}
+
+/** Head metadata for a URL that opens a detail sheet (news article, Schwerpunkt, Historie epoch). */
+export interface DeepLinkSEO {
+  path: string
+  canonical: string
+  title: string
+  description: string
+  ogImage?: string
+}
+
+function deepLink(path: string, title: string, description: string, image?: string): DeepLinkSEO {
+  return {
+    path,
+    canonical: `${BASE_URL}${path}`,
+    title: `${title} – SPD Albstadt`,
+    description,
+    ogImage: image && (image.startsWith('http') ? image : `${BASE_URL}${image}`),
+  }
+}
+
+export function newsSEO(news: NewsItem): DeepLinkSEO {
+  return deepLink(
+    `/aktuelles/${news.uuid ?? news.id}`,
+    news.titel,
+    news.zusammenfassung,
+    getNewsImages(news).urls[0],
+  )
+}
+
+export function schwerpunktSEO(item: Schwerpunkt): DeepLinkSEO {
+  return deepLink(`/partei/${slugify(item.titel)}`, item.titel, item.beschreibung)
+}
+
+export function historieSEO(entry: TimelineEntry): DeepLinkSEO {
+  return deepLink(
+    `/historie/${slugify(entry.jahr)}`,
+    `${entry.titel} (${entry.jahr})`,
+    entry.beschreibung.slice(0, 160),
+    entry.bilder?.[0],
+  )
 }

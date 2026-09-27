@@ -1,8 +1,9 @@
 import { useParams } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'motion/react'
 import { useSectionView } from '@/hooks/useSectionView'
 import Sheet from '@/components/Sheet'
+import DeepLinkHead from '@/components/DeepLinkHead'
+import { historieSEO } from '@/seoConfig'
 import PersonSheet from '@/components/PersonSheet'
 import SectionHeader from '@/components/SectionHeader'
 import { SkeletonGrid } from '@/components/SkeletonGrid'
@@ -19,30 +20,7 @@ export default function Historie() {
 
   return (
     <>
-      {sheet.type === 'event' && (
-        <Helmet>
-          <title>
-            {sheet.entry.titel} ({sheet.entry.jahr}) – SPD Albstadt
-          </title>
-          <meta name="description" content={sheet.entry.beschreibung.slice(0, 160)} />
-          <link rel="canonical" href={`https://www.spd-albstadt.de/historie/${jahreSlug}`} />
-          <meta property="og:type" content="article" />
-          <meta property="og:url" content={`https://www.spd-albstadt.de/historie/${jahreSlug}`} />
-          <meta
-            property="og:title"
-            content={`${sheet.entry.titel} (${sheet.entry.jahr}) – SPD Albstadt`}
-          />
-          <meta property="og:description" content={sheet.entry.beschreibung.slice(0, 160)} />
-          <meta property="og:locale" content="de_DE" />
-          <meta property="og:site_name" content="SPD Albstadt" />
-          <meta name="twitter:card" content="summary" />
-          <meta
-            name="twitter:title"
-            content={`${sheet.entry.titel} (${sheet.entry.jahr}) – SPD Albstadt`}
-          />
-          <meta name="twitter:description" content={sheet.entry.beschreibung.slice(0, 160)} />
-        </Helmet>
-      )}
+      {sheet.type === 'event' && <DeepLinkHead seo={historieSEO(sheet.entry)} />}
 
       <SectionContainer id="historie">
         <SectionHeader

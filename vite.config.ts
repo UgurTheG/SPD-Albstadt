@@ -99,6 +99,9 @@ export default defineConfig(({ mode }) => {
             'assets/inter-greek*.woff2',
             'assets/inter-latin-ext*.woff2',
             'assets/inter-vietnamese*.woff2',
+            // Prerendered route shells are for crawlers; navigations are answered
+            // with /index.html (navigateFallback).
+            '*/**/index.html',
           ],
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [

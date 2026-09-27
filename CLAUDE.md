@@ -347,7 +347,9 @@ All public routes must have an entry in `src/seoConfig.ts` → `SEO_CONFIG`. Rou
 }
 ```
 
-The `<SEOHead>` component reads from `SEO_CONFIG` by current pathname. The Vite PWA plugin generates the sitemap from the same map at build time.
+The `<SEOHead>` component reads from `SEO_CONFIG` by current pathname. At build time `plugins/generateSitemap.ts` builds `sitemap.xml` and `plugins/prerenderRoutes.ts` writes an HTML shell per route (`dist/<route>/index.html`) with that route's tags — link-preview crawlers (WhatsApp, Facebook, LinkedIn) don't run JavaScript and only see these shells. Section-specific extras for a shell (lazy chunk name, image preloads) live in `SECTION_EXTRAS` in the plugin; titles and descriptions never do.
+
+Deep links that open a detail sheet (`/aktuelles/:uuid`, `/partei/:slug`, `/historie/:slug`) get their tags from `newsSEO()`, `schwerpunktSEO()` and `historieSEO()` in `seoConfig.ts`. The sheet renders them via `<DeepLinkHead>`, and `plugins/contentRoutes.ts` feeds the same functions with `public/data/*.json` so every item also gets a prerendered shell and a sitemap entry. A new deep-linkable content type needs all three. `seoConfig.ts` is loaded by the build plugins, so it and everything it imports must use relative imports, not `@/`.
 
 ---
 

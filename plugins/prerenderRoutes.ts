@@ -1,35 +1,31 @@
 import { type Plugin } from 'vite'
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs'
 import { resolve } from 'path'
+import { SEO_CONFIG } from '../src/seoConfig'
+import { loadContentRoutes } from './contentRoutes'
 interface ImagePreload {
   href: string
   imagesrcset?: string
   imagesizes?: string
 }
-interface RouteSEO {
-  path: string
+interface ShellMeta {
   title: string
   description: string
   canonical: string
-  imagePreloads?: ImagePreload[]
-  chunkName?: string
+  ogType?: 'article'
+  ogImage?: string
 }
-const BASE_URL = 'https://www.spd-albstadt.de'
-const ROUTES: RouteSEO[] = [
-  {
-    path: '/aktuelles',
-    title: 'Aktuelles – SPD Albstadt',
-    description:
-      'Aktuelle Nachrichten, Pressemitteilungen und Neuigkeiten der SPD Albstadt. Bleiben Sie informiert über die Stadtpolitik in Albstadt.',
-    canonical: `${BASE_URL}/aktuelles`,
-    chunkName: 'Aktuelles',
-  },
-  {
-    path: '/partei',
-    title: 'Partei – SPD Albstadt',
-    description:
-      'Der SPD Ortsverein Albstadt: Vorstand, Mitglieder und Persnlichkeiten. Lernen Sie die Menschen hinter der sozialdemokratischen Politik in Albstadt kennen.',
-    canonical: `${BASE_URL}/partei`,
+interface RouteShell {
+  path: string
+  meta: ShellMeta
+  chunkName?: string
+  imagePreloads?: ImagePreload[]
+}
+// Titles and descriptions come from SEO_CONFIG; this only adds what the HTML
+// shell of each section route needs on top.
+const SECTION_EXTRAS: Record<string, Pick<RouteShell, 'chunkName' | 'imagePreloads'>> = {
+  '/aktuelles': { chunkName: 'Aktuelles' },
+  '/partei': {
     chunkName: 'Partei',
     imagePreloads: [
       {
@@ -40,36 +36,10 @@ const ROUTES: RouteSEO[] = [
       },
     ],
   },
-  {
-    path: '/fraktion',
-    title: 'Fraktion – SPD Albstadt',
-    description:
-      'Die SPD-Gemeinderatsfraktion Albstadt: Mitglieder, Anträge und Haushaltsreden. Unsere Arbeit im Gemeinderat für eine soziale Stadtpolitik.',
-    canonical: `${BASE_URL}/fraktion`,
-    chunkName: 'Fraktion',
-  },
-  {
-    path: '/kommunalpolitik',
-    title: 'Kommunalpolitik – SPD Albstadt',
-    description:
-      'Kommunalpolitik der SPD Albstadt: Unsere Positionen, Anträge und Initiativen für Albstadt. Für eine lebenswerte Stadt mit sozialer Gerechtigkeit.',
-    canonical: `${BASE_URL}/kommunalpolitik`,
-    chunkName: 'Kommunalpolitik',
-  },
-  {
-    path: '/historie',
-    title: 'Historie – SPD Albstadt',
-    description:
-      'Die Geschichte der SPD in Albstadt: Von den Anfängen bis heute. Erfahren Sie mehr über die sozialdemokratische Tradition in unserer Stadt.',
-    canonical: `${BASE_URL}/historie`,
-    chunkName: 'Historie',
-  },
-  {
-    path: '/kontakt',
-    title: 'Kontakt – SPD Albstadt',
-    description:
-      'Kontaktieren Sie die SPD Albstadt: Adresse, Telefonnummer und E-Mail. Wir freuen uns auf Ihre Nachricht und Ihr Engagement.',
-    canonical: `${BASE_URL}/kontakt`,
+  '/fraktion': { chunkName: 'Fraktion' },
+  '/kommunalpolitik': { chunkName: 'Kommunalpolitik' },
+  '/historie': { chunkName: 'Historie' },
+  '/kontakt': {
     chunkName: 'Kontakt',
     imagePreloads: [
       {
@@ -80,21 +50,18 @@ const ROUTES: RouteSEO[] = [
       },
     ],
   },
-  {
-    path: '/datenschutz',
-    title: 'Datenschutz – SPD Albstadt',
-    description:
-      'Datenschutzerklärung der SPD Albstadt. Informationen zur Verarbeitung Ihrer personenbezogenen Daten auf unserer Website.',
-    canonical: `${BASE_URL}/datenschutz`,
-  },
-  {
-    path: '/impressum',
-    title: 'Impressum – SPD Albstadt',
-    description:
-      'Impressum der SPD Albstadt gemäß § 5 TMG. Angaben zum Verantwortlichen und zur Haftung für Inhalte.',
-    canonical: `${BASE_URL}/impressum`,
-  },
-]
+}
+function routeShells(): RouteShell[] {
+  const sections = Object.entries(SEO_CONFIG)
+    .filter(([path]) => path !== '/')
+    .map(([path, seo]) => ({ path, meta: seo, ...SECTION_EXTRAS[path] }))
+  const deepLinks = loadContentRoutes().map(({ seo, chunkName }) => ({
+    path: seo.path,
+    meta: { ...seo, ogType: 'article' as const },
+    chunkName,
+  }))
+  return [...sections, ...deepLinks]
+}
 // These chunks are already injected via modulepreload in the main index.html.
 const ALREADY_PRELOADED_PREFIXES = [
   'rolldown-runtime',
@@ -127,49 +94,69 @@ function findRouteChunks(assetsDir: string, chunkName: string): string[] {
   }
   return [...chunks]
 }
-function replaceMetaTag(html: string, route: RouteSEO): string {
-  html = html.replace(/<title>[^<]*<\/title>/, `<title>${route.title}</title>`)
-  html = html.replace(
-    /<meta\s+name="description"\s+content="[^"]*"\s*\/?>/,
-    `<meta name="description" content="${route.description}" />`,
-  )
-  html = html.replace(
-    /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/,
-    `<link rel="canonical" href="${route.canonical}" />`,
-  )
-  html = html.replace(
-    /<link\s+rel="alternate"\s+hreflang="de"\s+href="[^"]*"\s*\/?>/,
-    `<link rel="alternate" hreflang="de" href="${route.canonical}" />`,
-  )
-  html = html.replace(
-    /<meta\s+property="og:url"\s+content="[^"]*"\s*\/?>/,
-    `<meta property="og:url" content="${route.canonical}" />`,
-  )
-  html = html.replace(
-    /<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/,
-    `<meta property="og:title" content="${route.title}" />`,
-  )
-  html = html.replace(
-    /<meta\s+property="og:description"[\s\S]*?\/>/,
-    `<meta property="og:description" content="${route.description}" />`,
-  )
-  html = html.replace(
-    /<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/,
-    `<meta name="twitter:title" content="${route.title}" />`,
-  )
-  html = html.replace(
-    /<meta\s+name="twitter:description"[\s\S]*?\/>/,
-    `<meta name="twitter:description" content="${route.description}" />`,
-  )
-  if (route.imagePreloads?.length) {
-    const preloadTags = route.imagePreloads
-      .map(p => {
-        const srcsetAttr = p.imagesrcset ? ` imagesrcset="${p.imagesrcset}"` : ''
-        const sizesAttr = p.imagesizes ? ` imagesizes="${p.imagesizes}"` : ''
-        return `  <link rel="preload" as="image" href="${p.href}"${srcsetAttr}${sizesAttr} fetchpriority="high" />`
-      })
-      .join('\n')
-    html = html.replace('</head>', `${preloadTags}\n</head>`)
+function escapeAttr(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+function metaTag(attr: 'name' | 'property', key: string): RegExp {
+  return new RegExp(`<meta\\s+${attr}="${key}"\\s+content="[^"]*"\\s*/?>`)
+}
+/**
+ * Rewrites the head tags of the built index.html for one route. Throws when a
+ * tag is missing so a change to index.html can't silently break link previews.
+ */
+export function applyMeta(html: string, meta: ShellMeta): string {
+  const title = escapeAttr(meta.title)
+  const description = escapeAttr(meta.description)
+  const canonical = escapeAttr(meta.canonical)
+  const replacements: [RegExp, string][] = [
+    [/<title>[^<]*<\/title>/, `<title>${title}</title>`],
+    [metaTag('name', 'description'), `<meta name="description" content="${description}" />`],
+    [
+      /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/,
+      `<link rel="canonical" href="${canonical}" />`,
+    ],
+    [
+      /<link\s+rel="alternate"\s+hreflang="de"\s+href="[^"]*"\s*\/?>/,
+      `<link rel="alternate" hreflang="de" href="${canonical}" />`,
+    ],
+    [metaTag('property', 'og:url'), `<meta property="og:url" content="${canonical}" />`],
+    [metaTag('property', 'og:title'), `<meta property="og:title" content="${title}" />`],
+    [
+      metaTag('property', 'og:description'),
+      `<meta property="og:description" content="${description}" />`,
+    ],
+    [metaTag('name', 'twitter:title'), `<meta name="twitter:title" content="${title}" />`],
+    [
+      metaTag('name', 'twitter:description'),
+      `<meta name="twitter:description" content="${description}" />`,
+    ],
+  ]
+  if (meta.ogType) {
+    replacements.push([
+      metaTag('property', 'og:type'),
+      `<meta property="og:type" content="${meta.ogType}" />`,
+    ])
+  }
+  if (meta.ogImage) {
+    const image = escapeAttr(meta.ogImage)
+    replacements.push(
+      [metaTag('property', 'og:image'), `<meta property="og:image" content="${image}" />`],
+      [metaTag('property', 'og:image:alt'), `<meta property="og:image:alt" content="${title}" />`],
+      [metaTag('name', 'twitter:image'), `<meta name="twitter:image" content="${image}" />`],
+    )
+    // The default image's dimensions don't apply to the replacement.
+    html = html
+      .replace(new RegExp(`\\s*${metaTag('property', 'og:image:width').source}`), '')
+      .replace(new RegExp(`\\s*${metaTag('property', 'og:image:height').source}`), '')
+  }
+  for (const [pattern, tag] of replacements) {
+    if (!pattern.test(html)) throw new Error(`prerender-routes: index.html has no ${pattern}`)
+    // Function replacement so `$` in content isn't read as a substitution pattern.
+    html = html.replace(pattern, () => tag)
   }
   return html
 }
@@ -180,25 +167,35 @@ export function prerenderRoutes(): Plugin {
       const outDir = resolve(process.cwd(), 'dist')
       const assetsDir = resolve(outDir, 'assets')
       const indexHtml = readFileSync(resolve(outDir, 'index.html'), 'utf-8')
-      for (const route of ROUTES) {
-        const routeDir = resolve(outDir, route.path.slice(1))
+      const chunksByName = new Map<string, string[]>()
+      const shells = routeShells()
+      for (const shell of shells) {
+        const routeDir = resolve(outDir, shell.path.slice(1))
         mkdirSync(routeDir, { recursive: true })
-        let html = replaceMetaTag(indexHtml, route)
+        let html = applyMeta(indexHtml, shell.meta)
+        const headTags: string[] = []
+        for (const p of shell.imagePreloads ?? []) {
+          const srcsetAttr = p.imagesrcset ? ` imagesrcset="${p.imagesrcset}"` : ''
+          const sizesAttr = p.imagesizes ? ` imagesizes="${p.imagesizes}"` : ''
+          headTags.push(
+            `  <link rel="preload" as="image" href="${p.href}"${srcsetAttr}${sizesAttr} fetchpriority="high" />`,
+          )
+        }
         // Inject modulepreload hints for route-specific lazy chunks.
         // Without this, each lazy chunk requires a separate roundtrip after
         // main JS executes — ~150ms RTT saved per chunk on slow 4G.
-        if (route.chunkName) {
-          const chunks = findRouteChunks(assetsDir, route.chunkName)
-          if (chunks.length > 0) {
-            const preloadTags = chunks
-              .map(f => `  <link rel="modulepreload" crossorigin href="/assets/${f}">`)
-              .join('\n')
-            html = html.replace('</head>', `${preloadTags}\n</head>`)
+        if (shell.chunkName) {
+          if (!chunksByName.has(shell.chunkName)) {
+            chunksByName.set(shell.chunkName, findRouteChunks(assetsDir, shell.chunkName))
+          }
+          for (const f of chunksByName.get(shell.chunkName) ?? []) {
+            headTags.push(`  <link rel="modulepreload" crossorigin href="/assets/${f}">`)
           }
         }
+        if (headTags.length > 0) html = html.replace('</head>', `${headTags.join('\n')}\n</head>`)
         writeFileSync(resolve(routeDir, 'index.html'), html, 'utf-8')
       }
-      console.log('✓ Prerendered', ROUTES.length, 'route HTML shells')
+      console.log('✓ Prerendered', shells.length, 'route HTML shells')
     },
   }
 }
