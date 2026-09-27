@@ -40,7 +40,7 @@ Umgesetzte Hauptfunktionen:
 - Frontend: React 19, TypeScript, Vite
 - Routing: `react-router-dom`
 - Styling: Tailwind CSS v4
-- Animationen: Framer Motion
+- Animationen: Motion (`motion/react`)
 - State Management (Admin): Zustand
 - Datenabruf: SWR
 - Icons: Lucide

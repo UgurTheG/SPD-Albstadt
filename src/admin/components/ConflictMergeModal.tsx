@@ -8,7 +8,7 @@
  */
 import { useEffect, useState } from 'react'
 import { CircleCheck, GitMerge, TriangleAlert, User } from 'lucide-react'
-import { motion, AnimatePresence } from 'motion/react'
+import { m, AnimatePresence } from 'motion/react'
 import type { MergeConflict } from '../lib/merge'
 import { applyMergeChoice } from '../lib/merge'
 import { summarizeValue } from '../lib/diff'
@@ -72,7 +72,7 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
   return (
     <div className="fixed inset-0 z-9999 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <motion.div
+      <m.div
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -123,7 +123,7 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
             {conflicts.map((c, i) => {
               const choice = choices[i]
               return (
-                <motion.div
+                <m.div
                   key={i}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -183,7 +183,7 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
                       </p>
                     </button>
                   </div>
-                </motion.div>
+                </m.div>
               )
             })}
           </AnimatePresence>
@@ -213,7 +213,7 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
             </button>
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   )
 }

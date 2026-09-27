@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { ArrowLeft, House } from 'lucide-react'
 import { useNavigateTo } from '@/hooks/useNavigateTo'
 import { ERROR_CONFIG, hasIconInCode, renderCodeWithIcon } from './errorConfig'
@@ -14,7 +14,7 @@ export default function ErrorPage({ code }: ErrorPageProps) {
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950 px-4">
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -58,7 +58,7 @@ export default function ErrorPage({ code }: ErrorPageProps) {
             Zurück
           </button>
         </div>
-      </motion.div>
+      </m.div>
     </section>
   )
 }

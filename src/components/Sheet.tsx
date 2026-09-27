@@ -2,7 +2,7 @@ import { X } from 'lucide-react'
 import {
   animate,
   AnimatePresence,
-  motion,
+  m,
   type PanInfo,
   useDragControls,
   useMotionValue,
@@ -127,14 +127,14 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: { duration: 0.35, ease: 'easeOut' } }}
           exit={{ opacity: 0, transition: { duration: 0.25, ease: 'easeIn' } }}
           onClick={onClose}
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 touch-none bg-black/60 backdrop-blur-[14px]"
         >
-          <motion.div
+          <m.div
             ref={sheetRef}
             initial={{ y: '100%', scale: 0.98, opacity: 0 }}
             animate={{
@@ -198,8 +198,8 @@ export default function Sheet({ open, onClose, children, size = 'md' }: SheetPro
             </div>
 
             {children}
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   )

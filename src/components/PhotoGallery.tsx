@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m } from 'motion/react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 // Lazy-loaded: fetched only when user opens the fullscreen lightbox (~34 KiB saved on initial load)
@@ -155,7 +155,7 @@ export default function PhotoGallery({ images, captions, alt, className = '' }: 
                         landscape-compact:max-h-[62vh]"
         >
           <AnimatePresence initial={false} custom={direction} mode="wait">
-            <motion.img
+            <m.img
               key={active}
               src={images[active]}
               alt={`${alt} – Foto ${active + 1}`}

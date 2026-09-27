@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m } from 'motion/react'
 import { ArrowUp } from 'lucide-react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
@@ -69,7 +69,7 @@ export default function App() {
 
       <main id="main-content">
         <AnimatePresence mode="wait" initial={false}>
-          <motion.div
+          <m.div
             key={'/' + location.pathname.split('/')[1]}
             initial={{ opacity: 0, y: direction > 0 ? 36 : -28 }}
             animate={{ opacity: 1, y: 0, transition: { duration: 0.46, ease: 'easeOut' } }}
@@ -105,14 +105,14 @@ export default function App() {
                 </Routes>
               </Suspense>
             </ErrorBoundary>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       </main>
 
       {/* Scroll to top */}
       <AnimatePresence>
         {showScrollTop && (
-          <motion.button
+          <m.button
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
@@ -121,7 +121,7 @@ export default function App() {
             aria-label="Nach oben scrollen"
           >
             <ArrowUp size={18} />
-          </motion.button>
+          </m.button>
         )}
       </AnimatePresence>
     </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { FileSearch, LoaderCircle, Rocket } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m } from 'motion/react'
 
 interface Props {
   isDirty: boolean
@@ -24,7 +24,7 @@ export default function StickyPublishBar({ isDirty, publishing, onPublish, onSho
   return (
     <AnimatePresence>
       {visible && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 24 }}
@@ -63,7 +63,7 @@ export default function StickyPublishBar({ isDirty, publishing, onPublish, onSho
               </span>
             </button>
           </div>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   )

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo } from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { Monitor, X } from 'lucide-react'
 import { SWRConfig } from 'swr'
 import { useAdminStore } from '../store'
@@ -102,7 +102,7 @@ export default function PreviewModal({ tabKey, onClose }: Props) {
       className="fixed inset-0 z-9999 flex flex-col bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
@@ -180,7 +180,7 @@ export default function PreviewModal({ tabKey, onClose }: Props) {
             </SWRConfig>
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   )
 }

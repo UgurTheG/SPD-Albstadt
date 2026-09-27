@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect } from 'react'
 import { X } from 'lucide-react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 
 interface ModalFrameProps {
   onClose: () => void
@@ -32,7 +32,7 @@ export default function ModalFrame({
       className="fixed inset-0 z-9999 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <motion.div
+      <m.div
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -60,7 +60,7 @@ export default function ModalFrame({
           </button>
         </div>
         {children}
-      </motion.div>
+      </m.div>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSectionPage } from '@/hooks/useSectionPage'
 import { useSheetState } from '@/hooks/useSheetState'
@@ -80,7 +80,7 @@ export default function Partei() {
         {(!data || data.schwerpunkte.length > 0) && (
           <div className="mb-20">
             <SubsectionLabel label="Unsere Schwerpunkte" isInView={isInView} delay={0.2} />
-            <motion.div
+            <m.div
               variants={personCardContainerVariants}
               initial="hidden"
               animate={isInView ? 'visible' : 'hidden'}
@@ -90,7 +90,7 @@ export default function Partei() {
                 <SchwerpunktCard key={s.titel} s={s} onClick={() => handleOpenSchwerpunkt(s)} />
               ))}
               {!data && <SkeletonGrid count={6} itemClassName="h-48" />}
-            </motion.div>
+            </m.div>
           </div>
         )}
 
@@ -98,7 +98,7 @@ export default function Partei() {
         {(!data || data.vorstand.length > 0) && (
           <div className="mb-20">
             <SubsectionLabel label="Vorstand" isInView={isInView} delay={0.3} />
-            <motion.div
+            <m.div
               variants={personCardContainerVariants}
               initial="hidden"
               animate={isInView ? 'visible' : 'hidden'}
@@ -115,7 +115,7 @@ export default function Partei() {
                 />
               ))}
               {!data && <SkeletonGrid count={9} itemClassName="aspect-3/4" />}
-            </motion.div>
+            </m.div>
           </div>
         )}
 
@@ -128,7 +128,7 @@ export default function Partei() {
                 <SkeletonGrid count={1} itemClassName="h-48" />
               </div>
             ) : (
-              <motion.div
+              <m.div
                 variants={personCardContainerVariants}
                 initial="hidden"
                 animate={isInView ? 'visible' : 'hidden'}
@@ -142,7 +142,7 @@ export default function Partei() {
                     onClick={() => setSheet({ type: 'person', person: a })}
                   />
                 ))}
-              </motion.div>
+              </m.div>
             )}
           </div>
         )}

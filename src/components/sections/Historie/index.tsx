@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useSectionView } from '@/hooks/useSectionView'
 import Sheet from '@/components/Sheet'
 import DeepLinkHead from '@/components/DeepLinkHead'
@@ -34,7 +34,7 @@ export default function Historie() {
 
         {/* Legend */}
         {merged.length > 0 && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.3 }}
@@ -45,13 +45,13 @@ export default function Historie() {
                 <span className={`${legendDotClass} inline-block`} /> {label}
               </span>
             ))}
-          </motion.div>
+          </m.div>
         )}
 
         {/* Unified timeline */}
         {merged.length > 0 && (
           <div className="relative">
-            <motion.div
+            <m.div
               initial={{ scaleY: 0 }}
               animate={isInView ? { scaleY: 1 } : { scaleY: 0 }}
               transition={{ duration: 1.4, ease: 'easeInOut', delay: 0.3 }}

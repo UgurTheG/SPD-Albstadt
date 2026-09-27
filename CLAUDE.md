@@ -23,7 +23,7 @@ Public website and browser-based content editor for the SPD Ortsverein Albstadt.
 | Framework     | React 19, TypeScript 6, Vite 8              |
 | Routing       | react-router-dom v7                         |
 | Styling       | Tailwind CSS v4 (via `@tailwindcss/vite`)   |
-| Animation     | Framer Motion                               |
+| Animation     | Motion (`LazyMotion` + `m`)                 |
 | State (admin) | Zustand                                     |
 | Data fetching | SWR                                         |
 | Icons         | Lucide React                                |
@@ -369,6 +369,8 @@ Both are editable via the admin editor under **Einstellungen**.
 ## Vite build notes
 
 The `manualChunks` function in `vite.config.ts` deliberately returns `undefined` for admin-only libraries (`@dnd-kit`, `sonner`, `zustand`, etc.) so they co-locate with the lazy `AdminApp` chunk and are never bundled into public-page vendor chunks. Do not import admin libraries from public-facing components — it breaks this isolation and ships admin code to every visitor.
+
+Animations use the `m.*` components from `motion/react` (e.g. `<m.div>`), never `motion.*`. `src/main.tsx` wraps the app in `<LazyMotion strict>`, which loads the drag/layout features (`src/motionFeatures.ts`) after the first render, and `manualChunks` returns `undefined` for Motion so those features stay in their own lazy chunk. A `motion.*` component throws under `strict` because it would pull every feature back into the eager bundle.
 
 Non-render-blocking CSS is loaded via the print-media trick in `index.html` (saves ~300 ms FCP/LCP). Do not change the `media="print"` → `media="all"` `onload` pattern.
 

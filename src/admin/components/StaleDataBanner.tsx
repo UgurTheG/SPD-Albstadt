@@ -6,7 +6,7 @@
  * edits are preserved in localStorage drafts so they survive the reload.
  */
 import { RefreshCw } from 'lucide-react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 
 interface Props {
   /** Login name(s) of the users who published — derived from presenceUsers by caller */
@@ -19,7 +19,7 @@ export default function StaleDataBanner({ publishedBy, onReload }: Props) {
     publishedBy && publishedBy.length > 0 ? publishedBy.join(', ') : 'Ein anderer Benutzer'
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       className="mb-6 flex items-start gap-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200/60 dark:border-blue-700/40 rounded-2xl px-4 py-3"
@@ -45,6 +45,6 @@ export default function StaleDataBanner({ publishedBy, onReload }: Props) {
       >
         Neu laden
       </button>
-    </motion.div>
+    </m.div>
   )
 }

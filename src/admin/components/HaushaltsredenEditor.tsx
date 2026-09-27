@@ -1,5 +1,5 @@
 import { Eye, EyeOff, FileUp, RefreshCw, Trash2 } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m } from 'motion/react'
 import AdminWarningBanner from './AdminWarningBanner'
 import TabEditorShell from './TabEditorShell'
 import { useAdminStore } from '../store'
@@ -90,14 +90,14 @@ export default function HaushaltsredenEditor() {
       {/* Animated delete-confirm modal */}
       <AnimatePresence>
         {confirmDeleteYear !== null && (
-          <motion.div
+          <m.div
             key="delete-confirm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-9999 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
           >
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -131,8 +131,8 @@ export default function HaushaltsredenEditor() {
                   Löschen
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
 
@@ -175,7 +175,7 @@ export default function HaushaltsredenEditor() {
               const isBusy = busy === year
 
               return (
-                <motion.div
+                <m.div
                   key={year}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -281,7 +281,7 @@ export default function HaushaltsredenEditor() {
                       </>
                     )}
                   </div>
-                </motion.div>
+                </m.div>
               )
             })}
           </div>

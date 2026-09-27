@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useSectionPage } from '@/hooks/useSectionPage'
 import { useSheetState } from '@/hooks/useSheetState'
 import PersonSheet from '@/components/PersonSheet'
@@ -50,7 +50,7 @@ export default function Kommunalpolitik() {
 
         {/* Year selector */}
         {aktiveJahre.length > 1 && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 16 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.2 }}
@@ -69,11 +69,11 @@ export default function Kommunalpolitik() {
                 {j.jahr}
               </button>
             ))}
-          </motion.div>
+          </m.div>
         )}
 
         {activeJahr && (
-          <motion.div
+          <m.div
             key={activeJahr.id}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -105,7 +105,7 @@ export default function Kommunalpolitik() {
 
             {/* Dokumente */}
             {dokumente.length > 0 && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ delay: 0.35, duration: 0.5 }}
@@ -119,7 +119,7 @@ export default function Kommunalpolitik() {
                     <DokumentCard key={dok.id} dok={dok} />
                   ))}
                 </div>
-              </motion.div>
+              </m.div>
             )}
 
             {!hasContent && (
@@ -127,7 +127,7 @@ export default function Kommunalpolitik() {
                 Noch keine Personen für dieses Jahr eingetragen.
               </p>
             )}
-          </motion.div>
+          </m.div>
         )}
 
         {/* Skeleton while loading */}

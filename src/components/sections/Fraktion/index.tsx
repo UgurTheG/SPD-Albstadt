@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useSectionPage } from '@/hooks/useSectionPage'
 import { useHaushaltsredenPagination } from '@/hooks/useHaushaltsredenPagination'
 import { useSheetState } from '@/hooks/useSheetState'
@@ -62,7 +62,7 @@ export default function Fraktion() {
         />
 
         {/* Haushaltsreden */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 24 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.5 }}
@@ -92,7 +92,7 @@ export default function Fraktion() {
             onLoadMore={loadMoreReden}
             onLoadLess={loadLessReden}
           />
-        </motion.div>
+        </m.div>
       </SectionContainer>
 
       <PersonSheet open={selectedMember !== null} onClose={closeMember} person={selectedMember} />

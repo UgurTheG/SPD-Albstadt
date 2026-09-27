@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { LoaderCircle, Moon, Shield, Sun } from 'lucide-react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
 import { useAdminStore } from '../store'
 
@@ -131,7 +131,7 @@ export default function LoginScreen() {
           {darkMode ? <Sun size={15} /> : <Moon size={15} />}
         </button>
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 18, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -171,13 +171,13 @@ export default function LoginScreen() {
           ) : (
             <div className="space-y-3">
               {errorMsg && (
-                <motion.p
+                <m.p
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 px-3 py-2.5 rounded-xl border border-red-100 dark:border-red-900/40"
                 >
                   {errorMsg}
-                </motion.p>
+                </m.p>
               )}
 
               <button
@@ -202,7 +202,7 @@ export default function LoginScreen() {
             <Shield size={10} className="shrink-0" />
             <span>OAuth 2.0 · Nur GitHub API · HttpOnly Cookies</span>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </div>
   )

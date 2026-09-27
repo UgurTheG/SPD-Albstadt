@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react'
 import { safeHref } from '@/utils/safeUrl'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { personCardItemVariants } from '@/components/personCardVariants'
 import type { Abgeordneter } from './types'
 
@@ -14,7 +14,7 @@ export function AbgeordneterCard({
   priority?: boolean
 }) {
   return (
-    <motion.div
+    <m.div
       variants={personCardItemVariants}
       onClick={onClick}
       className="group flex rounded-2xl overflow-hidden cursor-pointer
@@ -69,6 +69,6 @@ export function AbgeordneterCard({
           </span>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   )
 }

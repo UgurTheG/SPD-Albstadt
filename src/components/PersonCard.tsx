@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { personCardItemVariants } from './personCardVariants'
 
 function getInitials(name: string): string {
@@ -52,7 +52,7 @@ export default function PersonCard({
   priority,
 }: PersonCardProps) {
   return (
-    <motion.div
+    <m.div
       variants={personCardItemVariants}
       onClick={onClick}
       /* overflow-hidden intentionally removed from this element:
@@ -105,6 +105,6 @@ export default function PersonCard({
           Mehr anzeigen →
         </span>
       </div>
-    </motion.div>
+    </m.div>
   )
 }

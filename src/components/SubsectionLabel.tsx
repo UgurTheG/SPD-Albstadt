@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 
 interface SubsectionLabelProps {
   /** Small uppercase category label. */
@@ -30,7 +30,7 @@ export default function SubsectionLabel({
   mb = 'mb-8',
 }: SubsectionLabelProps) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, x: -20 }}
       animate={isInView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.5, delay }}
@@ -40,6 +40,6 @@ export default function SubsectionLabel({
         {label}
       </h3>
       {title && <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">{title}</p>}
-    </motion.div>
+    </m.div>
   )
 }

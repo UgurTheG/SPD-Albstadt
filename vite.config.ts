@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => {
             // NOTE: Do NOT manually chunk /src/admin/ here — let Rolldown create
             // a natural dynamic-import chunk for it. Forcing it into a named chunk
             // causes Rolldown (Vite 8) to inline all its dependencies (React,
-            // framer-motion, etc.) and then re-export them, making the main entry
+            // Motion, etc.) and then re-export them, making the main entry
             // statically import the admin chunk on every page.
             //
             // Admin-only node_modules: return undefined (no manual chunk) so Rolldown
@@ -57,9 +57,11 @@ export default defineConfig(({ mode }) => {
             // ical.js parses ICS feeds; ics generates downloadable ICS files.
             if (id.includes('node_modules/ical.js/') || id.includes('node_modules/ics/'))
               return 'calendar'
-            // Heavy animation library
-            if (id.includes('framer-motion') || id.includes('node_modules/motion/'))
-              return 'framer-motion'
+            // Motion: no manual chunk, so the drag/layout features that main.tsx
+            // loads through <LazyMotion> stay in their own lazy chunk instead of
+            // being bundled with the core that renders the first frame.
+            if (/node_modules\/(framer-motion|motion|motion-dom|motion-utils)\//.test(id))
+              return undefined
             // Lucide icons (large icon set)
             if (id.includes('lucide-react')) return 'lucide'
             // React ecosystem core

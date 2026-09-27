@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { personCardContainerVariants } from './personCardVariants'
 import PersonCard from './PersonCard'
 import { SkeletonGrid } from './SkeletonGrid'
@@ -40,7 +40,7 @@ export function PersonGrid<T extends PersonBase>({
 
   return (
     <div className="mb-20">
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ delay: animationDelay }}
@@ -54,9 +54,9 @@ export function PersonGrid<T extends PersonBase>({
             <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">{countLabel}</p>
           )}
         </div>
-      </motion.div>
+      </m.div>
 
-      <motion.div
+      <m.div
         variants={personCardContainerVariants}
         initial="hidden"
         animate={isInView ? 'visible' : 'hidden'}
@@ -72,7 +72,7 @@ export function PersonGrid<T extends PersonBase>({
           />
         ))}
         {!members && <SkeletonGrid count={skeletonCount} itemClassName={skeletonClassName} />}
-      </motion.div>
+      </m.div>
     </div>
   )
 }

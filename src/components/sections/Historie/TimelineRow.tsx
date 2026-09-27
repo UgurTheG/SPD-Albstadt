@@ -1,6 +1,6 @@
 import { memo, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
-import { motion, useInView } from 'motion/react'
+import { m, useInView } from 'motion/react'
 import type { MergedItem, TimelineEntry, Persoenlichkeit } from './types'
 import { TIMELINE_TYPE_META } from './types'
 import { EventCard } from './EventCard'
@@ -88,13 +88,13 @@ export const TimelineRow = memo(function TimelineRow({
       {/* Desktop left slot */}
       <div className={`hidden md:flex flex-1 ${isLeft ? 'justify-end' : 'justify-start'}`}>
         {isLeft ? (
-          <motion.div
+          <m.div
             initial={HIDE_LEFT}
             animate={isInView ? SHOW : HIDE_LEFT}
             className="w-full max-w-sm"
           >
             {renderCard(item, isLeft, handlers)}
-          </motion.div>
+          </m.div>
         ) : (
           <div />
         )}
@@ -102,7 +102,7 @@ export const TimelineRow = memo(function TimelineRow({
 
       {/* Dot */}
       <div className="relative flex flex-col items-center shrink-0 w-4 md:w-auto">
-        <motion.div
+        <m.div
           initial={{ scale: 0 }}
           animate={
             isInView
@@ -116,25 +116,25 @@ export const TimelineRow = memo(function TimelineRow({
       {/* Desktop right slot */}
       <div className="flex-1">
         {!isLeft ? (
-          <motion.div
+          <m.div
             initial={HIDE_RIGHT}
             animate={isInView ? SHOW : HIDE_RIGHT}
             className="hidden md:block w-full max-w-sm"
           >
             {renderCard(item, isLeft, handlers)}
-          </motion.div>
+          </m.div>
         ) : (
           <div />
         )}
 
         {/* Mobile — always show, isLeft is always false on mobile */}
-        <motion.div
+        <m.div
           initial={HIDE_RIGHT}
           animate={isInView ? SHOW : HIDE_RIGHT}
           className="md:hidden pl-4"
         >
           {renderCard(item, false, handlers)}
-        </motion.div>
+        </m.div>
       </div>
     </div>
   )

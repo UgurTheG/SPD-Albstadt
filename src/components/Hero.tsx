@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'motion/react'
+import { m, useScroll, useTransform } from 'motion/react'
 import { ChevronDown, Moon, Sun, UserPlus } from 'lucide-react'
 import { useConfig } from '../hooks/useConfig'
 import { useDarkMode } from '../hooks/useDarkMode'
@@ -40,7 +40,7 @@ export default function Hero() {
       )}
 
       {/* Background layers */}
-      <motion.div style={{ scale }} className="absolute inset-0">
+      <m.div style={{ scale }} className="absolute inset-0">
         {videoUrl ? (
           <>
             {/* Video background */}
@@ -96,13 +96,13 @@ export default function Hero() {
               'radial-gradient(ellipse 70% 60% at 50% 40%, transparent 0%, rgba(0,0,0,0.35) 100%)',
           }}
         />
-      </motion.div>
+      </m.div>
       {/* Main content with parallax */}
-      <motion.div
+      <m.div
         style={{ y, opacity }}
         className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4"
       >
-        <motion.h1
+        <m.h1
           initial={{ y: 40 }}
           animate={{ y: 0 }}
           transition={{ duration: 0.8, delay: 0.15, ease: 'easeOut' }}
@@ -111,25 +111,25 @@ export default function Hero() {
           SPD
           <br />
           <span className="text-white/75">Albstadt</span>
-        </motion.h1>
-        <motion.p
+        </m.h1>
+        <m.p
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
           className="text-lg sm:text-2xl text-white/75 max-w-xl mb-12 font-light leading-relaxed"
         >
           {slogan}
-        </motion.p>
+        </m.p>
 
         {/* Navigation pills */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.4, ease: 'easeOut' }}
           className="flex flex-wrap justify-center gap-2.5 mb-8"
         >
           {navItems.map((item, i) => (
-            <motion.button
+            <m.button
               key={item.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -144,12 +144,12 @@ export default function Hero() {
               }`}
             >
               {item.label}
-            </motion.button>
+            </m.button>
           ))}
-        </motion.div>
+        </m.div>
 
         {/* Divider */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.85 }}
@@ -159,10 +159,10 @@ export default function Hero() {
           <div className="flex-1 h-px bg-white/15" />
           <span className="text-[11px] text-white/35 font-medium tracking-wide">oder</span>
           <div className="flex-1 h-px bg-white/15" />
-        </motion.div>
+        </m.div>
 
         {/* Secondary CTA */}
-        <motion.a
+        <m.a
           href="https://www.spd.de/unterstuetzen/mitglied-werden"
           target="_blank"
           rel="noopener noreferrer"
@@ -179,13 +179,13 @@ export default function Hero() {
         >
           <UserPlus size={15} strokeWidth={2.5} />
           Mitglied werden
-        </motion.a>
-      </motion.div>
+        </m.a>
+      </m.div>
       {/* Bottom fade — softens the hard edge into the next section */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-gray-950 dark:from-gray-950 to-transparent z-10 pointer-events-none" />
 
       {/* Scroll indicator */}
-      <motion.button
+      <m.button
         onClick={() => navigateTo('aktuelles')}
         animate={{ y: [0, 10, 0] }}
         transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
@@ -193,7 +193,7 @@ export default function Hero() {
         aria-label="Zu Aktuelles"
       >
         <ChevronDown size={34} strokeWidth={1.5} />
-      </motion.button>
+      </m.button>
     </section>
   )
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Menu } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m } from 'motion/react'
 import { toast, Toaster } from 'sonner'
 import { useAdminStore } from './store'
 import { TABS } from './config/tabs'
@@ -254,7 +254,7 @@ export default function AdminApp() {
 
           {/* Page header */}
           <div className="mb-8">
-            <motion.div
+            <m.div
               key={activeTab}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -309,12 +309,12 @@ export default function AdminApp() {
                   </AdminWarningBanner>
                 </div>
               )}
-            </motion.div>
+            </m.div>
           </div>
 
           {/* Editor content */}
           <AnimatePresence mode="wait">
-            <motion.div
+            <m.div
               key={activeTab}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -322,7 +322,7 @@ export default function AdminApp() {
               transition={{ duration: 0.2 }}
             >
               {!dataLoaded ? <AdminSkeleton /> : <TabEditor tab={currentTab} />}
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         </main>
       </div>

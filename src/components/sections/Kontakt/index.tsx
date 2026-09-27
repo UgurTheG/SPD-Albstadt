@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useSectionView } from '@/hooks/useSectionView'
 import { useConfig } from '@/hooks/useConfig'
 import SectionHeader from '@/components/SectionHeader'
@@ -39,17 +39,17 @@ export default function Kontakt() {
 
         <div className="grid lg:grid-cols-5 gap-8 items-stretch">
           {/* Form — 3 columns */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 40 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.15 }}
             className="lg:col-span-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col"
           >
             <KontaktForm />
-          </motion.div>
+          </m.div>
 
           {/* Contact info — 2 columns */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 40 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -79,7 +79,7 @@ export default function Kontakt() {
             />
 
             <OfficeHoursPanel buerozeiten={buerozeiten} />
-          </motion.div>
+          </m.div>
         </div>
       </div>
     </section>

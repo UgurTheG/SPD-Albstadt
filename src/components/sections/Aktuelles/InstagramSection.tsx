@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, useInView } from 'motion/react'
+import { m, useInView } from 'motion/react'
 import { Camera, ExternalLink } from 'lucide-react'
 import { INSTAGRAM_PROFILE_URL, INSTAGRAM_USERNAME } from '@/shared/instagram'
 import SubsectionHeading from '@/components/SubsectionHeading'
@@ -31,7 +31,7 @@ export default function InstagramSection({ elfsightAppId }: Props) {
   }, [elfsightAppId])
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 16 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.45, delay: 0.2 }}
@@ -62,6 +62,6 @@ export default function InstagramSection({ elfsightAppId }: Props) {
           data-elfsight-app-theme={isDark ? 'dark' : 'light'}
         />
       )}
-    </motion.div>
+    </m.div>
   )
 }

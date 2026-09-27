@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 import { FileSearch, LoaderCircle, LogOut, Moon, Rocket, Sun, X } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m } from 'motion/react'
 import type { GHUser } from '../types'
 import type { PresenceUser } from '../store/presenceSlice'
 import { TABS } from '../config/tabs'
@@ -63,7 +63,7 @@ export default function AdminSidebar({
       {/* Mobile backdrop overlay */}
       <AnimatePresence>
         {open && (
-          <motion.div
+          <m.div
             key="sidebar-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -135,7 +135,7 @@ export default function AdminSidebar({
                   }`}
                 >
                   {isActive && (
-                    <motion.div
+                    <m.div
                       layoutId="sidebar-active"
                       className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-spd-red rounded-r-full"
                       transition={{ type: 'spring', stiffness: 350, damping: 30 }}
@@ -178,7 +178,7 @@ export default function AdminSidebar({
             {/* Global changes + Publish all — keyed so AnimatePresence can animate exit */}
             <AnimatePresence>
               {dirty.size > 0 && (
-                <motion.div
+                <m.div
                   key="sidebar-publish-actions"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -213,7 +213,7 @@ export default function AdminSidebar({
                       {publishing ? 'Veröffentliche…' : `Alle veröffentlichen (${dirty.size})`}
                     </span>
                   </button>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
 

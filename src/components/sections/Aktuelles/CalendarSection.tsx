@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { motion, useInView } from 'motion/react'
+import { m, useInView } from 'motion/react'
 import { Calendar } from 'lucide-react'
 import type { ICSEvent } from '@/utils/icsParser'
 import SubsectionHeading from '@/components/SubsectionHeading'
@@ -27,7 +27,7 @@ export default function CalendarSection({
   const isInView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <motion.div
+    <m.div
       ref={ref}
       initial={{ opacity: 0, y: 16 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -65,6 +65,6 @@ export default function CalendarSection({
           onSelectDayEvents={onSelectDayEvents}
         />
       )}
-    </motion.div>
+    </m.div>
   )
 }

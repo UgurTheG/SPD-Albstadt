@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m } from 'motion/react'
 import { ChevronLeft, Menu, Moon, Sun, X } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { useDarkMode } from '../hooks/useDarkMode'
@@ -52,7 +52,7 @@ export default function Navbar() {
             {/* Breadcrumb separator when on a section */}
             <AnimatePresence>
               {!isHome && SECTION_LABELS[activePage] && (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
@@ -63,7 +63,7 @@ export default function Navbar() {
                   <span className="font-semibold text-spd-red text-sm truncate">
                     {SECTION_LABELS[activePage]}
                   </span>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>
@@ -71,7 +71,7 @@ export default function Navbar() {
           {/* Centre: desktop nav — hidden on home page */}
           <AnimatePresence>
             {!isHome && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
@@ -98,14 +98,14 @@ export default function Navbar() {
                   >
                     {item.label}
                     {activePage === item.id && (
-                      <motion.div
+                      <m.div
                         layoutId="activeNav"
                         className="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-0.5 w-4 rounded-full bg-spd-red"
                       />
                     )}
                   </button>
                 ))}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
@@ -136,7 +136,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       <AnimatePresence>
         {menuOpen && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -145,7 +145,7 @@ export default function Navbar() {
           >
             <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1" role="menu">
               {!isHome && (
-                <motion.button
+                <m.button
                   initial={{ opacity: 0, x: -16 }}
                   animate={{ opacity: 1, x: 0 }}
                   onClick={() => handleNav('home')}
@@ -154,10 +154,10 @@ export default function Navbar() {
                 >
                   <ChevronLeft size={15} />
                   Startseite
-                </motion.button>
+                </m.button>
               )}
               {navItems.map((item, i) => (
-                <motion.button
+                <m.button
                   key={item.id}
                   initial={{ opacity: 0, x: -16 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -172,10 +172,10 @@ export default function Navbar() {
                   }`}
                 >
                   {item.label}
-                </motion.button>
+                </m.button>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </nav>

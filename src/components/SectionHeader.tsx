@@ -1,5 +1,5 @@
 import { type ReactNode, type RefObject } from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 
 interface SectionHeaderProps {
   /** The ref returned by useRef — passed to the motion.div so useInView works. */
@@ -42,7 +42,7 @@ export default function SectionHeader({
   inverted = false,
 }: SectionHeaderProps) {
   return (
-    <motion.div
+    <m.div
       ref={sectionRef}
       initial={{ y: 30 }}
       animate={isInView ? { y: 0 } : {}}
@@ -71,6 +71,6 @@ export default function SectionHeader({
           {description}
         </p>
       )}
-    </motion.div>
+    </m.div>
   )
 }

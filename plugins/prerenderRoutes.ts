@@ -62,15 +62,6 @@ function routeShells(): RouteShell[] {
   }))
   return [...sections, ...deepLinks]
 }
-// These chunks are already injected via modulepreload in the main index.html.
-const ALREADY_PRELOADED_PREFIXES = [
-  'rolldown-runtime',
-  'react-vendor',
-  'vendor-',
-  'framer-motion',
-  'lucide-',
-  'index-',
-]
 // Heavy chunks only loaded on user interaction — never eagerly preload these.
 const NEVER_PRELOAD_PREFIXES = ['LazyLightboxWrapper', 'calendar', 'AdminApp', 'admin-']
 /**
@@ -78,7 +69,11 @@ const NEVER_PRELOAD_PREFIXES = ['LazyLightboxWrapper', 'calendar', 'AdminApp', '
  * all filenames (primary + direct static sub-imports) that should be
  * modulepreloaded in the route's HTML to eliminate extra RTTs.
  */
-function findRouteChunks(assetsDir: string, chunkName: string): string[] {
+function findRouteChunks(
+  assetsDir: string,
+  chunkName: string,
+  alreadyLoaded: Set<string>,
+): string[] {
   const allFiles = readdirSync(assetsDir)
   const primary = allFiles.find(f => f.startsWith(chunkName + '-') && f.endsWith('.js'))
   if (!primary) return []
@@ -87,7 +82,7 @@ function findRouteChunks(assetsDir: string, chunkName: string): string[] {
   const refs = content.match(/"\.\/([A-Za-z0-9_.-]+-[A-Za-z0-9_.-]+\.js)"/g) ?? []
   for (const ref of refs) {
     const fname = ref.slice(3, -1)
-    if (ALREADY_PRELOADED_PREFIXES.some(p => fname.startsWith(p))) continue
+    if (alreadyLoaded.has(fname)) continue
     if (NEVER_PRELOAD_PREFIXES.some(p => fname.startsWith(p))) continue
     if (!allFiles.includes(fname)) continue
     chunks.add(fname)
@@ -167,6 +162,10 @@ export function prerenderRoutes(): Plugin {
       const outDir = resolve(process.cwd(), 'dist')
       const assetsDir = resolve(outDir, 'assets')
       const indexHtml = readFileSync(resolve(outDir, 'index.html'), 'utf-8')
+      // The entry script and its modulepreloads are already in every shell.
+      const alreadyLoaded = new Set(
+        [...indexHtml.matchAll(/"\/assets\/([^"]+\.js)"/g)].map(([, file]) => file),
+      )
       const chunksByName = new Map<string, string[]>()
       const shells = routeShells()
       for (const shell of shells) {
@@ -186,7 +185,10 @@ export function prerenderRoutes(): Plugin {
         // main JS executes — ~150ms RTT saved per chunk on slow 4G.
         if (shell.chunkName) {
           if (!chunksByName.has(shell.chunkName)) {
-            chunksByName.set(shell.chunkName, findRouteChunks(assetsDir, shell.chunkName))
+            chunksByName.set(
+              shell.chunkName,
+              findRouteChunks(assetsDir, shell.chunkName, alreadyLoaded),
+            )
           }
           for (const f of chunksByName.get(shell.chunkName) ?? []) {
             headTags.push(`  <link rel="modulepreload" crossorigin href="/assets/${f}">`)

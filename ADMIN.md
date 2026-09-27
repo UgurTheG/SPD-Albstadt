@@ -8,7 +8,7 @@ GitHub API, and the live website updates automatically within approximately 1 mi
 
 **URL:** `https://<domain>/admin`  
 **Entry point:** `src/admin/AdminApp.tsx`  
-**Built with:** React 19, TypeScript, Vite, Tailwind CSS v4, Zustand, Framer Motion
+**Built with:** React 19, TypeScript, Vite, Tailwind CSS v4, Zustand, Motion
 
 ---
 
@@ -77,7 +77,7 @@ Automatic session expiry instead saves drafts, pending uploads, undo history and
 | Frontend         | React 19, TypeScript                                                 |
 | Build            | Vite                                                                 |
 | Styling          | Tailwind CSS v4                                                      |
-| Animations       | Framer Motion                                                        |
+| Animations       | Motion (`motion/react`)                                              |
 | State Management | Zustand                                                              |
 | Icons            | Lucide React                                                         |
 | Drag & Drop      | `@dnd-kit`                                                           |

@@ -10,7 +10,7 @@ import {
   ToggleRight,
   Trash2,
 } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m } from 'motion/react'
 import { useAdminStore } from '../store'
 import ArrayEditor from './ArrayEditor'
 import TabEditorShell from './TabEditorShell'
@@ -134,7 +134,7 @@ export default function KommunalpolitikEditor() {
             const dokumente = jahr.dokumente ?? []
             const total = gemeinderaete.length + kreisraete.length
             return (
-              <motion.div
+              <m.div
                 key={jahr.id}
                 layout
                 initial={{ opacity: 0, y: 10 }}
@@ -196,7 +196,7 @@ export default function KommunalpolitikEditor() {
                 {/* Gemeinderäte + Kreisräte editors */}
                 <AnimatePresence initial={false}>
                   {expanded && (
-                    <motion.div
+                    <m.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
@@ -215,7 +215,7 @@ export default function KommunalpolitikEditor() {
                           />
                           <AnimatePresence initial={false}>
                             {!collapsedSections.has(`${jahr.id}-gemeinderaete`) && (
-                              <motion.div
+                              <m.div
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
@@ -230,7 +230,7 @@ export default function KommunalpolitikEditor() {
                                     updateSection(jahr.id, 'gemeinderaete', p)
                                   }
                                 />
-                              </motion.div>
+                              </m.div>
                             )}
                           </AnimatePresence>
                         </div>
@@ -248,7 +248,7 @@ export default function KommunalpolitikEditor() {
                           />
                           <AnimatePresence initial={false}>
                             {!collapsedSections.has(`${jahr.id}-kreisraete`) && (
-                              <motion.div
+                              <m.div
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
@@ -261,7 +261,7 @@ export default function KommunalpolitikEditor() {
                                   tabKey="kommunalpolitik"
                                   onStructureChange={p => updateSection(jahr.id, 'kreisraete', p)}
                                 />
-                              </motion.div>
+                              </m.div>
                             )}
                           </AnimatePresence>
                         </div>
@@ -299,7 +299,7 @@ export default function KommunalpolitikEditor() {
                           </div>
                           <AnimatePresence initial={false}>
                             {!collapsedSections.has(`${jahr.id}-dokumente`) && (
-                              <motion.div
+                              <m.div
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
@@ -331,15 +331,15 @@ export default function KommunalpolitikEditor() {
                                     />
                                   ))}
                                 </div>
-                              </motion.div>
+                              </m.div>
                             )}
                           </AnimatePresence>
                         </div>
                       </div>
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
-              </motion.div>
+              </m.div>
             )
           })}
         </AnimatePresence>

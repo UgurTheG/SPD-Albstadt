@@ -1,5 +1,5 @@
 import { type ReactNode, useRef } from 'react'
-import { motion, useInView } from 'motion/react'
+import { m, useInView } from 'motion/react'
 import { useData } from '@/hooks/useData'
 import { renderTextContent } from '@/utils/renderTextContent'
 
@@ -39,7 +39,7 @@ export default function LegalPage({
     <main className="flex-1 pt-20 pb-16">
       <section className="bg-linear-to-br from-spd-red via-spd-red to-red-700 dark:from-red-900 dark:via-red-900 dark:to-red-950 text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -51,23 +51,23 @@ export default function LegalPage({
             <span className="text-sm font-semibold uppercase tracking-widest text-red-200">
               {category}
             </span>
-          </motion.div>
-          <motion.h1
+          </m.div>
+          <m.h1
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-4xl sm:text-5xl font-black tracking-tight mb-4 text-left"
           >
             {title}
-          </motion.h1>
-          <motion.p
+          </m.h1>
+          <m.p
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-red-100 text-lg max-w-2xl"
           >
             {beschreibung}
-          </motion.p>
+          </m.p>
         </div>
       </section>
 
@@ -80,7 +80,7 @@ export default function LegalPage({
         {!loading && sections && (
           <div className="space-y-10">
             {sections.map((section, i) => (
-              <motion.div
+              <m.div
                 key={section.title}
                 initial={{ opacity: 0, y: 20 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -93,7 +93,7 @@ export default function LegalPage({
                 <div className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm sm:text-base whitespace-pre-line">
                   {renderTextContent(section.content)}
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         )}

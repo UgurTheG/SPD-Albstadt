@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m } from 'motion/react'
 import { ChevronDown, CircleAlert, CircleCheckBig, Send } from 'lucide-react'
 import { useKontaktForm } from '@/hooks/useKontaktForm'
 import { BETREFF_OPTIONS } from './constants'
@@ -12,14 +12,14 @@ export function KontaktForm() {
   return (
     <AnimatePresence mode="wait">
       {status === 'success' ? (
-        <motion.div
+        <m.div
           key="success"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           className="flex-1 flex flex-col items-center justify-center text-center"
         >
-          <motion.div
+          <m.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 300, delay: 0.1 }}
@@ -29,7 +29,7 @@ export function KontaktForm() {
               className="text-spd-red dark:text-white mb-5"
               strokeWidth={1.5}
             />
-          </motion.div>
+          </m.div>
           <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-3">
             Nachricht gesendet!
           </h3>
@@ -42,9 +42,9 @@ export function KontaktForm() {
           >
             Neue Nachricht schreiben
           </button>
-        </motion.div>
+        </m.div>
       ) : (
-        <motion.form
+        <m.form
           key="form"
           onSubmit={handleSubmit}
           initial={{ opacity: 0 }}
@@ -153,7 +153,7 @@ export function KontaktForm() {
             </div>
           )}
 
-          <motion.button
+          <m.button
             type="submit"
             disabled={status === 'sending'}
             whileHover={{ scale: 1.02 }}
@@ -162,7 +162,7 @@ export function KontaktForm() {
           >
             {status === 'sending' ? (
               <>
-                <motion.div
+                <m.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                   className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
@@ -175,13 +175,13 @@ export function KontaktForm() {
                 Nachricht senden
               </>
             )}
-          </motion.button>
+          </m.button>
 
           <p className="text-gray-600 dark:text-white/40 text-xs text-center leading-relaxed">
             Mit dem Absenden stimmen Sie zu, dass wir Ihre Daten zur Bearbeitung Ihrer Anfrage
             verwenden.
           </p>
-        </motion.form>
+        </m.form>
       )}
     </AnimatePresence>
   )

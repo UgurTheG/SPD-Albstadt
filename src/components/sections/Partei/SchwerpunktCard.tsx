@@ -1,5 +1,5 @@
 import { ChevronRight, Users } from 'lucide-react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { personCardItemVariants } from '@/components/personCardVariants'
 import type { Schwerpunkt } from './types'
 import { ICONS } from './icons'
@@ -8,7 +8,7 @@ export function SchwerpunktCard({ s, onClick }: { s: Schwerpunkt; onClick: () =>
   const Icon = ICONS[s.icon] || Users
 
   return (
-    <motion.div
+    <m.div
       variants={personCardItemVariants}
       onClick={onClick}
       className="group relative rounded-2xl overflow-hidden cursor-pointer
@@ -33,6 +33,6 @@ export function SchwerpunktCard({ s, onClick }: { s: Schwerpunkt; onClick: () =>
           {s.beschreibung}
         </p>
       </div>
-    </motion.div>
+    </m.div>
   )
 }

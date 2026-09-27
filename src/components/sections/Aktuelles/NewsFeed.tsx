@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { motion, useInView } from 'motion/react'
+import { m, useInView } from 'motion/react'
 import { ChevronRight, Search, Tag, X } from 'lucide-react'
 import type { NewsItem } from '@/types/news'
 import { CATEGORY_COLOR_FALLBACK, CATEGORY_COLORS, getNewsImages } from '@/types/news'
@@ -42,7 +42,7 @@ export default function NewsFeed({ newsItems, onSelectNews }: Props) {
       />
 
       {/* Search */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ delay: 0.2 }}
@@ -73,10 +73,10 @@ export default function NewsFeed({ newsItems, onSelectNews }: Props) {
             <X size={14} />
           </button>
         )}
-      </motion.div>
+      </m.div>
 
       {/* Tag filter */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ delay: 0.25 }}
@@ -103,7 +103,7 @@ export default function NewsFeed({ newsItems, onSelectNews }: Props) {
             )}
           </button>
         ))}
-      </motion.div>
+      </m.div>
 
       {/* News grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
