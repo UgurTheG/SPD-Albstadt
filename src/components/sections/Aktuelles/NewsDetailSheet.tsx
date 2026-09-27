@@ -1,12 +1,10 @@
 import { useState } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { Check, Share2 } from 'lucide-react'
 import type { NewsItem } from '@/types/news'
 import { CATEGORY_COLORS, getNewsImages } from '@/types/news'
 import { formatDate } from '@/utils/formatDate'
 import PhotoGallery from '@/components/PhotoGallery'
-
-const BASE_URL = 'https://www.spd-albstadt.de'
+import ArticleMeta from '@/components/ArticleMeta'
 
 interface Props {
   news: NewsItem
@@ -14,11 +12,6 @@ interface Props {
 
 export default function NewsDetailSheet({ news }: Props) {
   const { urls, captions } = getNewsImages(news)
-  const ogImage = urls[0]
-    ? urls[0].startsWith('http')
-      ? urls[0]
-      : `${BASE_URL}${urls[0]}`
-    : undefined
   const deepId = news.uuid ?? news.id
   const shareUrl = `${window.location.origin}/aktuelles/${deepId}`
 
@@ -44,22 +37,12 @@ export default function NewsDetailSheet({ news }: Props) {
 
   return (
     <div>
-      <Helmet>
-        <title>{news.titel} – SPD Albstadt</title>
-        <meta name="description" content={news.zusammenfassung} />
-        <link rel="canonical" href={`${BASE_URL}/aktuelles/${deepId}`} />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={`${BASE_URL}/aktuelles/${deepId}`} />
-        <meta property="og:title" content={`${news.titel} – SPD Albstadt`} />
-        <meta property="og:description" content={news.zusammenfassung} />
-        {ogImage && <meta property="og:image" content={ogImage} />}
-        <meta property="og:locale" content="de_DE" />
-        <meta property="og:site_name" content="SPD Albstadt" />
-        <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
-        <meta name="twitter:title" content={`${news.titel} – SPD Albstadt`} />
-        <meta name="twitter:description" content={news.zusammenfassung} />
-        {ogImage && <meta name="twitter:image" content={ogImage} />}
-      </Helmet>
+      <ArticleMeta
+        title={news.titel}
+        description={news.zusammenfassung}
+        path={`/aktuelles/${deepId}`}
+        image={urls[0]}
+      />
       {urls.length > 0 && <PhotoGallery images={urls} captions={captions} alt={news.titel} />}
       <div className="p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-3">

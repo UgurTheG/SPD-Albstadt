@@ -1,7 +1,8 @@
 import { Users } from 'lucide-react'
-import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import Sheet from '@/components/Sheet'
+import ArticleMeta from '@/components/ArticleMeta'
+import SheetHero from '@/components/SheetHero'
 import { slugify } from '@/utils/slugify'
 import { useData } from '@/hooks/useData'
 import { formatDate } from '@/utils/formatDate'
@@ -9,8 +10,6 @@ import { CATEGORY_COLORS, CATEGORY_COLOR_FALLBACK, findRelatedNews } from '@/typ
 import type { NewsItem } from '@/types/news'
 import type { Schwerpunkt } from './types'
 import { ICONS } from './icons'
-
-const BASE_URL = 'https://www.spd-albstadt.de'
 
 const STATUS_STYLES: Record<string, string> = {
   'In Planung': 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
@@ -77,33 +76,20 @@ export function SchwerpunktSheet({
     <Sheet open={!!item} onClose={onClose}>
       {item && (
         <div>
-          <Helmet>
-            <title>{item.titel} – SPD Albstadt</title>
-            <meta name="description" content={item.beschreibung} />
-            <link rel="canonical" href={`${BASE_URL}/partei/${slugify(item.titel)}`} />
-            <meta property="og:type" content="article" />
-            <meta property="og:url" content={`${BASE_URL}/partei/${slugify(item.titel)}`} />
-            <meta property="og:title" content={`${item.titel} – SPD Albstadt`} />
-            <meta property="og:description" content={item.beschreibung} />
-            <meta property="og:locale" content="de_DE" />
-            <meta property="og:site_name" content="SPD Albstadt" />
-            <meta name="twitter:card" content="summary" />
-            <meta name="twitter:title" content={`${item.titel} – SPD Albstadt`} />
-            <meta name="twitter:description" content={item.beschreibung} />
-          </Helmet>
+          <ArticleMeta
+            title={item.titel}
+            description={item.beschreibung}
+            path={`/partei/${slugify(item.titel)}`}
+          />
 
-          {/* Header */}
-          <div className="bg-linear-to-br from-spd-red via-spd-red to-spd-red-dark px-5 sm:px-6 pt-6 pb-8 relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.12),transparent_50%)]" />
-            <div className="relative">
-              <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
-                <Icon size={22} className="text-white" />
-              </div>
-              <h3 className="font-black text-white text-xl sm:text-2xl leading-tight">
-                {item.titel}
-              </h3>
+          <SheetHero className="pt-6 pb-8">
+            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
+              <Icon size={22} className="text-white" />
             </div>
-          </div>
+            <h3 className="font-black text-white text-xl sm:text-2xl leading-tight">
+              {item.titel}
+            </h3>
+          </SheetHero>
 
           <div className="px-5 sm:px-6 pt-5 pb-8 space-y-5">
             {/* Status chip */}

@@ -12,7 +12,7 @@ export interface SEOMeta {
   priority: number
 }
 
-const BASE_URL = 'https://www.spd-albstadt.de'
+export const BASE_URL = 'https://www.spd-albstadt.de'
 const DEFAULT_OG_IMAGE = `${BASE_URL}/images/kontakt/gruppenbild.webp`
 const DEFAULT_OG_IMAGE_WIDTH = 1200
 const DEFAULT_OG_IMAGE_HEIGHT = 630
