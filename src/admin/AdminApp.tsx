@@ -136,8 +136,8 @@ export default function AdminApp() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors text-left [hyphens:none]">
       {/* Ambient background decorations */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute -top-48 -right-48 w-[700px] h-[700px] bg-spd-red/[0.03] dark:bg-spd-red/[0.06] rounded-full blur-3xl" />
-        <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-spd-red/[0.02] dark:bg-spd-red/[0.04] rounded-full blur-3xl" />
+        <div className="absolute -top-48 -right-48 w-[700px] h-[700px] bg-spd-red/3 dark:bg-spd-red/6 rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-spd-red/2 dark:bg-spd-red/4 rounded-full blur-3xl" />
       </div>
       <Toaster position="top-right" richColors closeButton theme={darkMode ? 'dark' : 'light'} />
 
@@ -196,7 +196,7 @@ export default function AdminApp() {
       <div className="lg:pl-64">
         {/* Top bar for mobile */}
         <header className="lg:hidden sticky top-0 z-30 bg-white/90 dark:bg-gray-950/90 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-800/60 shadow-sm">
-          <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-spd-red via-spd-red/50 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-spd-red via-spd-red/50 to-transparent" />
           <div className="flex items-center justify-between px-4 py-3">
             <button
               type="button"
@@ -262,14 +262,14 @@ export default function AdminApp() {
             >
               <div className="relative rounded-2xl bg-white/70 dark:bg-gray-900/50 border border-gray-200/70 dark:border-gray-800/60 shadow-sm overflow-hidden mb-4">
                 {/* Top accent stripe */}
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-spd-red via-spd-red/40 to-transparent" />
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-spd-red via-spd-red/40 to-transparent" />
                 {/* Background gradient wash */}
-                <div className="absolute inset-0 bg-gradient-to-br from-spd-red/[0.04] via-transparent to-transparent dark:from-spd-red/[0.08] pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-br from-spd-red/4 via-transparent to-transparent dark:from-spd-red/8 pointer-events-none" />
                 <div className="relative flex items-center gap-4 px-5 py-4 sm:px-6 sm:py-5">
                   {/* Tab icon */}
                   <div className="relative shrink-0">
                     <div className="absolute inset-0 bg-spd-red/15 dark:bg-spd-red/20 rounded-2xl blur-md" />
-                    <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-spd-red/12 to-spd-red/4 dark:from-spd-red/20 dark:to-spd-red/8 flex items-center justify-center text-spd-red ring-1 ring-spd-red/10 dark:ring-spd-red/20 shadow-sm">
+                    <div className="relative w-12 h-12 rounded-2xl bg-linear-to-br from-spd-red/12 to-spd-red/4 dark:from-spd-red/20 dark:to-spd-red/8 flex items-center justify-center text-spd-red ring-1 ring-spd-red/10 dark:ring-spd-red/20 shadow-sm">
                       <span className="scale-110">{getTabIcon(currentTab.key)}</span>
                     </div>
                   </div>

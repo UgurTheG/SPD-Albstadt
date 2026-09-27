@@ -70,7 +70,6 @@ html.dark body {
   display: none;
 }
 .no-scrollbar {
-  -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
@@ -85,7 +84,6 @@ html.dark body {
   padding: 32px 20px 20px !important;
   max-height: 35vh !important;
   overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
 }
 
 .yarl__slide_description {

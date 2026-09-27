@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { ArrowLeft, Home } from 'lucide-react'
+import { ArrowLeft, House } from 'lucide-react'
 import { useNavigateTo } from '@/hooks/useNavigateTo'
 import { ERROR_CONFIG, hasIconInCode, renderCodeWithIcon } from './errorConfig'
 
@@ -47,7 +47,7 @@ export default function ErrorPage({ code }: ErrorPageProps) {
             onClick={() => navigateTo('home')}
             className="inline-flex items-center gap-2 bg-spd-red hover:bg-spd-red-dark text-white font-semibold px-6 py-3 rounded-xl transition-colors cursor-pointer"
           >
-            <Home size={16} />
+            <House size={16} />
             Zur Startseite
           </button>
           <button

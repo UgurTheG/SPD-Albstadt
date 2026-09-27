@@ -7,7 +7,7 @@
  * the "Veröffentlichen" button becomes available.
  */
 import { useEffect, useState } from 'react'
-import { AlertTriangle, CheckCircle2, GitMerge, User } from 'lucide-react'
+import { CircleCheck, GitMerge, TriangleAlert, User } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import type { MergeConflict } from '../lib/merge'
 import { applyMergeChoice } from '../lib/merge'
@@ -70,7 +70,7 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-9999 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -101,7 +101,7 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
         {/* Explanation */}
         <div className="px-6 py-3 bg-amber-50 dark:bg-amber-900/10 border-b border-amber-200/40 dark:border-amber-800/30">
           <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium flex items-start gap-1.5">
-            <AlertTriangle size={12} className="shrink-0 mt-0.5" />
+            <TriangleAlert size={12} className="shrink-0 mt-0.5" />
             Sowohl Sie als auch ein anderer Benutzer haben diese Felder geändert. Wählen Sie für
             jeden Konflikt, welche Version Sie behalten möchten. Danach wird automatisch
             veröffentlicht.
@@ -135,9 +135,9 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
                 >
                   <div className="flex items-center gap-2 mb-3">
                     {choice ? (
-                      <CheckCircle2 size={13} className="text-green-500 shrink-0" />
+                      <CircleCheck size={13} className="text-green-500 shrink-0" />
                     ) : (
-                      <AlertTriangle size={13} className="text-amber-500 shrink-0" />
+                      <TriangleAlert size={13} className="text-amber-500 shrink-0" />
                     )}
                     <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 font-mono">
                       {c.label}
@@ -158,7 +158,7 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
                       <p className="font-semibold text-spd-red mb-1 text-[10px] uppercase tracking-wide">
                         Meine Version
                       </p>
-                      <p className="text-gray-700 dark:text-gray-300 break-words">
+                      <p className="text-gray-700 dark:text-gray-300 wrap-break-word">
                         {summarizeValue(c.ours, undefined, false) || '—'}
                       </p>
                     </button>
@@ -178,7 +178,7 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
                           ? `Version von ${conflictAuthors.join(', ')}`
                           : 'Veröffentlichte Version'}
                       </p>
-                      <p className="text-gray-700 dark:text-gray-300 break-words">
+                      <p className="text-gray-700 dark:text-gray-300 wrap-break-word">
                         {summarizeValue(c.theirs, undefined, false) || '—'}
                       </p>
                     </button>

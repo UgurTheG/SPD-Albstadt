@@ -26,7 +26,7 @@ export default function App() {
 
   // Scroll to top on route change
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+    window.scrollTo({ top: 0, behavior: 'instant' })
   }, [location.pathname])
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export default function App() {
       {/* Skip to content — visible only on keyboard focus */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:bg-spd-red focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-100 focus:bg-spd-red focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"
       >
         Zum Inhalt springen
       </a>

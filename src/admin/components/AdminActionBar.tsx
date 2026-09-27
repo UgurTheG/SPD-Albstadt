@@ -1,4 +1,4 @@
-import { Download, Eye, FileSearch, Loader2, Redo2, Rocket, Undo2 } from 'lucide-react'
+import { Download, Eye, FileSearch, LoaderCircle, Redo2, Rocket, Undo2 } from 'lucide-react'
 
 interface AdminActionBarProps {
   isDirty: boolean
@@ -112,7 +112,7 @@ export default function AdminActionBar({
         }`}
       >
         {publishing ? (
-          <Loader2 size={14} strokeWidth={2.5} className="animate-spin shrink-0" />
+          <LoaderCircle size={14} strokeWidth={2.5} className="animate-spin shrink-0" />
         ) : (
           <Rocket size={14} strokeWidth={2.5} className="shrink-0" />
         )}

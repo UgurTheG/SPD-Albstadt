@@ -1,23 +1,23 @@
 import {
-  AlertTriangle,
   Ban,
   Clock,
-  Home,
   KeyRound,
+  type LucideIcon,
   Repeat,
   Search,
   ServerCrash,
   ShieldAlert,
   ShieldOff,
   Slash,
+  TriangleAlert,
 } from 'lucide-react'
 
 export const ERROR_CONFIG: Record<
   number,
-  { icon: typeof Home; title: string; description: string }
+  { icon: LucideIcon; title: string; description: string }
 > = {
   400: {
-    icon: AlertTriangle,
+    icon: TriangleAlert,
     title: 'Ungültige Anfrage',
     description:
       'Die Anfrage konnte nicht verarbeitet werden. Bitte überprüfen Sie die URL und versuchen Sie es erneut.',
@@ -87,7 +87,7 @@ export function hasIconInCode(code: number): boolean {
 }
 
 /** Renders the status code with the section icon replacing the single zero digit. */
-export function renderCodeWithIcon(code: number, Icon: typeof Home) {
+export function renderCodeWithIcon(code: number, Icon: LucideIcon) {
   const str = String(code)
   const zeroCount = (str.match(/0/g) || []).length
   if (zeroCount !== 1) return <>{str}</>
