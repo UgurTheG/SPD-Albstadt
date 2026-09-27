@@ -88,7 +88,13 @@ export default defineConfig(({ mode }) => {
           globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'],
           // Don't precache admin JS — it's a large lazy chunk only needed on /admin.
           // It will be cached on first access to /admin via the navigation handler.
-          globIgnores: ['**/AdminApp*.js', '**/admin*.js'],
+          // Non-Latin Inter subsets are only fetched when a page contains such
+          // glyphs (unicode-range), so precaching them costs every visitor bandwidth.
+          globIgnores: [
+            '**/AdminApp*.js',
+            '**/admin*.js',
+            '**/inter-{cyrillic,cyrillic-ext,greek,greek-ext,vietnamese}-*.woff2',
+          ],
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [
             /^\/api\//,

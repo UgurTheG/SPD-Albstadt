@@ -9,7 +9,7 @@
   --color-spd-red: #e3000f;
   --color-spd-red-dark: #b8000c;
   --color-spd-red-light: #ff2020;
-  --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Inter Variable', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 html {
   scroll-behavior: smooth;
@@ -51,12 +51,7 @@ html.dark {
 }
 body {
   margin: 0;
-  font-family:
-    'Inter',
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
+  font-family: var(--font-sans);
   background-color: #030712;
 }
 
@@ -87,7 +82,7 @@ html.dark body {
 }
 
 .yarl__slide_description {
-  font-family: 'Inter', system-ui, sans-serif !important;
+  font-family: var(--font-sans) !important;
   font-size: 13px !important;
   line-height: 1.6 !important;
   color: rgba(255, 255, 255, 0.9) !important;
