@@ -7,7 +7,7 @@ import {
   verifyLoginCookie,
   verifyState,
 } from '../auth/cookies'
-import callback from '../auth/callback'
+import callback, { oauthErrorCode } from '../auth/callback'
 import refresh from '../auth/refresh'
 import session from '../auth/session'
 import start from '../auth/start'
@@ -202,6 +202,19 @@ describe('GET /api/auth/session', () => {
 })
 
 // ─── callback ─────────────────────────────────────────────────────────────────
+
+describe('oauthErrorCode', () => {
+  it('maps known GitHub token errors to opaque codes', () => {
+    expect(oauthErrorCode('bad_verification_code')).toBe('bad_code')
+    expect(oauthErrorCode('incorrect_client_credentials')).toBe('server_misconfigured')
+    expect(oauthErrorCode('redirect_uri_mismatch')).toBe('server_misconfigured')
+  })
+
+  it('never echoes an unknown or missing error', () => {
+    expect(oauthErrorCode('<script>')).toBe('token_exchange_failed')
+    expect(oauthErrorCode(undefined)).toBe('token_exchange_failed')
+  })
+})
 
 describe('GET /api/auth/callback', () => {
   const state = 'abc123'

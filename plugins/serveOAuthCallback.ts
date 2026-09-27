@@ -1,82 +1,29 @@
-import { createHmac, randomBytes } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import type { Plugin } from 'vite'
 import { resolveAllowedUrl, verifyRefUpdate } from '../api/github'
+import { oauthErrorCode } from '../api/auth/callback'
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  STATE_COOKIE,
+  STATE_MAX_AGE_S,
+  TOKEN_EXPIRES_COOKIE,
+  clearAuthCookies,
+  clearCookie,
+  makeAuthCookies,
+  parseCookies,
+  serializeCookie,
+  signState,
+  verifyState,
+} from '../api/auth/cookies'
 
-// ─── Cookie helpers (mirrors api/auth/cookies.ts for dev server) ───────────────
+// ─── Cookies ───────────────────────────────────────────────────────────────────
+// Cookie names, CSRF state signing and serialisation come from the production
+// helpers in api/auth/cookies.ts so a local login behaves like the Vercel one.
+// Only the Secure attribute is dropped: the dev server runs on http://localhost.
 
-function signState(state: string, secret: string): string {
-  const sig = createHmac('sha256', secret).update(state).digest('hex')
-  return `${state}.${sig}`
-}
-
-function verifyState(signed: string, secret: string): string | null {
-  const dot = signed.lastIndexOf('.')
-  if (dot < 1) return null
-  const state = signed.slice(0, dot)
-  const sig = signed.slice(dot + 1)
-  const expected = createHmac('sha256', secret).update(state).digest('hex')
-  if (sig.length !== expected.length) return null
-  let mismatch = 0
-  for (let i = 0; i < sig.length; i++) mismatch |= sig.charCodeAt(i) ^ expected.charCodeAt(i)
-  return mismatch === 0 ? state : null
-}
-
-function parseCookies(header: string | undefined): Record<string, string> {
-  const cookies: Record<string, string> = {}
-  if (!header) return cookies
-  for (const pair of header.split(';')) {
-    const [rawName, ...rest] = pair.split('=')
-    const name = rawName?.trim()
-    if (!name) continue
-    cookies[name] = decodeURIComponent(rest.join('=').trim())
-  }
-  return cookies
-}
-
-function makeCookie(name: string, value: string, maxAge: number, path = '/api'): string {
-  // Dev: no Secure flag (HTTP localhost). Path mirrors production: token
-  // cookies on /api so the /api/github proxy receives them.
-  return `${name}=${encodeURIComponent(value)}; Path=${path}; Max-Age=${maxAge}; HttpOnly; SameSite=Lax`
-}
-
-function clearCookie(name: string, path = '/api'): string {
-  return makeCookie(name, '', 0, path)
-}
-
-const ACCESS_TOKEN_COOKIE = 'spd_access_token'
-const TOKEN_EXPIRES_COOKIE = 'spd_token_expires_at'
-const REFRESH_TOKEN_COOKIE = 'spd_refresh_token'
-const REFRESH_EXPIRES_COOKIE = 'spd_refresh_expires_at'
-const STATE_COOKIE = 'spd_oauth_state'
-
-function makeAuthCookies(data: {
-  access_token: string
-  expires_in?: number
-  refresh_token?: string
-  refresh_token_expires_in?: number
-}): string[] {
-  const maxAge = data.expires_in ?? 8 * 3600
-  const cookies = [
-    makeCookie(ACCESS_TOKEN_COOKIE, data.access_token, maxAge),
-    makeCookie(TOKEN_EXPIRES_COOKIE, String(Date.now() + maxAge * 1000), maxAge),
-  ]
-  if (data.refresh_token) {
-    const refreshMax = data.refresh_token_expires_in ?? 6 * 30 * 24 * 3600
-    cookies.push(makeCookie(REFRESH_TOKEN_COOKIE, data.refresh_token, refreshMax))
-    cookies.push(
-      makeCookie(REFRESH_EXPIRES_COOKIE, String(Date.now() + refreshMax * 1000), refreshMax),
-    )
-  }
-  return cookies
-}
-
-function clearAuthCookies(): string[] {
-  return [
-    clearCookie(ACCESS_TOKEN_COOKIE),
-    clearCookie(TOKEN_EXPIRES_COOKIE),
-    clearCookie(REFRESH_TOKEN_COOKIE),
-    clearCookie(REFRESH_EXPIRES_COOKIE),
-  ]
+function devCookies(cookies: string | string[]): string[] {
+  return [cookies].flat().map(c => c.replace('; Secure', ''))
 }
 
 /** Read the full request body as JSON. */
@@ -99,39 +46,39 @@ function readJsonBody(req: import('http').IncomingMessage): Promise<unknown> {
 
 // ─── Plugin ────────────────────────────────────────────────────────────────────
 
-/** Opaque codes only — GitHub's error_description must not end up in the URL bar. */
-function safeOAuthErrorCode(rawError: string | undefined): string {
-  switch (rawError) {
-    case 'bad_verification_code':
-      return 'bad_code'
-    case 'incorrect_client_credentials':
-    case 'redirect_uri_mismatch':
-      return 'server_misconfigured'
-    default:
-      return 'token_exchange_failed'
-  }
-}
-
 export function serveOAuthCallback(env: Record<string, string>): Plugin {
-  const secret = env.STATE_SIGNING_SECRET || env.GITHUB_CLIENT_SECRET || ''
+  const hasSigningSecret = Boolean(env.STATE_SIGNING_SECRET || env.GITHUB_CLIENT_SECRET)
 
   return {
     name: 'serve-oauth-callback',
     configureServer(server) {
+      // The shared signing helpers read their secret from process.env, which
+      // loadEnv() does not populate from .env files.
+      for (const key of ['STATE_SIGNING_SECRET', 'GITHUB_CLIENT_SECRET'] as const) {
+        if (env[key] && !process.env[key]) process.env[key] = env[key]
+      }
+
       server.middlewares.use((req, res, next) => {
         // ── GET /api/auth/start ───────────────────────────────────────────────
         if (req.url?.startsWith('/api/auth/start')) {
           const clientId = env.VITE_GITHUB_CLIENT_ID
-          if (!clientId || !secret) {
+          if (!clientId || !hasSigningSecret) {
             res.statusCode = 500
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify({ error: 'server_misconfigured' }))
             return
           }
           const state = randomBytes(16).toString('hex')
-          const signed = signState(state, secret)
-
-          res.setHeader('Set-Cookie', makeCookie(STATE_COOKIE, signed, 600, '/api/auth'))
+          res.setHeader(
+            'Set-Cookie',
+            devCookies(
+              serializeCookie(STATE_COOKIE, {
+                value: signState(state),
+                maxAge: STATE_MAX_AGE_S,
+                path: '/api/auth',
+              }),
+            ),
+          )
 
           const params = new URLSearchParams({
             client_id: clientId,
@@ -164,13 +111,13 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
           // Validate CSRF state
           const cookies = parseCookies(req.headers.cookie)
           const signedState = cookies[STATE_COOKIE]
-          const clearState = clearCookie(STATE_COOKIE, '/api/auth')
+          const clearState = devCookies(clearCookie(STATE_COOKIE))
 
-          if (!state || !signedState || !secret) {
+          if (!state || !signedState || !hasSigningSecret) {
             res.setHeader('Set-Cookie', clearState)
             return redirect('auth=error&msg=invalid_state')
           }
-          const expectedState = verifyState(signedState, secret)
+          const expectedState = verifyState(signedState)
           if (!expectedState || expectedState !== state) {
             res.setHeader('Set-Cookie', clearState)
             return redirect('auth=error&msg=invalid_state')
@@ -203,7 +150,7 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
             .then(data => {
               if (!data.access_token) {
                 res.setHeader('Set-Cookie', clearState)
-                return redirect(`auth=error&msg=${safeOAuthErrorCode(data.error)}`)
+                return redirect(`auth=error&msg=${oauthErrorCode(data.error)}`)
               }
               const authCookies = makeAuthCookies({
                 access_token: data.access_token!,
@@ -211,7 +158,7 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
                 refresh_token: data.refresh_token,
                 refresh_token_expires_in: data.refresh_token_expires_in,
               })
-              res.setHeader('Set-Cookie', [clearState, ...authCookies])
+              res.setHeader('Set-Cookie', [...clearState, ...devCookies(authCookies)])
               redirect('auth=ok')
             })
             .catch(() => {
@@ -236,7 +183,7 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
 
         // ── POST /api/auth/logout ─────────────────────────────────────────────
         if (req.url?.startsWith('/api/auth/logout') && req.method === 'POST') {
-          res.setHeader('Set-Cookie', clearAuthCookies())
+          res.setHeader('Set-Cookie', devCookies(clearAuthCookies()))
           res.setHeader('Content-Type', 'application/json')
           res.setHeader('Cache-Control', 'no-store')
           res.statusCode = 200
@@ -298,18 +245,20 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
             .then(data => {
               if (!data.access_token) {
                 res.statusCode = 401
-                res.setHeader('Set-Cookie', clearAuthCookies())
+                res.setHeader('Set-Cookie', devCookies(clearAuthCookies()))
                 res.end(JSON.stringify({ error: 'refresh_failed' }))
                 return
               }
               res.setHeader(
                 'Set-Cookie',
-                makeAuthCookies({
-                  access_token: data.access_token!,
-                  expires_in: data.expires_in,
-                  refresh_token: data.refresh_token,
-                  refresh_token_expires_in: data.refresh_token_expires_in,
-                }),
+                devCookies(
+                  makeAuthCookies({
+                    access_token: data.access_token!,
+                    expires_in: data.expires_in,
+                    refresh_token: data.refresh_token,
+                    refresh_token_expires_in: data.refresh_token_expires_in,
+                  }),
+                ),
               )
               res.statusCode = 200
               res.end(JSON.stringify({ ok: true, expires_in: data.expires_in }))

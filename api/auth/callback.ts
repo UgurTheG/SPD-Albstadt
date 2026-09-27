@@ -3,6 +3,20 @@ import { parseCookies, verifyState, makeAuthCookies, clearCookie, STATE_COOKIE }
 import { rateLimit, getClientIP } from './rateLimit.js'
 import { fetchGitHubLogin, hasPushAccess, isLoginAllowed } from './access.js'
 
+/** Maps GitHub's token-exchange `error` to an opaque code — GitHub's
+ *  error_description must never end up in browser history or the URL bar. */
+export function oauthErrorCode(rawError: string | undefined): string {
+  switch (rawError) {
+    case 'bad_verification_code':
+      return 'bad_code'
+    case 'incorrect_client_credentials':
+    case 'redirect_uri_mismatch':
+      return 'server_misconfigured'
+    default:
+      return 'token_exchange_failed'
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
 
@@ -86,19 +100,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (!data.access_token) {
-      // Do NOT forward GitHub's error_description verbatim — it leaks internals
-      // into browser history and the URL bar. Map to a fixed opaque code instead.
-      const rawError = data.error ?? ''
-      const safeCode =
-        rawError === 'bad_verification_code'
-          ? 'bad_code'
-          : rawError === 'incorrect_client_credentials'
-            ? 'server_misconfigured'
-            : rawError === 'redirect_uri_mismatch'
-              ? 'server_misconfigured'
-              : 'token_exchange_failed'
       res.setHeader('Set-Cookie', clearOAuthCookies)
-      return redirect(`auth=error&msg=${safeCode}`)
+      return redirect(`auth=error&msg=${oauthErrorCode(data.error)}`)
     }
 
     // ── Authorisation ────────────────────────────────────────────────────────────
