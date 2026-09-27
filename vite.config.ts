@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     resolve: {
-      alias: { '@': path.resolve(__dirname, 'src') },
+      alias: { '@': path.resolve(import.meta.dirname, 'src') },
     },
     build: {
       // Don't eagerly preload the admin lazy chunk on public pages.

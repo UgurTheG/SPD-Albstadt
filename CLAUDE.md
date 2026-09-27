@@ -70,7 +70,7 @@ npm run knip             # Zero unused files, exports, or types
 npm run find-unused-assets  # Zero orphaned images or documents
 ```
 
-Never push a branch that breaks any of these. Fix formatting with `npm run format` before committing.
+Never push a branch that breaks any of these. Fix formatting with `npm run format` before committing. CI runs all of them (plus lint); locally the Husky `pre-commit` hook formats staged files and the `pre-push` hook runs the tests.
 
 ---
 

@@ -31,7 +31,7 @@ npm run format         # Prettier (auto-fix)
 npm run format:check   # Prettier (check only)
 ```
 
-Pre-commit hooks (via Husky + lint-staged) automatically format staged files.
+Git hooks (via Husky) format staged files on commit (lint-staged) and run the test suite before each push.
 
 ## Testing
 

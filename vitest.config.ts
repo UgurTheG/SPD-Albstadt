@@ -9,7 +9,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: { '@': path.resolve(__dirname, 'src') },
+    alias: { '@': path.resolve(import.meta.dirname, 'src') },
   },
   define: {
     // Provide a dummy value so LoginScreen's CLIENT_ID is always defined in tests

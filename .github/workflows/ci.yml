@@ -43,10 +43,13 @@ jobs:
       - name: Format check
         run: npm run format:check
 
-      - name: Test
-        run: npm test
+      - name: Unused code
+        run: npm run knip
 
-      - name: Coverage
+      - name: Unused assets
+        run: npm run find-unused-assets
+
+      - name: Test with coverage
         run: npm run coverage
 
       - name: Upload coverage report
