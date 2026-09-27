@@ -62,7 +62,9 @@ Callback URLs: `https://<domain>/api/auth/callback` and `http://localhost:5173/a
 
 ### Logout
 
-Clicking the logout button calls `POST /api/auth/logout`, which clears all HttpOnly auth cookies. The endpoint requires a valid Origin header to prevent cross-site CSRF logout attacks.
+Clicking the logout button calls `POST /api/auth/logout`, which clears all HttpOnly auth cookies. The endpoint requires a valid Origin header to prevent cross-site CSRF logout attacks. Explicit logout discards local drafts and uploads.
+
+Automatic session expiry instead saves drafts, pending uploads, undo history and merge baselines for up to seven days. They are restored only after GitHub verifies the same account again. Temporary network, rate-limit and server errors leave the active editor intact so refresh can be retried.
 
 ---
 
@@ -300,10 +302,10 @@ Before publishing, the editor compares images referenced in the original state v
 
 ## Dirty State Management
 
-- Each tab maintains `originalState` (snapshot at load time) and live `state`.
+- Each tab maintains `originalState`, its corresponding GitHub commit (`tabBaseShas`), and live `state`. Files are loaded from that exact commit through the authenticated proxy, so a delayed deployment cannot supply a stale baseline. Publishing one tab does not advance the baselines of other tabs.
 - When `state[tabKey]` differs from `originalState[tabKey]` (deep JSON comparison), the tab is **dirty**.
 - Dirty tabs show a red dot in the sidebar.
-- After successful publish, `originalState` is updated to match `state`, clearing the dirty flag.
+- After successful publish, `originalState` is updated to the submitted snapshot. Edits and uploads added while publishing remain dirty and persisted. Concurrent remote changes are merged against each tab’s own baseline; array conflicts address stable item IDs, including edit-versus-delete choices.
 - Drafts are auto-saved to `localStorage` under `spd-admin-drafts` and restored on next visit.
 
 ---
@@ -327,10 +329,10 @@ Before publishing, the editor compares images referenced in the original state v
 - **CSRF protection** in the OAuth flow: cryptographic state parameter, HMAC-SHA256-signed with the attempt's expiry embedded in the signed payload (10 min), stored in a short-lived HttpOnly cookie, validated with constant-time comparison.
 - **Origin allowlist** on all mutating auth and proxy endpoints (`/api/auth/refresh`, `/api/auth/logout`, `/api/github`).
 - **Rate limiting** per IP on every API route: login (5/min), callback (10/min), session check (60/min), refresh (10/min), logout (10/min), GitHub proxy (300/min), presence (400/min) and ICS proxy (30/min). Counters are in-memory per function instance — solid protection against sustained abuse, not an exact global limit.
-- **The ICS proxy is not a generic relay**: it only fetches `https://` URLs on public host names (no IP literals, no `localhost`, no private domains) and only forwards bodies that start with `BEGIN:VCALENDAR`, so an edited `icsUrl` cannot turn it into a probe of the function's network.
+- **The ICS proxy is not a generic relay**: it only fetches `https://` URLs on public host names (no IP literals, no `localhost`, no private domains) and only forwards bodies that start with `BEGIN:VCALENDAR`. Redirects are rejected, DNS answers must all be public and are passed directly to the socket, and the response is limited to 2 MiB while streaming. A feed URL must point directly at its HTTPS calendar endpoint.
 - **User allowlist** (optional): the `ALLOWED_GITHUB_LOGINS` env var restricts login to specific GitHub accounts, as a defence-in-depth measure on top of GitHub's own repository permissions.
 - GitHub error messages are mapped to **opaque safe error codes** — internal details are never exposed in the browser URL bar or history.
 - The OAuth `GITHUB_CLIENT_SECRET` is **only available server-side** and is never exposed to the browser.
-- Invalid/expired tokens trigger automatic cookie cleanup and force re-authentication.
-- Token refresh via `POST /api/auth/refresh`; on any refresh failure, all auth cookies are cleared (force-logout).
+- Invalid/expired tokens require re-authentication without discarding the verified account’s unsaved work.
+- Token refresh uses `POST /api/auth/refresh`; authentication failures require a new login, while transient failures can be retried.
 - Logout via `POST /api/auth/logout` with origin check to prevent cross-site CSRF logout attacks.

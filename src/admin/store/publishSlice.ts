@@ -12,7 +12,7 @@ import {
 } from '../lib/github'
 import { collectAllReferencedPaths, collectImagePaths } from '../lib/images'
 import { TABS } from '../config/tabs'
-import { persistPendingUploads } from './persistence'
+import { persistDirtyState, persistPendingUploads } from './persistence'
 import { threeWayMerge } from '../lib/merge'
 import type { MergeConflict } from '../lib/merge'
 
@@ -44,7 +44,12 @@ export interface PublishSlice {
   mergeConflictTabKey: string | null
   /** `retried` is internal — set on the automatic retry after a clean auto-merge
    *  so a second conflict cannot trigger an endless merge/retry loop. */
-  publishTab: (tabKey: string, orphansToDelete?: string[], retried?: boolean) => Promise<void>
+  publishTab: (
+    tabKey: string,
+    orphansToDelete?: string[],
+    retried?: boolean,
+    batch?: boolean,
+  ) => Promise<void>
   publishAll: (orphansToDelete?: string[]) => Promise<void>
   /** Called by ConflictMergeModal when the user resolves all conflicts */
   applyMergeResolution: (tabKey: string, resolved: unknown) => void
@@ -71,18 +76,22 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
 
   dismissMergeConflicts: () => set({ mergeConflicts: null, mergeConflictTabKey: null }),
 
-  publishTab: async (tabKey, orphansToDelete, retried) => {
+  publishTab: async (tabKey, orphansToDelete, retried, batch) => {
     const { state: s, pendingUploads, publishing, dataLoadErrors, baseCommitSha } = get()
     // The auto-merge retry runs while the outer call still holds the
     // publishing flag — skipping the guard there (instead of releasing the
     // flag before retrying) keeps concurrent publish clicks blocked for the
     // whole conflict-retry window.
-    if (publishing && !retried) return
+    if (publishing && !retried && !batch) return
     // Internal guard: never publish a tab whose data failed to load
     if (dataLoadErrors.includes(tabKey)) return
     const tab = TABS.find(t => t.key === tabKey)
     if (!tab?.ghPath) return
-    set({ publishing: true })
+    // Preserve the revisions of untouched tabs when the shared branch tip advances.
+    const tabBaseShas = Object.fromEntries(
+      Object.keys(s).map(key => [key, get().tabBaseShas[key] ?? baseCommitSha]),
+    )
+    set({ publishing: true, tabBaseShas })
     try {
       await get().ensureAuthenticated()
       const changes: TreeFileChange[] = []
@@ -115,11 +124,21 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       const fileName = tab.file?.split('/').pop() ?? tab.key
       changes.push({ path: tab.ghPath, content: json })
 
-      const result = await commitTree(`admin: ${fileName} aktualisiert`, changes, baseCommitSha)
+      const result = await commitTree(
+        `admin: ${fileName} aktualisiert`,
+        changes,
+        tabBaseShas[tabKey],
+      )
 
-      get().resetOriginal(tabKey)
-      set({ pendingUploads: otherUploads, baseCommitSha: result?.sha ?? baseCommitSha })
-      persistPendingUploads(otherUploads)
+      get().resetOriginal(tabKey, s[tabKey])
+      const removed = new Set(pendingUploads.filter(upload => !otherUploads.includes(upload)))
+      const remaining = get().pendingUploads.filter(upload => !removed.has(upload))
+      set(prev => ({
+        pendingUploads: remaining,
+        baseCommitSha: result?.sha ?? baseCommitSha,
+        tabBaseShas: { ...prev.tabBaseShas, [tabKey]: result?.sha ?? tabBaseShas[tabKey] },
+      }))
+      persistPendingUploads(remaining)
       get().setStatus('Veröffentlicht! Seite wird in ~1 Min. aktualisiert.', 'success')
     } catch (e) {
       if (e instanceof ConflictError) {
@@ -127,7 +146,9 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
         const tab = TABS.find(t => t.key === tabKey)
         if (tab?.ghPath && tab?.file && !retried) {
           try {
-            const latest = await getFileContent(tab.ghPath)
+            const freshSha = await getBranchSha()
+            if (!freshSha) throw new Error('Revision konnte nicht geladen werden', { cause: e })
+            const latest = await getFileContent(tab.ghPath, freshSha)
             if (latest !== null) {
               const { merged, conflicts } = threeWayMerge(
                 get().originalState[tabKey],
@@ -139,12 +160,13 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
                 // passes `retried: true`, which also skips the publishing
                 // guard so the flag stays held for the whole retry window.
                 get().updateState(tabKey, merged)
-                const freshSha = await getBranchSha()
                 set(prev => ({
                   originalState: { ...prev.originalState, [tabKey]: latest },
                   baseCommitSha: freshSha,
+                  tabBaseShas: { ...prev.tabBaseShas, [tabKey]: freshSha },
                 }))
-                await get().publishTab(tabKey, orphansToDelete, true)
+                persistDirtyState(get().state, get().originalState, true)
+                await get().publishTab(tabKey, orphansToDelete, true, batch)
                 return
               } else {
                 // Conflicts — surface merge modal with partially-merged draft.
@@ -154,13 +176,14 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
                 // would collapse threeWayMerge(resolved, resolved, theirs) to `theirs`
                 // and silently discard the user's choices.
                 get().updateState(tabKey, merged)
-                const freshSha = await getBranchSha()
                 set(prev => ({
                   originalState: { ...prev.originalState, [tabKey]: latest },
                   baseCommitSha: freshSha,
+                  tabBaseShas: { ...prev.tabBaseShas, [tabKey]: freshSha },
                   mergeConflicts: conflicts,
                   mergeConflictTabKey: tabKey,
                 }))
+                persistDirtyState(get().state, get().originalState, true)
                 get().setStatus(
                   `${conflicts.length} Konflikt(e) erkannt — bitte die markierten Felder manuell auflösen.`,
                   'error',
@@ -179,13 +202,13 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
         return
       }
       if (e instanceof AuthError) {
-        get().logout()
+        get().invalidateSession()
         get().setStatus('Sitzung abgelaufen — bitte neu anmelden.', 'error')
         return
       }
       get().setStatus('Fehler: ' + (e as Error).message, 'error')
     } finally {
-      set({ publishing: false })
+      if (!batch) set({ publishing: false })
     }
   },
 
@@ -229,9 +252,14 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       return
     }
 
-    set({ publishing: true })
+    const tabBaseShas = Object.fromEntries(
+      Object.keys(s).map(key => [key, get().tabBaseShas[key] ?? baseCommitSha]),
+    )
+    set({ publishing: true, tabBaseShas })
     try {
       await get().ensureAuthenticated()
+
+      if (dirtyKeys.some(key => tabBaseShas[key] !== baseCommitSha)) throw new ConflictError()
 
       // Orphan deletions need the existence check against the GitHub API, so
       // they are collected after authentication.
@@ -251,18 +279,24 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
       const result = await commitTree(message, changes, baseCommitSha)
 
       for (const tabKey of dirtyKeys) {
-        get().resetOriginal(tabKey)
+        get().resetOriginal(tabKey, s[tabKey])
       }
-      set({ pendingUploads: keptUploads, baseCommitSha: result?.sha ?? baseCommitSha })
-      persistPendingUploads(keptUploads)
+      const removed = new Set(pendingUploads.filter(upload => !keptUploads.includes(upload)))
+      const remaining = get().pendingUploads.filter(upload => !removed.has(upload))
+      set(prev => ({
+        pendingUploads: remaining,
+        baseCommitSha: result?.sha ?? baseCommitSha,
+        tabBaseShas: {
+          ...prev.tabBaseShas,
+          ...Object.fromEntries(dirtyKeys.map(key => [key, result?.sha ?? tabBaseShas[key]])),
+        },
+      }))
+      persistPendingUploads(remaining)
       get().setStatus(`${dirtyKeys.length} Datei(en) veröffentlicht!`, 'success')
     } catch (e) {
       if (e instanceof ConflictError) {
         // For publishAll, fall back to per-tab publishing so each tab gets its own auto-merge.
-        // Must be sequential — publishTab checks `if (publishing) return` at entry, so running
-        // them in parallel would cause every call after the first to bail immediately (the first
-        // call sets publishing=true synchronously before its first await).
-        set({ publishing: false })
+        // Keep the batch lock held and publish sequentially, since each commit advances main.
         get().setStatus(
           'Konflikt erkannt — versuche automatische Zusammenführung pro Datei…',
           'info',
@@ -270,12 +304,13 @@ export const createPublishSlice: StateCreator<AdminState, [], [], PublishSlice> 
         // Orphan deletions are tab-agnostic tree changes — attach them to the
         // first per-tab commit so confirmed deletions are not silently dropped.
         for (const [i, tabKey] of dirtyKeys.entries()) {
-          await get().publishTab(tabKey, i === 0 ? orphansToDelete : undefined)
+          await get().publishTab(tabKey, i === 0 ? orphansToDelete : undefined, false, true)
+          if (get().mergeConflicts || get().statusType === 'error') break
         }
         return
       }
       if (e instanceof AuthError) {
-        get().logout()
+        get().invalidateSession()
         get().setStatus('Sitzung abgelaufen — bitte neu anmelden.', 'error')
         return
       }

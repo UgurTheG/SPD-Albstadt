@@ -42,7 +42,7 @@ vi.mock('../../admin/lib/github', () => {
 })
 
 import { useAdminStore } from '../../admin/store'
-import { commitTree } from '../../admin/lib/github'
+import { commitTree, getFileContent } from '../../admin/lib/github'
 import { resetPersistenceState } from '../../admin/store/persistence'
 
 function resetStore(overrides: Record<string, unknown> = {}) {
@@ -52,6 +52,8 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     activeTab: 'news',
     state: {},
     originalState: {},
+    baseCommitSha: '',
+    tabBaseShas: {},
     pendingUploads: [],
     dataLoaded: true,
     dataLoadErrors: [],
@@ -119,24 +121,17 @@ describe('editorSlice — loadData', () => {
   beforeEach(() => resetStore({ dataLoaded: false }))
 
   it('loads all tabs successfully', async () => {
-    vi.spyOn(globalThis, 'fetch').mockImplementation(url => {
-      const u = typeof url === 'string' ? url : String(url)
-      if (u.includes('null')) {
-        return Promise.reject(new Error('nulled'))
-      }
-      return Promise.resolve({
-        ok: true,
-        json: async () =>
-          u.includes('kommunalpolitik') ? { sichtbar: true, beschreibung: '', jahre: [] } : [],
-      } as Response)
-    })
+    vi.mocked(getFileContent).mockImplementation(async path =>
+      path.includes('kommunalpolitik') ? { sichtbar: true, beschreibung: '', jahre: [] } : [],
+    )
     await useAdminStore.getState().loadData()
     expect(useAdminStore.getState().dataLoaded).toBe(true)
+    expect(useAdminStore.getState().dataLoadErrors).toEqual([])
     vi.restoreAllMocks()
   })
 
   it('handles fetch failure gracefully (adds to dataLoadErrors)', async () => {
-    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network'))
+    vi.mocked(getFileContent).mockRejectedValue(new Error('network'))
     await useAdminStore.getState().loadData()
     expect(useAdminStore.getState().dataLoaded).toBe(true)
     const errors = useAdminStore.getState().dataLoadErrors
@@ -145,7 +140,7 @@ describe('editorSlice — loadData', () => {
   })
 
   it('handles non-ok response (adds to dataLoadErrors)', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: false, status: 404 } as Response)
+    vi.mocked(getFileContent).mockResolvedValue(null)
     await useAdminStore.getState().loadData()
     expect(useAdminStore.getState().dataLoaded).toBe(true)
     expect(useAdminStore.getState().dataLoadErrors.length).toBeGreaterThan(0)

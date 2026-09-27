@@ -47,9 +47,11 @@ const DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000
 export function persistDirtyState(
   state: Record<string, unknown>,
   originalState: Record<string, unknown>,
+  immediate = false,
 ) {
   if (saveTimer) clearTimeout(saveTimer)
-  saveTimer = setTimeout(() => {
+  saveTimer = null
+  const save = () => {
     try {
       const drafts: Record<string, { data: unknown; originalHash: string; savedAt: number }> = {}
       for (const tab of TABS) {
@@ -72,7 +74,9 @@ export function persistDirtyState(
     } catch {
       /* quota exceeded — ignore */
     }
-  }, 1000)
+  }
+  if (immediate) save()
+  else saveTimer = setTimeout(save, 1000)
 }
 
 export function restoreDrafts(

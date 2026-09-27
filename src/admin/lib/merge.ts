@@ -20,9 +20,11 @@
 
 import { deepEqual } from './json'
 
+type MergePath = (string | number | { id: string | number })[]
+
 export interface MergeConflict {
   /** JSON path of the conflicting leaf (e.g. ["sections", "header", "title"]) */
-  path: (string | number)[]
+  path: MergePath
   /** Human-readable label derived from the path */
   label: string
   ours: unknown
@@ -48,7 +50,7 @@ function mergeValue(
   original: unknown,
   ours: unknown,
   theirs: unknown,
-  path: (string | number)[],
+  path: MergePath,
   conflicts: MergeConflict[],
 ): unknown {
   const oursDiff = !deepEqual(original, ours)
@@ -101,7 +103,7 @@ function mergeObjects(
   original: Record<string, unknown>,
   ours: Record<string, unknown>,
   theirs: Record<string, unknown>,
-  path: (string | number)[],
+  path: MergePath,
   conflicts: MergeConflict[],
 ): Record<string, unknown> {
   const allKeys = new Set([...Object.keys(original), ...Object.keys(ours), ...Object.keys(theirs)])
@@ -118,7 +120,14 @@ function mergeObjects(
 type IdObject = Record<string, unknown> & { id: string | number }
 
 function arraysHaveIds(arr: unknown[]): arr is IdObject[] {
-  return arr.length === 0 || arr.every(item => isPlainObject(item) && 'id' in (item as object))
+  const ids = new Set<string | number>()
+  return arr.every(item => {
+    if (!isPlainObject(item)) return false
+    const id = (item as Record<string, unknown>).id
+    if ((typeof id !== 'string' && typeof id !== 'number') || ids.has(id)) return false
+    ids.add(id)
+    return true
+  })
 }
 
 /**
@@ -137,7 +146,7 @@ function mergeArraysById(
   original: IdObject[],
   ours: IdObject[],
   theirs: IdObject[],
-  path: (string | number)[],
+  path: MergePath,
   conflicts: MergeConflict[],
 ): IdObject[] {
   const origById = new Map(original.map(item => [item.id, item]))
@@ -163,8 +172,8 @@ function mergeArraysById(
         // their version in the merged result (the modal default) and let the user
         // choose to re-delete it via "Meine Version".
         conflicts.push({
-          path: [...path, String(id)],
-          label: pathLabel([...path, String(id)]),
+          path: [...path, { id }],
+          label: pathLabel([...path, { id }]),
           ours: undefined,
           theirs: theirItem,
         })
@@ -174,7 +183,7 @@ function mergeArraysById(
     } else {
       // Both sides have it — recursively merge the object
       const base = orig ?? ({} as IdObject)
-      const merged = mergeValue(base, ourItem, theirItem, [...path, String(id)], conflicts)
+      const merged = mergeValue(base, ourItem, theirItem, [...path, { id }], conflicts)
       result.push(merged as IdObject)
     }
   }
@@ -183,7 +192,16 @@ function mergeArraysById(
   for (const ourItem of ours) {
     const id = ourItem.id
     if (!handled.has(id)) {
-      result.push(ourItem)
+      const originalItem = origById.get(id)
+      if (!originalItem) result.push(ourItem)
+      else if (!deepEqual(originalItem, ourItem)) {
+        conflicts.push({
+          path: [...path, { id }],
+          label: pathLabel([...path, { id }]),
+          ours: ourItem,
+          theirs: undefined,
+        })
+      }
     }
   }
 
@@ -194,7 +212,35 @@ function isPlainObject(v: unknown): boolean {
   return v !== null && typeof v === 'object' && !Array.isArray(v)
 }
 
-function pathLabel(path: (string | number)[]): string {
+function pathLabel(path: MergePath): string {
   if (path.length === 0) return 'Root'
-  return path.map(seg => (typeof seg === 'number' ? `[${seg + 1}]` : seg)).join(' › ')
+  return path
+    .map(seg =>
+      typeof seg === 'object' ? `ID ${seg.id}` : typeof seg === 'number' ? `[${seg + 1}]` : seg,
+    )
+    .join(' › ')
+}
+
+/** Stable ID selectors survive reordering and earlier delete/edit resolutions. */
+export function applyMergeChoice(root: unknown, path: MergePath, value: unknown): unknown {
+  if (path.length === 0) return value
+  const [head, ...rest] = path
+  if (Array.isArray(root)) {
+    const index =
+      typeof head === 'object' ? root.findIndex(item => item?.id === head.id) : Number(head)
+    const next = [...root]
+    if (index < 0) {
+      if (rest.length === 0 && value !== undefined) next.push(value)
+      return next
+    }
+    if (rest.length === 0 && value === undefined) next.splice(index, 1)
+    else next[index] = applyMergeChoice(root[index], rest, value)
+    return next
+  }
+  if (typeof head === 'object') throw new Error('Ungültiger Konfliktpfad')
+  const object = (root ?? {}) as Record<string | number, unknown>
+  const next = { ...object }
+  if (rest.length === 0 && value === undefined) delete next[head]
+  else return { ...next, [head]: applyMergeChoice(object[head], rest, value) }
+  return next
 }

@@ -1,6 +1,8 @@
 import type { Plugin } from 'vite'
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import { fetchCalendar } from '../server/fetchCalendar'
+import { isAllowedIcsUrl } from '../api/ics'
 
 function getIcsUrl(): string {
   try {
@@ -23,29 +25,22 @@ export function serveIcsProxy(): Plugin {
           return
         }
 
-        void fetch(getIcsUrl(), {
-          headers: {
-            'User-Agent': 'SPD-Albstadt-Website/1.0',
-            Accept: 'text/calendar, text/plain, */*',
-          },
-        })
-          .then(async upstream => {
-            if (!upstream.ok) {
-              res.statusCode = 502
-              res.setHeader('Content-Type', 'application/json')
-              res.end(JSON.stringify({ error: `Upstream ${upstream.status}` }))
-              return
-            }
-            const body = await upstream.text()
+        void Promise.resolve()
+          .then(() => {
+            const url = getIcsUrl()
+            if (!isAllowedIcsUrl(url)) throw new Error('ics_url_not_allowed')
+            return fetchCalendar(url, 2 * 1024 * 1024)
+          })
+          .then(body => {
             res.statusCode = 200
             res.setHeader('Content-Type', 'text/calendar; charset=utf-8')
             res.setHeader('Cache-Control', 'no-store')
             res.end(body)
           })
-          .catch(err => {
+          .catch(() => {
             res.statusCode = 502
             res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify({ error: err instanceof Error ? err.message : 'Unknown' }))
+            res.end(JSON.stringify({ error: 'upstream_error' }))
           })
       })
     },
