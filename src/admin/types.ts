@@ -20,6 +20,8 @@ export interface FieldConfig {
   captionsKey?: string
   iconKey?: 'facebook' | 'instagram' | 'calendar' | 'link' | 'mail' | 'phone'
   placeholder?: string
+  /** Short help text shown below the input, e.g. the supported formatting syntax. */
+  hint?: string
 }
 
 export interface SectionConfig {

@@ -878,6 +878,19 @@ describe('FieldRenderer', () => {
     expect(container.querySelector('textarea')).not.toBeNull()
   })
 
+  it('shows the field hint and links it to the textarea', () => {
+    const { getByRole } = render(
+      <FieldRenderer
+        field={{ key: 'inhalt', label: 'Inhalt', type: 'textarea', hint: '## Zwischenüberschrift' }}
+        value=""
+        onChange={noop}
+      />,
+    )
+    expect(getByRole('textbox', { name: 'Inhalt' })).toHaveAccessibleDescription(
+      '## Zwischenüberschrift',
+    )
+  })
+
   it('renders date field', () => {
     const { container } = render(
       <FieldRenderer

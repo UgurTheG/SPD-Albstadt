@@ -44,7 +44,12 @@ export const TABS: TabConfig[] = [
       { key: 'datum', label: 'Datum', type: 'date', required: true },
       { key: 'titel', label: 'Titel', type: 'text', required: true },
       { key: 'zusammenfassung', label: 'Zusammenfassung', type: 'textarea' },
-      { key: 'inhalt', label: 'Inhalt', type: 'textarea' },
+      {
+        key: 'inhalt',
+        label: 'Inhalt',
+        type: 'textarea',
+        hint: 'Leerzeile = neuer Absatz · ## Zwischenüberschrift · - Aufzählung · 1. Nummerierung · > Zitat · **fett** · [Linktext](https://…)',
+      },
       {
         key: 'kategorie',
         label: 'Kategorie',

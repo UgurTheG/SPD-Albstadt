@@ -233,6 +233,22 @@ Wichtige Dateien in `public/data/`:
 
 Datumsformat in Datenobjekten: `YYYY-MM-DD`.
 
+### Formatierung im Feld „Inhalt“ (Aktuelles)
+
+Der ausführliche Text eines Beitrags unterstützt eine kleine Formatierung, die in der Detailansicht strukturiert dargestellt wird. Text ohne Formatierung erscheint als normale Absätze.
+
+| Eingabe                 | Ergebnis                                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| Leerzeile               | neuer Absatz                                                                                           |
+| `## Überschrift`        | Zwischenüberschrift                                                                                    |
+| `- Punkt`               | Aufzählung (auch `*` oder `•`)                                                                         |
+| `1. Punkt`              | nummerierte Liste (ab zwei Zeilen, damit z. B. „1. Mai“ Text bleibt)                                   |
+| `> Text`                | Zitat                                                                                                  |
+| `**Text**`              | fett                                                                                                   |
+| `[Linktext](https://…)` | Link (auch `/pfad`, `mailto:` und `tel:`); nackte URLs und E-Mail-Adressen werden automatisch verlinkt |
+
+Einzelne Sternchen bleiben unverändert, damit Schreibweisen wie „Bürger\*innen“ nicht als Formatierung gelesen werden.
+
 ### Besonderheit Haushaltsreden
 
 - PDF-Ablage in `public/documents/fraktion/haushaltsreden/`

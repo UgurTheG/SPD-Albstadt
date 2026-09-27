@@ -1,10 +1,12 @@
-import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { Check, Share2 } from 'lucide-react'
+import { Check, Clock, Share2 } from 'lucide-react'
 import type { NewsItem } from '@/types/news'
 import { CATEGORY_COLORS, getNewsImages } from '@/types/news'
 import { formatDate } from '@/utils/formatDate'
+import { readingMinutes } from '@/utils/readingTime'
+import { useShare } from '@/hooks/useShare'
 import PhotoGallery from '@/components/PhotoGallery'
+import RichText from '@/components/RichText'
 
 const BASE_URL = 'https://www.spd-albstadt.de'
 
@@ -20,30 +22,15 @@ export default function NewsDetailSheet({ news }: Props) {
       : `${BASE_URL}${urls[0]}`
     : undefined
   const deepId = news.uuid ?? news.id
-  const shareUrl = `${window.location.origin}/aktuelles/${deepId}`
-
-  const [copied, setCopied] = useState(false)
-
-  async function handleShare() {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${news.titel} – SPD Albstadt`,
-          text: news.zusammenfassung,
-          url: shareUrl,
-        })
-      } catch {
-        // user cancelled or error — no action needed
-      }
-    } else {
-      await navigator.clipboard.writeText(shareUrl)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
+  const { share, copied } = useShare({
+    title: `${news.titel} – SPD Albstadt`,
+    text: news.zusammenfassung,
+    url: `${window.location.origin}/aktuelles/${deepId}`,
+  })
+  const ShareIcon = copied ? Check : Share2
 
   return (
-    <div>
+    <article>
       <Helmet>
         <title>{news.titel} – SPD Albstadt</title>
         <meta name="description" content={news.zusammenfassung} />
@@ -62,32 +49,54 @@ export default function NewsDetailSheet({ news }: Props) {
       </Helmet>
       {urls.length > 0 && <PhotoGallery images={urls} captions={captions} alt={news.titel} />}
       <div className="p-6 sm:p-8">
-        <div className="flex items-center gap-3 mb-3">
-          <span
-            className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORY_COLORS[news.kategorie]}`}
-          >
-            {news.kategorie}
-          </span>
-          <time className="text-sm text-gray-400 flex-1">{formatDate(news.datum)}</time>
+        <header>
+          <div className="flex items-start gap-3 mb-4">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 flex-1 min-w-0 text-sm text-gray-500 dark:text-gray-400">
+              <span
+                className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORY_COLORS[news.kategorie]}`}
+              >
+                {news.kategorie}
+              </span>
+              <time dateTime={news.datum}>{formatDate(news.datum)}</time>
+              <span className="inline-flex items-center gap-1">
+                <Clock size={13} aria-hidden="true" />
+                {readingMinutes(news.zusammenfassung, news.inhalt)} Min. Lesezeit
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={share}
+              aria-label="Beitrag teilen"
+              className="w-8 h-8 rounded-lg bg-spd-red/10 hover:bg-spd-red flex items-center justify-center text-spd-red hover:text-white transition-all duration-200 active:scale-[0.95] shrink-0"
+            >
+              <ShareIcon size={15} />
+            </button>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-900 dark:text-white leading-tight">
+            {news.titel}
+          </h2>
+          {news.zusammenfassung && (
+            <p className="mt-4 text-[1.0625rem] sm:text-lg font-medium leading-relaxed text-gray-900 dark:text-gray-100">
+              {news.zusammenfassung}
+            </p>
+          )}
+        </header>
+        {news.inhalt && (
+          <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+            <RichText text={news.inhalt} />
+          </div>
+        )}
+        <footer className="mt-10 pt-6 border-t border-gray-100 dark:border-gray-800">
           <button
             type="button"
-            onClick={handleShare}
-            aria-label="Beitrag teilen"
-            className="w-8 h-8 rounded-lg bg-spd-red/10 hover:bg-spd-red flex items-center justify-center text-spd-red hover:text-white transition-all duration-200 active:scale-[0.95] shrink-0"
+            onClick={share}
+            className="inline-flex items-center gap-2 rounded-xl bg-spd-red/10 hover:bg-spd-red px-4 py-2.5 text-sm font-semibold text-spd-red hover:text-white transition-all duration-200 active:scale-[0.98]"
           >
-            {copied ? <Check size={15} /> : <Share2 size={15} />}
+            <ShareIcon size={15} aria-hidden="true" />
+            {copied ? 'Link kopiert' : 'Beitrag teilen'}
           </button>
-        </div>
-        <h3 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white leading-tight mb-4">
-          {news.titel}
-        </h3>
-        <p className="border-l-2 border-spd-red pl-4 text-gray-700 dark:text-gray-200 font-medium leading-relaxed text-[0.95rem] sm:text-lg italic mb-6">
-          {news.zusammenfassung}
-        </p>
-        <p className="prose-justify text-gray-700 dark:text-gray-300 leading-relaxed text-base whitespace-pre-line">
-          {news.inhalt}
-        </p>
+        </footer>
       </div>
-    </div>
+    </article>
   )
 }

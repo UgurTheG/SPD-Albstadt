@@ -55,6 +55,11 @@ export default function FieldRenderer({ field, value, onChange, contextItem }: P
         onChange={onChange}
         contextItem={contextItem}
       />
+      {field.hint && (
+        <p id={`${inputId}-hint`} className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+          {field.hint}
+        </p>
+      )}
     </div>
   )
 }
@@ -75,6 +80,7 @@ function FieldInput({
           id={inputId}
           value={value as string}
           placeholder={field.placeholder}
+          describedBy={field.hint ? `${inputId}-hint` : undefined}
           onChange={v => onChange(v)}
         />
       )
@@ -145,11 +151,13 @@ function TextareaField({
   id,
   value,
   placeholder,
+  describedBy,
   onChange,
 }: {
   id?: string
   value: string
   placeholder?: string
+  describedBy?: string
   onChange: (v: string) => void
 }) {
   const ref = useRef<HTMLTextAreaElement>(null)
@@ -166,6 +174,7 @@ function TextareaField({
     <textarea
       ref={ref}
       id={id}
+      aria-describedby={describedBy}
       className={inputCls + ' resize-y min-h-20'}
       rows={3}
       value={value || ''}

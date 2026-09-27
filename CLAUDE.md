@@ -216,6 +216,8 @@ Client-side WebP conversion happens in `CropOverlay` (`src/admin/components/Crop
 
 Date format: `YYYY-MM-DD`. Image paths: `/images/<dir>/<file>.webp`. PDF paths: `/documents/<dir>/<file>.pdf`.
 
+News `inhalt` supports a small Markdown subset (`## heading`, `-`/`1.` lists, `> quote`, `**bold**`, `[text](url)`, auto-linked URLs and emails), parsed by `src/utils/richText.ts` and rendered by `<RichText>` (`src/components/RichText.tsx`). Keep the syntax small and forgiving: plain text must keep rendering as paragraphs, and single `*` stays literal because of gender-star spellings. Link targets go through `safeHref()`. The supported syntax is shown to editors via the field's `hint` in `tabs.ts` and documented in README section 8 — update all three together.
+
 Vercel serves `/data/*.json` with `Cache-Control: no-store` — content changes are visible to users immediately after a publish commit, no cache invalidation needed. `/assets/*` are immutable (1-year CDN cache) and content-hashed by Vite. Do not add query-string cache busters to data file fetches.
 
 ---
