@@ -1,25 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { get } from 'node:https'
+import { mockHttpsResponse } from './httpsMock'
+
+vi.mock('node:https', () => {
+  const get = vi.fn()
+  return { get, default: { get } }
+})
+
 import ics, { isAllowedIcsUrl } from '../ics'
 import presence, { isGitHubAvatarUrl } from '../admin-presence'
 import { makeLoginCookieValue } from '../auth/cookies'
 import { makeRequest, makeResponse } from './helpers'
 
-function textResponse(body: string, extraHeaders: Record<string, string> = {}): Response {
-  const bytes = new TextEncoder().encode(body)
-  return {
-    ok: true,
-    status: 200,
-    headers: new Headers({ 'content-type': 'text/calendar', ...extraHeaders }),
-    arrayBuffer: async () => bytes.buffer,
-    text: async () => body,
-  } as unknown as Response
-}
-
 describe('GET /api/ics', () => {
-  afterEach(() => vi.restoreAllMocks())
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.mocked(get).mockReset()
+  })
 
   it('relays the upstream feed over https with a timeout', async () => {
-    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(textResponse('BEGIN:VCALENDAR'))
+    const spy = mockHttpsResponse()
     const res = makeResponse()
     await ics(makeRequest({ headers: { 'x-forwarded-for': '10.1.0.1' } }), res)
     expect(res.statusCode).toBe(200)
@@ -27,11 +27,11 @@ describe('GET /api/ics', () => {
     const [url, opts] = spy.mock.calls[0]!
     // config.json may hold a webcal:// URL — the proxy must always fetch over https
     expect(String(url).startsWith('https://')).toBe(true)
-    expect(opts!.signal).toBeInstanceOf(AbortSignal)
+    expect(opts!.signal).toBeDefined()
   })
 
   it('rate-limits repeated requests from one IP', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(textResponse('BEGIN:VCALENDAR'))
+    mockHttpsResponse()
     let last = makeResponse()
     for (let i = 0; i < 31; i++) {
       last = makeResponse()
@@ -41,9 +41,7 @@ describe('GET /api/ics', () => {
   })
 
   it('rejects oversized upstream bodies', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      textResponse('x', { 'content-length': String(3 * 1024 * 1024) }),
-    )
+    mockHttpsResponse('x', { 'content-length': String(3 * 1024 * 1024) })
     const res = makeResponse()
     await ics(makeRequest({ headers: { 'x-forwarded-for': '10.1.0.3' } }), res)
     expect(res.statusCode).toBe(502)
@@ -60,7 +58,7 @@ describe('GET /api/ics', () => {
   })
 
   it('maps timeouts and network errors to an opaque 502', async () => {
-    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new DOMException('timeout', 'TimeoutError'))
+    mockHttpsResponse('', {}, 200, new Error('timeout'))
     const res = makeResponse()
     await ics(makeRequest({ headers: { 'x-forwarded-for': '10.1.0.4' } }), res)
     expect(res.statusCode).toBe(502)
@@ -68,7 +66,7 @@ describe('GET /api/ics', () => {
   })
 
   it('refuses to relay an upstream body that is not a calendar', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(textResponse('<html>not a calendar</html>'))
+    mockHttpsResponse('<html>not a calendar</html>')
     const res = makeResponse()
     await ics(makeRequest({ headers: { 'x-forwarded-for': '10.1.0.5' } }), res)
     expect(res.statusCode).toBe(502)
@@ -76,9 +74,7 @@ describe('GET /api/ics', () => {
   })
 
   it('tolerates a BOM and leading whitespace before BEGIN:VCALENDAR', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      textResponse('\uFEFF\r\nbegin:vcalendar\r\nEND:VCALENDAR'),
-    )
+    mockHttpsResponse('\uFEFF\r\nbegin:vcalendar\r\nEND:VCALENDAR')
     const res = makeResponse()
     await ics(makeRequest({ headers: { 'x-forwarded-for': '10.1.0.6' } }), res)
     expect(res.statusCode).toBe(200)

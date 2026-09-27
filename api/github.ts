@@ -232,7 +232,6 @@ function isAllowedEndpoint(method: string, pathname: string, body: unknown): boo
 // ─── Branch update verification ───────────────────────────────────────────────
 
 const GITHUB_API = 'https://api.github.com'
-const REF_UPDATE_PATH = `${REPO_PATH}/git/refs/heads/${BRANCH}`
 
 function githubHeaders(accessToken: string): Record<string, string> {
   return {
@@ -390,7 +389,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'path_not_allowed' })
   }
 
-  if (upperMethod === 'PATCH' && new URL(requestUrl).pathname === REF_UPDATE_PATH) {
+  // PATCH has exactly one allowed endpoint. Do not compare the encoded URL
+  // again after the allowlist has validated its decoded pathname.
+  if (upperMethod === 'PATCH') {
     const verdict = await verifyRefUpdate(accessToken, (body as { sha: string }).sha)
     if (verdict === 'conflict') {
       // Same status GitHub uses for a non-fast-forward update — the editor

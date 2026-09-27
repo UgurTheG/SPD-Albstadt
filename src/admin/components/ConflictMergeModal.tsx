@@ -10,8 +10,9 @@ import { useEffect, useState } from 'react'
 import { AlertTriangle, CheckCircle2, GitMerge, User } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import type { MergeConflict } from '../lib/merge'
+import { applyMergeChoice } from '../lib/merge'
 import { summarizeValue } from '../lib/diff'
-import { deepClone, setAtPathImmutable } from '../lib/json'
+import { deepClone } from '../lib/json'
 import { useAdminStore } from '../store'
 import { TABS } from '../config/tabs'
 
@@ -60,7 +61,7 @@ export default function ConflictMergeModal({ tabKey, conflicts, onClose }: Props
     for (let i = 0; i < conflicts.length; i++) {
       const c = conflicts[i]
       const choice = choices[i] === 'ours' ? c.ours : c.theirs
-      resolved = setAtPathImmutable(resolved, c.path, choice)
+      resolved = applyMergeChoice(resolved, c.path, choice)
     }
 
     applyMergeResolution(tabKey, resolved)

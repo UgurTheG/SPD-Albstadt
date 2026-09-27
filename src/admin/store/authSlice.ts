@@ -2,7 +2,15 @@ import type { StateCreator } from 'zustand'
 import type { AdminState } from './index'
 import type { GHUser } from '../types'
 import { AuthError, validateToken } from '../lib/github'
-import { DRAFT_KEY, PENDING_KEY, resetPersistenceState } from './persistence'
+import {
+  DRAFT_KEY,
+  PENDING_KEY,
+  persistDirtyState,
+  persistPendingUploads,
+  resetPersistenceState,
+  restorePendingUploads,
+} from './persistence'
+import { activateDraftOwner, clearSessionRecovery, saveSessionRecovery } from './sessionRecovery'
 
 // ─── Slice interface ───────────────────────────────────────────────────────────
 
@@ -17,6 +25,7 @@ export interface AuthSlice {
   login: () => Promise<void>
   tryAutoLogin: () => Promise<void>
   logout: () => void
+  invalidateSession: () => void
   ensureAuthenticated: () => Promise<void>
 }
 
@@ -50,13 +59,21 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
       }
       const expiresAt = session.expires_at
       const user = await validateToken()
+      const recovery = activateDraftOwner(user.login)
       set({
         authenticated: true,
         tokenExpiresAt: expiresAt,
         user: user as GHUser,
         loginLoading: false,
+        pendingUploads: restorePendingUploads(),
+        ...(recovery ? { ...recovery, dataLoaded: true } : {}),
       })
-      await get().loadData()
+      if (!recovery) await get().loadData()
+      else {
+        persistDirtyState(get().state, get().originalState, true)
+        persistPendingUploads(get().pendingUploads)
+        clearSessionRecovery(user.login)
+      }
       get().startPresencePolling()
     } catch (e) {
       if (e instanceof AuthError) {
@@ -114,13 +131,23 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
       user = (await validateToken()) as GHUser
     } catch (e) {
       if (e instanceof AuthError) {
-        get().logout()
+        get().invalidateSession()
       }
       return
     }
-    set({ user })
+    const recovery = activateDraftOwner(user.login)
+    set({
+      user,
+      pendingUploads: restorePendingUploads(),
+      ...(recovery ? { ...recovery, dataLoaded: true } : {}),
+    })
     try {
-      await get().loadData()
+      if (!recovery) await get().loadData()
+      else {
+        persistDirtyState(get().state, get().originalState, true)
+        persistPendingUploads(get().pendingUploads)
+        clearSessionRecovery(user.login)
+      }
       get().startPresencePolling()
     } catch {
       /* ignore — UI will remain in loading state */
@@ -128,6 +155,8 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
   },
 
   logout: () => {
+    const user = get().user
+    if (user) clearSessionRecovery(user.login)
     // Stop presence polling and announce departure before clearing state
     get().stopPresencePolling()
 
@@ -153,6 +182,34 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
       undoStacks: {},
       redoStacks: {},
       baseCommitSha: '',
+      tabBaseShas: {},
+    })
+  },
+
+  invalidateSession: () => {
+    const current = get()
+    if (current.user && current.dataLoaded) {
+      persistDirtyState(current.state, current.originalState, true)
+      persistPendingUploads(current.pendingUploads)
+      saveSessionRecovery(current.user.login, current)
+    }
+    current.stopPresencePolling()
+    resetPersistenceState()
+    set({
+      authenticated: false,
+      user: null,
+      tokenExpiresAt: 0,
+      state: {},
+      originalState: {},
+      pendingUploads: [],
+      dataLoaded: false,
+      dataLoadErrors: [],
+      undoStacks: {},
+      redoStacks: {},
+      baseCommitSha: '',
+      tabBaseShas: {},
+      mergeConflicts: null,
+      mergeConflictTabKey: null,
     })
   },
 
@@ -168,7 +225,12 @@ export const createAuthSlice: StateCreator<AdminState, [], [], AuthSlice> = (set
       credentials: 'include',
     })
     if (!res.ok) {
-      get().logout()
+      if (res.status === 429 || res.status >= 500) {
+        throw new Error(
+          'Sitzung konnte nicht erneuert werden — bitte erneut versuchen. Ihre Änderungen bleiben erhalten.',
+        )
+      }
+      get().invalidateSession()
       throw new AuthError('Sitzung abgelaufen — bitte neu anmelden.', 401)
     }
     const data = (await res.json()) as {

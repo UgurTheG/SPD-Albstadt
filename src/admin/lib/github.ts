@@ -247,10 +247,10 @@ export async function listDirectory(dirPath: string) {
   return Array.isArray(data) ? (data as { name: string; sha: string }[]) : []
 }
 
-export async function getFileContent(filePath: string) {
+export async function getFileContent(filePath: string, ref = BRANCH) {
   const res = await ghFetch(
     'GET',
-    `${repoBase()}/contents/${filePath}?ref=${BRANCH}&t=${Date.now()}`,
+    `${repoBase()}/contents/${filePath}?ref=${encodeURIComponent(ref)}&t=${Date.now()}`,
   )
   if (!res.ok) return null
   const data = await res.json()

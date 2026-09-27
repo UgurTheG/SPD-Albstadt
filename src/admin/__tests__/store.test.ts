@@ -54,6 +54,8 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     activeTab: 'news',
     state: {},
     originalState: {},
+    baseCommitSha: '',
+    tabBaseShas: {},
     pendingUploads: [],
     dataLoaded: true,
     dataLoadErrors: [],

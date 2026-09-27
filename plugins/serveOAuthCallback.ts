@@ -1,6 +1,6 @@
 import { createHmac, randomBytes } from 'node:crypto'
 import type { Plugin } from 'vite'
-import { resolveAllowedUrl } from '../api/github'
+import { resolveAllowedUrl, verifyRefUpdate } from '../api/github'
 
 // ─── Cookie helpers (mirrors api/auth/cookies.ts for dev server) ───────────────
 
@@ -357,6 +357,25 @@ export function serveOAuthCallback(env: Record<string, string>): Plugin {
                 res.statusCode = 400
                 res.end(JSON.stringify({ error: 'path_not_allowed' }))
                 return
+              }
+
+              if (method.toUpperCase() === 'PATCH') {
+                const verdict = await verifyRefUpdate(accessToken, (body as { sha: string }).sha)
+                if (verdict !== 'ok') {
+                  res.statusCode =
+                    verdict === 'conflict' ? 422 : verdict === 'forbidden' ? 403 : 502
+                  res.end(
+                    JSON.stringify({
+                      error:
+                        verdict === 'conflict'
+                          ? 'ref_not_fast_forward'
+                          : verdict === 'forbidden'
+                            ? 'ref_update_not_allowed'
+                            : 'github_request_failed',
+                    }),
+                  )
+                  return
+                }
               }
 
               const ghHeaders: Record<string, string> = {

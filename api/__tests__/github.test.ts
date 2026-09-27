@@ -509,21 +509,35 @@ describe('POST /api/github handler — branch updates', () => {
     expect(String(patchCall?.[0])).toBe(`https://api.github.com${REPO}/git/refs/heads/main`)
   })
 
-  it('refuses to move main to a commit that changes application code', async () => {
-    const spy = refUpdateRoutes({
-      newTree: withChange({
-        path: 'api/github.ts',
-        mode: '100644',
-        type: 'blob',
-        sha: '9'.repeat(40),
-      }),
-    })
-    const res = makeResponse()
-    await handler(makeRequest({ method: 'POST', headers, body: patchMain }), res)
-    expect(res.statusCode).toBe(403)
-    expect(res.body).toEqual({ error: 'ref_update_not_allowed' })
-    expect(spy.mock.calls.some(([, opts]) => opts?.method === 'PATCH')).toBe(false)
-  })
+  it.each(['main', '%6dain', 'ma%69n', '%6D%61%69%6E'])(
+    'refuses code-changing commits with branch spelling %s',
+    async branch => {
+      const spy = refUpdateRoutes({
+        newTree: withChange({
+          path: 'api/github.ts',
+          mode: '100644',
+          type: 'blob',
+          sha: '9'.repeat(40),
+        }),
+      })
+      const res = makeResponse()
+      await handler(
+        makeRequest({
+          method: 'POST',
+          headers,
+          body: {
+            ...patchMain,
+            method: 'patch',
+            path: `${REPO}/git/refs/heads/${branch}`,
+          },
+        }),
+        res,
+      )
+      expect(res.statusCode).toBe(403)
+      expect(res.body).toEqual({ error: 'ref_update_not_allowed' })
+      expect(spy.mock.calls.some(([, opts]) => opts?.method === 'PATCH')).toBe(false)
+    },
+  )
 
   it('answers 422 for a commit built on stale history so the editor shows its conflict flow', async () => {
     refUpdateRoutes({ parents: ['a'.repeat(40)] })

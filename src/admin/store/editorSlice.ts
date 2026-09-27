@@ -4,8 +4,8 @@ import type { PendingUpload, TabConfig } from '../types'
 import type { ChangeEntry } from '../lib/diff'
 import { applyRevert } from '../lib/diff'
 import { collectAllReferencedPaths, collectImagePaths } from '../lib/images'
-import { deepClone } from '../lib/json'
-import { getBranchSha } from '../lib/github'
+import { deepClone, deepEqual } from '../lib/json'
+import { getBranchSha, getFileContent } from '../lib/github'
 import { TABS } from '../config/tabs'
 import {
   lastUndoPush,
@@ -52,6 +52,8 @@ export interface EditorSlice {
   /** The branch tip commit SHA at the time data was last loaded. Used to detect
    *  concurrent edits by other users before attempting a publish. */
   baseCommitSha: string
+  /** Revision corresponding to each tab's originalState, independent of other publishes. */
+  tabBaseShas: Record<string, string>
 
   // Computed
   dirtyTabs: () => Set<string>
@@ -63,7 +65,7 @@ export interface EditorSlice {
   undo: (tabKey: string) => void
   redo: (tabKey: string) => void
   addPendingUpload: (upload: PendingUpload) => void
-  resetOriginal: (tabKey: string) => void
+  resetOriginal: (tabKey: string, published?: unknown) => void
   revertTab: (tabKey: string) => void
   revertChange: (tabKey: string, entry: ChangeEntry) => void
   findOrphanImages: () => string[]
@@ -85,6 +87,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
   undoStacks: {},
   redoStacks: {},
   baseCommitSha: '',
+  tabBaseShas: {},
 
   dirtyTabs: () => {
     const { state: s, originalState: os, pendingUploads } = get()
@@ -120,37 +123,38 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
   },
 
   loadData: async () => {
+    if (get().publishing) return
     const newState: Record<string, unknown> = {}
     const failedTabs: string[] = []
-    // Admin must always see the latest data — bypass browser/CDN caches
-    const bust = `t=${Date.now()}`
+    const localPreview =
+      import.meta.env.MODE === 'development' && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true'
+    const branchSha = localPreview ? '' : await getBranchSha().catch(() => '')
 
-    // Fetch the branch SHA and all tab data in parallel
-    const [branchSha] = await Promise.all([
-      getBranchSha().catch(() => ''),
-      ...TABS.map(async tab => {
+    // A deployment can lag behind main. Read all editable files from the
+    // recorded commit, never combine a GitHub SHA with deployed JSON.
+    await Promise.all(
+      TABS.map(async tab => {
         if (!tab.file) {
           newState[tab.key] = null
           return
         }
         try {
-          const url = tab.file + (tab.file.includes('?') ? '&' : '?') + bust
-          const res = await fetch(url, {
-            cache: 'no-store',
-            headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
-          })
-          if (res.ok) {
+          if (localPreview) {
+            const res = await fetch(tab.file, { cache: 'no-store' })
+            if (!res.ok) throw new Error('Daten konnten nicht geladen werden')
             newState[tab.key] = await res.json()
           } else {
-            newState[tab.key] = tab.type === 'array' ? [] : {}
-            failedTabs.push(tab.key)
+            if (!branchSha || !tab.ghPath) throw new Error('Revision fehlt')
+            const data = await getFileContent(tab.ghPath, branchSha)
+            if (data === null) throw new Error('Daten konnten nicht geladen werden')
+            newState[tab.key] = data
           }
         } catch {
           newState[tab.key] = tab.type === 'array' ? [] : {}
           failedTabs.push(tab.key)
         }
       }),
-    ])
+    )
     const original = deepClone(newState)
     // Restore any saved drafts from localStorage
     const merged = restoreDrafts(newState, original)
@@ -175,6 +179,7 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
         undoStacks: {},
         redoStacks: {},
         baseCommitSha: branchSha,
+        tabBaseShas: Object.fromEntries(Object.keys(newState).map(key => [key, branchSha])),
         remoteSha: '', // clear stale-data flag on successful reload
       })
       persistPendingUploads(keptUploads)
@@ -257,17 +262,22 @@ export const createEditorSlice: StateCreator<AdminState, [], [], EditorSlice> = 
     persistPendingUploads(get().pendingUploads)
   },
 
-  resetOriginal: tabKey => {
+  resetOriginal: (tabKey, published) => {
+    const saved = published === undefined ? get().state[tabKey] : published
+    const unchanged = deepEqual(get().state[tabKey], saved)
     set(prev => ({
-      originalState: {
-        ...prev.originalState,
-        [tabKey]: deepClone(prev.state[tabKey]),
-      },
-      undoStacks: { ...prev.undoStacks, [tabKey]: [] },
-      redoStacks: { ...prev.redoStacks, [tabKey]: [] },
+      originalState: { ...prev.originalState, [tabKey]: deepClone(saved) },
+      ...(unchanged
+        ? {
+            undoStacks: { ...prev.undoStacks, [tabKey]: [] },
+            redoStacks: { ...prev.redoStacks, [tabKey]: [] },
+          }
+        : {}),
     }))
-    // Remove the tab's saved draft from localStorage via the persistence abstraction.
-    removeDraft(tabKey)
+    if (unchanged) removeDraft(tabKey)
+    // Preserve edits made after the submitted snapshot, including other tabs
+    // whose debounced save was waiting when this publish finished.
+    persistDirtyState(get().state, get().originalState, true)
   },
 
   revertTab: tabKey => {

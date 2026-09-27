@@ -2,11 +2,9 @@ import type { VercelRequest, VercelResponse } from './vercel.d.ts'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { rateLimit, getClientIP } from './auth/rateLimit.js'
+import { fetchCalendar } from '../server/fetchCalendar.js'
 
 const DEFAULT_ICS_URL = ''
-/** Upstream must answer within this window — a slow calendar host must not
- *  pin the function until Vercel's own timeout. */
-const UPSTREAM_TIMEOUT_MS = 10_000
 /** Calendars are a few kB; anything larger is not a feed we want to relay. */
 const MAX_BODY_BYTES = 2 * 1024 * 1024
 
@@ -47,7 +45,7 @@ export function isAllowedIcsUrl(raw: string): boolean {
  * host the endpoint must not become a fetch-anything proxy for whatever
  * `config.json` points at.
  */
-function looksLikeCalendar(bytes: ArrayBuffer): boolean {
+function looksLikeCalendar(bytes: Uint8Array): boolean {
   const head = new TextDecoder()
     .decode(bytes.slice(0, 64))
     .replace(/^\uFEFF/, '')
@@ -103,33 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return
     }
 
-    const upstream = await fetch(icsUrl, {
-      headers: {
-        'User-Agent': 'SPD-Albstadt-Website/1.0',
-        Accept: 'text/calendar, text/plain, */*',
-      },
-      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
-    })
-
-    if (!upstream.ok) {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(502).json({ error: `Upstream returned ${upstream.status}` })
-      return
-    }
-
-    const declared = Number(upstream.headers.get('content-length') ?? 0)
-    if (declared > MAX_BODY_BYTES) {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(502).json({ error: 'upstream_too_large' })
-      return
-    }
-
-    const bytes = await upstream.arrayBuffer()
-    if (bytes.byteLength > MAX_BODY_BYTES) {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(502).json({ error: 'upstream_too_large' })
-      return
-    }
+    const bytes = await fetchCalendar(icsUrl, MAX_BODY_BYTES)
     if (!looksLikeCalendar(bytes)) {
       res.setHeader('Content-Type', 'application/json')
       res.status(502).json({ error: 'upstream_not_calendar' })
@@ -138,9 +110,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8')
     res.status(200).end(Buffer.from(bytes))
-  } catch {
+  } catch (error) {
     // Opaque code only — raw error messages can leak internal hostnames/paths
     res.setHeader('Content-Type', 'application/json')
-    res.status(502).json({ error: 'upstream_error' })
+    res.status(502).json({
+      error:
+        error instanceof Error && error.message === 'upstream_too_large'
+          ? 'upstream_too_large'
+          : 'upstream_error',
+    })
   }
 }

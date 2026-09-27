@@ -37,7 +37,7 @@ vi.mock('../../admin/lib/github', () => {
 })
 
 import { useAdminStore } from '../../admin/store'
-import { commitTree, fileExists } from '../../admin/lib/github'
+import { commitTree, fileExists, getFileContent } from '../../admin/lib/github'
 import { resetPersistenceState } from '../../admin/store/persistence'
 
 function resetStore(overrides: Record<string, unknown> = {}) {
@@ -47,6 +47,8 @@ function resetStore(overrides: Record<string, unknown> = {}) {
     activeTab: 'news',
     state: {},
     originalState: {},
+    baseCommitSha: '',
+    tabBaseShas: {},
     pendingUploads: [],
     dataLoaded: true,
     dataLoadErrors: [],
@@ -151,26 +153,10 @@ describe('loadData — pending upload pruning', () => {
       ],
     })
 
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(url => {
-      const u = String(url)
-      const body = u.includes('/data/news.json')
-        ? [{ titel: 'a', bildUrl: '/images/news/keep.webp' }]
-        : u.includes('/data/') && !u.includes('news')
-          ? {}
-          : {}
-      return Promise.resolve(
-        new Response(JSON.stringify(body), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        }),
-      )
-    })
-
-    try {
-      await useAdminStore.getState().loadData()
-    } finally {
-      fetchMock.mockRestore()
-    }
+    vi.mocked(getFileContent).mockImplementation(async path =>
+      path.endsWith('/news.json') ? [{ titel: 'a', bildUrl: '/images/news/keep.webp' }] : {},
+    )
+    await useAdminStore.getState().loadData()
 
     const uploads = useAdminStore.getState().pendingUploads
     expect(uploads.map(u => u.ghPath)).toEqual(['public/images/news/keep.webp'])
