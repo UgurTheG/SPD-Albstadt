@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import { MotionGlobalConfig } from 'motion/react'
 
 // ---------------------------------------------------------------------------
 // Fetch interceptor
@@ -40,3 +41,9 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: () => false,
   }),
 })
+
+// happy-dom implements Element.animate() but, unlike browsers, leaves the
+// AbortError from a cancelled animation's `finished` promise unhandled. Motion
+// cancels animations on every unmount, which Vitest reports as a failed run.
+// Tests assert on rendered state, not on animation frames, so skip them.
+MotionGlobalConfig.skipAnimations = true

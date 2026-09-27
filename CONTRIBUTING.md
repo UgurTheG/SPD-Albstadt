@@ -4,7 +4,7 @@ Thank you for your interest in contributing!
 
 ## Prerequisites
 
-- **Node.js** ≥ 20 (see `engines` in `package.json`)
+- **Node.js** 24 (see `engines` in `package.json`)
 - **npm** (comes with Node.js)
 
 ## Setup

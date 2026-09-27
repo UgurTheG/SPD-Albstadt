@@ -36,7 +36,7 @@ Public website and browser-based content editor for the SPD Ortsverein Albstadt.
 | Formatting    | Prettier                                    |
 | Dead code     | knip                                        |
 | Orphan assets | scripts/find-unused-assets.mjs              |
-| Node          | ≥ 20                                        |
+| Node          | 24.x                                        |
 
 ---
 
@@ -405,12 +405,7 @@ Every Vercel Function in `api/` must follow these rules:
 
 ## Knip configuration notes (`knip.config.ts`)
 
-Two dependency categories are excluded from knip's unused-dependency check because knip cannot trace CSS `@import` statements:
-
-- `@fontsource-variable/inter` — imported in `src/index.css` via `@import`
-- `tailwindcss` — consumed by `@tailwindcss/vite` plugin and `@import 'tailwindcss'` in CSS
-
-Do not remove these from `ignoreDependencies` without first verifying knip can trace CSS imports in the version being used.
+`project` includes `src/**/*.css` so knip follows the CSS `@import` statements in `src/index.css`. That is what keeps `@fontsource-variable/inter` and `tailwindcss` from being reported as unused dependencies — do not drop `.css` from the pattern, and do not reintroduce an `ignoreDependencies` list for them.
 
 ---
 

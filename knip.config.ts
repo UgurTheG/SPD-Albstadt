@@ -6,12 +6,7 @@ const config: KnipConfig = {
     // Vercel serverless functions — not imported, called via HTTP
     'api/**/*.ts',
   ],
-  project: ['src/**/*.{ts,tsx}', 'api/**/*.ts'],
-  ignoreDependencies: [
-    // Imported via CSS (@import), not JS — knip can't trace CSS imports
-    '@fontsource-variable/inter',
-    'tailwindcss',
-  ],
+  project: ['src/**/*.{ts,tsx,css}', 'api/**/*.ts'],
 }
 
 export default config
