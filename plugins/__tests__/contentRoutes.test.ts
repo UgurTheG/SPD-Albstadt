@@ -51,6 +51,21 @@ describe('loadContentRoutes', () => {
     ])
   })
 
+  it('skips entries without a slug and keeps the first of duplicate slugs', () => {
+    writeData('party.json', {
+      beschreibung: '',
+      schwerpunkte: [
+        { titel: '', beschreibung: 'Entwurf', icon: 'Users' },
+        { titel: 'Bildung', beschreibung: 'Erste', icon: 'GraduationCap' },
+        { titel: 'Bildung', beschreibung: 'Zweite', icon: 'GraduationCap' },
+      ],
+      vorstand: [],
+      abgeordnete: [],
+    })
+    const partei = loadContentRoutes(root).filter(r => r.chunkName === 'Partei')
+    expect(partei.map(r => [r.seo.path, r.seo.description])).toEqual([['/partei/bildung', 'Erste']])
+  })
+
   it('reads the committed content files', () => {
     const routes = loadContentRoutes()
     expect(routes.length).toBeGreaterThan(0)

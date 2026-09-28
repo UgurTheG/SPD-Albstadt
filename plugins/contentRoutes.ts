@@ -32,7 +32,7 @@ export function loadContentRoutes(root = process.cwd()): ContentRoute[] {
   const party = readData<PartyData>(root, 'party.json')
   const history = readData<HistoryData>(root, 'history.json')
 
-  return [
+  const routes = [
     ...news.map((item): ContentRoute => ({
       seo: newsSEO(item),
       chunkName: 'Aktuelles',
@@ -52,4 +52,15 @@ export function loadContentRoutes(root = process.cwd()): ContentRoute[] {
       priority: 0.4,
     })),
   ]
+
+  // An item published before its title or year is filled in has an empty slug;
+  // its shell would overwrite the section's own. The sheet opens the first
+  // match, so a duplicate slug keeps the first entry too.
+  const seen = new Set<string>()
+  return routes.filter(({ seo }) => {
+    const slug = seo.path.split('/')[2]
+    if (!slug || seen.has(seo.path)) return false
+    seen.add(seo.path)
+    return true
+  })
 }
