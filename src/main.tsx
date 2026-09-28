@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { Analytics } from '@vercel/analytics/react'
-import { LazyMotion } from 'motion/react'
+import { LazyMotion, MotionConfig } from 'motion/react'
 import './index.css'
 import App from './App.tsx'
 
@@ -15,12 +15,15 @@ const loadMotionFeatures = () => import('./motionFeatures').then(mod => mod.defa
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LazyMotion features={loadMotionFeatures} strict>
-      <HelmetProvider>
-        <BrowserRouter>
-          <App />
-          <Analytics />
-        </BrowserRouter>
-      </HelmetProvider>
+      {/* The reduced-motion rule in index.css only covers CSS animations. */}
+      <MotionConfig reducedMotion="user">
+        <HelmetProvider>
+          <BrowserRouter>
+            <App />
+            <Analytics />
+          </BrowserRouter>
+        </HelmetProvider>
+      </MotionConfig>
     </LazyMotion>
   </StrictMode>,
 )
