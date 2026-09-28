@@ -142,7 +142,7 @@ function deepLink(path: string, title: string, description: string, image?: stri
     canonical: `${BASE_URL}${path}`,
     title: `${title} – SPD Albstadt`,
     description,
-    ogImage: image && (image.startsWith('http') ? image : `${BASE_URL}${image}`),
+    ogImage: image ? (image.startsWith('http') ? image : `${BASE_URL}${image}`) : undefined,
   }
 }
 

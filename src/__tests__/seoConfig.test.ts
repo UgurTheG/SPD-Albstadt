@@ -75,6 +75,10 @@ describe('historieSEO', () => {
     expect(historieSEO(entry).description).toHaveLength(160)
   })
 
+  it('has no og:image when the first image path is empty', () => {
+    expect(historieSEO({ ...entry, bilder: [''] }).ogImage).toBeUndefined()
+  })
+
   it('uses the first image as og:image', () => {
     expect(historieSEO(entry).ogImage).toBe('https://www.spd-albstadt.de/images/historie/1890.webp')
   })
