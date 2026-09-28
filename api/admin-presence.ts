@@ -13,9 +13,9 @@
  *   • Otherwise → falls back to an in-memory Map (works for single-instance /
  *     local dev; presence may be partitioned across cold-started instances).
  *
- * To enable KV: run `vercel env add KV_REST_API_URL` and
- * `vercel env add KV_REST_API_TOKEN` after linking a Vercel KV database via
- * the Vercel dashboard (Storage → Create Database → KV).
+ * To enable it, connect an Upstash Redis database (Vercel Marketplace; Vercel
+ * KV was migrated to Upstash) and make sure KV_REST_API_URL and
+ * KV_REST_API_TOKEN are set for the project.
  */
 import type { VercelRequest, VercelResponse } from './vercel.d.ts'
 import {
@@ -64,7 +64,7 @@ if (process.env.NODE_ENV === 'production' && !process.env.KV_REST_API_URL) {
   console.warn(
     '[admin-presence] KV_REST_API_URL is not set in production. ' +
       'Presence state is stored in-memory and will be partitioned across ' +
-      'serverless function instances. Configure Vercel KV for correct ' +
+      'serverless function instances. Configure Upstash Redis for correct ' +
       'multi-instance behaviour.',
   )
 }
@@ -113,7 +113,7 @@ function evictExpired() {
   }
 }
 
-/** Returns true when Vercel KV env-vars are configured. */
+/** Returns true when the Upstash Redis (KV_REST_API_*) env-vars are configured. */
 function isKvEnabled(): boolean {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
 }

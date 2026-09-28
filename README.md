@@ -112,15 +112,15 @@ GITHUB_CLIENT_SECRET=      # Client-Secret der OAuth App (privat, nur serverseit
 OAUTH_REDIRECT_URI=        # Callback-URL (z. B. https://<domain>/api/auth/callback)
 STATE_SIGNING_SECRET=      # Eigener HMAC-Schlüssel für CSRF-State-Signierung (empfohlen)
 ALLOWED_GITHUB_LOGINS=     # Kommagetrennte GitHub-Benutzernamen, die sich einloggen dürfen (optional)
-KV_REST_API_URL=           # Vercel KV REST URL für gemeinsamen Admin-Presence-State (optional)
-KV_REST_API_TOKEN=         # Vercel KV REST Token (erforderlich wenn KV_REST_API_URL gesetzt)
+KV_REST_API_URL=           # Upstash-Redis-REST-URL für gemeinsamen Admin-Presence-State (optional)
+KV_REST_API_TOKEN=         # Upstash-Redis-REST-Token (erforderlich wenn KV_REST_API_URL gesetzt)
 ```
 
 > **Hinweis:** Ist `STATE_SIGNING_SECRET` nicht gesetzt, wird `GITHUB_CLIENT_SECRET` als Fallback verwendet — mit Warnung im Serverlog. Empfohlen: eigenen Schlüssel generieren mit `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
 >
 > **Hinweis:** `ALLOWED_GITHUB_LOGINS` ist optional. Wenn gesetzt, werden nur die aufgelisteten GitHub-Konten zugelassen — als zusätzliche Absicherung neben den GitHub-Repository-Berechtigungen.
 >
-> **Hinweis:** `KV_REST_API_URL` und `KV_REST_API_TOKEN` sind optional. Ohne diese Variablen wird der Admin-Presence-State im Arbeitsspeicher gehalten (funktioniert lokal und bei Single-Instance-Deployments; bei mehreren Vercel-Instanzen empfiehlt sich Vercel KV für geteilten Zustand).
+> **Hinweis:** `KV_REST_API_URL` und `KV_REST_API_TOKEN` sind optional. Ohne diese Variablen wird der Admin-Presence-State im Arbeitsspeicher gehalten (funktioniert lokal und bei Single-Instance-Deployments; bei mehreren Vercel-Instanzen empfiehlt sich Upstash Redis, ehemals Vercel KV, für geteilten Zustand).
 
 ### Instagram-Integration
 

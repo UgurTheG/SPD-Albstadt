@@ -142,7 +142,7 @@ When the admin needs the same type as a public section (e.g. `KommunalpolitikPer
 - Use `describe` + `it` with clear English descriptions
 - Mock at the boundary (GitHub API, fetch, browser APIs) — never mock the code under test
 - Do not test implementation details — test behaviour and return values
-- Aim to keep all 47 test files passing; never reduce the test count without a clear reason
+- Keep every test file passing; never reduce the test count without a clear reason
 - Serverless functions are tested in `api/__tests__/` with the fake request/response helpers in `helpers.ts`
 
 ---
@@ -163,7 +163,7 @@ When the admin needs the same type as a public section (e.g. `KommunalpolitikPer
 - The `useTabPublisher` hook handles the publish flow; use it instead of calling the GitHub API directly
 - Undo/redo is per-tab via the Zustand store — use `useUndoRedoShortcuts` for keyboard shortcuts
 - Image uploads go through `ImageField` / `ImageListField`; they convert to WebP before committing
-- Presence state (`src/admin/store/presenceSlice.ts`) uses Vercel KV in production — do not add polling; heartbeats are already on a 30-second interval
+- Presence state (`src/admin/store/presenceSlice.ts`) uses Upstash Redis (`@upstash/redis`, formerly Vercel KV) in production — do not add polling; heartbeats are already on a 30-second interval
 - Dark mode preference is persisted under the localStorage key **`spd-darkmode`** and is shared between the public site (`src/hooks/useDarkMode.ts`) and the admin store (`uiSlice`). If unset it falls back to `prefers-color-scheme`. Do not change the key — it would reset every user's preference.
 
 ### Admin Zustand store
@@ -176,7 +176,7 @@ Five slices compose the admin store (`src/admin/store/`):
 | `EditorSlice`   | Per-tab JSON state, undo/redo stacks, pending uploads |
 | `PublishSlice`  | GitHub commit flow state                              |
 | `UISlice`       | Dark mode, toast queue (`setStatus`)                  |
-| `PresenceSlice` | Real-time connected-editor awareness (Vercel KV)      |
+| `PresenceSlice` | Real-time connected-editor awareness (Upstash Redis)  |
 
 Draft persistence: `persistDirtyState()` in `src/admin/store/persistence.ts` debounces localStorage writes at 1 s with a 7-day TTL, keyed by tab. Drafts are hash-validated against the original to prevent stale edits from appearing as unsaved changes.
 
@@ -231,8 +231,8 @@ Copy `.env.example` to `.env` for local development. All secrets stay server-sid
 | `OAUTH_REDIRECT_URI`    | Yes         | Full callback URL, e.g. `https://<domain>/api/auth/callback`                            |
 | `STATE_SIGNING_SECRET`  | Recommended | HMAC key for CSRF state signing; falls back to `GITHUB_CLIENT_SECRET` if unset          |
 | `ALLOWED_GITHUB_LOGINS` | Optional    | Comma-separated GitHub usernames; defence-in-depth allowlist on top of repo permissions |
-| `KV_REST_API_URL`       | Optional    | Vercel KV URL for shared admin presence state across instances                          |
-| `KV_REST_API_TOKEN`     | Optional    | Vercel KV token (required when `KV_REST_API_URL` is set)                                |
+| `KV_REST_API_URL`       | Optional    | Upstash Redis REST URL for shared admin presence state across instances                 |
+| `KV_REST_API_TOKEN`     | Optional    | Upstash Redis REST token (required when `KV_REST_API_URL` is set)                       |
 
 `VITE_*` variables are bundled into the frontend. Never prefix server secrets with `VITE_`.
 

@@ -45,15 +45,15 @@ Additionally, if the `ALLOWED_GITHUB_LOGINS` environment variable is set (comma-
 
 ### Required Environment Variables
 
-| Variable                | Where           | Purpose                                                         |
-| ----------------------- | --------------- | --------------------------------------------------------------- |
-| `VITE_GITHUB_CLIENT_ID` | Vercel + `.env` | OAuth App Client ID (public, embedded in frontend)              |
-| `GITHUB_CLIENT_SECRET`  | Vercel + `.env` | OAuth App Client Secret (private, server-side only)             |
-| `OAUTH_REDIRECT_URI`    | Vercel + `.env` | Callback URL (e.g. `https://<domain>/api/auth/callback`)        |
-| `STATE_SIGNING_SECRET`  | Vercel + `.env` | Dedicated HMAC key for CSRF state signing (recommended)         |
-| `ALLOWED_GITHUB_LOGINS` | Vercel + `.env` | Comma-separated GitHub usernames permitted to log in (optional) |
-| `KV_REST_API_URL`       | Vercel          | Vercel KV REST URL for shared admin presence state (optional)   |
-| `KV_REST_API_TOKEN`     | Vercel          | Vercel KV REST token (required when `KV_REST_API_URL` is set)   |
+| Variable                | Where           | Purpose                                                           |
+| ----------------------- | --------------- | ----------------------------------------------------------------- |
+| `VITE_GITHUB_CLIENT_ID` | Vercel + `.env` | OAuth App Client ID (public, embedded in frontend)                |
+| `GITHUB_CLIENT_SECRET`  | Vercel + `.env` | OAuth App Client Secret (private, server-side only)               |
+| `OAUTH_REDIRECT_URI`    | Vercel + `.env` | Callback URL (e.g. `https://<domain>/api/auth/callback`)          |
+| `STATE_SIGNING_SECRET`  | Vercel + `.env` | Dedicated HMAC key for CSRF state signing (recommended)           |
+| `ALLOWED_GITHUB_LOGINS` | Vercel + `.env` | Comma-separated GitHub usernames permitted to log in (optional)   |
+| `KV_REST_API_URL`       | Vercel          | Upstash Redis REST URL for shared admin presence state (optional) |
+| `KV_REST_API_TOKEN`     | Vercel          | Upstash Redis REST token (required when `KV_REST_API_URL` is set) |
 
 > **Note:** If `STATE_SIGNING_SECRET` is not set, `GITHUB_CLIENT_SECRET` is used as a fallback (with a warning in server logs). Generate a dedicated secret with: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 
@@ -117,7 +117,7 @@ const BRANCH = 'main'
 The admin panel tracks which users are currently active and which tabs they have open or marked as dirty. This prevents two editors from accidentally overwriting each other's changes.
 
 - **Endpoint:** `GET / POST / DELETE /api/admin-presence`
-- **Storage:** In-memory (single-instance / local dev) or **Vercel KV** (production multi-instance). To enable KV, link a Vercel KV database via the dashboard and set `KV_REST_API_URL` + `KV_REST_API_TOKEN`.
+- **Storage:** In-memory (single-instance / local dev) or **Upstash Redis** (production multi-instance; formerly Vercel KV). To enable it, connect an Upstash Redis database via the Vercel Marketplace and make sure `KV_REST_API_URL` + `KV_REST_API_TOKEN` are set.
 - **Heartbeat:** The frontend sends a `POST` every 30 seconds with the active tab and dirty-tab list.
 - **Version polling:** A lightweight `GET ?since=<version>` check runs every 500 ms so presence updates are near-real-time without a full KV scan on every tick.
 - **Identity binding:** The user's `login` is always read from the HMAC-signed `USER_LOGIN_COOKIE` set during OAuth (and re-issued on every token refresh from GitHub's `/user` response). The signature and expiry are verified on every request — client-supplied values and hand-crafted cookies are rejected, preventing impersonation.
